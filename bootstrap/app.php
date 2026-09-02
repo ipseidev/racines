@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\TokenType;
+use App\Exceptions\Domain\StoryUnavailable;
 use App\Exceptions\Domain\TokenUnavailable;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -78,5 +79,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 'canRequestNewLink' => $exception->canRequestNewLink(),
                 'tokenType' => $exception->tokenType()?->value,
             ])->toResponse($request)->setStatusCode($status);
+        });
+
+        // Une histoire hors de portée : même exigence. Le message ne dit pas
+        // pourquoi — un proche qui apprendrait qu'une histoire existe mais
+        // lui est refusée en saurait déjà trop.
+        $exceptions->render(function (StoryUnavailable $exception, Request $request) {
+            $token = $request->route('token');
+
+            return Inertia::render('family/StoryUnavailable', [
+                'backUrl' => is_string($token) ? '/l/'.$token : null,
+            ])->toResponse($request)->setStatusCode(404);
         });
     })->create();

@@ -35,7 +35,7 @@ final class SpaceController
 
         $stories = $narrator->stories()
             ->with('question')
-            ->whereNot('state', (new Proposed(new Story))->getValue())
+            ->whereNot('state', Proposed::$name)
             ->orderByDesc('recorded_at')
             ->orderByDesc('sequence')
             ->get()

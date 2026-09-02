@@ -110,7 +110,17 @@ final class S3MediaStorage implements MediaStorage
 
     public function temporaryUrl(string $key, int $minutes): string
     {
-        return Storage::disk($this->disk)->temporaryUrl($key, now()->addMinutes($minutes));
+        // Signée sur l'adresse que verra le **navigateur**, comme les envois
+        // (T-56) : `Storage::temporaryUrl()` signe sur l'endpoint du serveur,
+        // que le navigateur ne résout pas — et l'écoute famille ne joue rien.
+        $client = $this->client(public: true);
+
+        $command = $client->getCommand('GetObject', [
+            'Bucket' => $this->bucket(),
+            'Key' => $key,
+        ]);
+
+        return (string) $client->createPresignedRequest($command, "+{$minutes} minutes")->getUri();
     }
 
     public function delete(string $key): void

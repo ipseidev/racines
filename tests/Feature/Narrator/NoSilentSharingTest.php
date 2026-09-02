@@ -63,7 +63,10 @@ it('ne laisse aucun fichier instancier Shared en dehors de sa transition', funct
                 continue;
             }
 
-            if (preg_match('/new\s+Shared\s*\(/', (string) File::get($file->getPathname())) === 1) {
+            // On cherche une **affectation** de l'état, pas la lecture de
+            // son nom : `Shared::$name` sert à comparer une chaîne en base,
+            // ce qui ne partage rien.
+            if (preg_match('/state\s*=\s*new\s+Shared\s*\(/', (string) File::get($file->getPathname())) === 1) {
                 $offenders[] = $path;
             }
         }

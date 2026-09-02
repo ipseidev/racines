@@ -33,7 +33,7 @@ final class PurgeTrashedStories extends Command
         $purged = 0;
 
         Story::query()
-            ->where('state', (new Trashed(new Story))->getValue())
+            ->where('state', Trashed::$name)
             ->whereNotNull('trashed_at')
             ->where('trashed_at', '<=', $cutoff)
             ->cursor()

@@ -38,3 +38,9 @@ Schedule::job(new PollTranscription)
 Schedule::command('stories:purge-trashed')
     ->daily()
     ->withoutOverlapping();
+
+// Le résumé du matin, pour les projets en notification différée : un SMS à
+// 23 h chez une personne de 85 ans n'est pas une bonne nouvelle (bloc 08).
+Schedule::command('reactions:send-digests')
+    ->dailyAt('09:00')
+    ->withoutOverlapping();
