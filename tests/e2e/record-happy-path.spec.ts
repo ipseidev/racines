@@ -9,6 +9,12 @@ import { expect, test, type Page } from '@playwright/test';
  */
 const RECORD_LINK = `/r/${'demo-record-link'.padEnd(43, 'x')}`;
 
+/*
+ * Un lien distinct pour le second test : la suite tourne en parallèle, même à
+ * l'intérieur d'un fichier, et le premier test enregistre son histoire.
+ */
+const GUARD_LINK = `/r/${'demo-guard-link'.padEnd(43, 'x')}`;
+
 /**
  * Un test qui dépend d'un aller-retour avec le stockage doit dire *pourquoi*
  * il échoue : sans ces écouteurs, un envoi refusé par la politique de contenu
@@ -88,7 +94,7 @@ test('un narrateur enregistre, met en pause, reprend et envoie', async ({
 });
 
 test('la confirmation ne s’affiche jamais avant l’envoi', async ({ page }) => {
-    await page.goto(RECORD_LINK);
+    await page.goto(GUARD_LINK);
 
     await expect(page.getByText(/votre histoire est enregistrée/i)).toHaveCount(
         0,

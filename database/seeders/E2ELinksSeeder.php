@@ -41,6 +41,7 @@ final class E2ELinksSeeder extends Seeder
     /** @var array<string, string> */
     private const SCENARIOS = [
         'record' => 'Racontez-nous votre premier jour d’école.',
+        'guard' => 'Quel objet avez-vous gardé de votre enfance ?',
         'resume' => 'Quel était le métier de votre père ?',
         'denied' => 'Quelle chanson vous rappelle votre jeunesse ?',
         'a11y' => 'Comment était la cuisine de votre enfance ?',
