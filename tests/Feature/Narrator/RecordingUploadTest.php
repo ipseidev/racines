@@ -6,6 +6,7 @@ use App\Enums\TokenType;
 use App\Enums\UploadStatus;
 use App\Jobs\ConcatenateSegments;
 use App\Jobs\ReplicateRecording;
+use App\Jobs\TranscodeRecording;
 use App\Models\Recording;
 use App\Models\Story;
 use App\Services\Tokens\TokenService;
@@ -139,7 +140,8 @@ it('confirme l’enregistrement seulement après un HeadObject réussi', functio
         ->and($recording->upload_status)->toBe(UploadStatus::Completed)
         ->and($story->refresh()->state)->toBeInstanceOf(Recorded::class);
 
-    Queue::assertPushed(ReplicateRecording::class);
+    // Un seul segment : rien à recoller, on réplique puis on transcode.
+    Queue::assertPushedWithChain(ReplicateRecording::class, [TranscodeRecording::class]);
 });
 
 it('ne confirme rien et ne transitionne pas quand le stockage ne détient pas l’objet', function (): void {
@@ -250,6 +252,10 @@ it('demande la concaténation quand il y a plusieurs segments', function (): voi
         ->and($recording->original_bytes)->toBe(18)
         ->and($recording->segmentCount())->toBe(2);
 
-    Queue::assertPushed(ConcatenateSegments::class);
-    Queue::assertPushed(ReplicateRecording::class);
+    // L'ordre est le fond de l'affaire : la source est répliquée avant tout
+    // dérivé, et c'est le fichier recollé qui part au transcodage.
+    Queue::assertPushedWithChain(ReplicateRecording::class, [
+        ConcatenateSegments::class,
+        TranscodeRecording::class,
+    ]);
 });

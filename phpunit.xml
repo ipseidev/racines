@@ -28,6 +28,9 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="SMS_PROVIDER" value="fake"/>
         <env name="MEDIA_DRIVER" value="fake"/>
+        <env name="ASR_PROVIDER" value="fake"/>
+        <env name="LLM_PROVIDER" value="fake"/>
+        <env name="ASR_CALLBACK_SECRET" value="secret-de-test-pour-les-rappels-asr"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

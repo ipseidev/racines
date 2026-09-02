@@ -37,6 +37,35 @@ return [
         'driver' => env('MEDIA_DRIVER', 's3'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Transcription et mise au propre
+    |--------------------------------------------------------------------------
+    |
+    | `fake` dans la suite de tests, forcé par `phpunit.xml`. Gladia est le
+    | fournisseur ASR par défaut (hébergement UE, T-07) ; Deepgram est le
+    | second adaptateur et le point de comparaison du banc d'essai.
+    |
+    */
+
+    'asr' => [
+        'provider' => env('ASR_PROVIDER', 'fake'),
+        'gladia_key' => env('GLADIA_API_KEY'),
+        'deepgram_key' => env('DEEPGRAM_API_KEY'),
+        // On signe nous-mêmes les URL de rappel : les fournisseurs ne signent
+        // pas tous les leurs, et un faux rappel injecterait une fausse
+        // transcription dans l'histoire de quelqu'un.
+        'callback_secret' => env('ASR_CALLBACK_SECRET'),
+    ],
+
+    'anthropic' => [
+        'provider' => env('LLM_PROVIDER', 'fake'),
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('LLM_MODEL', 'claude-opus-5'),
+        'effort' => env('LLM_EFFORT', 'medium'),
+        'max_tokens' => (int) env('LLM_MAX_TOKENS', 8000),
+    ],
+
     'twilio' => [
         'sid' => env('TWILIO_ACCOUNT_SID'),
         'token' => env('TWILIO_AUTH_TOKEN'),

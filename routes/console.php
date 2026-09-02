@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\PollTranscription;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -24,4 +25,10 @@ Artisan::command('inspire', function () {
 // parce qu'un projet a mis du temps (décision T-28).
 Schedule::command('prompts:dispatch-due')
     ->everyFiveMinutes()
+    ->withoutOverlapping();
+
+// Filet du rappel de transcription : un webhook perdu laisserait une histoire
+// enregistrée sans texte, et personne ne le saurait.
+Schedule::job(new PollTranscription)
+    ->everyMinute()
     ->withoutOverlapping();

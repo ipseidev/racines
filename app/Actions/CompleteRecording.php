@@ -8,9 +8,11 @@ use App\Enums\AnswerType;
 use App\Enums\UploadStatus;
 use App\Jobs\ConcatenateSegments;
 use App\Jobs\ReplicateRecording;
+use App\Jobs\TranscodeRecording;
 use App\Models\Recording;
 use App\Services\Storage\MediaStorage;
 use App\States\Story\Recorded;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -122,11 +124,15 @@ final readonly class CompleteRecording
             $story->state->transitionTo(Recorded::class, AnswerType::Audio);
         }
 
-        ReplicateRecording::dispatch($recording->id);
-
-        if (count($confirmedSegments) > 1) {
-            ConcatenateSegments::dispatch($recording->id);
-        }
+        // Chaîne délibérée : on réplique la source **avant** d'en dériver
+        // quoi que ce soit. Un dérivé sans source répliquée n'a pas de valeur.
+        // La couture, quand il y en a une, précède le transcodage : c'est le
+        // fichier recollé qui doit être transcrit et transcodé.
+        Bus::chain(array_values(array_filter([
+            new ReplicateRecording($recording->id),
+            count($confirmedSegments) > 1 ? new ConcatenateSegments($recording->id) : null,
+            new TranscodeRecording($recording->id),
+        ])))->dispatch();
 
         Log::info('recording.confirmed', [
             'recording_id' => $recording->id,

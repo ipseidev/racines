@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Webhooks\AsrWebhookController;
 use App\Http\Controllers\Webhooks\ResendWebhookController;
 use App\Http\Controllers\Webhooks\TwilioStatusController;
 use App\Http\Middleware\VerifyResendSignature;
@@ -31,3 +32,10 @@ Route::post('/webhooks/twilio/status', TwilioStatusController::class)
 Route::post('/webhooks/resend', ResendWebhookController::class)
     ->middleware(VerifyResendSignature::class)
     ->name('webhooks.resend');
+
+// Rappel de transcription. La signature vit dans l'URL et couvre
+// l'identifiant d'enregistrement : sans elle, on pourrait injecter une fausse
+// transcription dans l'histoire de quelqu'un.
+Route::post('/webhooks/asr/{provider}/{recording}', AsrWebhookController::class)
+    ->whereIn('provider', ['gladia', 'deepgram', 'fake'])
+    ->name('webhooks.asr');

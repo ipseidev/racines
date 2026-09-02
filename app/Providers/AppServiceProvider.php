@@ -9,6 +9,11 @@ use App\Models\Narrator;
 use App\Models\Project;
 use App\Models\Story;
 use App\Models\User;
+use App\Services\Llm\AnthropicMessages;
+use App\Services\Llm\ClaudeStoryRenderer;
+use App\Services\Llm\FakeStoryRenderer;
+use App\Services\Llm\SdkAnthropicMessages;
+use App\Services\Llm\StoryRenderer;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
@@ -16,11 +21,16 @@ use App\Services\Sms\TwilioSmsSender;
 use App\Services\Storage\FakeMediaStorage;
 use App\Services\Storage\MediaStorage;
 use App\Services\Storage\S3MediaStorage;
+use App\Services\Transcription\DeepgramProvider;
+use App\Services\Transcription\FakeTranscriptionProvider;
+use App\Services\Transcription\GladiaProvider;
+use App\Services\Transcription\TranscriptionProvider;
 use App\Support\Brand;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +82,8 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiters();
         $this->configureSmsSender();
         $this->configureMediaStorage();
+        $this->configureTranscription();
+        $this->configureStoryRenderer();
     }
 
     /**
@@ -116,6 +128,43 @@ final class AppServiceProvider extends ServiceProvider
         $token = $request->route('token');
 
         return is_string($token) ? hash('sha256', $token) : 'anonymous:'.$request->ip();
+    }
+
+    /**
+     * Transcription : Gladia par défaut (hébergement UE, T-07), Deepgram en
+     * second adaptateur et point de comparaison du banc d'essai, `fake` dans
+     * la suite de tests. Un fournisseur inconnu lève.
+     */
+    private function configureTranscription(): void
+    {
+        $this->app->singleton(TranscriptionProvider::class, function (): TranscriptionProvider {
+            $provider = (string) config('services.asr.provider');
+
+            return match ($provider) {
+                'fake' => new FakeTranscriptionProvider,
+                'gladia' => new GladiaProvider($this->app->make(HttpFactory::class), (string) config('services.asr.gladia_key')),
+                'deepgram' => new DeepgramProvider($this->app->make(HttpFactory::class), (string) config('services.asr.deepgram_key')),
+                default => throw new RuntimeException("Unknown ASR provider [{$provider}]."),
+            };
+        });
+    }
+
+    /**
+     * Mise au propre : Claude, ou une version simulée dans les tests.
+     */
+    private function configureStoryRenderer(): void
+    {
+        $this->app->singleton(AnthropicMessages::class, SdkAnthropicMessages::class);
+
+        $this->app->singleton(StoryRenderer::class, function (): StoryRenderer {
+            $provider = (string) config('services.anthropic.provider');
+
+            return match ($provider) {
+                'fake' => new FakeStoryRenderer,
+                'claude' => new ClaudeStoryRenderer($this->app->make(AnthropicMessages::class)),
+                default => throw new RuntimeException("Unknown LLM provider [{$provider}]."),
+            };
+        });
     }
 
     /**

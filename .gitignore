@@ -7,6 +7,11 @@
 /public/storage
 /storage/*.key
 /storage/pail
+# Dossiers de travail des tests (transcodage, banc d'essai ASR) : le code les
+# nettoie, celle-ci rattrape un test interrompu.
+/storage/app/concat
+/storage/app/testing
+/storage/app/transcode
 /resources/js/actions
 /resources/js/routes
 /resources/js/wayfinder

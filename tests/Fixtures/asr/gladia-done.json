@@ -1,0 +1,35 @@
+{
+    "id": "gladia-job-1",
+    "status": "done",
+    "result": {
+        "metadata": { "audio_duration": 132.4, "billing_time": 132.4 },
+        "transcription": {
+            "languages": ["fr"],
+            "full_transcript": "Alors euh je me souviens de la maison de Kerhostin.",
+            "utterances": [
+                {
+                    "words": [
+                        {
+                            "word": "Alors",
+                            "start": 0.1,
+                            "end": 0.5,
+                            "confidence": 0.98
+                        },
+                        {
+                            "word": "euh",
+                            "start": 0.5,
+                            "end": 0.7,
+                            "confidence": 0.62
+                        },
+                        {
+                            "word": "Kerhostin",
+                            "start": 2.1,
+                            "end": 2.9,
+                            "confidence": 0.81
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
