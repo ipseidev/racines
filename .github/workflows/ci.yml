@@ -100,6 +100,11 @@ jobs:
           php artisan key:generate
           php artisan migrate --force
 
+      # Wayfinder écrit resources/js/routes et resources/js/actions, ignorés par
+      # git : sans cette étape, tsc ne trouve pas les modules « @/routes ».
+      - name: Générer les routes typées
+        run: php artisan wayfinder:generate --with-form
+
       - name: Format, lint et types (front)
         run: |
           npm run check
