@@ -25,7 +25,10 @@ final class SensitiveGrant
             name: self::COOKIE,
             value: $plain,
             minutes: self::minutes(),
-            secure: ! app()->isLocal(),
+            // `null` : Laravel suit `session.secure`. Forcer `secure` ferait
+            // jeter le cookie par le navigateur sur une connexion en clair —
+            // en développement, et sur l'application servie en intégration.
+            secure: null,
             httpOnly: true,
             sameSite: 'strict',
         );

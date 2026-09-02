@@ -19,6 +19,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Stockage des médias
+    |--------------------------------------------------------------------------
+    |
+    | `s3` partout, `fake` seulement dans la suite de tests, où le pilote est
+    | forcé par `phpunit.xml`.
+    |
+    | Ce choix est **explicite** et non déduit de l'environnement : en
+    | intégration continue, l'application servie au bout en bout tourne avec
+    | `APP_ENV=testing`, et une liaison qui interrogeait `runningUnitTests()`
+    | lui donnait un stockage en mémoire — les envois partaient vers un hôte
+    | qui n'existe pas.
+    |
+    */
+
+    'media' => [
+        'driver' => env('MEDIA_DRIVER', 's3'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------
     |

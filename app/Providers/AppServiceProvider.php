@@ -113,13 +113,24 @@ final class AppServiceProvider extends ServiceProvider
 
     /**
      * Stockage des médias : R2 en local comme en production (MinIO émule R2),
-     * en mémoire dans les tests. Aucun test n'appelle le réseau.
+     * en mémoire dans la suite de tests, qui n'appelle jamais le réseau.
+     *
+     * Le pilote est lu dans la configuration et non déduit de
+     * l'environnement : en intégration continue, l'application servie au bout
+     * en bout tourne avec `APP_ENV=testing`, et une liaison fondée sur
+     * `runningUnitTests()` lui donnait un stockage en mémoire.
      */
     private function configureMediaStorage(): void
     {
-        $this->app->singleton(MediaStorage::class, fn (): MediaStorage => app()->runningUnitTests()
-            ? new FakeMediaStorage
-            : new S3MediaStorage);
+        $this->app->singleton(MediaStorage::class, function (): MediaStorage {
+            $driver = (string) config('services.media.driver');
+
+            return match ($driver) {
+                'fake' => new FakeMediaStorage,
+                's3' => new S3MediaStorage,
+                default => throw new RuntimeException("Unknown media storage driver [{$driver}]."),
+            };
+        });
     }
 
     /**

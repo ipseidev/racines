@@ -184,7 +184,8 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `R2_REGION` | Région S3 ; R2 n'en a pas, `auto` convient | `auto` |
 | `R2_BUCKET_MEDIA`, `R2_BUCKET_MEDIA_REPLICA`, `R2_BUCKET_BACKUPS` | Trois buckets distincts | `media`, `media-replica`, `backups` |
 | `MAIL_MAILER`, `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `MAIL_FROM_ADDRESS` | Email via Resend ; local : `smtp` vers Mailpit | `resend` / `smtp` |
-| `SMS_PROVIDER` | `twilio` ou `fake` | `fake` |
+| `SMS_PROVIDER` | `twilio`, `log` ou `fake` ; un fournisseur inconnu lève | `log` |
+| `MEDIA_DRIVER` | `s3` ou `fake` ; jamais déduit de l'environnement (T-61) | `s3` |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | SMS ; `TWILIO_FROM` est le numéro de repli si l'expéditeur alphanumérique est refusé par l'opérateur | — |
 | `ASR_PROVIDER` | `gladia`, `deepgram` ou `fake` | `fake` |
 | `GLADIA_API_KEY`, `DEEPGRAM_API_KEY` | Clés ASR | — |

@@ -220,6 +220,16 @@ reprise iOS, elle, en dépend, et le dossier interdit de la faire avant.
   jeton rendaient inatteignables les 120 événements du bloc (T-60).
 - **`ffmpeg` peut rendre 0 sans produire de fichier** : le job levait alors un
   chemin pointant le vide. Il vérifie désormais la présence du fichier.
+- **En intégration continue, l'application servie utilisait le faux
+  stockage.** La liaison interrogeait `runningUnitTests()`, et le bout en bout
+  tourne avec `APP_ENV=testing` : les envois partaient vers un hôte qui
+  n'existe pas. Trouvé en faisant parler les tests — les erreurs du navigateur
+  sont désormais rapportées dans leur sortie. Le pilote est explicite (T-61),
+  et le même diagnostic a corrigé le cookie d'autorisation, forcé en `secure`
+  et donc jeté sur une connexion en clair.
+- **`color-scheme` était posé en style en ligne** et refusé par la politique
+  de contenu : les formulaires natifs se lisaient au mauvais schéma. Il
+  s'exprime désormais en CSS (T-62).
 
 **Ce que le bloc laisse ouvert :**
 
@@ -230,3 +240,8 @@ reprise iOS, elle, en dépend, et le dossier interdit de la faire avant.
   ils demandent un `AudioContext` et une API absents de jsdom, donc du spike
   pour être jugés utiles. À trancher avec les résultats.
 - La durée réelle, le dérivé MP3 et la transcription : bloc 06.
+- Une violation de style en ligne subsiste dans la console des pages
+  narrateur, sans effet fonctionnel constaté : même empreinte sur toutes les
+  pages, source non identifiée après recherche. La politique fait son travail
+  en la refusant ; c'est le premier suspect si un défaut visuel apparaît
+  (T-62).

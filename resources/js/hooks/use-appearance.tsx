@@ -48,8 +48,12 @@ const applyTheme = (appearance: Appearance): void => {
 
     const isDark = isDarkMode(appearance);
 
+    // Seule la classe change. `color-scheme` est exprimé en CSS, adossé à
+    // cette classe : l'écrire ici en style en ligne était refusé par la
+    // politique de contenu stricte des pages narrateur — Chrome traite une
+    // écriture dans `element.style` comme un style en ligne, que
+    // `style-src-attr` ne couvre pas.
     document.documentElement.classList.toggle('dark', isDark);
-    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
 
 const subscribe = (callback: () => void) => {

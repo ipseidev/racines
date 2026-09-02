@@ -7,6 +7,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Le schéma de couleurs suit la classe posée par `use-appearance`, en CSS et
+ * non par un style en ligne : la politique de contenu stricte des pages
+ * narrateur refuse ces derniers, et un formulaire natif au mauvais schéma se
+ * lit mal.
+ */
+:root {
+    color-scheme: light;
+}
+
+:root.dark {
+    color-scheme: dark;
+}
+
 @theme {
     /*
      * Typographie et couleurs de marque. Les variables --brand-* sont écrites
