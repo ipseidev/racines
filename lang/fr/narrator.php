@@ -50,6 +50,7 @@ return [
         'send' => 'Envoyer le code',
         'resend' => 'Renvoyer le code',
         'sent' => 'Code envoyé. Il arrive dans quelques secondes.',
+        'already_sent' => 'Un code vous a déjà été envoyé. Utilisez celui-là : il est encore valable.',
         'invalid' => 'Ce code ne correspond pas. Vérifiez les six chiffres et réessayez.',
         'expired' => 'Ce code n’est plus valable. Demandez-en un nouveau.',
         'locked' => 'Trop d’essais. Patientez quinze minutes, puis demandez un nouveau code.',
@@ -128,6 +129,147 @@ return [
         'counter' => ':count caractères sur :max',
         'send' => 'Envoyer',
         'sent' => 'Merci, votre réponse est enregistrée.',
+    ],
+
+    /*
+     * Les trois choix de fin d'enregistrement (bloc 07).
+     *
+     * Toujours dans cet ordre, jamais présélectionnés, sans minuteur : le
+     * dossier est formel, l'absence de réaction ne vaut jamais accord. Chaque
+     * choix dit sa conséquence en une phrase, au présent, sans jargon.
+     */
+    'share_decision' => [
+        'title' => 'Que souhaitez-vous faire de cette histoire ?',
+        'body' => 'C’est votre récit. Vous décidez, et vous pourrez changer d’avis.',
+        'share' => [
+            'label' => 'Partager avec mes proches',
+            'hint' => 'Vos proches pourront l’écouter et lire le texte.',
+        ],
+        'keep_private' => [
+            'label' => 'Garder pour moi',
+            'hint' => 'Personne d’autre que vous ne l’entendra.',
+        ],
+        'decide_later' => [
+            'label' => 'Décider plus tard',
+            'hint' => 'Nous vous le redemanderons, sans insister.',
+        ],
+        'recorded' => [
+            'share' => 'C’est noté : vos proches pourront l’écouter dès que le texte sera prêt.',
+            'keep_private' => 'C’est noté : cette histoire reste pour vous seul·e.',
+            'decide_later' => 'C’est noté : nous vous le redemanderons plus tard.',
+        ],
+        'change' => 'Changer ma réponse',
+    ],
+
+    /*
+     * Relecture (bloc 07). Le mot à mot n'est pas caché : c'est la parole de
+     * la personne, et elle a le droit de vérifier ce que la machine en a fait.
+     */
+    'review' => [
+        'title' => 'Votre histoire est prête',
+        'body' => 'Relisez-la, corrigez-la si vous voulez, puis dites-nous ce que vous souhaitez en faire.',
+        'listen' => 'Écouter votre enregistrement',
+        'tab_fluide' => 'Texte mis au propre',
+        'tab_verbatim' => 'Mot à mot',
+        'edit' => 'Corriger le texte',
+        'edit_label' => 'Votre texte',
+        'edit_help' => 'Changez ce que vous voulez. Votre enregistrement, lui, ne bouge pas.',
+        'save' => 'Enregistrer ma correction',
+        'cancel' => 'Annuler',
+        'saved' => 'Votre correction est enregistrée.',
+        'empty' => 'Le texte ne peut pas être vide.',
+        'no_audio' => 'L’enregistrement n’est pas encore disponible à l’écoute.',
+        'visibility' => [
+            'title' => 'Qui peut écouter ?',
+            'all_family' => 'Tous mes proches',
+            'choose' => 'Choisir qui peut écouter',
+            'book_only' => 'Pour le livre seulement',
+            'book_only_hint' => 'Elle sera imprimée, mais personne ne l’écoutera en ligne.',
+        ],
+        'keep_for_book' => 'Garder cette histoire pour le livre',
+        'thanks' => [
+            'share' => 'Merci. Vos proches peuvent maintenant écouter cette histoire.',
+            'keep_private' => 'Merci. Cette histoire reste pour vous seul·e.',
+            'decide_later' => 'Merci. Nous vous le redemanderons plus tard.',
+        ],
+    ],
+
+    'thanks' => [
+        'title' => 'Merci',
+        'body' => 'Vous pouvez fermer cette page.',
+    ],
+
+    /*
+     * Espace narrateur (bloc 07).
+     *
+     * Aucun nom d'état technique n'apparaît : un narrateur ne lit pas
+     * « transcribed », il lit « en attente de votre choix ». Les libellés
+     * disent où en est l'histoire *de son point de vue*, pas du point de vue
+     * de la machine.
+     */
+    'space' => [
+        'title' => 'Vos histoires',
+        'empty' => 'Vous n’avez pas encore d’histoire enregistrée.',
+        'request' => [
+            'title' => 'Accéder à vos histoires',
+            'body' => 'Indiquez le numéro de téléphone ou l’adresse e-mail sur lesquels vous recevez vos questions. Nous vous enverrons un code.',
+            'label' => 'Numéro ou adresse e-mail',
+            'send' => 'Recevoir un code',
+            // La même phrase, que la coordonnée soit connue ou non : une
+            // réponse différente ferait de cette page un annuaire.
+            'sent' => 'Si nous vous connaissons, un code vient de partir. Il est valable quelques minutes.',
+            'already_sent' => 'Un code vous a déjà été envoyé. Utilisez celui-là : il est encore valable.',
+            'have_code' => 'J’ai déjà un code',
+            'code_label' => 'Votre code',
+            'verify' => 'Ouvrir mes histoires',
+        ],
+        'states' => [
+            'recorded' => 'Enregistrée, en cours de transcription',
+            'transcribed' => 'Gardée pour vous',
+            'to_review' => 'En attente de votre choix',
+            'validated' => 'Validée',
+            'shared' => 'Partagée avec vos proches',
+            'in_book' => 'Dans le livre',
+            'hidden' => 'Masquée',
+            'archived' => 'Archivée',
+            'trashed' => 'Dans la corbeille',
+            'deleted' => 'Supprimée',
+        ],
+        'restorable_until' => 'Récupérable jusqu’au :date',
+        'pause' => 'Demander une pause',
+        'pause_weeks' => 'Pendant combien de semaines ?',
+        'paused' => 'C’est noté : aucune question pendant :weeks semaines.',
+        'paused_until' => 'Vos questions sont en pause jusqu’au :date.',
+    ],
+
+    /*
+     * Retraits (bloc 07). Cinq gestes, du plus doux au définitif. Chacun dit
+     * ce qu'il fait et ce qu'il ne fait pas : « vous pourrez la remettre »
+     * n'est pas une formule de politesse, c'est l'information qui permet
+     * d'oser.
+     */
+    'withdrawals' => [
+        'hide' => 'Masquer cette histoire',
+        'hide_confirm' => 'Masquer cette histoire ? Vous pourrez la remettre plus tard.',
+        'hidden' => 'Cette histoire est masquée. Vous pouvez la remettre quand vous voulez.',
+        'unhide' => 'Remettre cette histoire',
+        'unhidden' => 'Cette histoire est de nouveau visible.',
+        'trash' => 'Mettre à la corbeille',
+        'trash_confirm' => 'Mettre à la corbeille ? Vous aurez trente jours pour la récupérer.',
+        'trashed' => 'Cette histoire est à la corbeille. Vous avez trente jours pour la récupérer.',
+        'restore' => 'Récupérer cette histoire',
+        'restored' => 'Cette histoire est récupérée.',
+        'restore_window_closed' => 'Le délai de :days jours est passé : cette histoire ne peut plus être récupérée.',
+        'delete' => 'Supprimer définitivement',
+        'delete_confirm' => 'Cette suppression est définitive : l’enregistrement et le texte seront effacés, et nous ne pourrons pas les retrouver.',
+        'delete_word' => 'SUPPRIMER',
+        'delete_word_label' => 'Écrivez SUPPRIMER pour confirmer',
+        'delete_word_missing' => 'Écrivez :word en majuscules pour confirmer la suppression.',
+        'deleted' => 'Cette histoire est supprimée.',
+        // Ce qui est imprimé est imprimé : le dire est la seule honnêteté
+        // possible, et le taire serait promettre l'impossible.
+        'printed_copies_warning' => 'Cette histoire figure dans un livre déjà imprimé. Nous la retirons de l’espace en ligne et des prochains tirages, mais nous ne pouvons rien changer aux exemplaires déjà chez vous.',
+        'visibility_changed' => 'C’est noté : seuls les proches que vous avez choisis peuvent écouter.',
     ],
 
     'already_recorded' => [

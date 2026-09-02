@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Narrator;
 
+use App\Features\ValidationVariant;
 use App\Models\AccessToken;
 use App\Models\Story;
+use App\States\Story\Hidden;
 use App\States\Story\Proposed;
 use App\States\Story\Recorded;
 use Illuminate\Http\Request;
 use Inertia\Response;
+use Laravel\Pennant\Feature;
 
 /**
  * La page d'enregistrement du narrateur.
@@ -49,6 +52,12 @@ final class RecordPageController
                 'acceptedMimes' => array_values((array) config('product.recording.accepted_mimes')),
             ],
             'writtenAnswerMaxChars' => 20_000,
+            // La variante décide si les trois choix s'affichent ici, juste
+            // après la confirmation, ou si la relecture viendra par message
+            // (bloc 07 §6.2).
+            'validationVariant' => Feature::for($project)->value(ValidationVariant::class),
+            'shareDecisionAction' => route('narrator.share_decision.store', ['token' => $request->route('token')], false),
+            'shareDecision' => $story->share_decision?->value,
         ];
 
         if ($story->state instanceof Recorded || ! $story->state instanceof Proposed) {
@@ -59,6 +68,9 @@ final class RecordPageController
                 'recordedAt' => $recording?->confirmed_at?->toIso8601String()
                     ?? $story->recorded_at?->toIso8601String(),
                 'answerType' => $story->answer_type?->value,
+                // Masquer se propose depuis ce lien, sans code : il porte
+                // précisément cette histoire (bloc 07 §6.5).
+                'canHide' => ! $story->state instanceof Hidden,
             ]);
         }
 

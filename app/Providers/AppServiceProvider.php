@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Pennant\Feature;
 use RuntimeException;
 use Twilio\Rest\Client as TwilioClient;
 
@@ -75,9 +76,15 @@ final class AppServiceProvider extends ServiceProvider
          * demande de nouveau lien.
          *
          * Écouteurs actifs et leur événement :
-         *  - RevokeRecordTokensOnValidation ← Spatie StateChanged
-         *  - SendNewLinkRequestedAlerts     ← App\Events\NewLinkRequested
+         *  - RevokeRecordTokensOnValidation      ← Spatie StateChanged
+         *  - SendNewLinkRequestedAlerts          ← App\Events\NewLinkRequested
+         *  - ApplyShareDecisionOnTranscriptionReady ← App\Events\TranscriptionReady
          */
+
+        // Les drapeaux de `app/Features` sont découverts par leur classe :
+        // `Feature::for($project)->value(ValidationVariant::class)` suffit,
+        // sans définition à recopier ici.
+        Feature::discover();
 
         $this->configureRateLimiters();
         $this->configureSmsSender();
@@ -95,9 +102,20 @@ final class AppServiceProvider extends ServiceProvider
      */
     private function configureRateLimiters(): void
     {
+        /*
+         * Deux bornes, deux rôles. Celle par **jeton** protège du balayage :
+         * vingt requêtes par minute suffisent à une personne qui lit, et pas
+         * à un script qui essaie des liens. Celle par **IP** protège
+         * l'infrastructure, et c'est celle qui punit le partage de connexion
+         * — une maison de retraite, une famille derrière un routeur. Elle est
+         * donc réglable, et desserrée hors production, où la suite bout en
+         * bout concentre trente navigateurs sur une seule adresse (T-79).
+         */
         RateLimiter::for('tokens', fn (Request $request): array => [
-            Limit::perMinute(60)->by('ip:'.$request->ip()),
-            Limit::perMinute(20)->by('token:'.self::tokenFingerprint($request)),
+            Limit::perMinute(self::tokensPerIp())->by('ip:'.$request->ip()),
+            Limit::perMinute(
+                (int) config('product.security.rate_limits.tokens_per_token'),
+            )->by('token:'.self::tokenFingerprint($request)),
         ]);
 
         RateLimiter::for('otp-request', fn (Request $request): Limit => Limit::perHour(
@@ -112,6 +130,27 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('new-link', fn (Request $request): Limit => Limit::perHour(1)
             ->by('new-link:'.self::tokenFingerprint($request)));
 
+        /*
+         * Entrée de l'espace narrateur (bloc 07). Le limiteur des codes ne
+         * convient pas ici : sans jeton dans l'URL, il retomberait sur l'IP
+         * seule, et trois demandes par heure et par IP enfermeraient dehors
+         * toute une maison de retraite dès le deuxième résident.
+         *
+         * On borne donc d'abord sur la **coordonnée demandée**, qui est le
+         * vrai sujet — trois codes par heure pour un même numéro — puis, plus
+         * largement, sur l'IP, pour qu'une rotation d'identifiants ne serve
+         * pas d'annuaire.
+         */
+        RateLimiter::for('space-access', fn (Request $request): array => [
+            Limit::perHour(3)->by('space-access:'.self::identifierFingerprint($request)),
+            Limit::perHour(20)->by('space-access-ip:'.$request->ip()),
+        ]);
+
+        RateLimiter::for('space-verify', fn (Request $request): array => [
+            Limit::perMinute(10)->by('space-verify:'.self::identifierFingerprint($request)),
+            Limit::perMinute(30)->by('space-verify-ip:'.$request->ip()),
+        ]);
+
         // Les événements du navigateur sont nombreux par nature : une séance
         // agitée en produit plusieurs dizaines. Ce limiteur remplace
         // `tokens` sur cette seule route — les 20 requêtes/minute/jeton qui
@@ -121,6 +160,32 @@ final class AppServiceProvider extends ServiceProvider
             Limit::perMinute(240)->by('ip:'.$request->ip()),
             Limit::perMinute(120)->by('client-events:'.self::tokenFingerprint($request)),
         ]);
+    }
+
+    /**
+     * La borne par IP telle qu'elle s'applique ici.
+     *
+     * Hors production, le facteur dix : l'adresse est partagée par tout ce
+     * qui tourne sur la machine, et une borne qui coupe la suite de tests ne
+     * mesure rien d'utile. La borne par jeton, elle, reste identique
+     * partout : c'est elle qui protège réellement les liens.
+     */
+    private static function tokensPerIp(): int
+    {
+        $configured = (int) config('product.security.rate_limits.tokens_per_ip');
+
+        return app()->isProduction() ? $configured : $configured * 10;
+    }
+
+    /**
+     * Empreinte de la coordonnée saisie : on borne sur le sujet demandé, sans
+     * déposer un numéro de téléphone dans un magasin de cache.
+     */
+    private static function identifierFingerprint(Request $request): string
+    {
+        $identifier = $request->input('identifier');
+
+        return hash('sha256', is_string($identifier) ? mb_strtolower(trim($identifier)) : '');
     }
 
     private static function tokenFingerprint(Request $request): string

@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Links\VcardController;
 use App\Http\Controllers\Narrator\ClientEventController;
+use App\Http\Controllers\Narrator\HideOwnStoryController;
 use App\Http\Controllers\Narrator\OtpChallengeController;
+use App\Http\Controllers\Narrator\PauseController;
 use App\Http\Controllers\Narrator\RecordingUploadController;
 use App\Http\Controllers\Narrator\RecordPageController;
 use App\Http\Controllers\Narrator\RequestNewLinkController;
+use App\Http\Controllers\Narrator\ReviewController;
+use App\Http\Controllers\Narrator\ShareDecisionController;
+use App\Http\Controllers\Narrator\SpaceAccessController;
+use App\Http\Controllers\Narrator\SpaceController;
+use App\Http\Controllers\Narrator\SpaceOtpController;
+use App\Http\Controllers\Narrator\ThanksController;
+use App\Http\Controllers\Narrator\WithdrawalController;
 use App\Http\Controllers\Narrator\WrittenAnswerController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +43,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/vcard', VcardController::class)
     ->middleware('throttle:tokens')
     ->name('narrator.vcard');
+
+// Remerciement après un geste qui a révoqué le lien : sans jeton, donc sans
+// rien de personnel à montrer (bloc 07 §6.4).
+Route::get('/merci', ThanksController::class)
+    ->middleware(['throttle:tokens', 'no-store'])
+    ->name('narrator.thanks');
 
 Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
     // Page d'enregistrement : explication, permission, enregistrement,
@@ -82,6 +97,88 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
         // d'états qu'une réponse orale.
         Route::post('/r/{token}/written-answer', [WrittenAnswerController::class, 'store'])
             ->name('narrator.written_answer.store');
+
+        // Les trois choix de fin d'enregistrement (variante A, bloc 07).
+        // Aucun acte sensible : le narrateur décide du sort de l'histoire
+        // que ce lien même vient de porter.
+        Route::post('/r/{token}/share-decision', [ShareDecisionController::class, 'store'])
+            ->name('narrator.share_decision.store');
+
+        // Masquer l'histoire que ce lien porte : sans code, et c'est le seul
+        // retrait dans ce cas. Quelqu'un qui regrette ce qu'il vient de
+        // raconter doit pouvoir le retirer tout de suite (bloc 07 §6.5).
+        Route::post('/r/{token}/hide', HideOwnStoryController::class)
+            ->name('narrator.record.hide');
+
+        // Relecture (variante B et « décider plus tard »), sur le même jeton :
+        // le narrateur n'a pas deux liens à distinguer dans ses SMS.
+        Route::get('/r/{token}/review', [ReviewController::class, 'show'])
+            ->name('narrator.review.show');
+
+        Route::post('/r/{token}/review/edit', [ReviewController::class, 'edit'])
+            ->name('narrator.review.edit');
+
+        Route::post('/r/{token}/review/decision', [ReviewController::class, 'decide'])
+            ->name('narrator.review.decision');
+    });
+
+    /*
+     * Espace narrateur (bloc 07). Le jeton porte une **personne**, non une
+     * histoire : c'est pourquoi chaque action vérifie en plus que l'histoire
+     * visée est bien la sienne. Sans ça, changer un identifiant dans l'URL
+     * suffirait à agir sur le récit de quelqu'un d'autre.
+     */
+    Route::get('/n/request', [SpaceAccessController::class, 'show'])
+        ->name('narrator.space.request.show');
+
+    Route::post('/n/request', [SpaceAccessController::class, 'request'])
+        ->middleware('throttle:space-access')
+        ->name('narrator.space.request.send');
+
+    Route::post('/n/verify', [SpaceAccessController::class, 'verify'])
+        ->middleware('throttle:space-verify')
+        ->name('narrator.space.request.verify');
+
+    Route::middleware('resolve.token:narrator_space')->group(function (): void {
+        Route::get('/n/{token}', SpaceController::class)
+            ->name('narrator.space.show');
+
+        Route::get('/n/{token}/code', [SpaceOtpController::class, 'show'])
+            ->name('narrator.space.otp.show');
+
+        Route::post('/n/{token}/code', [SpaceOtpController::class, 'send'])
+            ->middleware('throttle:otp-request')
+            ->name('narrator.space.otp.send');
+
+        Route::post('/n/{token}/code/verify', [SpaceOtpController::class, 'verify'])
+            ->middleware('throttle:otp-verify')
+            ->name('narrator.space.otp.verify');
+
+        // Tous les retraits sont des actes sensibles depuis l'espace : le
+        // jeton y donne accès à toutes les histoires de la personne, et il a
+        // pu être ouvert il y a un moment.
+        Route::middleware('sensitive:narrator.space.otp.show')->group(function (): void {
+            Route::post('/n/{token}/stories/{story}/hide', [WithdrawalController::class, 'hide'])
+                ->name('narrator.space.stories.hide');
+
+            Route::post('/n/{token}/stories/{story}/unhide', [WithdrawalController::class, 'unhide'])
+                ->name('narrator.space.stories.unhide');
+
+            Route::post('/n/{token}/stories/{story}/trash', [WithdrawalController::class, 'trash'])
+                ->name('narrator.space.stories.trash');
+
+            Route::post('/n/{token}/stories/{story}/restore', [WithdrawalController::class, 'restore'])
+                ->name('narrator.space.stories.restore');
+
+            Route::post('/n/{token}/stories/{story}/delete', [WithdrawalController::class, 'destroy'])
+                ->name('narrator.space.stories.delete');
+
+            Route::post('/n/{token}/stories/{story}/visibility', [WithdrawalController::class, 'visibility'])
+                ->name('narrator.space.stories.visibility');
+
+            Route::post('/n/{token}/pause', PauseController::class)
+                ->name('narrator.space.pause');
+        });
     });
 
     // Code à usage unique pour les actes sensibles (doc 04 §12).

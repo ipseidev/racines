@@ -83,6 +83,11 @@ const props = {
     state: 'proposed',
     limits,
     writtenAnswerMaxChars: 20000,
+    // Variante B par défaut dans ces tests : ils portent sur la capture, pas
+    // sur la décision de partage, qui a sa propre suite.
+    validationVariant: 'deferred' as const,
+    shareDecisionAction: '/r/jeton/share-decision',
+    shareDecision: null,
 };
 
 const getUserMedia = vi.fn();

@@ -28,6 +28,26 @@ return [
         'signature' => 'À bientôt, l’équipe :brand.',
     ],
 
+    /*
+     * Relecture (bloc 07). Aucun compte à rebours, aucune date butoir : le
+     * dossier est formel, l'absence de réaction ne vaut jamais accord.
+     */
+    'review' => [
+        'greeting' => 'Bonjour :name,',
+        'button' => 'Relire mon histoire',
+        'no_deadline' => 'Prenez le temps qu’il vous faut : rien ne se décide sans vous.',
+        'ready' => [
+            'subject' => 'Votre histoire est prête à relire',
+            'line' => 'Nous avons mis votre récit au propre. Relisez-le, corrigez-le si vous voulez, puis dites-nous ce que vous souhaitez en faire.',
+            'sms' => ':name, votre histoire est prête à relire chez :brand : :link',
+        ],
+        'decide_later' => [
+            'subject' => 'Votre histoire vous attend',
+            'line' => 'Vous nous aviez demandé de vous redemander plus tard ce que vous souhaitiez faire de cette histoire. La voici, mise au propre.',
+            'sms' => ':name, comme convenu, votre histoire vous attend chez :brand : :link',
+        ],
+    ],
+
     'corpus_exhausted' => [
         'subject' => 'Toutes les questions ont été posées',
         'line' => 'Le corpus de questions est épuisé pour ce projet : plus aucune nouvelle question ne partira.',

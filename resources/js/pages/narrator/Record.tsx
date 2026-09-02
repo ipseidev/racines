@@ -24,6 +24,7 @@ import { useMediaRecorder } from '@/recorder/useMediaRecorder';
 import { requestWakeLock } from '@/recorder/wakeLock';
 
 import MicHelp from './MicHelp';
+import ShareDecision from './ShareDecision';
 import WrittenAnswer from './WrittenAnswer';
 
 export type RecordLimits = {
@@ -43,6 +44,13 @@ type Props = {
     state: string;
     limits: RecordLimits;
     writtenAnswerMaxChars: number;
+    /**
+     * `immediate` : les trois choix arrivent ici, juste après la confirmation.
+     * `deferred` : rien n'est demandé, la relecture viendra par message.
+     */
+    validationVariant: 'immediate' | 'deferred';
+    shareDecisionAction: string;
+    shareDecision: string | null;
 };
 
 function formatDuration(seconds: number): string {
@@ -70,6 +78,9 @@ export default function Record({
     storyRef,
     limits,
     writtenAnswerMaxChars,
+    validationVariant,
+    shareDecisionAction,
+    shareDecision,
 }: Props) {
     const t = useT();
     const basePath = window.location.pathname;
@@ -80,6 +91,7 @@ export default function Record({
     const [reviewUrl, setReviewUrl] = useState<string | null>(null);
     const [writing, setWriting] = useState(false);
     const [roomWarning, setRoomWarning] = useState(false);
+    const [decided, setDecided] = useState<string | null>(shareDecision);
 
     const recorder = useMediaRecorder(storyRef, limits.segmentMilliseconds);
     const startedAt = useRef<number | null>(null);
@@ -584,6 +596,29 @@ export default function Record({
                             name: firstName,
                         })}
                     </p>
+
+                    {/*
+                     * Variante A : la question se pose maintenant, pendant que
+                     * le narrateur est encore là. C'est tout l'objet du test
+                     * de Phase 0A — la validation comme récompense d'un tap.
+                     */}
+                    {validationVariant === 'immediate' ? (
+                        decided === null ? (
+                            <ShareDecision
+                                action={shareDecisionAction}
+                                onDecided={setDecided}
+                            />
+                        ) : (
+                            <p
+                                role="status"
+                                className="bg-brand-accent text-brand-accent-foreground mt-8 rounded-md px-4 py-3"
+                            >
+                                {t(
+                                    `narrator.share_decision.recorded.${decided}`,
+                                )}
+                            </p>
+                        )
+                    ) : null}
                 </section>
             ) : null}
 
