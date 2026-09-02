@@ -192,4 +192,12 @@ Si une commande du starter kit a changé de forme (options de `laravel new`, str
 - Les annotations de `ProfileValidationRules` déclaraient un type de retour faux : la méthode renvoie un `Unique`.
 - La page d'accueil de démonstration de Laravel, 389 lignes de contenu marketing avec des contrastes insuffisants, est remplacée par un jalon sobre et accessible que le bloc 01 habillera.
 
+**Trois défauts de la CI corrigés, chacun reproduit localement avant correction :**
+
+- Wayfinder écrit `resources/js/routes` et `resources/js/actions`, ignorés par git. La CI vérifiait les types avant de compiler, `tsc` ne trouvait aucun de ces modules. Une étape `wayfinder:generate --with-form` a été ajoutée ; l'option correspond à la configuration `formVariants` du plugin Vite.
+- `laravel-vite-plugin` refuse de démarrer un serveur de développement quand `CI` est défini, or Vitest en démarre un. `LARAVEL_BYPASS_ENV_CHECK=1` est posé sur la seule étape des tests front.
+- Les tests de rendu Inertia traversent `app.blade.php`, qui lit le manifeste Vite. La compilation des assets se faisait après les tests PHP, d'où treize erreurs 500. L'ordre est corrigé.
+
+La CI passe en 1 minute 42 : dépendances, routes typées, format, lint, types, Vitest, compilation, Pint, PHPStan, Pest, Playwright, audits Composer et npm.
+
 **Reste à faire hors bloc :** augmenter la limite de disque de Docker Desktop (61 Gio pour 292 Go libres sur le Mac) afin d'éviter la récidive de l'incident T-35. Un dossier `/Users/serra/Codes/remento-clonde` contient une pile Sail active sans rapport avec ce dépôt.
