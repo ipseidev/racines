@@ -23,7 +23,7 @@ beforeEach(function (): void {
 
 function sensitiveLink(): array
 {
-    $story = Story::factory()->recorded()->create();
+    $story = Story::factory()->proposed()->create();
     $issued = app(TokenService::class)->issue(TokenType::Record, $story);
 
     return [$issued, $story];

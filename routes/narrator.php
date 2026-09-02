@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Narrator\ClientEventController;
 use App\Http\Controllers\Narrator\OtpChallengeController;
+use App\Http\Controllers\Narrator\RecordingUploadController;
+use App\Http\Controllers\Narrator\RecordPageController;
 use App\Http\Controllers\Narrator\RequestNewLinkController;
-use App\Http\Controllers\Narrator\TokenProbeController;
+use App\Http\Controllers\Narrator\WrittenAnswerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,17 +29,53 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
-    // Page de vérification du bloc 03, remplacée par la vraie page
-    // d'enregistrement au bloc 04.
-    Route::get('/r/{token}', TokenProbeController::class)
+    // Page d'enregistrement : explication, permission, enregistrement,
+    // vérification, envoi, confirmation (bloc 04).
+    Route::get('/r/{token}', RecordPageController::class)
         ->middleware('resolve.token:record')
-        ->name('narrator.record.probe');
+        ->name('narrator.record.show');
 
     // Demander un nouveau lien depuis la page d'erreur. Seule route qui ne
     // résout pas son jeton : elle agit justement parce qu'il est mort.
     Route::post('/r/{token}/request-new-link', RequestNewLinkController::class)
         ->middleware('throttle:new-link')
         ->name('narrator.record.request_new_link');
+
+    // Envoi de l'audio : un segment par continuité de flux, des parts de
+    // 5 Mio déposées directement sur le stockage par URL présignée.
+    Route::middleware('resolve.token:record')->group(function (): void {
+        Route::post('/r/{token}/recordings', [RecordingUploadController::class, 'initiate'])
+            ->name('narrator.recordings.initiate');
+
+        Route::post('/r/{token}/recordings/{recording}/segments', [RecordingUploadController::class, 'openSegment'])
+            ->name('narrator.recordings.open_segment');
+
+        Route::post('/r/{token}/recordings/{recording}/segments/{segment}/parts/{part}/sign', [RecordingUploadController::class, 'sign'])
+            ->whereNumber(['segment', 'part'])
+            ->name('narrator.recordings.sign');
+
+        Route::post('/r/{token}/recordings/{recording}/complete', [RecordingUploadController::class, 'complete'])
+            ->name('narrator.recordings.complete');
+
+        Route::post('/r/{token}/recordings/{recording}/abort', [RecordingUploadController::class, 'abort'])
+            ->name('narrator.recordings.abort');
+
+        // Ce que le navigateur rapporte de la séance : c'est la matière du
+        // taux d'échec de capture avant confirmation (doc 04 §11).
+        //
+        // Seule route à ne pas porter `throttle:tokens` : ses 20 requêtes par
+        // minute et par jeton, faites pour les pages, étoufferaient la mesure.
+        // `client-events` reprend une borne par IP et en ajoute une par lien.
+        Route::post('/r/{token}/events', [ClientEventController::class, 'store'])
+            ->withoutMiddleware('throttle:tokens')
+            ->middleware('throttle:client-events')
+            ->name('narrator.events.store');
+
+        // Repli écrit (P0-5) : pas un lot de consolation, la même machine
+        // d'états qu'une réponse orale.
+        Route::post('/r/{token}/written-answer', [WrittenAnswerController::class, 'store'])
+            ->name('narrator.written_answer.store');
+    });
 
     // Code à usage unique pour les actes sensibles (doc 04 §12).
     Route::middleware('resolve.token:record')->group(function (): void {

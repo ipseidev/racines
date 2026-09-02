@@ -62,7 +62,7 @@ it('assouplit la politique pour le back-office, qu’Alpine exige', function ():
 });
 
 it('n’autorise le micro que sur les pages d’enregistrement', function (): void {
-    $story = Story::factory()->recorded()->create();
+    $story = Story::factory()->proposed()->create();
     $issued = app(TokenService::class)->issue(TokenType::Record, $story);
 
     expect($this->get("/r/{$issued->plain}")->headers->get('Permissions-Policy'))
@@ -94,7 +94,7 @@ it('n’annonce HSTS que sur une connexion chiffrée', function (): void {
 });
 
 it('laisse la page à jeton imposer son propre référent', function (): void {
-    $story = Story::factory()->recorded()->create();
+    $story = Story::factory()->proposed()->create();
     $issued = app(TokenService::class)->issue(TokenType::Record, $story);
 
     // `no-store` passe après : c'est lui qui décide, et il est plus strict.

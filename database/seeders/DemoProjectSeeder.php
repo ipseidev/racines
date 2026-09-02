@@ -140,6 +140,7 @@ final class DemoProjectSeeder extends Seeder
             $token->subject()->associate($story);
             $token->forceFill($attributes);
             $token->save();
+
         }
     }
 

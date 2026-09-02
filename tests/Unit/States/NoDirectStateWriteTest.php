@@ -27,9 +27,13 @@ function phpSourcesOutsideTransitions(): array
     $sources = [];
 
     foreach ($finder as $file) {
-        // La déclaration du cast n'est pas une écriture d'état : c'est ce qui
-        // branche la machine sur la colonne. On la retire avant de chercher.
-        $contents = str_replace("'state' => StoryState::class", '', $file->getContents());
+        $contents = $file->getContents();
+
+        // Deux formes ne sont pas des écritures d'état et sont retirées avant
+        // la recherche : la déclaration du cast, qui branche la machine sur la
+        // colonne, et la *lecture* de l'état pour l'envoyer à une vue.
+        $contents = str_replace("'state' => StoryState::class", '', $contents);
+        $contents = (string) preg_replace('/[\'"]state[\'"]\s*=>\s*\$[\w>-]*->state\b/', '', $contents);
 
         $sources[str_replace(base_path().'/', '', $file->getRealPath())] = $contents;
     }
@@ -63,4 +67,15 @@ it('n’autorise l’écriture directe de l’état que dans la fabrique d’his
 
 it('garde la colonne state hors de l’assignation de masse', function (): void {
     expect((new Story)->getFillable())->not->toContain('state');
+});
+
+it('reconnaît quand même une vraie écriture d’état', function (): void {
+    $writes = [
+        "\$story->update(['state' => 'validated']);",
+        "Story::create(['state' => \$request->input('state')]);",
+    ];
+
+    foreach ($writes as $code) {
+        expect($code)->toMatch('/[\'"]state[\'"]\s*=>/');
+    }
 });

@@ -13,6 +13,9 @@ use App\Models\User;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
+use App\Services\Storage\FakeMediaStorage;
+use App\Services\Storage\MediaStorage;
+use App\Services\Storage\S3MediaStorage;
 use App\Support\Brand;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -61,6 +64,7 @@ final class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiters();
         $this->configureSmsSender();
+        $this->configureMediaStorage();
     }
 
     /**
@@ -88,6 +92,16 @@ final class AppServiceProvider extends ServiceProvider
         // le support et une gêne pour l'Initiateur·rice.
         RateLimiter::for('new-link', fn (Request $request): Limit => Limit::perHour(1)
             ->by('new-link:'.self::tokenFingerprint($request)));
+
+        // Les événements du navigateur sont nombreux par nature : une séance
+        // agitée en produit plusieurs dizaines. Ce limiteur remplace
+        // `tokens` sur cette seule route — les 20 requêtes/minute/jeton qui
+        // protègent les pages y seraient trop strictes — et reprend une borne
+        // par IP pour ne pas ouvrir un dépotoir.
+        RateLimiter::for('client-events', fn (Request $request): array => [
+            Limit::perMinute(240)->by('ip:'.$request->ip()),
+            Limit::perMinute(120)->by('client-events:'.self::tokenFingerprint($request)),
+        ]);
     }
 
     private static function tokenFingerprint(Request $request): string
@@ -95,6 +109,17 @@ final class AppServiceProvider extends ServiceProvider
         $token = $request->route('token');
 
         return is_string($token) ? hash('sha256', $token) : 'anonymous:'.$request->ip();
+    }
+
+    /**
+     * Stockage des médias : R2 en local comme en production (MinIO émule R2),
+     * en mémoire dans les tests. Aucun test n'appelle le réseau.
+     */
+    private function configureMediaStorage(): void
+    {
+        $this->app->singleton(MediaStorage::class, fn (): MediaStorage => app()->runningUnitTests()
+            ? new FakeMediaStorage
+            : new S3MediaStorage);
     }
 
     /**

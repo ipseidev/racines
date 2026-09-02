@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\ModelStates\HasStates;
 
 /**
@@ -93,6 +95,25 @@ final class Story extends Model
     public function question(): BelongsTo
     {
         return $this->belongsTo(Question::class);
+    }
+
+    /** @return HasMany<Recording, $this> */
+    public function recordings(): HasMany
+    {
+        return $this->hasMany(Recording::class);
+    }
+
+    /**
+     * L'enregistrement courant, s'il y en a un.
+     *
+     * Un seul par histoire, garanti par un index unique partiel : recommencer
+     * n'écrase pas, cela remplace le courant et conserve l'ancien.
+     *
+     * @return HasOne<Recording, $this>
+     */
+    public function currentRecording(): HasOne
+    {
+        return $this->hasOne(Recording::class)->where('is_current', true);
     }
 
     /**

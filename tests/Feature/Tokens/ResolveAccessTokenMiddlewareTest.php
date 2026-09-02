@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 function issueRecordLink(?Story $story = null): array
 {
-    $story ??= Story::factory()->recorded()->create();
+    $story ??= Story::factory()->proposed()->create();
     $issued = app(TokenService::class)->issue(TokenType::Record, $story);
 
     return [$issued, $story];
@@ -25,10 +25,12 @@ it('binds the token and subject to the request for a valid record token', functi
     $this->get("/r/{$issued->plain}")
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('narrator/TokenProbe')
-            ->where('tokenType', 'record')
-            ->where('subjectType', 'story')
-            ->where('subjectId', $story->id));
+            ->component('narrator/Record')
+            ->where('question', $story->questionText())
+            ->where('firstName', $story->narrator->first_name)
+            // L'identifiant de l'histoire ne circule pas jusqu'au navigateur :
+            // le brouillon local est indexé par une empreinte.
+            ->where('storyRef', hash('sha256', $story->id)));
 });
 
 it('renders the friendly page with reason expired', function (): void {
@@ -152,11 +154,16 @@ it('toutes les routes par jeton portent les trois protections', function (): voi
     // justement parce que le lien est mort, elle ne peut pas le résoudre.
     $withoutResolution = ['narrator.record.request_new_link'];
 
+    // Idem pour le limiteur : la route des événements du navigateur porte le
+    // sien, plus large, sans quoi la mesure du taux d'échec serait étouffée.
+    $withOwnThrottle = ['narrator.events.store' => 'throttle:client-events'];
+
     foreach ($routes as $route) {
         $middleware = collect($route->gatherMiddleware());
         $uri = (string) $route->uri();
+        $expectedThrottle = $withOwnThrottle[$route->getName()] ?? 'throttle:tokens';
 
-        expect($middleware->contains('throttle:tokens'))->toBeTrue("{$uri} sans limiteur")
+        expect($middleware->contains($expectedThrottle))->toBeTrue("{$uri} sans limiteur")
             ->and($middleware->contains('no-store'))->toBeTrue("{$uri} sans no-store");
 
         if (! in_array($route->getName(), $withoutResolution, true)) {

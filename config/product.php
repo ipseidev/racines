@@ -123,6 +123,12 @@ return [
         'target_stories' => [10, 15],
     ],
 
+    // Binaires média (bloc 04 pour la concaténation, bloc 06 pour la durée)
+    'media' => [
+        'ffmpeg' => env('FFMPEG_BINARIES', '/usr/bin/ffmpeg'),
+        'ffprobe' => env('FFPROBE_BINARIES', '/usr/bin/ffprobe'),
+    ],
+
     // Sécurité : origines autorisées par la politique de contenu à servir
     // des médias. R2 en production, MinIO en local ; complété au bloc 04.
     'security' => [

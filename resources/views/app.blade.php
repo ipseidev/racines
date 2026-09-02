@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {{-- Nom de marque lu une fois par le front : Inertia remplace la balise title. --}}
         <meta name="brand" content="{{ $brandName }}">
+        {{-- Les appels `fetch` de la page d'enregistrement en ont besoin. --}}
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         {{-- Le nonce vient de SecurityHeaders : sans lui, la politique de

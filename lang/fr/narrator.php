@@ -56,12 +56,86 @@ return [
         'warning' => 'Ne communiquez ce code à personne, même à quelqu’un qui dirait appeler de notre part.',
     ],
 
-    'probe' => [
-        'title' => 'Lien reconnu',
-        'body' => 'Ce lien est valable. La page d’enregistrement arrive bientôt.',
-        'token_type' => 'Type de lien',
-        'subject' => 'Concerne',
-        'expires_at' => 'Valable jusqu’au',
+    'record' => [
+        // Écran 1 — explication. Elle précède toujours la demande de micro :
+        // une autorisation qui surgit sans prévenir se refuse par réflexe.
+        'greeting' => ':name, voici votre question de la semaine',
+        'greeting_tu' => ':name, voici ta question de la semaine',
+        'mic_notice' => 'Quand vous appuierez sur le bouton, votre téléphone demandera l’autorisation d’utiliser le micro. Choisissez « Autoriser ».',
+        'mic_notice_tu' => 'Quand tu appuieras sur le bouton, ton téléphone demandera l’autorisation d’utiliser le micro. Choisis « Autoriser ».',
+        'ready' => 'Je suis prêt·e',
+
+        // Écran 2 — permission.
+        'requesting' => 'Votre téléphone va vous demander l’autorisation. Choisissez « Autoriser ».',
+
+        // Écran 3 — enregistrement.
+        'start' => 'Commencer',
+        'pause' => 'Pause',
+        'resume' => 'Reprendre',
+        'finish' => 'Terminer',
+        'recording' => 'Enregistrement en cours',
+        'paused' => 'En pause',
+        'elapsed' => 'Durée : :time',
+        'soft_warning' => 'Vous parlez depuis dix minutes. Prenez tout votre temps, l’enregistrement s’arrêtera de lui-même à vingt minutes.',
+        'hard_stop' => 'L’enregistrement s’est arrêté à vingt minutes. Ce que vous avez dit est conservé : vous pouvez l’envoyer.',
+        'interrupted' => 'L’enregistrement s’est interrompu. Ce que vous avez dit est conservé.',
+        'interrupted_resume' => 'Continuer mon histoire',
+        'level_label' => 'Niveau du micro',
+
+        // Écran 4 — vérification.
+        'review_title' => 'Voulez-vous vous réécouter ?',
+        'listen' => 'Réécouter',
+        'send' => 'Envoyer',
+        'restart' => 'Recommencer',
+        'restart_confirm' => 'Recommencer effacera ce que vous venez d’enregistrer. Continuer ?',
+
+        // Écran 5 — envoi.
+        'uploading' => 'Envoi en cours',
+        'uploading_notice' => 'Ne fermez pas cette page. Si cela arrive quand même, votre enregistrement est conservé sur votre téléphone.',
+        'upload_failed_title' => 'L’envoi n’a pas abouti',
+        'upload_failed_body' => 'Votre enregistrement est conservé sur votre téléphone. Vous pouvez réessayer.',
+        'retry' => 'Réessayer',
+
+        // Écran 6 — confirmation.
+        'confirmed_title' => 'Votre histoire est enregistrée',
+        'confirmed_body' => 'Merci :name.',
+
+        // Brouillon retrouvé au chargement.
+        'draft_title' => 'Vous avez un enregistrement en cours',
+        'draft_body' => 'Nous avons retrouvé ce que vous avez commencé à raconter.',
+        'draft_resume' => 'Reprendre mon enregistrement',
+        'draft_discard' => 'Recommencer',
+        'storage_low' => 'Il reste peu de place sur votre téléphone. L’enregistrement fonctionne, mais évitez les très longues réponses.',
+
+        'written_link' => 'Répondre par écrit',
+    ],
+
+    'mic_help' => [
+        'title' => 'Le micro n’est pas autorisé',
+        'body' => 'Sans micro, nous ne pouvons pas enregistrer votre voix. Voici comment l’autoriser.',
+        'retry' => 'Réessayer',
+        'ios' => 'Sur iPhone : ouvrez Réglages, faites défiler jusqu’à Safari, touchez Micro, puis choisissez « Demander » ou « Autoriser ». Revenez ensuite sur cette page.',
+        'android' => 'Sur Android : touchez le cadenas à gauche de l’adresse, en haut de l’écran, puis Autorisations, puis Micro, et choisissez « Autoriser ».',
+        'samsung' => 'Sur Samsung Internet : touchez le cadenas à gauche de l’adresse, puis Autorisations, puis Micro, et choisissez « Autoriser ».',
+        'other' => 'Cherchez l’icône de cadenas à côté de l’adresse de cette page, puis autorisez le micro.',
+        'unsupported' => 'Votre navigateur ne sait pas enregistrer de son. Vous pouvez répondre par écrit, ou nous écrire pour qu’on vous appelle.',
+    ],
+
+    'written_answer' => [
+        'title' => 'Répondre par écrit',
+        'body' => 'Écrivez ce que vous auriez raconté. C’est aussi une histoire.',
+        'label' => 'Votre réponse',
+        'counter' => ':count caractères sur :max',
+        'send' => 'Envoyer',
+        'sent' => 'Merci, votre réponse est enregistrée.',
+    ],
+
+    'already_recorded' => [
+        'title' => 'Vous avez déjà répondu à cette question',
+        'title_with_date' => 'Vous avez déjà répondu à cette question le :date',
+        'body' => 'Vous pouvez recommencer si vous préférez une autre version. Votre premier enregistrement est conservé.',
+        'restart' => 'Recommencer',
+        'close' => 'Fermer',
     ],
 
 ];
