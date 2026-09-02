@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Documents de référence non versionnés (contiennent des données personnelles de test)
+docs/reference/remento-screenshot/
+
+# Corpus privé du banc d'essai ASR
+tests/bench/asr/corpus/
+
+# Environnement
+.env
+.env.*
+!.env.example
+
+# Rapports de test
+playwright-report/
+test-results/
