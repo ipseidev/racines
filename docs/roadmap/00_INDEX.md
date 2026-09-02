@@ -10,6 +10,7 @@
 4. Un bloc est terminé quand : toutes les cases sont cochées, `sail composer check` est vert (voir conventions), le checkpoint a été démontré, un commit `chore(bloc-XX): terminé` a été créé et le tag `bloc-XX-done` posé.
 5. Reporter le statut dans le tableau ci-dessous et dans `04_VERSIONS.md` si une version a été figée.
 6. Si une information manque pour exécuter une étape, **ne pas inventer** : appliquer la règle de décision par défaut du bloc (chaque bloc en a une en §9) et noter la décision prise dans `03_DECISIONS.md` sous « Décisions prises en cours de route ».
+7. Si l'étape attend une **clé, un appareil, un corpus ou une décision humaine**, ne pas s'arrêter là : l'inscrire dans `05_A_FAIRE_HUMAIN.md`, poser le bandeau d'attente en tête du fichier du bloc, laisser le bloc en `◐ en cours`, et **passer au bloc suivant**. Un bloc bloqué par le monde extérieur ne bloque pas le code.
 
 ## Principes non négociables
 
@@ -32,11 +33,11 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 01 | [Marque, réglages, admin Filament, i18n](blocs/B01_marque_reglages_i18n.md) | 00 | ☑ terminé (2026-09-02) | `bloc-01-done` |
 | 02 | [Modèle de domaine et machine d'états](blocs/B02_modele_domaine.md) | 01 | ☑ terminé (2026-09-02) | `bloc-02-done` |
 | 03 | [Jetons, OTP et sécurité des liens](blocs/B03_jetons_securite.md) | 02 | ☑ terminé (2026-09-02) | `bloc-03-done` |
-| 04 | [Page d'enregistrement narrateur et spike navigateur](blocs/B04_enregistrement.md) | 03 | ◐ en cours — code livré, spike appareils réels à jouer | `bloc-04-done` |
-| 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — code livré, envoi réel Twilio/Resend à faire | `bloc-05-done` |
-| 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — code livré, clés réelles et corpus ASR à jouer | `bloc-06-done` |
-| 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ◐ en cours — code livré, lecture des deux variantes en Phase 0A | `bloc-07-done` |
-| 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ◐ en cours — code livré, écoute sur appareil réel à jouer | `bloc-08-done` |
+| 04 | [Page d'enregistrement narrateur et spike navigateur](blocs/B04_enregistrement.md) | 03 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) téléphones + HTTPS | `bloc-04-done` |
+| 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) Twilio + Resend | `bloc-05-done` |
+| 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) clés + corpus de voix | `bloc-06-done` |
+| 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-07-done` |
+| 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-08-done` |
 | 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ☐ non commencé | `bloc-09-done` |
 | 10 | [Tunnel d'achat, Stripe, cadeau, opt-in narrateur](blocs/B10_tunnel_achat_optin.md) | 09 | ☐ non commencé | `bloc-10-done` |
 | 11 | [Back-office support et journal d'audit](blocs/B11_backoffice_audit.md) | 10 | ☐ non commencé | `bloc-11-done` |
@@ -48,6 +49,8 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 17 | [Pilote : offre, option téléphone D-9, playbooks, go-live](blocs/B17_pilote_golive.md) | 16 | ☐ non commencé | `bloc-17-done` |
 
 Statuts possibles : `☐ non commencé`, `◐ en cours`, `☑ terminé`.
+
+Un bloc marqué `◐` a son code livré, testé et poussé ; il attend son checkpoint. `⛔` signale qu'il attend quelque chose du monde extérieur — une clé, un appareil, un corpus — détaillé dans [`05_A_FAIRE_HUMAIN.md`](05_A_FAIRE_HUMAIN.md). `⏳` signale qu'il n'attend qu'une heure d'un humain.
 
 ## Pourquoi cet ordre
 
@@ -93,6 +96,7 @@ docs/roadmap/
 ├── 02_GLOSSAIRE_TECH.md         ← termes métier FR ↔ identifiants de code EN
 ├── 03_DECISIONS.md              ← registre des décisions techniques et leur pourquoi
 ├── 04_VERSIONS.md               ← versions figées (rempli au bloc 00)
+├── 05_A_FAIRE_HUMAIN.md         ← clés, comptes, appareils, corpus et décisions à réunir
 ├── blocs/B00_… à B17_…          ← un fichier par bloc
 └── annexes/
     ├── A_corpus_questions_v1.md ← 60 questions FR séquencées

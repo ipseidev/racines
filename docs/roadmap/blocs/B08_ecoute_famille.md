@@ -1,6 +1,9 @@
 # Bloc 08 — Écoute famille et réactions
 
 Statut : ◐ en cours · Dépend de : 07 · Tag de fin : `bloc-08-done`
+
+**⏳ Prêt à checkpointer** — [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md) §2 : rien à fournir, ~20 minutes de ton temps. Mailpit couvre l'invitation et la notification ; un téléphone sur le réseau local est un confort, pas une condition.
+
 Références dossier : PRD P0-10, P0-12, H2 (R-5), doc 04 §3 (visibilité fine), §12 (liens d'écoute distincts, lecture seule) ; flag `reaction-notification-timing`.
 
 ## 1. Objectif

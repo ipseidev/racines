@@ -1,6 +1,9 @@
 # Bloc 04 — Page d'enregistrement narrateur et spike navigateur
 
 Statut : ◐ en cours — code livré et éprouvé, spike appareils réels à exécuter (§6.7) · Dépend de : 03 · Tag de fin : `bloc-04-done`
+
+**⛔ En attente de toi** — [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md) §1.6 : deux téléphones réels (idéalement cinq, dont Samsung Internet) et un accès HTTPS. `getUserMedia` exige une connexion sécurisée : le spike ne peut pas se jouer sur `http://localhost` depuis un téléphone.
+
 Références dossier : PRD P0-3, P0-5, P0-7 (audio source), US-01, US-06, doc 04 §11 (SLO capture), §12 (fichiers), spike §8.2 ; décisions T-09, T-10, T-26, T-27.
 
 ## 1. Objectif

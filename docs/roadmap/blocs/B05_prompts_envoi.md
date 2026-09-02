@@ -1,6 +1,9 @@
 # Bloc 05 — Corpus de questions et envoi des prompts SMS/email
 
 Statut : ◐ en cours — code livré et éprouvé avec des doubles ; envoi réel Twilio/Resend à faire (§7.3, §7.4) · Dépend de : 04 · Tag de fin : `bloc-05-done`
+
+**⛔ En attente de toi** — [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md) §1.7 : identifiants Twilio (SID, token, numéro destinataire vérifié) et Resend (clé, domaine d'envoi vérifié SPF/DKIM/DMARC, secret de webhook). Le §7.1 et le §7.2 du checkpoint sont déjà jouables en local sans rien de tout ça.
+
 Références dossier : PRD P0-4, P0-9, R-9 (canal), doc 04 §9 (anti-phishing : expéditeur constant, un seul domaine, jamais de raccourcisseur), annexe A ; décisions T-06, T-28.
 
 ## 1. Objectif

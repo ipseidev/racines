@@ -1,6 +1,9 @@
 # Bloc 06 — Transcription, rendu Fluide et banc d'essai ASR
 
-Statut : ☐ non commencé · Dépend de : 05 · Tag de fin : `bloc-06-done`
+Statut : ◐ en cours · Dépend de : 05 · Tag de fin : `bloc-06-done`
+
+**⛔ En attente de toi** — [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md) §1.1 à §1.5 : clé Anthropic, clé Gladia, secret de rappel ASR, **le corpus de dix voix de personnes de 65 ans et plus avec références relues** (le plus long à réunir), et une lecture humaine du Fluide sur cinq histoires.
+
 Références dossier : PRD P0-7, P0-8, US-03, spike §8.3, doc 04 §5 (transparence IA), §1 (« L'IA range, elle n'invente pas », pas de clonage vocal) ; décisions T-07, T-08, T-10.
 
 ## 1. Objectif

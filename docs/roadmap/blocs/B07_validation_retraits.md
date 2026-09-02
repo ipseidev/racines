@@ -1,6 +1,9 @@
 # Bloc 07 — Validation explicite, visibilité, retraits
 
 Statut : ◐ en cours · Dépend de : 06 · Tag de fin : `bloc-07-done`
+
+**⏳ Prêt à checkpointer** — [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md) §2 : rien à fournir, ~30 minutes de ton temps. Tourne en local avec les fournisseurs simulés ; le code OTP arrive dans Mailpit via un narrateur dont le canal préféré est le courriel (`RedactTokens` masque les codes à six chiffres dans les journaux).
+
 Références dossier : PRD P0-18, US-04, R-4 (états de retrait), doc 04 §1 et §3 (souveraineté, « l'absence de réaction ne vaut jamais accord »), §12 (actes sensibles sous OTP) ; décision T-15.
 
 ## 1. Objectif
