@@ -88,7 +88,20 @@ Index : `(project_id, state)`, `(narrator_id)`, `(trashed_at) where trashed_at i
 Contraintes : `stories_question_present_check` (`question_id is not null or custom_question_text is not null`) — une histoire vient toujours d'une question, du corpus ou personnalisée ; `check` sur `state`, `previous_state`, `visibility`, `share_decision`, `validated_via`, `answer_type`, `deletion_requested_by`. La colonne `state` n'est **jamais** écrite hors des transitions de `App\States\Story\Transitions` : le test `tests/Unit/States/NoDirectStateWriteTest.php` échoue si un fichier de `app/` ou de `database/seeders/` l'écrit, et `state` est hors de l'assignation de masse.
 
 ## story_visibility_family_members (bloc 07) — bigint
-`story_id`, `family_member_id`. Unique sur le couple.
+`id`, `story_id` uuid FK (`cascadeOnDelete`), `family_member_id` uuid FK (`cascadeOnDelete`), `created_at` posé par la base (`useCurrent` : `sync()` n'écrit pas d'horodatage, et la date à laquelle un accès a été ouvert vaut d'être gardée). Unique `(story_id, family_member_id)`.
+
+Une **liste blanche**, jamais une liste noire : le narrateur désigne les personnes à qui il confie un souvenir, pas celles à qui il le refuse. La table n'a de sens que pour `visibility = restricted` ; ailleurs elle est vide, et `SetStoryVisibility` la purge à chaque changement — rouvrir à tous puis restreindre à nouveau ne ressuscite pas d'anciens invités.
+
+`Story::isVisibleTo(FamilyMember)` pose les deux questions dans cet ordre : l'**état** dit *si* l'histoire s'écoute, la **liste** dit *qui* l'écoute. Une liste blanche ne rend donc jamais visible une histoire non partagée.
+
+## mandates (bloc 07)
+`id` uuid, `project_id` uuid FK (`cascadeOnDelete`), `narrator_id` uuid FK (`cascadeOnDelete`), `holder_type`/`holder_id` varchar(64) (un `User` ou un `FamilyMember`), `scope` jsonb (liste fermée d'actes, `["validate"]` aujourd'hui), `consent_id` uuid FK **non nullable** (`restrictOnDelete`), `granted_at`, `revoked_at` nullable, timestamps. Index `(narrator_id, revoked_at)`, `(holder_type, holder_id)`.
+
+La forme de la table dit l'exception qu'elle représente. `consent_id` n'est pas nullable : un mandat sans consentement journalisé du narrateur n'existe pas, et `GrantMandate` exige en plus que ce consentement soit **en vigueur** et recueilli par un canal qui laisse une trace — le web ou le téléphone, jamais l'administration. `scope` est une liste fermée, jamais un blanc-seing.
+
+`revoked_at` plutôt qu'une suppression : savoir qu'un mandat a existé, qui le détenait et quand il a cessé fait partie de l'audit (bloc 11). Un seul mandat vivant par mandataire : accorder à nouveau révoque le précédent, pour qu'il n'y ait jamais deux périmètres à comparer.
+
+`Mandate::covers($story, $act)` réunit quatre conditions, et aucune n'est superflue : le mandat vit, l'acte est dans son périmètre, l'histoire est celle de *son* narrateur, et elle est `to_review`. Le mandat débloque une relecture que le narrateur ne fait pas ; il ne remplace ni sa décision de partage en fin d'enregistrement, ni aucun retrait.
 
 ## recordings (bloc 04)
 | Colonne | Type | Notes |
@@ -114,6 +127,8 @@ Contraintes : `stories_question_present_check` (`question_id is not null or cust
 Index : `(story_id)`, unique partiel `recordings_one_current (story_id) where is_current`. Contraintes `check` sur `source` et `upload_status`.
 
 Déclencheur `recordings_original_immutable` : une fois `confirmed_at` posé **et** `original_path` renseigné, `original_path` ne peut plus changer. Il laisse en revanche le renseigner une première fois après confirmation — un enregistrement interrompu est confirmé sur ses segments, qui sont ce qui est en sécurité, et son fichier recollé n'arrive qu'ensuite (`ConcatenateSegments`).
+
+Une exception, ajoutée au bloc 07 (T-80) : `original_path` peut être mis à `null` si l'histoire est `deleted`. L'immuabilité protège contre l'**écrasement**, pas contre l'**effacement** demandé par le narrateur — sans cette réserve, `PurgeDeletedStory` échouait en base et le droit à l'effacement restait une intention.
 
 Nommage des objets (`App\Support\ObjectKeys`) : `projects/{uuid}/stories/{uuid}/recordings/{uuid}/segment-01.{ext}`, puis `original.{ext}` et `derived.{ext}`. Trois identifiants opaques et rien d'autre : un chemin circule dans les journaux et dans les URL présignées.
 

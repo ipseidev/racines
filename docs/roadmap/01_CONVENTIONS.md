@@ -200,6 +200,8 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `TELESCOPE_ENABLED` | `true` en local seulement | `true` |
 | `CLAMAV_HOST`, `CLAMAV_PORT` | Antivirus (bloc 12) | `clamav`, `3310` |
 | `FFMPEG_BINARIES`, `FFPROBE_BINARIES` | Chemins ffmpeg | `/usr/bin/ffmpeg`, `/usr/bin/ffprobe` |
+| `THROTTLE_TOKENS_PER_TOKEN` | Requêtes par minute et par jeton ; protège du balayage, identique partout | `20` |
+| `THROTTLE_TOKENS_PER_IP` | Requêtes par minute et par IP ; desserrée d'office hors production (T-79) | `60` |
 | `BROWSERSHOT_NODE_BINARY`, `BROWSERSHOT_CHROME_PATH` | Génération PDF (bloc 13) | — |
 
 ## 9. Sécurité, règles permanentes

@@ -1,6 +1,6 @@
 # Bloc 07 — Validation explicite, visibilité, retraits
 
-Statut : ☐ non commencé · Dépend de : 06 · Tag de fin : `bloc-07-done`
+Statut : ◐ en cours · Dépend de : 06 · Tag de fin : `bloc-07-done`
 Références dossier : PRD P0-18, US-04, R-4 (états de retrait), doc 04 §1 et §3 (souveraineté, « l'absence de réaction ne vaut jamais accord »), §12 (actes sensibles sous OTP) ; décision T-15.
 
 ## 1. Objectif
@@ -55,44 +55,44 @@ Aucun nouveau (Pennant installé au bloc 02).
 ## 6. Étapes
 
 ### 6.1 Flags
-- [ ] `app/Features/ValidationVariant.php` (Pennant, résolution : valeur de `projects.validation_variant` si posée, sinon défaut `immediate`), `app/Features/MandateDelegation.php` (défaut `false`).
-- [ ] Commande `features:set-variant {project} {immediate|deferred}` pour le pilote.
+- [x] `app/Features/ValidationVariant.php` (Pennant, résolution : valeur de `projects.validation_variant` si posée, sinon défaut `immediate`), `app/Features/MandateDelegation.php` (défaut `false`).
+- [x] Commande `features:set-variant {project} {immediate|deferred}` pour le pilote.
 
 ### 6.2 Décision de partage (variante A)
-- [ ] Route `POST /r/{token}/share-decision` (`decision` in `share|keep_private|decide_later`) → `RecordShareDecision` : pose `share_decision`, `share_decided_at` ; pas de transition.
-- [ ] Écran `narrator/ShareDecision.tsx` affiché après la confirmation du bloc 04 : « Que souhaitez-vous faire de cette histoire ? » puis trois boutons ; sous « Partager » : « Vos proches pourront l'écouter et lire le texte » ; sous « Garder pour moi » : « Personne d'autre que vous ne l'entendra » ; sous « Décider plus tard » : « Nous vous le redemanderons, sans insister ».
-- [ ] Après le choix : écran de remerciement adapté.
+- [x] Route `POST /r/{token}/share-decision` (`decision` in `share|keep_private|decide_later`) → `RecordShareDecision` : pose `share_decision`, `share_decided_at` ; pas de transition.
+- [x] Écran `narrator/ShareDecision.tsx` affiché après la confirmation du bloc 04 : « Que souhaitez-vous faire de cette histoire ? » puis trois boutons ; sous « Partager » : « Vos proches pourront l'écouter et lire le texte » ; sous « Garder pour moi » : « Personne d'autre que vous ne l'entendra » ; sous « Décider plus tard » : « Nous vous le redemanderons, sans insister ».
+- [x] Après le choix : écran de remerciement adapté.
 
 ### 6.3 Écouteur `TranscriptionReady`
-- [ ] `ApplyShareDecision(Story)` : variante A + `share` → `ValidateStoryAction(via recording_end)` puis `ShareStory` ; A + `keep_private` → rien ; A + `decide_later` → `RequestReview` + notification `notifications.review.decide_later` ; variante B → `RequestReview` + `notifications.review.ready` (lien `/r/{token}/review`, même jeton `record`).
-- [ ] `ValidateStoryAction(Story, ValidatedVia, ?Model $actor)` centralise : transition, `validated_at`, `validated_via`, révocation des jetons `record` (bloc 03), émission de `StoryValidated`.
+- [x] `ApplyShareDecision(Story)` : variante A + `share` → `ValidateStoryAction(via recording_end)` puis `ShareStory` ; A + `keep_private` → rien ; A + `decide_later` → `RequestReview` + notification `notifications.review.decide_later` ; variante B → `RequestReview` + `notifications.review.ready` (lien `/r/{token}/review`, même jeton `record`).
+- [x] `ValidateStoryAction(Story, ValidatedVia, ?Model $actor)` centralise : transition, `validated_at`, `validated_via`, révocation des jetons `record` (bloc 03), émission de `StoryValidated`.
 
 ### 6.4 Page de relecture (variante B et « décider plus tard »)
-- [ ] Route `GET /r/{token}/review` → `narrator/Review.tsx` : question, lecteur audio (URL temporaire du MP3), onglets « Texte mis au propre » / « Mot à mot » (mobile) ou côte à côte (≥ 768 px), mention IA (`narrator.review.ai_label`), bouton « Corriger » qui ouvre un textarea prérempli avec le texte courant → `POST /r/{token}/review/edit` (`EditTranscript`), puis les trois choix → `POST /r/{token}/review/decision`.
-- [ ] `POST /r/{token}/review/decision` : `share` → validation `post_transcription` + partage ; `keep_private` avec option `keep_for_book` → `validated` + `visibility book_only`, sans option → reste `transcribed` ; `decide_later` → reste `to_review` (la règle `recorded_not_validated` du bloc 09 relance deux fois maximum).
-- [ ] Choix de visibilité au moment de partager : par défaut « Tous mes proches » ; lien discret « Choisir qui peut écouter » → liste à cocher des proches ; « Pour le livre seulement ».
+- [x] Route `GET /r/{token}/review` → `narrator/Review.tsx` : question, lecteur audio (URL temporaire du MP3), onglets « Texte mis au propre » / « Mot à mot » (mobile) ou côte à côte (≥ 768 px), mention IA (`narrator.review.ai_label`), bouton « Corriger » qui ouvre un textarea prérempli avec le texte courant → `POST /r/{token}/review/edit` (`EditTranscript`), puis les trois choix → `POST /r/{token}/review/decision`.
+- [x] `POST /r/{token}/review/decision` : `share` → validation `post_transcription` + partage ; `keep_private` avec option `keep_for_book` → `validated` + `visibility book_only`, sans option → reste `transcribed` ; `decide_later` → reste `to_review` (la règle `recorded_not_validated` du bloc 09 relance deux fois maximum).
+- [x] Choix de visibilité au moment de partager : par défaut « Tous mes proches » ; lien discret « Choisir qui peut écouter » → liste à cocher des proches ; « Pour le livre seulement ».
 
 ### 6.5 Retraits
-- [ ] `App\Support\SensitiveActs::requiresGrant(Story $target, AccessToken $current): bool` : faux si le jeton est `record` **et** `target === token.subject` ; vrai sinon.
-- [ ] Routes sur `record` : `POST /r/{token}/hide` (histoire du jeton, sans OTP, après écran de confirmation « Masquer cette histoire ? Vous pourrez la remettre plus tard. »).
-- [ ] Routes sur `narrator_space` (`/n/{token}/stories/{story}/…`) : `hide`, `unhide`, `trash`, `restore`, `delete` (avec `RequireSensitiveGrant` et champ `confirmation === 'SUPPRIMER'`), `visibility`.
-- [ ] Avertissement `narrator.withdrawals.printed_copies_warning` si `printed_in_book`.
-- [ ] `stories:purge-trashed` (`daily()`), `PurgeDeletedStory` (file `media`) : supprime les objets R2 (original, dérivé, réplique, médias), les `transcripts`, vide `title`/`written_answer`, journalise `story_purged` (audit bloc 11 si présent, sinon log).
+- [x] `App\Support\SensitiveActs::requiresGrant(Story $target, AccessToken $current): bool` : faux si le jeton est `record` **et** `target === token.subject` ; vrai sinon.
+- [x] Routes sur `record` : `POST /r/{token}/hide` (histoire du jeton, sans OTP, après écran de confirmation « Masquer cette histoire ? Vous pourrez la remettre plus tard. »).
+- [x] Routes sur `narrator_space` (`/n/{token}/stories/{story}/…`) : `hide`, `unhide`, `trash`, `restore`, `delete` (avec `RequireSensitiveGrant` et champ `confirmation === 'SUPPRIMER'`), `visibility`. `sensitive` prend un paramètre de route (`sensitive:narrator.space.otp.show`) : la page de code diffère selon l'espace, le lien d'enregistrement portant une histoire et l'espace une personne.
+- [x] Avertissement `narrator.withdrawals.printed_copies_warning` si `printed_in_book`.
+- [x] `stories:purge-trashed` (`daily()`), `PurgeDeletedStory` (file `media`) : supprime les objets R2 (original, dérivé, réplique, médias), les `transcripts`, vide `title`/`written_answer`, journalise `story_purged` (audit bloc 11 si présent, sinon log).
 
 ### 6.6 Espace narrateur
-- [ ] `GET /n/request` (domaine des liens, formulaire : numéro ou email déjà connu) → `OtpService::challenge(narrator_space)` ; `POST /n/verify` → jeton `narrator_space` posé en cookie `HttpOnly` et redirection `/n/{token}`.
-- [ ] `narrator/Space.tsx` : « Vos histoires », cartes par histoire (titre, date, état en langage simple : « Partagée avec vos proches », « Gardée pour vous », « En attente de votre choix », « Masquée », « Dans la corbeille jusqu'au {date} »), actions par carte, lien « Demander une pause » (`projects.paused_until`, bloc 09 gère la reprise).
-- [ ] Lien vers l'espace dans chaque email de relecture et dans la fiche contact.
+- [x] `GET /n/request` (domaine des liens, formulaire : numéro ou email déjà connu) → `OtpService::challenge(narrator_space)` ; `POST /n/verify` → jeton `narrator_space` posé en cookie `HttpOnly` et redirection `/n/{token}`.
+- [x] `narrator/Space.tsx` : « Vos histoires », cartes par histoire (titre, date, état en langage simple : « Partagée avec vos proches », « Gardée pour vous », « En attente de votre choix », « Masquée », « Dans la corbeille jusqu'au {date} »), actions par carte, lien « Demander une pause » (`projects.paused_until`, bloc 09 gère la reprise).
+- [x] Lien vers l'espace dans chaque email de relecture et dans la fiche contact.
 
 ### 6.7 Mandat (flag)
-- [ ] Migration `create_mandates_table` (`project_id`, `narrator_id`, `holder_type/holder_id` (User ou FamilyMember), `scope` jsonb `["validate"]`, `consent_id`, `granted_at`, `revoked_at`) ; annexe B.
-- [ ] `GrantMandate` exige un consentement `channel = phone|web` journalisé du narrateur (OTP côté narrateur) ; `RevokeMandate` immédiat.
-- [ ] Policy : un mandataire peut appeler `ValidateStoryAction(via mandate)` sur `to_review` uniquement. L'UI arrive au bloc 10.
+- [x] Migration `create_mandates_table` (`project_id`, `narrator_id`, `holder_type/holder_id` (User ou FamilyMember), `scope` jsonb `["validate"]`, `consent_id`, `granted_at`, `revoked_at`) ; annexe B.
+- [x] `GrantMandate` exige un consentement `channel = phone|web` journalisé du narrateur (OTP côté narrateur) ; `RevokeMandate` immédiat.
+- [x] Policy : un mandataire peut appeler `ValidateStoryAction(via mandate)` sur `to_review` uniquement. L'UI arrive au bloc 10.
 
 ### 6.8 Clôture
-- [ ] Annexe B (`mandates`, `story_visibility_family_members`), `01_CONVENTIONS.md` §15 vérifié.
-- [ ] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts.
-- [ ] Commit `chore(bloc-07): terminé`, tag `bloc-07-done`.
+- [x] Annexe B (`mandates`, `story_visibility_family_members`), `01_CONVENTIONS.md` §15 vérifié.
+- [x] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts.
+- [ ] Commit `chore(bloc-07): terminé`, tag `bloc-07-done` — après lecture des deux variantes par de vraies personnes (Phase 0A).
 
 ## 7. Checkpoint démontrable
 
@@ -104,8 +104,8 @@ Aucun nouveau (Pennant installé au bloc 02).
 
 ## 8. Critères de sortie
 
-- [ ] Il n'existe aucun chemin de code qui passe une histoire en `shared` sans `validated_at` et `validated_via` posés par `ValidateStoryAction` (revue + test `NoDirectStateWrite`).
-- [ ] Les trois choix sont présentés sans présélection, sans minuteur, dans le même ordre partout.
+- [x] Il n'existe aucun chemin de code qui passe une histoire en `shared` sans `validated_at` et `validated_via` posés par `ValidateStoryAction` (revue + test `NoDirectStateWrite`).
+- [x] Les trois choix sont présentés sans présélection, sans minuteur, dans le même ordre partout.
 
 ## 9. Règle de décision par défaut
 
@@ -114,3 +114,36 @@ En cas d'ambiguïté sur « garder pour moi », l'histoire reste privée et hors
 ## 10. Note de checkpoint
 
 _Date, exécutant, résultat, écarts :_
+
+**2026-09-02 — Claude (agent) — code livré, checkpoint §7 joué en simulé.**
+
+### Ce qui est démontré
+
+- **§7.1 et §7.3 — Les deux variantes, de bout en bout.** `tests/e2e/validation-variant-a.spec.ts` enregistre pour de vrai avec un micro simulé, vérifie que les trois choix n'apparaissent **qu'après** la confirmation du serveur, qu'aucun ne fait 44 px de moins, qu'aucun n'est présélectionné et qu'il n'y a nulle part de minuteur — puis partage. `validation-variant-b.spec.ts` fait la relecture : les deux textes, la mention de l'IA, une correction qui laisse le mot à mot intact, et le partage qui referme le lien.
+- **§7.2 — « Décider plus tard ».** `ApplyShareDecisionOnTranscriptionReadyTest` couvre les quatre chemins de la variante A et les deux de la variante B, y compris le cas qui compte le plus : **sans décision explicite, rien n'est partagé**, l'histoire passe en relecture et le narrateur est prévenu.
+- **§7.4 — Les retraits.** `withdrawals.spec.ts` masque un récit depuis son propre lien **sans code**, et vérifie que la suppression repasse par un code. `WithdrawalsTest` éprouve la frontière de l'acte sensible dans les trois configurations, la corbeille restaurée à J+29 et refusée à J+31, et la suppression qui exige le mot SUPPRIMER.
+- **§7.5 — La purge.** `PurgeTrashedStoriesTest` force `trashed_at` à J-31, vérifie que les objets du stockage partent, que les transcriptions — verbatim compris, le déclencheur ne s'y oppose plus — disparaissent, que le titre et la réponse écrite sont vidés, et que **la ligne reste** : une famille qui demande « où est passé le récit de maman ? » mérite une réponse.
+- **Le critère de sortie §8, éprouvé plutôt que promis.** `NoSilentSharingTest` vérifie qu'aucun état ne mène à `shared` sans passer par `Validated`, qu'un seul fichier construit l'état `Shared`, et qu'une histoire réservée au livre est validée sans jamais devenir écoutable.
+- **L'espace narrateur.** `narrator-space-otp.spec.ts` vérifie que la page d'entrée **ne dit pas** si la coordonnée est connue — une réponse différente en ferait un annuaire — que les états s'affichent en langage simple, et qu'un acte sensible repasse par un code même depuis l'espace.
+
+### Ce qui attend un humain
+
+- **La lecture des deux variantes par de vraies personnes.** C'est l'objet de la Phase 0A, et aucun test ne peut dire si un tap ressemble à une récompense ou à un piège. Le drapeau est par projet et mémorisé : une famille ne change pas de variante en cours de route.
+- **Le mandat n'a pas d'écran.** Les tables, les actions et les gardes existent et sont éprouvées ; l'interface arrive au bloc 10, comme le prévoit le bloc. Le drapeau est fermé, et une fonctionnalité fermée rend 404 (T-82).
+- **Les textes de consentement** restent provisoires, dont celui du mandat, jusqu'à la relecture juridique du bloc 10.
+
+### Écarts consignés
+
+- **T-77** — un neuvième consentement (`mandate_delegation`), que le dossier n'avait pas nommé.
+- **T-78** — le code de l'espace est semé, pas exposé par une route de test.
+- **T-79** — la borne par IP des routes à jeton devient réglable et se desserre hors production.
+- **T-80** — l'immuabilité de l'audio source cède devant l'effacement demandé.
+- **T-81** — arbitrage de « garder pour moi » : l'histoire redescend à `transcribed`.
+- **T-82** — une fonctionnalité fermée rend 404, pas 403.
+- **T-83** — un code déjà envoyé ne produit plus un 500 (défaut qui valait aussi pour le bloc 03).
+- **T-84** — les tests d'enregistrement tournent en série, avant les autres.
+- **T-85** — un champ de saisie ne disparaît plus au bout de deux secondes.
+
+### Portail qualité
+
+`sail composer check` vert (Pint, Larastan niveau 8, **619 tests**, 3 063 assertions), `sail npm run check` vert, `tsc --noEmit` vert, Vitest **82 tests** verts, Playwright **32 tests** verts.
