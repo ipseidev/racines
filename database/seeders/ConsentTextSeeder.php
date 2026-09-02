@@ -28,6 +28,7 @@ final class ConsentTextSeeder extends Seeder
         ConsentKind::PhoneCallRecording->value => 'L’appel téléphonique est enregistré pour construire votre livre. Votre accord est demandé oralement au début de chaque appel.',
         ConsentKind::PhotoRights->value => 'Vous confirmez pouvoir déposer cette photo et en autoriser l’usage dans le livre de la famille.',
         ConsentKind::PostMortemDirectives->value => 'Vous indiquez ce qu’il faudra faire de vos histoires après votre décès. Vos directives prévalent sur la demande de vos proches.',
+        ConsentKind::MandateDelegation->value => 'Vous autorisez un proche que vous désignez à valider vos histoires à votre place, quand vous ne le faites pas vous-même. Vous pouvez retirer cette autorisation à tout moment, et elle cesse aussitôt.',
     ];
 
     public function run(): void

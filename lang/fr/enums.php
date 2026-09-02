@@ -133,6 +133,7 @@ return [
         'phone_call_recording' => 'Enregistrement de l’appel téléphonique',
         'photo_rights' => 'Droits sur les photos déposées',
         'post_mortem_directives' => 'Directives à appliquer après le décès',
+        'mandate_delegation' => 'Délégation de la validation à un proche',
     ],
 
     'consent_status' => [
