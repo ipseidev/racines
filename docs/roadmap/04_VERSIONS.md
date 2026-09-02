@@ -33,8 +33,10 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | pestphp/pest-plugin-laravel | v5.0.1 | 00 |
 | larastan/larastan | v3.11.0 | 00 |
 | laravel/pint | v1.30.5 | 00 |
-| filament/filament | _à installer_ | 01 |
-| spatie/laravel-settings | _à installer_ | 01 |
+| filament/filament | v5.7.8 | 01 |
+| spatie/laravel-settings | v3.4.6 | 01 |
+| filament/spatie-laravel-settings-plugin | v5.7.8 | 01 |
+| laravel-lang/common (dev) | v6.8 | 01 |
 | spatie/laravel-model-states | _à installer_ | 02 |
 | spatie/laravel-permission | _à installer_ | 02 |
 | laravel/pennant | _à installer_ | 02 |
@@ -61,7 +63,7 @@ Telescope n'est pas installé : `laravel/pail` couvre le suivi des journaux en l
 |---|---|---|
 | react, react-dom | 19.2.8 | 00 |
 | @inertiajs/react | 3.7.0 | 00 |
-| typescript | 5.9.3 | 00 |
+| typescript | 7.0.2 | 00 |
 | tailwindcss | 4.3.3 | 00 |
 | vite | 8.2.2 | 00 |
 | vite-plus | 0.3.0 | 00 |
@@ -69,8 +71,8 @@ Telescope n'est pas installé : `laravel/pail` couvre le suivi des journaux en l
 | @testing-library/react | 16.3.3 | 00 |
 | jsdom | 30.0.1 | 00 |
 | @playwright/test | 1.62.1 | 00 |
+| wait-on | dernière | 00 (CI) |
 | @axe-core/playwright | 4.13.0 | 00 |
-| wait-on | installé | 00 (CI) |
 | dexie | _à installer_ | 04 |
 | pagedjs | _à installer_ | 13 |
 | posthog-js | _à installer_ | 15 |

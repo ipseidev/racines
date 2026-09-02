@@ -8,10 +8,26 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    /*
+     * Typographie et couleurs de marque. Les variables --brand-* sont écrites
+     * par le serveur dans la vue racine à partir des réglages : changer la
+     * charte ne demande ni build ni déploiement.
+     */
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        var(--brand-font-body, 'Instrument Sans'), ui-sans-serif, system-ui,
+        sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+
+    --font-display:
+        var(--brand-font-display, 'Fraunces'), Georgia, 'Times New Roman', serif;
+
+    --color-brand: var(--brand-primary);
+    --color-brand-foreground: var(--brand-primary-foreground);
+    --color-brand-accent: var(--brand-accent);
+    --color-brand-accent-foreground: var(--brand-accent-foreground);
+    --color-brand-surface: var(--brand-surface);
+    --color-brand-text: var(--brand-text);
+    --color-brand-muted: var(--brand-muted);
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);

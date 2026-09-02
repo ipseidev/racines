@@ -6,10 +6,16 @@ import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const brandName =
+    document
+        .querySelector<HTMLMetaElement>('meta[name="brand"]')
+        ?.content.trim() ?? '';
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    // Le nom vient des réglages de marque, jamais d'une constante de build.
+    // Lu une seule fois : Inertia remplace la balise title à chaque page, donc
+    // s'y référer composerait le titre à partir du titre déjà composé.
+    title: (title) => (title ? `${title} · ${brandName}` : brandName),
     layout: (name) => {
         switch (true) {
             case name === 'welcome':

@@ -1,27 +1,36 @@
 import { Head } from '@inertiajs/react';
 
+import { useBrand } from '@/brand/BrandProvider';
+import { useT } from '@/hooks/useT';
+
 /**
- * Jalon d'accueil. Le bloc 01 y branche la marque, le bloc 10 la remplace par
- * la véritable page publique. Aucun contenu de démonstration Laravel ici.
+ * Jalon d'accueil. Le bloc 10 le remplace par la véritable page publique.
+ * Aucun nom de marque ni aucune chaîne en dur : tout vient du serveur.
  */
 export default function Welcome() {
+    const brand = useBrand();
+    const t = useT();
+
     return (
         <>
-            <Head title="Accueil" />
+            <Head title={t('public.landing.promise')} />
 
-            <main className="flex min-h-screen items-center justify-center bg-white px-6 py-16 text-neutral-900">
+            <main className="bg-brand-surface text-brand-text flex min-h-screen items-center justify-center px-6 py-16">
                 <div className="w-full max-w-xl">
-                    <h1 className="text-3xl leading-tight font-semibold sm:text-4xl">
-                        Le livre de souvenirs de vos parents qui va réellement
-                        au bout.
-                    </h1>
-
-                    <p className="mt-6 text-lg leading-relaxed text-neutral-700">
-                        Sans application, et sans leur demander d’écrire.
+                    <p className="text-brand-muted text-sm tracking-wide uppercase">
+                        {brand.name}
                     </p>
 
-                    <p className="mt-10 text-base text-neutral-600">
-                        Ce site est en cours de construction.
+                    <h1 className="font-display mt-4 text-3xl leading-tight font-semibold sm:text-4xl">
+                        {t('public.landing.promise')}
+                    </h1>
+
+                    <p className="mt-6 text-lg leading-relaxed">
+                        {t('public.landing.subtitle')}
+                    </p>
+
+                    <p className="text-brand-muted mt-10 text-base">
+                        {t('public.landing.construction')}
                     </p>
                 </div>
             </main>

@@ -12,10 +12,14 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
+            // Polices auto-hébergées : aucune requête vers un tiers depuis les
+            // pages narrateur. La liste doit rester alignée sur les options du
+            // sélecteur de ManageBrand.
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
+                bunny('Instrument Sans', { weights: [400, 500, 600] }),
+                bunny('Inter', { weights: [400, 500, 600] }),
+                bunny('Fraunces', { weights: [400, 600] }),
+                bunny('Newsreader', { weights: [400, 600] }),
             ],
         }),
         inertia(),

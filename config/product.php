@@ -118,6 +118,12 @@ return [
         'target_stories' => [10, 15],
     ],
 
+    // Comptes semés en local et en test (jamais en production)
+    'seeding' => [
+        'admin_email' => env('ADMIN_EMAIL', 'admin@example.test'),
+        'admin_password' => env('ADMIN_PASSWORD', 'password'),
+    ],
+
     // Photos (bloc 12)
     'photos' => [
         'max_bytes' => 20 * 1024 * 1024,

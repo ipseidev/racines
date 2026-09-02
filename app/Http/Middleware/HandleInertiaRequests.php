@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Support\Brand;
+use App\Support\Translations;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,7 +41,9 @@ final class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'brand' => Brand::toInertia(),
+            'i18n' => Translations::forRequest($request),
+            'locale' => app()->getLocale(),
             'auth' => [
                 'user' => $request->user(),
             ],
