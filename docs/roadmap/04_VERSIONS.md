@@ -41,9 +41,10 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | spatie/laravel-permission | v8.3.0 | 02 |
 | laravel/pennant | v1.26.0 | 02 |
 | league/flysystem-aws-s3-v3 | v3.35.3 | 04 |
-| laravel/horizon | _à installer_ | 05 |
-| resend/resend-laravel | _à installer_ | 05 |
-| twilio/sdk, svix/svix | _à installer_ | 05 |
+| laravel/horizon | v5.48.3 | 05 |
+| resend/resend-laravel | v1.4.0 | 05 |
+| twilio/sdk | v8.12.0 | 05 |
+| svix/svix | v2.2.0 | 05 |
 | anthropic-ai/sdk | _à installer_ | 06 |
 | pbmedia/laravel-ffmpeg | _à installer_ | 06 |
 | laravel/cashier | _à installer_ | 10 |

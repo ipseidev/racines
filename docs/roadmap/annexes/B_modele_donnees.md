@@ -2,6 +2,8 @@
 
 Postgres. Toutes les colonnes `*_at` sont `timestamptz`. Clés primaires `uuid` sauf mention `bigint`. Les enums sont stockés en `varchar` avec contrainte `check`, posée par `App\Support\Database\EnumCheck` et nommée `<table>_<colonne>_check`. Toute table nouvelle est ajoutée ici dans le même commit que sa migration. Le bloc qui crée la table est indiqué.
 
+Toutes les dates s'écrivent **avec leur décalage** (`Y-m-d H:i:sP`, trait `App\Concerns\StoresDatesWithOffset`) : sans lui, Eloquent écrit une chaîne sans décalage que Postgres interprète dans le fuseau de la session, et une date convertie en UTC avant enregistrement se retrouvait décalée de deux heures (décision T-64).
+
 Les relations polymorphes stockent un **alias court** et non un nom de classe (`user`, `project`, `narrator`, `family_member`, `story`), déclaré par `Relation::morphMap()` dans `AppServiceProvider` : renommer une classe ne réécrit pas la base.
 
 Le fuseau de la session Postgres est aligné sur `APP_TIMEZONE` (`config/database.php`). Le stockage reste en UTC : c'est la conversion en texte qui suit l'application, sans quoi les dates écrites par Eloquent — sans décalage — se décalaient de deux heures.
@@ -45,8 +47,8 @@ Index : `(owner_user_id)`, `(status, next_prompt_at)`. Contrainte `projects_prom
 ## project_members (bloc 02) — bigint
 `id`, `project_id` FK projects, `user_id` FK users, `role` check (`initiator`, `editor`), timestamps. Unique `(project_id, user_id)`.
 
-## narrators (bloc 02)
-`id`, `project_id` FK, `first_name`, `last_name` nullable, `display_name`, `email` nullable, `phone_e164` nullable, `preferred_channel` check (`sms`, `email`), `is_primary` bool, `birth_year` smallint nullable, `opted_in_at`, `opted_out_at`, `contact_deletion_due_at` nullable, timestamps. Index unique partiel `narrators_one_primary (project_id) where is_primary`. Contrainte `narrators_reachable_check` : `email` ou `phone_e164` non nul. `preferred_channel` n'accepte que `sms` et `email` : le téléphone n'est jamais un canal d'envoi automatique (R-9).
+## narrators (bloc 02, complété bloc 05)
+`id`, `project_id` FK, `first_name`, `last_name` nullable, `display_name`, `email` nullable, `phone_e164` nullable, `preferred_channel` check (`sms`, `email`, `both` depuis le bloc 05), `is_primary` bool, `birth_year` smallint nullable, `opted_in_at`, `opted_out_at`, `contact_deletion_due_at` nullable, timestamps. Index unique partiel `narrators_one_primary (project_id) where is_primary`. Contrainte `narrators_reachable_check` : `email` ou `phone_e164` non nul. `preferred_channel` n'accepte que `sms` et `email` : le téléphone n'est jamais un canal d'envoi automatique (R-9).
 
 ## family_members (bloc 02)
 `id`, `project_id` FK, `invited_by_user_id` FK users, `display_name`, `relationship` nullable, `email` nullable, `phone_e164` nullable, `can_contribute` bool défaut false, `invited_at` nullable, `first_seen_at` nullable, `removed_at` nullable, timestamps. Index `(project_id)`.
@@ -55,7 +57,9 @@ Index : `(owner_user_id)`, `(status, next_prompt_at)`. Contrainte `projects_prom
 `id`, `slug` unique, `text`, `theme` check (`childhood`, `family_origins`, `youth`, `work`, `love`, `places`, `joys`, `hardships`, `beliefs_values`, `legacy`), `difficulty` smallint défaut 1, contrainte `questions_difficulty_check` 1-5, `order_hint` int défaut 0, `is_active` bool défaut true, `locale` défaut `fr`, timestamps. Index `(theme, order_hint)`.
 
 ## project_question_settings (bloc 05) — bigint
-`project_id`, `question_id`, `excluded` bool, `custom_order` int nullable, timestamps. Unique `(project_id, question_id)`.
+`id`, `project_id` FK, `question_id` FK, `excluded` bool défaut false, `custom_order` int nullable, timestamps. Unique `(project_id, question_id)`, index `(project_id, excluded)`.
+
+Ce que l'Initiateur·rice change au corpus pour **son** projet (annexe A, règle 3). Le corpus lui-même n'est pas modifié : il est partagé et sert de référence aux analyses. Une question portant un `custom_order` passe devant, **y compris intime et avant la sixième histoire validée** : la règle 5 protège du séquencement automatique, pas d'un choix délibéré (décision T-63).
 
 ## stories (bloc 02)
 | Colonne | Type | Notes |
@@ -161,7 +165,11 @@ Index : `(subject_type, subject_id, type)`, `(expires_at)`.
 `id`, `narrator_id` nullable, `family_member_id` nullable, `purpose` check (`narrator_space`, `sensitive_act`), `code_hash`, `channel`, `sent_to_masked`, `attempts` smallint, `expires_at`, `verified_at` nullable, `locked_until` nullable, `created_at`.
 
 ## outbound_messages (bloc 05)
-`id`, `project_id` nullable, `channel` check (`sms`, `email`), `to_hash`, `to_masked`, `template` varchar, `payload` jsonb (sans données personnelles en clair), `provider`, `provider_message_id` nullable, `status` check (`queued`, `sent`, `delivered`, `failed`, `bounced`, `undelivered`), `status_detail` nullable, `dedupe_key` unique, `sent_at`, `delivered_at`, `failed_at` nullable, `created_at`.
+`id`, `project_id` FK nullable, `channel` check (`sms`, `email`), `to_hash` char(64), `to_masked` varchar(64), `template` varchar, `payload` jsonb (sans données personnelles en clair), `provider` nullable, `provider_message_id` nullable, `status` check (`queued`, `sent`, `delivered`, `failed`, `bounced`, `undelivered`), `status_detail` nullable, `dedupe_key` unique, `sent_at`, `delivered_at`, `failed_at` nullable, `created_at` (pas d'`updated_at`). Index `(provider_message_id)`, `(status, created_at)`.
+
+`sent` veut dire « accepté par l'opérateur », pas « reçu » : seul `delivered`, rapporté par un webhook signé, dit que le message est arrivé. C'est cette distinction qui empêche le moteur de complétion de relancer quelqu'un qui n'a jamais rien reçu. Un statut plus avancé ne redescend jamais : un rappel arrivé dans le désordre ne doit pas faire croire qu'un SMS n'est plus arrivé.
+
+Le destinataire n'y figure jamais en clair : `to_hash` pour dédupliquer et regrouper, `to_masked` pour que le support puisse dire « envoyé au 06 •• •• •• 12 ».
 
 ## reactions (bloc 08)
 `id`, `story_id`, `family_member_id`, `type` check (`heart`, `thanks`), `comment` varchar(280) nullable, `created_at`. Unique `(story_id, family_member_id, type)`.
