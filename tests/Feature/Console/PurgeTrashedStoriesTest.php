@@ -67,10 +67,23 @@ it('laisse tranquille une histoire encore dans le délai', function (): void {
     Queue::assertNothingPushed();
 });
 
+/**
+ * La commande fait passer l'histoire à `deleted` et **demande** l'effacement ;
+ * c'est le job qui efface. Les tests le jouent donc explicitement, plutôt que
+ * de compter sur une file synchrone — un pilote de file différent en
+ * intégration continue rendrait ces tests verts en local et rouges ailleurs.
+ */
+function purgeAndRun(Story $story): void
+{
+    test()->artisan('stories:purge-trashed')->assertSuccessful();
+
+    app()->call([new PurgeDeletedStory($story->id), 'handle']);
+}
+
 it('efface les objets du stockage et les transcriptions', function (): void {
     [$story, $recording, $storage] = trashedWithContent(31);
 
-    $this->artisan('stories:purge-trashed')->assertSuccessful();
+    purgeAndRun($story);
 
     $story->refresh();
     $recording->refresh();
@@ -86,7 +99,7 @@ it('efface les objets du stockage et les transcriptions', function (): void {
 it('vide le titre et la réponse écrite, mais garde la ligne', function (): void {
     [$story] = trashedWithContent(31);
 
-    $this->artisan('stories:purge-trashed')->assertSuccessful();
+    purgeAndRun($story);
 
     $story->refresh();
 
@@ -105,7 +118,7 @@ it('supprime enfin le verbatim, que le déclencheur protégeait', function (): v
 
     // Le déclencheur Postgres du bloc 06 refuse la suppression d'un verbatim
     // tant que l'histoire vit. Elle ne vit plus : il laisse passer.
-    $this->artisan('stories:purge-trashed')->assertSuccessful();
+    purgeAndRun($story);
 
     expect(Transcript::query()->where('story_id', $story->id)->count())->toBe(0);
 });
@@ -124,7 +137,7 @@ it('ne fait rien sur une histoire restaurée entre-temps', function (): void {
 it('est rejouable sans erreur', function (): void {
     [$story] = trashedWithContent(31);
 
-    $this->artisan('stories:purge-trashed')->assertSuccessful();
+    purgeAndRun($story);
     app()->call([new PurgeDeletedStory($story->id), 'handle']);
 
     expect($story->refresh()->state)->toBeInstanceOf(Deleted::class);

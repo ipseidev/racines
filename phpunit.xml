@@ -22,17 +22,27 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
+        <!--
+            `force="true"` sur ce que la suite **possède** : sans lui, une
+            variable présente dans l'environnement gagne, et l'intégration
+            continue faisait tourner les tests avec une autre file et un autre
+            cache que la machine du développeur. Vert en local, rouge en CI,
+            pour une raison invisible dans le code (T-94).
+
+            Les variables de connexion (`DB_HOST`, `REDIS_HOST`) restent
+            libres : chaque environnement a les siennes.
+        -->
+        <env name="CACHE_STORE" value="array" force="true"/>
         <env name="DB_DATABASE" value="testing"/>
         <env name="DB_URL" value=""/>
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="SMS_PROVIDER" value="fake"/>
-        <env name="MEDIA_DRIVER" value="fake"/>
-        <env name="ASR_PROVIDER" value="fake"/>
-        <env name="LLM_PROVIDER" value="fake"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="SMS_PROVIDER" value="fake" force="true"/>
+        <env name="MEDIA_DRIVER" value="fake" force="true"/>
+        <env name="ASR_PROVIDER" value="fake" force="true"/>
+        <env name="LLM_PROVIDER" value="fake" force="true"/>
         <env name="ASR_CALLBACK_SECRET" value="secret-de-test-pour-les-rappels-asr"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
