@@ -146,6 +146,16 @@ final class Project extends Model
     }
 
     /**
+     * Les noms propres du projet et leur graphie.
+     *
+     * @return HasMany<LexiconEntry, $this>
+     */
+    public function lexiconEntries(): HasMany
+    {
+        return $this->hasMany(LexiconEntry::class);
+    }
+
+    /**
      * Durées de collecte et de finalisation de l'offre souscrite (R-2).
      *
      * Le pilote dure douze semaines, finalisation comprise ; l'offre cœur

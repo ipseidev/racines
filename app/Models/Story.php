@@ -104,6 +104,12 @@ final class Story extends Model
         return $this->hasMany(Recording::class);
     }
 
+    /** @return HasMany<Transcript, $this> */
+    public function transcripts(): HasMany
+    {
+        return $this->hasMany(Transcript::class);
+    }
+
     /**
      * L'enregistrement courant, s'il y en a un.
      *
