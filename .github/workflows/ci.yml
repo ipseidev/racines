@@ -98,7 +98,8 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
-          php artisan migrate --force
+          # --seed crée le compte d'administration dont le test bout en bout a besoin.
+          php artisan migrate --force --seed
 
       # Wayfinder écrit resources/js/routes et resources/js/actions, ignorés par
       # git : sans cette étape, tsc ne trouve pas les modules « @/routes ».
