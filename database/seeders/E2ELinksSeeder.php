@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Actions\AddFamilyMember;
 use App\Actions\AddNarrator;
 use App\Actions\CreateProject;
 use App\Actions\ProposeStory;
@@ -27,12 +28,14 @@ use App\Models\Recording;
 use App\Models\Story;
 use App\Models\Transcript;
 use App\Models\User;
+use App\Services\Storage\MediaStorage;
 use App\Services\Tokens\OtpService;
 use App\Services\Tokens\TokenService;
 use App\States\Story\Recorded;
 use App\States\Story\Shared;
 use App\States\Story\ToReview;
 use App\States\Story\Transcribed;
+use App\Support\ObjectKeys;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -116,6 +119,15 @@ final class E2ELinksSeeder extends Seeder
 
     public const SPACE_CODE = '424242';
 
+    /**
+     * Liens d'écoute à valeur connue (bloc 08). Un par scénario, pour la même
+     * raison que partout ailleurs : la suite tourne en parallèle, et un test
+     * qui réagit changerait ce que le voisin s'attend à lire.
+     *
+     * @var list<string>
+     */
+    public const FAMILY_LINKS = ['listen', 'listen-react', 'listen-a11y'];
+
     /** @var array<string, array<string, mixed>> */
     private const LINK_STATE = [
         'expired' => ['expires_at' => '-1 day'],
@@ -185,6 +197,83 @@ final class E2ELinksSeeder extends Seeder
         foreach (self::SPACE_NARRATORS as $scenario => $phone) {
             $this->seedNarratorSpace($owner, $scenario, $phone);
         }
+
+        foreach (self::FAMILY_LINKS as $scenario) {
+            $this->seedFamilyLink($owner, $scenario);
+        }
+    }
+
+    /**
+     * Un projet avec une histoire partagée, transcrite et audible, et un
+     * proche dont le lien d'écoute a une valeur connue.
+     */
+    private function seedFamilyLink(User $owner, string $scenario): void
+    {
+        $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
+        $project->status = ProjectStatus::Active;
+        $project->save();
+
+        app(AddNarrator::class)->handle($project, [
+            'first_name' => 'Odette',
+            'display_name' => 'Odette',
+            'phone_e164' => '+3360001'.substr(md5($scenario), 0, 4),
+            'birth_year' => 1943,
+        ]);
+
+        $question = Question::query()->firstOrCreate(
+            ['slug' => 'e2e-'.$scenario],
+            ['text' => 'Quelle odeur vous ramène à votre enfance ?', 'theme' => QuestionTheme::Childhood],
+        );
+
+        $story = app(ProposeStory::class)->handle($project->refresh(), $question);
+        $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+        $recording->forceFill([
+            'derived_mp3_path' => ObjectKeys::recordingDerivative($recording, 'mp3'),
+            'duration_seconds' => '124.00',
+        ])->save();
+
+        // Un vrai objet sur le stockage : sans lui, l'URL présignée mène à un
+        // 404 et le lecteur audio ne joue rien.
+        app(MediaStorage::class)->put(
+            (string) $recording->derived_mp3_path,
+            self::silentMp3(),
+            'audio/mpeg',
+        );
+
+        $story->state->transitionTo(Recorded::class, AnswerType::Audio);
+        $story->state->transitionTo(Transcribed::class);
+        $this->seedTranscripts($story, $recording);
+        $this->share($story);
+
+        $member = app(AddFamilyMember::class)->handle($project, $owner, [
+            'display_name' => 'Marie',
+            'email' => 'marie-'.$scenario.'@example.test',
+        ]);
+
+        $token = new AccessToken([
+            'type' => TokenType::ListenProject,
+            'scope' => ['listen', 'react'],
+            'expires_at' => now()->addMonths(12),
+        ]);
+
+        $token->token_hash = TokenService::hash(self::token($scenario));
+        $token->subject()->associate($member);
+        $token->issuedTo()->associate($member);
+        $token->save();
+    }
+
+    /**
+     * Un MP3 minuscule et silencieux, décodable par le navigateur.
+     *
+     * Une seule trame MPEG-1 layer III : assez pour que `loadedmetadata`
+     * arrive et que la lecture démarre, ce qui est tout ce que le bout en
+     * bout demande.
+     */
+    private static function silentMp3(): string
+    {
+        $frame = "\xFF\xFB\x90\x00".str_repeat("\x00", 400);
+
+        return str_repeat($frame, 40);
     }
 
     /**
