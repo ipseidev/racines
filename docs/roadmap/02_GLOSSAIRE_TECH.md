@@ -122,6 +122,12 @@ Colonnes : `subject_type/subject_id` (narrateur, proche ou utilisateur), `projec
 
 `invitation_not_accepted`, `link_not_opened`, `mic_denied`, `recording_abandoned`, `recorded_not_validated`, `validated_not_listened`, `three_stories_no_reaction`, `narrator_silence_10d`, `narrator_silence_21d`, `pause_requested`, `declining_cadence`.
 
+## 7bis. Événements de mesure (`App\Enums\AnalyticsEvent`, bloc 08)
+
+`family_link_opened`, `story_page_opened`, `story_listened_30s`, `reaction_sent`, `narrator_notified`, `story_recorded_within_7d_of_notification` (calculé au bloc 09).
+
+Les cinq premiers sont les maillons de la chaîne H2, mesurés **séparément** : un taux global ne dirait pas *où* la chaîne casse — page jamais ouverte, écoute abandonnée à dix secondes, réaction jamais envoyée, notification jamais reçue. Aucun de ces événements ne porte de donnée personnelle : des identifiants opaques et des durées, jamais un prénom, une coordonnée, un jeton ni le contenu d'un message.
+
 ## 8. Espaces d'URL (hôte `LINKS_DOMAIN`)
 
 | Préfixe | Espace | Jeton |

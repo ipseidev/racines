@@ -187,6 +187,12 @@ Contrainte `consents_phone_operator_check` : `channel <> 'phone' or recorded_by_
 | created_at | | |
 Index : `(subject_type, subject_id, type)`, `(expires_at)`.
 
+### access_tokens — ajout du bloc 08
+
+`issued_to_type` / `issued_to_id` varchar(64), nullables, index `(issued_to_type, issued_to_id)`.
+
+`issued_by` disait qui a **émis** le lien ; il manquait qui le **détient**. Un lien d'histoire (`listen_story`) porte une histoire comme sujet : sans porteur, il devient anonyme — ce qui contredit la règle « un lien par personne, jamais un lien famille commun » et rend la visibilité restreinte inapplicable, puisqu'on ne sait plus qui écoute. Nullable, parce qu'un lien d'enregistrement porte déjà son narrateur par son sujet et n'a rien à répéter.
+
 ## otp_challenges (bloc 03)
 `id`, `narrator_id` nullable, `family_member_id` nullable, `purpose` check (`narrator_space`, `sensitive_act`), `code_hash`, `channel`, `sent_to_masked`, `attempts` smallint, `expires_at`, `verified_at` nullable, `locked_until` nullable, `created_at`.
 
@@ -198,10 +204,20 @@ Index : `(subject_type, subject_id, type)`, `(expires_at)`.
 Le destinataire n'y figure jamais en clair : `to_hash` pour dédupliquer et regrouper, `to_masked` pour que le support puisse dire « envoyé au 06 •• •• •• 12 ».
 
 ## reactions (bloc 08)
-`id`, `story_id`, `family_member_id`, `type` check (`heart`, `thanks`), `comment` varchar(280) nullable, `created_at`. Unique `(story_id, family_member_id, type)`.
+`id` uuid, `story_id` uuid FK (`cascadeOnDelete`), `family_member_id` uuid FK (`cascadeOnDelete`), `type` check (`heart`, `thanks`), `comment` varchar(280) nullable, `created_at`, `updated_at`. Unique `(story_id, family_member_id, type)`, index `(story_id, created_at)`.
+
+L'unicité est le fond de l'affaire : **un cœur donné deux fois reste un cœur**. Le narrateur n'a pas à distinguer un enthousiasme d'un double-clic, et une notification par tap serait du harcèlement. Le `comment`, lui, remplace le précédent — quelqu'un qui se relit et corrige son message ne doit pas en laisser deux.
+
+Deux types seulement, et **aucun pouce baissé** : le produit ne propose aucune façon de désapprouver le souvenir de quelqu'un. `comment` est court par construction : on demande un mot, pas une lettre — et un mot arrive, là où une lettre reste en brouillon.
 
 ## listen_events (bloc 08) — bigint
-`story_id`, `family_member_id` nullable, `token_type`, `seconds_listened` int, `reached_30s` bool, `started_at`, `created_at`. Index `(story_id, reached_30s)`.
+`id`, `story_id` uuid FK (`cascadeOnDelete`), `family_member_id` uuid FK **nullable** (`cascadeOnDelete`), `token_type` check (types de `TokenType`), `seconds_listened` int défaut 0, `reached_30s` bool défaut faux, `started_at` nullable, timestamps. Index `(story_id, reached_30s)`, unique `(story_id, family_member_id)`.
+
+Le maillon central de la chaîne H2 : sans lui, on ne distingue pas un proche qui a **ouvert la page** d'un proche qui a **écouté**, et le dossier refuse de présumer la causalité entre l'attention des proches et l'élan du narrateur.
+
+Une ligne par proche et par histoire, cumulée. `reached_30s` est un booléen posé une fois, et non un calcul refait à la lecture : le franchissement du seuil est un fait daté, et l'événement analytics ne part qu'une fois — le recompter à chaque envoi gonflerait la mesure d'un facteur dix.
+
+`family_member_id` reste nullable pour l'écoute par QR imprimé (bloc 13), où l'on ne sait pas qui écoute — et où l'on ne cherche pas à le savoir.
 
 ## engine_events (bloc 09) — bigint
 `project_id`, `story_id` nullable, `rule_id` varchar, `occurrence_key` varchar, `dedupe_key` unique (`rule_id:occurrence_key`), `fired_at`, `action_taken` jsonb, `outcome` check nullable (`resumed`, `no_effect`), `outcome_at` nullable, `created_at`. Index `(project_id, rule_id)`.
