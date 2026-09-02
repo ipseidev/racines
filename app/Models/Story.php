@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\ModelStates\HasStates;
@@ -136,6 +137,41 @@ final class Story extends Model
         }
 
         return $this->visibility !== StoryVisibility::BookOnly;
+    }
+
+    /**
+     * Les proches autorisés quand la visibilité est restreinte.
+     *
+     * @return BelongsToMany<FamilyMember, $this>
+     */
+    public function allowedFamilyMembers(): BelongsToMany
+    {
+        return $this->belongsToMany(FamilyMember::class, 'story_visibility_family_members')
+            ->withPivot('created_at');
+    }
+
+    /**
+     * Ce proche-là peut-il écouter cette histoire ?
+     *
+     * Deux questions distinctes, dans cet ordre : l'état dit *si* l'histoire
+     * s'écoute, la liste dit *qui* l'écoute. Une liste blanche ne rend jamais
+     * visible une histoire que le narrateur n'a pas partagée.
+     */
+    public function isVisibleTo(FamilyMember $member): bool
+    {
+        if (! $this->isVisibleToFamily()) {
+            return false;
+        }
+
+        if ($member->project_id !== $this->project_id) {
+            return false;
+        }
+
+        if ($this->visibility !== StoryVisibility::Restricted) {
+            return true;
+        }
+
+        return $this->allowedFamilyMembers()->whereKey($member->id)->exists();
     }
 
     /**

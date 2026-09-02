@@ -10,6 +10,7 @@ use App\States\Story\Transitions\ArchiveStory;
 use App\States\Story\Transitions\DeleteStory;
 use App\States\Story\Transitions\HideStory;
 use App\States\Story\Transitions\IncludeInBook;
+use App\States\Story\Transitions\KeepStoryPrivate;
 use App\States\Story\Transitions\MarkTranscribed;
 use App\States\Story\Transitions\RecordStory;
 use App\States\Story\Transitions\RequestReview;
@@ -55,6 +56,10 @@ abstract class StoryState extends State
             ->allowTransition(Proposed::class, Recorded::class, RecordStory::class)
             ->allowTransition(Recorded::class, Transcribed::class, MarkTranscribed::class)
             ->allowTransition(Transcribed::class, ToReview::class, RequestReview::class)
+            // Retour en arrière assumé : « garder pour moi » est une réponse,
+            // pas une validation, et l'histoire doit quitter la file des
+            // relances sans que rien soit gravé (bloc 07 §9).
+            ->allowTransition(ToReview::class, Transcribed::class, KeepStoryPrivate::class)
             // Une seule classe de validation : elle inspecte le contexte et
             // refuse ce que la garde de l'état source interdit (bloc 02 §9).
             ->allowTransition(
