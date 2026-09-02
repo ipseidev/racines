@@ -55,6 +55,9 @@ use Spatie\ModelStates\HasStates;
  * @property bool $printed_in_book
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read Project $project
+ * @property-read Narrator $narrator
+ * @property-read Question|null $question
  */
 final class Story extends Model
 {

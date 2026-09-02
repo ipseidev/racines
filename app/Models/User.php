@@ -18,6 +18,8 @@ use Illuminate\Support\Carbon;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property int $id
@@ -39,7 +41,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 final class User extends Authenticatable implements FilamentUser, MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, HasRoles, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
      * Seul le personnel accède au back-office (doc 04 §12).
@@ -49,9 +51,37 @@ final class User extends Authenticatable implements FilamentUser, MustVerifyEmai
         return $this->role->isStaff();
     }
 
+    /**
+     * L'accès au panneau se décide sur une permission, pas sur un nom de rôle :
+     * retirer `admin.access` à un compte suffit à le sortir du back-office.
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->isStaff();
+        return $this->can('admin.access');
+    }
+
+    /**
+     * Traduit `users.role` en rôle spatie, seule source des permissions fines.
+     *
+     * Si le rôle n'existe pas encore en base — seeder non joué —, on n'assigne
+     * rien : le compte reste dehors. Échouer fermé plutôt qu'ouvert.
+     */
+    public function syncBackOfficeRole(): void
+    {
+        if (! $this->role->isStaff()) {
+            $this->syncRoles([]);
+
+            return;
+        }
+
+        $exists = Role::query()
+            ->where('name', $this->role->value)
+            ->where('guard_name', $this->getDefaultGuardName())
+            ->exists();
+
+        if ($exists) {
+            $this->syncRoles([$this->role->value]);
+        }
     }
 
     /**
@@ -64,6 +94,12 @@ final class User extends Authenticatable implements FilamentUser, MustVerifyEmai
         self::creating(function (self $user): void {
             $user->role ??= UserRole::default();
             $user->locale ??= config('app.locale');
+        });
+
+        self::saved(function (self $user): void {
+            if ($user->wasRecentlyCreated || $user->wasChanged('role')) {
+                $user->syncBackOfficeRole();
+            }
         });
     }
 

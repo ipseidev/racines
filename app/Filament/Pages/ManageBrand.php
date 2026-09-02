@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Actions\UpdateBrandSettings;
-use App\Enums\UserRole;
 use App\Models\User;
 use App\Settings\BrandSettings;
 use App\Support\Contrast;
@@ -47,7 +46,7 @@ final class ManageBrand extends SettingsPage
     {
         $user = auth()->user();
 
-        return $user instanceof User && $user->role === UserRole::Admin;
+        return $user instanceof User && $user->can('brand.manage');
     }
 
     public function form(Schema $schema): Schema

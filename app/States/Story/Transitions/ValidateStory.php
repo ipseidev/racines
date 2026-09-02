@@ -110,9 +110,7 @@ final class ValidateStory extends Transition
             throw ForbiddenTransition::guardFailed($from, 'validated', 'only the phone operator validates a story that is merely recorded');
         }
 
-        $narrator = $this->story->narrator;
-
-        if ($narrator === null || ! $narrator->hasConsent(ConsentKind::PhoneCallRecording)) {
+        if (! $this->story->narrator->hasConsent(ConsentKind::PhoneCallRecording)) {
             throw ForbiddenTransition::guardFailed($from, 'validated', 'no oral agreement to the phone recording is on file');
         }
     }
