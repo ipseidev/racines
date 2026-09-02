@@ -22,6 +22,7 @@ use Illuminate\Notifications\Notification;
  *
  * @property string $id
  * @property string $project_id
+ * @property-read Project $project
  * @property int $invited_by_user_id
  * @property string $display_name
  * @property string|null $relationship

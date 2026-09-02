@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string|null $replaced_by_token_id
  * @property string|null $issued_by_type
  * @property string|null $issued_by_id
+ * @property string|null $issued_to_type
+ * @property string|null $issued_to_id
  * @property TokenIssuedReason $issued_reason
  * @property CarbonImmutable|null $last_used_at
  * @property int $use_count
@@ -70,6 +72,19 @@ final class AccessToken extends Model
 
     /** @return MorphTo<Model, $this> */
     public function issuedBy(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * Qui **détient** ce lien, quand le sujet ne le dit pas.
+     *
+     * Un lien d'histoire porte une histoire : sans porteur il serait anonyme,
+     * et un lien anonyme ne se révoque pas pour une seule personne.
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function issuedTo(): MorphTo
     {
         return $this->morphTo();
     }
@@ -122,6 +137,7 @@ final class AccessToken extends Model
             'issued_reason' => TokenIssuedReason::class,
             'subject_id' => 'string',
             'issued_by_id' => 'string',
+            'issued_to_id' => 'string',
             'scope' => 'array',
             'single_use' => 'boolean',
             'use_count' => 'integer',

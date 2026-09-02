@@ -139,6 +139,18 @@ final class Story extends Model
         return $this->visibility !== StoryVisibility::BookOnly;
     }
 
+    /** @return HasMany<Reaction, $this> */
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(Reaction::class);
+    }
+
+    /** @return HasMany<ListenEvent, $this> */
+    public function listenEvents(): HasMany
+    {
+        return $this->hasMany(ListenEvent::class);
+    }
+
     /**
      * Les proches autorisés quand la visibilité est restreinte.
      *

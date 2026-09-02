@@ -117,6 +117,17 @@ final class Project extends Model
         return $this->hasOne(Narrator::class)->where('is_primary', true);
     }
 
+    /**
+     * Les questions sont-elles en pause ?
+     *
+     * Une pause a toujours une fin : un arrêt sans terme ferait disparaître
+     * le projet en silence, et personne ne saurait s'il faut relancer.
+     */
+    public function isPaused(): bool
+    {
+        return $this->paused_until !== null && $this->paused_until->isFuture();
+    }
+
     /** @return HasMany<FamilyMember, $this> */
     public function familyMembers(): HasMany
     {

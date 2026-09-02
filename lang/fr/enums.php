@@ -124,6 +124,11 @@ return [
         'phone' => 'Téléphone',
     ],
 
+    'reaction_type' => [
+        'heart' => 'J’ai aimé',
+        'thanks' => 'Merci',
+    ],
+
     'consent_kind' => [
         'voice_recording' => 'Enregistrement de la voix',
         'transcription' => 'Transcription de l’audio',

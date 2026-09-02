@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Services\Analytics\Analytics;
+use App\Services\Analytics\LogAnalytics;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\SmsSender;
 use App\Services\Storage\FakeMediaStorage;
@@ -76,6 +78,20 @@ function fakeSms(): FakeSmsSender
     app()->instance(SmsSender::class, $sender);
 
     return $sender;
+}
+
+/**
+ * Les mesures, en mémoire.
+ *
+ * Le même parti que pour le stockage et le SMS : une implémentation
+ * inspectable, liée dans le conteneur, plutôt qu'un espion de bibliothèque.
+ */
+function fakeAnalytics(): LogAnalytics
+{
+    $analytics = new LogAnalytics;
+    app()->instance(Analytics::class, $analytics);
+
+    return $analytics;
 }
 
 /**

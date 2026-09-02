@@ -9,7 +9,9 @@ use App\Enums\Channel;
 use App\Enums\OutboundMessageStatus;
 use App\Services\Tokens\OtpService;
 use Carbon\CarbonImmutable;
+use Database\Factories\OutboundMessageFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -39,7 +41,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 final class OutboundMessage extends Model
 {
-    use HasUuids, StoresDatesWithOffset;
+    /** @use HasFactory<OutboundMessageFactory> */
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     public const UPDATED_AT = null;
 

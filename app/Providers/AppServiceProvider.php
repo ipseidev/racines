@@ -9,6 +9,8 @@ use App\Models\Narrator;
 use App\Models\Project;
 use App\Models\Story;
 use App\Models\User;
+use App\Services\Analytics\Analytics;
+use App\Services\Analytics\LogAnalytics;
 use App\Services\Llm\AnthropicMessages;
 use App\Services\Llm\ClaudeStoryRenderer;
 use App\Services\Llm\FakeStoryRenderer;
@@ -91,6 +93,18 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureMediaStorage();
         $this->configureTranscription();
         $this->configureStoryRenderer();
+        $this->configureAnalytics();
+    }
+
+    /**
+     * Les mesures partent dans le journal jusqu'au bloc 15, où PostHog prend
+     * le relais. L'interface existe dès maintenant pour que les événements de
+     * la chaîne H2 soient émis **pendant** qu'on écrit le code qui les
+     * produit, et non ajoutés après coup aux mauvais endroits.
+     */
+    private function configureAnalytics(): void
+    {
+        $this->app->singleton(Analytics::class, LogAnalytics::class);
     }
 
     /**

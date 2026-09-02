@@ -43,6 +43,7 @@ final class TokenService
         ?DateTimeInterface $expiresAt = null,
         ?Model $issuedBy = null,
         TokenIssuedReason $reason = TokenIssuedReason::Initial,
+        ?Model $issuedTo = null,
     ): IssuedToken {
         $plain = self::generate();
 
@@ -61,26 +62,37 @@ final class TokenService
             $token->issuedBy()->associate($issuedBy);
         }
 
+        if ($issuedTo instanceof Model) {
+            $token->issuedTo()->associate($issuedTo);
+        }
+
         $token->save();
 
         return new IssuedToken($plain, $token);
     }
 
     /**
-     * Résout un lien présenté par un visiteur.
+     * Résout un lien présenté par un visiteur, en n'acceptant que les types
+     * annoncés.
      *
      * L'ordre des vérifications est délibéré : le type d'abord, pour ne jamais
      * révéler par un message d'erreur qu'un jeton d'un autre périmètre existe.
+     *
+     * Plusieurs types sont admis parce que l'espace famille en a deux — un
+     * lien de projet et un lien d'histoire mènent à la même page. Le
+     * périmètre reste **déclaré**, jamais deviné : c'est ce qui le rend
+     * vérifiable d'un coup d'œil sur le fichier de routes.
      */
-    public function resolve(string $plain, TokenType $expected): AccessToken
+    public function resolve(string $plain, TokenType $expected, TokenType ...$alsoAccepted): AccessToken
     {
+        $accepted = [$expected, ...$alsoAccepted];
         $token = $this->locate($plain);
 
         if ($token === null) {
             throw TokenNotFound::make($expected);
         }
 
-        if ($token->type !== $expected) {
+        if (! in_array($token->type, $accepted, true)) {
             throw TokenTypeMismatch::make($expected);
         }
 

@@ -25,18 +25,27 @@ final readonly class ResolveAccessToken
 {
     public function __construct(private TokenService $tokens) {}
 
-    public function handle(Request $request, Closure $next, string $type): Response
+    /**
+     * @param  string  $types  Un ou plusieurs types, séparés par `|`. L'espace
+     *                         famille en accepte deux : un lien de projet et
+     *                         un lien d'histoire mènent à la même page, et le
+     *                         périmètre reste déclaré sur la route.
+     */
+    public function handle(Request $request, Closure $next, string $types): Response
     {
-        $expected = TokenType::tryFrom($type)
-            ?? throw new \InvalidArgumentException("Unknown token type [{$type}] on route.");
+        $expected = array_map(
+            fn (string $type): TokenType => TokenType::tryFrom($type)
+                ?? throw new \InvalidArgumentException("Unknown token type [{$type}] on route."),
+            explode('|', $types),
+        );
 
         $plain = $request->route('token');
 
         if (! is_string($plain)) {
-            throw TokenNotFound::make($expected);
+            throw TokenNotFound::make($expected[0]);
         }
 
-        $token = $this->tokens->resolve($plain, $expected);
+        $token = $this->tokens->resolve($plain, ...$expected);
 
         $request->attributes->set('access_token', $token);
         $request->attributes->set('token_subject', $token->subject);
