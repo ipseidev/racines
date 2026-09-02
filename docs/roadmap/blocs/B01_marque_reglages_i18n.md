@@ -24,7 +24,7 @@ Le nom et le domaine ne sont pas décidés. Le dossier impose un domaine unique 
 ## 4. Packages
 
 ```bash
-sail composer require filament/filament:"^4.0"
+sail composer require filament/filament    # dernière version stable, cf. §6bis des conventions
 sail artisan filament:install --panels          # crée app/Providers/Filament/AdminPanelProvider.php, chemin /admin
 sail composer require spatie/laravel-settings filament/spatie-laravel-settings-plugin
 sail artisan vendor:publish --provider="Spatie\LaravelSettings\LaravelSettingsServiceProvider" --tag="migrations"

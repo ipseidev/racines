@@ -64,6 +64,10 @@ Format : décision, pourquoi, alternatives écartées, réversibilité. Numérot
 
 Format : `T-nn — date — bloc — décision — pourquoi — à revalider par l'humain : oui/non`.
 
+**T-37 — 2026-09-02 — bloc 01 — Toujours la dernière version stable.** Règle demandée par le fondateur et inscrite en `01_CONVENTIONS.md` §6bis : on installe sans contrainte de version, les numéros de la roadmap sont indicatifs, et `composer outdated --direct` comme `npm outdated` doivent être vides à la clôture de chaque bloc. Appliqué immédiatement : Filament 5.7 au lieu du ^4.0 annoncé, puis montée de `typescript` 5.9 → 7.0.2, `@types/node` 22 → 26.4.1, `lucide-react` 0.475 → 1.39, `@laravel/passkeys` 0.2 → 0.4. Porte qualité verte après chaque montée. À revalider : non.
+
+**T-38 — 2026-09-02 — bloc 01 — Caches générés retirés du suivi git.** Le `git add -A` du bloc 00 avait versionné 69 fichiers de `storage/framework/views`, `storage/logs` et `bootstrap/cache`. Ils sont retirés et chaque dossier porte désormais son `.gitignore` (`*` puis `!.gitignore`), comme le prévoit Laravel, pour que l'arborescence survive à un clone sans versionner son contenu. À revalider : non.
+
 **T-29 — 2026-09-02 — bloc 00 — Versions réelles du kit de démarrage.** `laravel new --react --pest --database=pgsql` installe Laravel 13, Inertia 3, React 19 avec le React Compiler, Vite 8, Tailwind 4, Pest 5, PHP ^8.3 (8.5.7 dans le conteneur Sail), Fortify avec clés d'accès et double facteur. Larastan, Pint, Sail, Telescope absent mais Pail présent. La roadmap tablait sur des versions antérieures ; on suit le kit. À revalider : non.
 
 **T-30 — 2026-09-02 — bloc 00 — Vite+ (`vp`) remplace ESLint, Prettier et l'appel direct à Vitest.** Le kit livre `vite-plus`, une chaîne unifiée qui fournit `oxlint` (lint), `oxfmt` (format), Vitest (tests) et Vite (build). `npm run check` exécute format, lint et types ; `vp test` exécute Vitest avec toutes ses options. Conséquence : ne pas installer `eslint`, `prettier` ni `vitest` séparément, contrairement à ce qu'annonçait le bloc 00. La configuration de lint et de format vit dans `vite.config.ts`, pas dans des fichiers dédiés. À revalider : non.

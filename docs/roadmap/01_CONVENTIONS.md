@@ -147,6 +147,13 @@ Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc
 
 L'application locale répond sur `http://localhost:8001`, Mailpit sur `http://localhost:8027`, la console MinIO sur `http://localhost:8901` (ports décalés, décision T-34). Depuis le Mac, Playwright a besoin de `E2E_BASE_URL=http://localhost:8001` ; dans le conteneur, la valeur par défaut suffit.
 
+## 6bis. Versions des dépendances
+
+- **On installe toujours la dernière version stable.** `composer require <paquet>` et `npm i <paquet>` sans contrainte de version ; on laisse le gestionnaire résoudre. Les numéros écrits dans les blocs de la roadmap sont indicatifs et datent de sa rédaction : quand ils divergent de ce qui est publié, la dernière version gagne et l'écart est noté dans `03_DECISIONS.md`.
+- **On vérifie avant de clore un bloc** : `sail composer outdated --direct` et `sail npm outdated` ne doivent lister aucune montée possible, ou chaque exception doit être justifiée par écrit.
+- **Une montée majeure passe par la porte qualité complète** avant d'être commitée, et seule, pour que l'échec soit attribuable.
+- Dependabot ouvre des demandes hebdomadaires sur Composer, npm et les actions GitHub ; la CI les valide.
+
 ## 7. Git et commits
 
 - Dépôt GitHub privé, branche `main` protégée par la CI (les checks doivent passer). Travail en solo : commits directs sur `main` autorisés ; une branche par bloc si le bloc dure plus d'une journée.
