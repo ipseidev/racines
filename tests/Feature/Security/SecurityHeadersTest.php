@@ -32,15 +32,35 @@ it('n’autorise aucune origine de police tierce : elles sont auto-hébergées',
 });
 
 it('pose le nonce sur le script et le style en ligne de la vue racine', function (): void {
-    $html = $this->get('/')->getContent();
-    $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+    $response = $this->get('/');
+    $html = (string) $response->getContent();
+    $csp = (string) $response->headers->get('Content-Security-Policy');
 
     expect($html)->toContain('<script nonce="')
         ->and($html)->toContain('<style nonce="');
 
     preg_match("/script-src 'self' 'nonce-([^']+)'/", $csp, $matches);
+    $nonce = $matches[1] ?? null;
 
-    expect($matches[1] ?? null)->not->toBeNull();
+    expect($nonce)->not->toBeNull()
+        ->and($html)->toContain('<script nonce="'.$nonce.'"');
+});
+
+it('donne son nonce au front, qui crée des styles après le rendu', function (): void {
+    $response = $this->get('/');
+    $html = (string) $response->getContent();
+    $csp = (string) $response->headers->get('Content-Security-Policy');
+
+    preg_match("/style-src 'self' 'nonce-([^']+)'/", $csp, $matches);
+    $nonce = $matches[1] ?? null;
+
+    // Inertia injecte la feuille de styles de sa barre de progression à
+    // l'exécution. Sans ce nonce, elle est refusée sur `style-src-elem` et
+    // l'indicateur de chargement ne s'affiche pas (T-75). La balise et
+    // l'en-tête doivent porter la **même** valeur, sinon le nonce ne sert
+    // qu'à donner l'illusion d'une protection.
+    expect($nonce)->not->toBeNull()
+        ->and($html)->toContain('<meta name="csp-nonce" content="'.$nonce.'">');
 });
 
 it('autorise les origines de médias déclarées dans la configuration', function (): void {

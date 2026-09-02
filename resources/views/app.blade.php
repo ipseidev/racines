@@ -7,6 +7,10 @@
         <meta name="brand" content="{{ $brandName }}">
         {{-- Les appels `fetch` de la page d'enregistrement en ont besoin. --}}
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        {{-- Inertia crée sa barre de progression, et sa feuille de styles,
+             à l'exécution : sans ce nonce, la politique stricte des pages
+             narrateur la refusait (T-75). --}}
+        <meta name="csp-nonce" content="{{ Vite::cspNonce() }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         {{-- Le nonce vient de SecurityHeaders : sans lui, la politique de

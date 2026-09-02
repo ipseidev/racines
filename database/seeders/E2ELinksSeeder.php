@@ -18,6 +18,7 @@ use App\Models\Story;
 use App\Models\User;
 use App\Services\Tokens\TokenService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 
@@ -61,6 +62,13 @@ final class E2ELinksSeeder extends Seeder
         if (app()->isProduction()) {
             throw new RuntimeException('Ce seeder ne doit pas tourner en production.');
         }
+
+        // Le décor comprend les compteurs de limitation de débit, qui vivent
+        // dans le cache et survivent à `migrate:fresh`. Sans ce vidage, le
+        // scénario « demander un nouveau lien » — une demande par heure et par
+        // jeton, et c'est la bonne règle produit — ne passe qu'une fois par
+        // heure sur la machine, et échoue au deuxième appel de la suite.
+        Cache::flush();
 
         $owner = User::query()->firstOrCreate(
             ['email' => self::OWNER_EMAIL],

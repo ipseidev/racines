@@ -16,12 +16,20 @@ const FamilyLayout = lazy(() => import('@/layouts/family-layout'));
 const NarratorLayout = lazy(() => import('@/layouts/narrator-layout'));
 const SettingsLayout = lazy(() => import('@/layouts/settings/layout'));
 
-const brandName =
+const meta = (name: string) =>
     document
-        .querySelector<HTMLMetaElement>('meta[name="brand"]')
+        .querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
         ?.content.trim() ?? '';
 
+const brandName = meta('brand');
+
 void createInertiaApp({
+    // Inertia crée sa barre de progression à l'exécution, feuille de styles
+    // comprise. Le nonce lui est passé pour que la politique stricte des
+    // pages narrateur l'accepte : sans lui, la balise `<style>` injectée
+    // était refusée sur `style-src-elem`, et l'indicateur de chargement ne
+    // s'affichait pas (T-75).
+    nonce: meta('csp-nonce'),
     // Le nom vient des réglages de marque, jamais d'une constante de build.
     // Lu une seule fois : Inertia remplace la balise title à chaque page, donc
     // s'y référer composerait le titre à partir du titre déjà composé.
