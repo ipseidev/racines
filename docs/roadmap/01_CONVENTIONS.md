@@ -112,7 +112,7 @@ Ces conventions s'appliquent à tout le code, tous les tests et tous les documen
 |---|---|---|
 | Unitaire PHP | Pest, dossier `tests/Unit` | Toute Action, Service, Rule du moteur, transition d'état, Value Object |
 | Feature PHP | Pest, `tests/Feature` | Toute route (succès, refus d'autorisation, validation), tout Job (avec fakes), tout webhook (signature valide et invalide) |
-| Unitaire front | Vitest + RTL, fichiers `*.test.tsx` / `*.test.ts` | Tout composant qui a un état ou une condition, toute fonction de `lib/` et `recorder/` |
+| Unitaire front | Vitest (via `vp test`) + Testing Library, fichiers `*.test.tsx` / `*.test.ts` | Tout composant qui a un état ou une condition, toute fonction de `lib/` et `recorder/` |
 | Bout en bout | Playwright, `tests/e2e/*.spec.ts` | Le scénario nominal de chaque bloc et son scénario d'échec principal |
 | Accessibilité | `@axe-core/playwright` dans les specs des pages narrateur et famille | Zéro violation `serious` ou `critical` |
 
@@ -130,15 +130,22 @@ Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc
 
 | Commande | Fait |
 |---|---|
-| `sail up -d` | Démarre l'environnement local (app, pgsql, redis, mailpit, clamav à partir du bloc 12) |
-| `sail composer check` | `pint --test` puis `phpstan analyse` puis `pest --parallel` |
-| `sail composer test` | `pest --parallel` |
-| `sail composer analyse` | `phpstan analyse --memory-limit=1G` |
-| `sail composer lint` | `pint` (corrige) |
-| `sail npm run check` | `tsc --noEmit`, `eslint .`, `prettier --check .`, `vitest run` |
-| `sail npm run test` | `vitest run` |
-| `sail npm run e2e` | `playwright test` |
+| `sail up -d` | Démarre l'environnement local : app, pgsql, redis, mailpit, minio (clamav au bloc 12) |
+| `sail composer check` | Alias de `ci:check` : contrôle front puis PHP, la porte complète |
+| `sail composer test` | Enchaîne `lint:check`, `types:check` et les tests PHP |
+| `sail composer lint` | Pint, corrige |
+| `sail composer lint:check` | Pint, vérifie sans corriger |
+| `sail composer types:check` | PHPStan niveau 8 |
+| `sail npm run check` | Vite+ : format (oxfmt) et lint (oxlint) |
+| `sail npm run check:fix` | Vite+ : corrige format et lint |
+| `sail npm run types:check` | `tsc --noEmit` |
+| `sail npm run test` | Vitest, une passe |
+| `sail npm run test:watch` | Vitest en continu |
+| `sail npx playwright test` | Tests bout en bout, depuis le conteneur |
+| `sail npm run build` | Compile les assets |
 | `sail artisan migrate:fresh --seed` | Base locale propre avec le corpus et un projet de démonstration |
+
+L'application locale répond sur `http://localhost:8001`, Mailpit sur `http://localhost:8027`, la console MinIO sur `http://localhost:8901` (ports décalés, décision T-34). Depuis le Mac, Playwright a besoin de `E2E_BASE_URL=http://localhost:8001` ; dans le conteneur, la valeur par défaut suffit.
 
 ## 7. Git et commits
 

@@ -1,0 +1,127 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+|--------------------------------------------------------------------------
+| Paramètres produit
+|--------------------------------------------------------------------------
+|
+| Toutes les valeurs chiffrées du produit. La source de vérité métier reste le
+| référentiel docs/dossier/05_REFERENTIEL_GLOSSAIRE_SOURCES.md ; ce fichier ne
+| fait que l'exécuter. Les seuils marqués [À CONFIRMER] attendent une donnée
+| réelle (devis imprimeur, décision du comité).
+|
+*/
+
+return [
+
+    // Enregistrement navigateur (décision T-27, PRD US-01)
+    'recording' => [
+        'soft_warning_seconds' => 600,
+        'hard_stop_seconds' => 1200,
+        'max_bytes' => 209_715_200,
+        'segment_milliseconds' => 5_000,
+        'upload_part_bytes' => 5 * 1024 * 1024,
+        'accepted_mimes' => [
+            'audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/wav', 'audio/x-m4a',
+        ],
+    ],
+
+    // Durées de vie des jetons (glossaire §4, doc 04 §12)
+    'tokens' => [
+        'record_days' => 30,
+        'listen_project_months' => 12,
+        'listen_story_days' => 90,
+        'invitation_days' => 30,
+        'action_days' => 14,
+        'export_days' => 7,
+        'narrator_space_days' => 30,
+        'sensitive_grant_minutes' => 15,
+    ],
+
+    // Codes à usage unique (doc 04 §12)
+    'otp' => [
+        'length' => 6,
+        'ttl_minutes' => 10,
+        'max_attempts' => 5,
+        'lockout_minutes' => 15,
+        'max_challenges_per_hour' => 3,
+    ],
+
+    // Moteur de complétion (annexe C de la roadmap, PRD §5.3)
+    'engine' => [
+        'tick_cron' => '7 * * * *',
+        'invitation_reminder_days' => [7, 14],
+        'link_not_opened_days' => 3,
+        'recording_abandoned_days' => 2,
+        'recorded_not_validated_days' => 4,
+        'recorded_not_validated_max_reminders' => 2,
+        'validated_not_listened_days' => 5,
+        'no_reaction_story_count' => 3,
+        'react_suggestion_min_interval_days' => 30,
+        'silence_light_question_days' => 10,
+        'silence_alert_days' => 21,
+        'silence_alert_min_interval_days' => 30,
+        'declining_window_weeks' => 4,
+        'declining_offer_min_interval_weeks' => 8,
+        'initiator_max_requests_per_month' => 4,
+    ],
+
+    // Book-ready : critères de production, jamais un compte d'histoires (R-6)
+    'book_ready' => [
+        'min_words' => 12_000,
+        'min_audio_minutes' => 90,
+        'min_pages' => 60,
+        'min_themes' => 5,
+        'words_per_page' => 280,
+    ],
+
+    // Livre imprimé (bloc 13)
+    'book' => [
+        'trim_size_mm' => [200, 250], // [À CONFIRMER devis 0A]
+        'booklet_min_words' => 3_000,
+        'booklet_min_audio_minutes' => 25,
+    ],
+
+    // Offre et durées (R-2)
+    'offer' => [
+        'pilot_weeks' => 12,
+        'core_months' => 12,
+        'finalization_months' => 3,
+        'dormant_after_months' => 15,
+    ],
+
+    // Écoute famille (PRD §7, H2)
+    'family' => [
+        'listen_threshold_seconds' => 30,
+        'comment_max_chars' => 280,
+    ],
+
+    // Créneaux d'envoi (décision T-28)
+    'schedule' => [
+        'gift_hour' => 9,
+        'slots' => ['morning' => 9, 'afternoon' => 14, 'evening' => 18],
+    ],
+
+    // SMS : pays acceptant un expéditeur alphanumérique (bloc 05)
+    'sms' => [
+        'alphanumeric_countries' => ['FR', 'BE', 'CH', 'LU'],
+    ],
+
+    // Pilote et option téléphone (R-12 D-9)
+    'pilot' => [
+        'phone_option_cap' => 10,
+        'phone_option_price_cents' => 2_500,
+        'pilot_price_cents' => 4_900,
+        'prevente_prices_cents' => [9_900, 12_900],
+        'target_stories' => [10, 15],
+    ],
+
+    // Photos (bloc 12)
+    'photos' => [
+        'max_bytes' => 20 * 1024 * 1024,
+        'print_ready_min_shortest_side' => 1_200,
+        'caption_max_chars' => 200,
+    ],
+];

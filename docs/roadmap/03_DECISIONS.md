@@ -62,6 +62,18 @@ Format : décision, pourquoi, alternatives écartées, réversibilité. Numérot
 
 ## Décisions prises en cours de route
 
-Ajouter ici, par ordre chronologique, toute décision prise faute d'information pendant l'exécution d'un bloc. Format : `T-nn — date — bloc — décision — pourquoi — à revalider par l'humain : oui/non`.
+Format : `T-nn — date — bloc — décision — pourquoi — à revalider par l'humain : oui/non`.
 
-_(vide)_
+**T-29 — 2026-09-02 — bloc 00 — Versions réelles du kit de démarrage.** `laravel new --react --pest --database=pgsql` installe Laravel 13, Inertia 3, React 19 avec le React Compiler, Vite 8, Tailwind 4, Pest 5, PHP ^8.3 (8.5.7 dans le conteneur Sail), Fortify avec clés d'accès et double facteur. Larastan, Pint, Sail, Telescope absent mais Pail présent. La roadmap tablait sur des versions antérieures ; on suit le kit. À revalider : non.
+
+**T-30 — 2026-09-02 — bloc 00 — Vite+ (`vp`) remplace ESLint, Prettier et l'appel direct à Vitest.** Le kit livre `vite-plus`, une chaîne unifiée qui fournit `oxlint` (lint), `oxfmt` (format), Vitest (tests) et Vite (build). `npm run check` exécute format, lint et types ; `vp test` exécute Vitest avec toutes ses options. Conséquence : ne pas installer `eslint`, `prettier` ni `vitest` séparément, contrairement à ce qu'annonçait le bloc 00. La configuration de lint et de format vit dans `vite.config.ts`, pas dans des fichiers dédiés. À revalider : non.
+
+**T-31 — 2026-09-02 — bloc 00 — On adopte les noms de scripts du kit.** `composer lint` (corrige), `composer lint:check`, `composer types:check` (PHPStan), `composer test` (enchaîne lint:check, types:check et les tests), `composer ci:check` (ajoute le front). Un alias `composer check` est ajouté vers `ci:check`. La roadmap proposait `analyse` et `check` ; on garde la convention Laravel pour éviter deux vocabulaires. À revalider : non.
+
+**T-32 — 2026-09-02 — bloc 00 — Wayfinder pour les routes typées côté React.** Le kit génère des représentations TypeScript des routes et actions Laravel dans `resources/js/routes` et `resources/js/actions` (ignorés par git). Les composants référencent les routes par ces helpers plutôt que par des chaînes. À revalider : non.
+
+**T-33 — 2026-09-02 — bloc 00 — L'image Sail est utilisée telle quelle.** Elle contient déjà ffmpeg, imagick, les dépendances Playwright, pgsql, redis, intl, bcmath, gd. `sail:publish` a donc été annulé ; seul `docker/pgsql/create-testing-database.sql` est conservé, car `compose.yaml` le monte. On republiera l'image aux blocs 12 et 13, pour ClamAV et poppler-utils. À revalider : non.
+
+**T-34 — 2026-09-02 — bloc 00 — Ports locaux décalés.** Deux autres piles Docker tournent sur cette machine (`fenomn-laravel` et `remento-clonde`) et occupent 80, 5432, 6379, 1025, 8025, 8000. Ce projet utilise 8001 (app), 5176 (Vite), 54323 (Postgres), 6381 (Redis), 1027 et 8027 (Mailpit), 9001 et 8901 (MinIO). `APP_URL=http://localhost:8001`. À revalider : oui, si les autres piles sont arrêtées un jour.
+
+**T-35 — 2026-09-02 — bloc 00 — Incident disque Docker.** La machine virtuelle Docker (58,4 Go) était pleine à 99 %, ce qui faisait échouer la vérification des signatures apt sur tous les dépôts pendant la construction de l'image. Résolu en supprimant le cache de construction (22,86 Go annoncés) et les images orphelines (10,89 Go réellement libérés). La limite de disque de Docker Desktop est réglée à 61 035 Mio alors que le Mac dispose de 292 Go libres. À revalider : oui, augmenter la limite dans Docker Desktop évitera la récidive.
