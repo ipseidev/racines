@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use RuntimeException;
 use Spatie\ModelStates\Events\StateChanged;
 
 final class AppServiceProvider extends ServiceProvider
@@ -98,12 +99,21 @@ final class AppServiceProvider extends ServiceProvider
 
     /**
      * `fake` en test, `log` en local, Twilio au bloc 05.
+     *
+     * Un fournisseur inconnu lève : un repli silencieux vers le journal
+     * enverrait les codes dans `storage/logs` au lieu de les envoyer aux
+     * narrateurs, sans que personne s'en aperçoive.
      */
     private function configureSmsSender(): void
     {
-        $this->app->singleton(SmsSender::class, fn (): SmsSender => match ((string) config('services.sms.provider')) {
-            'fake' => new FakeSmsSender,
-            default => new LogSmsSender,
+        $this->app->singleton(SmsSender::class, function (): SmsSender {
+            $provider = (string) config('services.sms.provider');
+
+            return match ($provider) {
+                'fake' => new FakeSmsSender,
+                'log' => new LogSmsSender,
+                default => throw new RuntimeException("Unknown SMS provider [{$provider}]."),
+            };
         });
     }
 

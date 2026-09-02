@@ -107,3 +107,21 @@ it('masque les jetons dans un journal réellement écrit', function (): void {
     expect($processed->message)->toBe('ouverture de /r/[redacted]')
         ->and($processed->context['url'])->toBe('/r/[redacted]');
 });
+
+it('laisse le code lisible en local, où le journal remplace l’opérateur', function (): void {
+    app()->detectEnvironment(fn (): string => 'local');
+
+    $processed = (new RedactTokens)(record('otp', ['body' => 'votre code est 123456']));
+
+    expect($processed->context['body'])->toContain('123456');
+});
+
+it('masque le jeton même en local : un lien n’a aucune raison d’y figurer', function (): void {
+    app()->detectEnvironment(fn (): string => 'local');
+
+    $plain = token();
+    $processed = (new RedactTokens)(record("/r/{$plain}", ['url' => "/r/{$plain}"]));
+
+    expect($processed->message)->toBe('/r/[redacted]')
+        ->and($processed->context['url'])->toBe('/r/[redacted]');
+});

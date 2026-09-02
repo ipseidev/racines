@@ -55,7 +55,9 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | posthog/posthog-php | _à installer_ | 15 |
 | spatie/laravel-backup, spatie/laravel-health | _à installer_ | 16 |
 
-Telescope n'est pas installé : `laravel/pail` couvre le suivi des journaux en local. À réévaluer au bloc 11 si le besoin d'inspection des requêtes se confirme.
+Telescope n'est pas installé : `laravel/pail` couvre le suivi des journaux en local. À réévaluer au bloc 11 si le besoin d'inspection des requêtes se confirme. S'il l'est, `ignore_paths` doit reprendre les sept préfixes de `TokenType::urlPrefixes()` (décision T-48).
+
+Le bloc 03 n'installe **aucun** paquet : `random_bytes`, `hash`, Monolog et Laravel suffisent.
 
 ## npm
 

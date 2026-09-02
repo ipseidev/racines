@@ -84,6 +84,22 @@ Les transitions vivent dans `App\States\Story\Transitions` et nulle part ailleur
 | `narrator_space` | espace du narrateur (liste de ses histoires) après OTP | 30 jours glissants | révocation |
 | `sensitive_grant` | autorisation d'un acte sensible après OTP (masquer une histoire ancienne, supprimer, régler) | 15 minutes | usage ou expiration |
 
+**Où vivent les jetons.** Le jeton en clair n'existe qu'entre son émission et son envoi : la base ne garde que `sha256(jeton)`, et rien ne permet de relire un lien déjà envoyé — on en émet un nouveau. `App\Services\Tokens\TokenService` est le seul à lire `token_hash`, et `App\Support\Links` le seul à construire une URL. Deux tests inscrivent ces deux règles (`tests/Unit/Tokens/TokenServiceTest.php`).
+
+Le `sensitive_grant` est le seul type qui ne voyage jamais dans un lien : il vit dans un cookie `sg`, `HttpOnly`, `SameSite=Strict`, quinze minutes. Une URL finirait dans l'historique du navigateur, dans les journaux et dans l'en-tête `Referer`.
+
+**Frontière du consentement fort (bloc 03 §6.5).** Depuis un lien `record`, les actions sur **cette** histoire — enregistrer, reprendre, choisir `keep_private`, masquer juste après l'enregistrement — ne demandent **pas** d'OTP : le lien a été envoyé au narrateur sur un canal qu'il possède, et exiger un code à chaque geste ferait fuir la personne qu'on veut faire parler.
+
+Exigent un `sensitive_grant` frais, obtenu par code à usage unique :
+
+- toute action sur une **autre** histoire que celle du lien ;
+- toute **suppression** (corbeille vers supprimée) ;
+- tout **réglage durable** du projet (cadence, canal, pause longue, visibilité par défaut) ;
+- toute **directive post-mortem** ;
+- tout **retrait tardif** : masquer, archiver ou mettre à la corbeille une histoire déjà partagée depuis plus longtemps que la session d'enregistrement.
+
+En cas de doute, l'action est sensible : c'est la règle de décision par défaut du bloc 03. On assouplit ensuite avec un test qui documente l'exception.
+
 ## 5. Consentements (`consents.kind`, doc 04 §2)
 
 `voice_recording` (a), `transcription` (b), `ai_rendering` (c), `family_sharing` (d), `sensitive_categories`, `phone_call_recording` (D-9), `photo_rights` (déposant), `post_mortem_directives`.
@@ -119,3 +135,7 @@ Colonnes : `subject_type/subject_id` (narrateur, proche ou utilisateur), `projec
 | `/x/{token}` | Téléchargement d'export | `export` |
 
 Tout le reste (`/`, `/essai`, `/acheter`, `/espace`, `/admin`, `/webhooks/*`) vit sur l'hôte de `APP_URL`.
+
+Un jeton fait exactement 43 caractères de base64url (32 octets aléatoires) : `Route::pattern('token', '[A-Za-z0-9_-]{43}')` refuse tout le reste par un 404, **avant** la moindre requête. Chaque route de `narrator.php` et de `family.php` porte `resolve.token:<type>`, `throttle:tokens` et `no-store` ; un test parcourt la table de routage et échoue si l'une y échappe. Seule exception documentée : `POST /r/{token}/request-new-link`, qui agit justement parce que le lien est mort.
+
+Les espaces `/a/` (action en un tap) et `/x/` (export) servent l'Initiateur·rice, mais leur page d'erreur est celle des proches : elle ne propose pas de renvoi automatique, l'Initiateur·rice ayant un compte pour se reconnecter.

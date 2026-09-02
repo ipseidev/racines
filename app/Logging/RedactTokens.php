@@ -76,6 +76,15 @@ final class RedactTokens implements ProcessorInterface
         );
 
         // Code à usage unique : six chiffres isolés.
+        //
+        // Sauf en local, où le journal *est* la passerelle d'envoi :
+        // `LogSmsSender` y remplace l'opérateur, et masquer le code rendrait
+        // impossible de dérouler un parcours narrateur sur sa machine. Partout
+        // ailleurs, y compris en test, le code est masqué (décision T-49).
+        if (app()->isLocal()) {
+            return $subject;
+        }
+
         return (string) preg_replace(
             '/(?<!\d)\d{'.self::codeLength().'}(?!\d)/',
             self::REPLACEMENT,
