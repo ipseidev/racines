@@ -38,4 +38,11 @@ return [
         'help' => 'Besoin d’aide ? Écrivez-nous à :email.',
     ],
 
+    'story' => [
+        // Dit à qui lit d'où vient le texte. La voix reste la référence : la
+        // mention nomme la personne, pas le modèle, et le lecteur peut
+        // toujours écouter l'enregistrement d'origine (bloc 08).
+        'ai_label' => 'Texte mis au propre par une IA, à partir de la voix de :first_name',
+    ],
+
 ];

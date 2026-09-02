@@ -79,6 +79,21 @@ function fakeSms(): FakeSmsSender
 }
 
 /**
+ * Charge une réponse de fournisseur enregistrée sous `tests/Fixtures/`.
+ *
+ * @return array<string, mixed>
+ */
+function providerFixture(string $name): array
+{
+    $decoded = json_decode(
+        (string) file_get_contents(base_path("tests/Fixtures/{$name}.json")),
+        true,
+    );
+
+    return is_array($decoded) ? $decoded : [];
+}
+
+/**
  * Stockage de médias en mémoire, substitué dans le conteneur.
  */
 function fakeMediaStorage(): FakeMediaStorage
