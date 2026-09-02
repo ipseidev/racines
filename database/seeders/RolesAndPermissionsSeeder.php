@@ -45,15 +45,23 @@ final class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         $guard = (string) config('auth.defaults.guard');
+        $registrar = app(PermissionRegistrar::class);
+
+        // Le cache du paquet est vidé avant et après : sans cela, un cache
+        // hérité d'avant `migrate:fresh` fait échouer l'association des
+        // permissions tout juste créées.
+        $registrar->forgetCachedPermissions();
 
         foreach (self::PERMISSIONS as $permission) {
             Permission::findOrCreate($permission, $guard);
         }
 
+        $registrar->forgetCachedPermissions();
+
         foreach (self::ROLES as $name => $permissions) {
             Role::findOrCreate($name, $guard)->syncPermissions($permissions);
         }
 
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $registrar->forgetCachedPermissions();
     }
 }
