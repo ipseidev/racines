@@ -99,6 +99,13 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+
+            // Eloquent écrit les dates sans décalage ('Y-m-d H:i:s') : Postgres
+            // les interprète dans le fuseau de la session. Sans cette ligne, un
+            // `now()` parisien est enregistré comme s'il était UTC et l'instant
+            // se décale de deux heures. Le stockage reste en UTC, comme le veut
+            // la convention §13 ; c'est la conversion en texte qui est alignée.
+            'timezone' => env('APP_TIMEZONE', 'UTC'),
         ],
 
         'sqlsrv' => [

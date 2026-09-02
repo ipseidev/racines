@@ -25,7 +25,14 @@ pest()->extend(TestCase::class)
     })
     ->in('Feature');
 
-pest()->extend(TestCase::class)->in('Unit');
+// Les tests unitaires touchent la base dès le bloc 02 : la machine d'états
+// et les actions de domaine s'éprouvent sur de vraies lignes.
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->beforeEach(function (): void {
+        Http::preventStrayRequests();
+    })
+    ->in('Unit');
 
 /*
 |--------------------------------------------------------------------------

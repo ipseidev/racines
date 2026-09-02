@@ -6,6 +6,7 @@ use App\Enums\Offer;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Models\User;
+use App\States\Story\StoryState;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -200,4 +201,21 @@ it('refuse deux textes de consentement de même version pour un même type', fun
     DB::table('consent_texts')->insert($row);
 
     expect(fn () => DB::table('consent_texts')->insert($row))->toThrow(QueryException::class);
+});
+
+it('contraint stories.state aux onze états déclarés par la machine', function (): void {
+    $constraint = DB::selectOne(
+        "select pg_get_constraintdef(oid) as definition from pg_constraint where conname = 'stories_state_check'"
+    );
+
+    expect($constraint)->not->toBeNull();
+
+    /** @var object{definition: string} $constraint */
+    $declared = StoryState::all()->keys()->all();
+
+    foreach ($declared as $state) {
+        expect($constraint->definition)->toContain("'{$state}'");
+    }
+
+    expect($declared)->toHaveCount(11);
 });

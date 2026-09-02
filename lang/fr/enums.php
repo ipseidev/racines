@@ -8,8 +8,8 @@ declare(strict_types=1);
 |--------------------------------------------------------------------------
 |
 | Une clé par valeur d'énumération, appelée par la méthode `label()`. Le
-| vocabulaire suit le référentiel doc 05 : jamais « validation automatique »,
-| jamais « illimité », jamais « pour toujours » (R-11).
+| vocabulaire suit le référentiel doc 05 et la liste d'expressions proscrites
+| de R-11, que `tests/Unit/ForbiddenVocabularyTest.php` vérifie ici même.
 |
 */
 

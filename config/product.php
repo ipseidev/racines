@@ -92,6 +92,11 @@ return [
         'dormant_after_months' => 15,
     ],
 
+    // Histoires : fenêtre de restauration de la corbeille (R-4)
+    'stories' => [
+        'trash_retention_days' => 30,
+    ],
+
     // Écoute famille (PRD §7, H2)
     'family' => [
         'listen_threshold_seconds' => 30,

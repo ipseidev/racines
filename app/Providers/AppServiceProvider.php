@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\FamilyMember;
+use App\Models\Narrator;
+use App\Models\Project;
+use App\Models\Story;
+use App\Models\User;
 use App\Support\Brand;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View as ViewContract;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
@@ -46,6 +52,16 @@ final class AppServiceProvider extends ServiceProvider
      */
     protected function configureDefaults(): void
     {
+        // Les relations polymorphes stockent un alias court et stable plutôt
+        // qu'un nom de classe : renommer une classe ne réécrit pas la base.
+        Relation::morphMap([
+            'user' => User::class,
+            'project' => Project::class,
+            'narrator' => Narrator::class,
+            'family_member' => FamilyMember::class,
+            'story' => Story::class,
+        ]);
+
         Date::use(CarbonImmutable::class);
 
         DB::prohibitDestructiveCommands(
