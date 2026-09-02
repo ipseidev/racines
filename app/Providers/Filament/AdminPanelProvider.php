@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\SecurityHeaders;
 use App\Support\Brand;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -53,6 +54,10 @@ final class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                // Le panneau n'emprunte pas le groupe « web » : il faut lui
+                // donner les en-têtes de sécurité explicitement. La politique
+                // de contenu qu'il reçoit est assouplie, Alpine l'exige.
+                SecurityHeaders::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

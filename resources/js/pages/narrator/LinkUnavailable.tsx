@@ -25,8 +25,11 @@ type Props = {
 export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
     const t = useT();
     const brand = useBrand();
-    const status = (usePage().props.flash as { status?: string } | undefined)
-        ?.status;
+    // Le serveur envoie `null` quand rien n'a été flashé : on ramène les deux
+    // absences possibles à une seule.
+    const status =
+        (usePage().props.flash as { status?: string | null } | undefined)
+            ?.status ?? null;
 
     const { post, processing } = useForm();
 
@@ -44,9 +47,11 @@ export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
                 {t(`narrator.link_unavailable.${reason}.title`)}
             </h1>
 
-            <p className="mt-6">{t(`narrator.link_unavailable.${reason}.body`)}</p>
+            <p className="mt-6">
+                {t(`narrator.link_unavailable.${reason}.body`)}
+            </p>
 
-            {status !== undefined ? (
+            {status !== null ? (
                 <p
                     role="status"
                     className="bg-brand-accent text-brand-accent-foreground mt-8 rounded-md px-4 py-3"
@@ -55,7 +60,7 @@ export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
                 </p>
             ) : null}
 
-            {canRequestNewLink && status === undefined ? (
+            {canRequestNewLink && status === null ? (
                 <button
                     type="button"
                     onClick={requestNewLink}

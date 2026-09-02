@@ -286,7 +286,13 @@ it('reconnaît quand même une vraie comparaison de jeton', function (): void {
 });
 
 it('ne lit l’empreinte du jeton que dans le service de jetons', function (): void {
-    $allowed = ['Services/Tokens/TokenService.php', 'Models/AccessToken.php'];
+    // Le processeur de journalisation nomme la colonne pour la masquer : il ne
+    // la lit pas, il empêche qu'elle s'écrive.
+    $allowed = [
+        'Services/Tokens/TokenService.php',
+        'Models/AccessToken.php',
+        'Logging/RedactTokens.php',
+    ];
     $offenders = [];
 
     foreach (Finder::create()->files()->name('*.php')->in(base_path('app')) as $file) {

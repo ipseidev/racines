@@ -10,10 +10,13 @@ use App\Actions\CreateProject;
 use App\Enums\Offer;
 use App\Enums\ProjectStatus;
 use App\Enums\QuestionTheme;
+use App\Enums\TokenType;
+use App\Models\AccessToken;
 use App\Models\Project;
 use App\Models\Question;
 use App\Models\Story;
 use App\Models\User;
+use App\Services\Tokens\TokenService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
@@ -94,11 +97,58 @@ final class DemoProjectSeeder extends Seeder
                 ['text' => $text, 'theme' => $theme, 'order_hint' => $index + 1],
             );
 
-            Story::factory()
+            $story = Story::factory()
                 ->forProject($project)
                 ->{$this->factoryState($state)}()
                 ->create(['question_id' => $question->id]);
+
+            if ($state === 'proposed') {
+                $this->seedDemoLinks($story);
+            }
         }
+    }
+
+    /**
+     * Trois liens d'enregistrement à valeur connue : un valable, un expiré, un
+     * révoqué.
+     *
+     * Ils permettent d'ouvrir les trois écrans en local sans passer par
+     * tinker, et de les éprouver de bout en bout. Ils n'existent que dans une
+     * base semée par ce seeder, qui refuse de tourner en production ; deux des
+     * trois sont morts par construction.
+     *
+     * Les lignes sont insérées directement, sans `TokenService::issue()`, qui
+     * tire un jeton aléatoire par définition. C'est le même parti que les
+     * états de `StoryFactory` : un seeder construit un décor.
+     */
+    private function seedDemoLinks(Story $story): void
+    {
+        $links = [
+            self::demoToken('record') => [],
+            self::demoToken('expired') => ['expires_at' => now()->subDay()],
+            self::demoToken('revoked') => ['revoked_at' => now()->subHour()],
+        ];
+
+        foreach ($links as $plain => $attributes) {
+            $token = new AccessToken([
+                'type' => TokenType::Record,
+                'scope' => ['record', 'decide_share'],
+                'expires_at' => now()->addDays(30),
+            ]);
+
+            $token->token_hash = TokenService::hash($plain);
+            $token->subject()->associate($story);
+            $token->forceFill($attributes);
+            $token->save();
+        }
+    }
+
+    /**
+     * Valeur connue d'un lien de démonstration, complétée à 43 caractères.
+     */
+    public static function demoToken(string $name): string
+    {
+        return str_pad("demo-{$name}-link", 43, 'x');
     }
 
     /**

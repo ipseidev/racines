@@ -33,7 +33,9 @@ export default function LinkUnavailable({ reason }: Props) {
                 {t(`family.link_unavailable.${reason}.title`)}
             </h1>
 
-            <p className="mt-6">{t(`family.link_unavailable.${reason}.body`)}</p>
+            <p className="mt-6">
+                {t(`family.link_unavailable.${reason}.body`)}
+            </p>
 
             <p className="text-brand-muted mt-10 text-base">
                 {t('family.link_unavailable.help', {

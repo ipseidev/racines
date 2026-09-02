@@ -44,6 +44,12 @@ final class HandleInertiaRequests extends Middleware
             'brand' => Brand::toInertia(),
             'i18n' => Translations::forRequest($request),
             'locale' => app()->getLocale(),
+            // Messages d'une action réussie. Les pages narrateur et famille
+            // n'ont pas de barre de notifications : elles affichent ce
+            // message à l'endroit où l'action a été demandée.
+            'flash' => [
+                'status' => $request->session()->get('status'),
+            ],
             'auth' => [
                 'user' => $request->user(),
             ],

@@ -22,8 +22,9 @@ const DIGITS = 6;
  */
 export default function OtpChallenge({ sentToMasked, locked }: Props) {
     const t = useT();
-    const status = (usePage().props.flash as { status?: string } | undefined)
-        ?.status;
+    const status =
+        (usePage().props.flash as { status?: string | null } | undefined)
+            ?.status ?? null;
 
     const [digits, setDigits] = useState<string[]>(Array(DIGITS).fill(''));
     const inputs = useRef<Array<HTMLInputElement | null>>([]);
@@ -42,16 +43,22 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
         }
     };
 
-    const onChange = (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value.replace(/\D/g, '').slice(-1);
-        setDigit(index, value);
-    };
+    const onChange =
+        (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
+            const value = event.target.value.replace(/\D/g, '').slice(-1);
+            setDigit(index, value);
+        };
 
-    const onKeyDown = (index: number) => (event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Backspace' && digits[index] === '' && index > 0) {
-            inputs.current[index - 1]?.focus();
-        }
-    };
+    const onKeyDown =
+        (index: number) => (event: KeyboardEvent<HTMLInputElement>) => {
+            if (
+                event.key === 'Backspace' &&
+                digits[index] === '' &&
+                index > 0
+            ) {
+                inputs.current[index - 1]?.focus();
+            }
+        };
 
     return (
         <>
@@ -67,7 +74,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                     : t('narrator.otp.intro', { destination: sentToMasked })}
             </p>
 
-            {status !== undefined ? (
+            {status !== null ? (
                 <p
                     role="status"
                     className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-3"
@@ -100,7 +107,9 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                                     onChange={onChange(index)}
                                     onKeyDown={onKeyDown(index)}
                                     inputMode="numeric"
-                                    autoComplete={index === 0 ? 'one-time-code' : 'off'}
+                                    autoComplete={
+                                        index === 0 ? 'one-time-code' : 'off'
+                                    }
                                     aria-label={`${t('narrator.otp.code_label')} ${index + 1}`}
                                     className="border-brand-muted/40 h-14 w-full min-w-[2.75rem] rounded-md border text-center text-2xl"
                                 />
