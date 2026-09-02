@@ -75,6 +75,7 @@ final class Consent extends Model
         return [
             'kind' => ConsentKind::class,
             'status' => ConsentStatus::class,
+            'subject_id' => 'string',
             'channel' => ConsentChannel::class,
             'granted_at' => 'immutable_datetime',
             'revoked_at' => 'immutable_datetime',

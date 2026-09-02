@@ -123,6 +123,15 @@ return [
         'target_stories' => [10, 15],
     ],
 
+    // Sécurité : origines autorisées par la politique de contenu à servir
+    // des médias. R2 en production, MinIO en local ; complété au bloc 04.
+    'security' => [
+        'media_hosts' => array_values(array_filter([
+            env('R2_ENDPOINT'),
+            env('AWS_ENDPOINT'),
+        ])),
+    ],
+
     // Comptes semés en local et en test (jamais en production)
     'seeding' => [
         'admin_email' => env('ADMIN_EMAIL', 'admin@example.test'),

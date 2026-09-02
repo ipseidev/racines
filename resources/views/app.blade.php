@@ -7,7 +7,9 @@
         <meta name="brand" content="{{ $brandName }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
+        {{-- Le nonce vient de SecurityHeaders : sans lui, la politique de
+             contenu stricte refuserait ce script et ce style. --}}
+        <script nonce="{{ Vite::cspNonce() }}">
             (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
 
@@ -22,7 +24,7 @@
         </script>
 
         {{-- Marque : éditable dans l'administration, appliquée sans redéploiement. --}}
-        <style>
+        <style nonce="{{ Vite::cspNonce() }}">
             :root {
 @foreach ($brandCss as $variable => $value)
                 {{ $variable }}: {{ $value }};

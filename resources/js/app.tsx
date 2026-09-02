@@ -4,6 +4,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
+import FamilyLayout from '@/layouts/family-layout';
+import NarratorLayout from '@/layouts/narrator-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
 const brandName =
@@ -22,6 +24,12 @@ void createInertiaApp({
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
+            // Espaces sans compte : mise en page sobre, texte large, aucune
+            // dépendance lourde (convention §4, budget 150 Ko par page).
+            case name.startsWith('narrator/'):
+                return NarratorLayout;
+            case name.startsWith('family/'):
+                return FamilyLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:

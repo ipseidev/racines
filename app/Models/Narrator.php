@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 
 /**
  * Le narrateur·rice n'a pas de compte : il agit par jeton, et son veto prime
@@ -39,7 +41,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 final class Narrator extends Model
 {
     /** @use HasFactory<NarratorFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, Notifiable;
 
     /** @var array<string, mixed> */
     protected $attributes = [
@@ -84,6 +86,20 @@ final class Narrator extends Model
             ->first();
 
         return $latest?->status === ConsentStatus::Granted;
+    }
+
+    /**
+     * Ni compte ni mot de passe : les notifications partent sur la coordonnée
+     * que la personne a donnée, et sur elle seule.
+     */
+    public function routeNotificationForMail(?Notification $notification = null): ?string
+    {
+        return $this->email;
+    }
+
+    public function routeNotificationForSms(?Notification $notification = null): ?string
+    {
+        return $this->phone_e164;
     }
 
     /** @return array<string, string> */

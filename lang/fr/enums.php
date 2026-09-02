@@ -136,6 +136,30 @@ return [
         'launch' => 'Lancement',
     ],
 
+    'token_type' => [
+        'record' => 'Lien d’enregistrement',
+        'listen_project' => 'Lien d’écoute du projet',
+        'listen_story' => 'Lien d’écoute d’une histoire',
+        'qr' => 'Page atteinte par un QR imprimé',
+        'invitation' => 'Lien d’invitation',
+        'action' => 'Action en un tap',
+        'export' => 'Téléchargement d’un export',
+        'narrator_space' => 'Espace du narrateur·rice',
+        'sensitive_grant' => 'Autorisation d’un acte sensible',
+    ],
+
+    'token_issued_reason' => [
+        'initial' => 'Premier envoi',
+        'reissue_support' => 'Réémis par le support',
+        'resend_other_channel' => 'Renvoyé par un autre canal',
+        'rotation' => 'Remplacé',
+    ],
+
+    'otp_purpose' => [
+        'narrator_space' => 'Ouverture de l’espace personnel',
+        'sensitive_act' => 'Autorisation d’un acte sensible',
+    ],
+
     'story_state' => [
         'proposed' => 'Proposée',
         'recorded' => 'Enregistrée',
