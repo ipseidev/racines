@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * Le parcours nominal, joué dans un vrai navigateur avec un micro simulé.
@@ -9,9 +9,43 @@ import { expect, test } from '@playwright/test';
  */
 const RECORD_LINK = `/r/${'demo-record-link'.padEnd(43, 'x')}`;
 
+/**
+ * Un test qui dépend d'un aller-retour avec le stockage doit dire *pourquoi*
+ * il échoue : sans ces écouteurs, un envoi refusé par la politique de contenu
+ * ou par le stockage ressemble à un simple délai dépassé.
+ */
+function reportBrowserProblems(page: Page): void {
+    page.on('console', (message) => {
+        if (message.type() === 'error') {
+            console.log('[navigateur]', message.text().slice(0, 300));
+        }
+    });
+
+    page.on('requestfailed', (request) => {
+        console.log(
+            '[requête échouée]',
+            request.method(),
+            request.url().slice(0, 160),
+            request.failure()?.errorText,
+        );
+    });
+
+    page.on('response', (response) => {
+        if (response.status() >= 400) {
+            console.log(
+                '[réponse]',
+                response.status(),
+                response.url().slice(0, 160),
+            );
+        }
+    });
+}
+
 test('un narrateur enregistre, met en pause, reprend et envoie', async ({
     page,
 }) => {
+    reportBrowserProblems(page);
+
     await page.goto(RECORD_LINK);
 
     // Écran 1 — l'explication précède la demande de micro.
