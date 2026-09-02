@@ -150,13 +150,32 @@ it('toutes les routes par jeton portent les trois protections', function (): voi
 
     expect($routes)->not->toBeEmpty();
 
-    // Une seule exception, documentée : la demande d'un nouveau lien agit
-    // justement parce que le lien est mort, elle ne peut pas le résoudre.
-    $withoutResolution = ['narrator.record.request_new_link'];
+    /*
+     * Trois exceptions, et chacune est une porte d'entrée : par construction,
+     * il n'y a pas encore de jeton à résoudre.
+     *
+     *  - la demande d'un nouveau lien agit justement parce que le lien est
+     *    mort ;
+     *  - les deux étapes d'accès à l'espace narrateur précèdent l'émission du
+     *    jeton d'espace, qu'un code à usage unique vient valider.
+     */
+    $withoutResolution = [
+        'narrator.record.request_new_link',
+        'narrator.space.request.show',
+        'narrator.space.request.send',
+        'narrator.space.request.verify',
+    ];
 
     // Idem pour le limiteur : la route des événements du navigateur porte le
     // sien, plus large, sans quoi la mesure du taux d'échec serait étouffée.
-    $withOwnThrottle = ['narrator.events.store' => 'throttle:client-events'];
+    $withOwnThrottle = [
+        'narrator.events.store' => 'throttle:client-events',
+        // L'entrée de l'espace narrateur a ses propres limiteurs : bornés
+        // sur la coordonnée demandée, et non sur l'IP seule, sans quoi une
+        // maison de retraite serait enfermée dehors au deuxième résident.
+        'narrator.space.request.send' => 'throttle:space-access',
+        'narrator.space.request.verify' => 'throttle:space-verify',
+    ];
 
     foreach ($routes as $route) {
         $middleware = collect($route->gatherMiddleware());
@@ -189,4 +208,26 @@ it('révoque le lien d’enregistrement dès que l’histoire est validée', fun
         ->assertInertia(fn ($page) => $page->where('reason', 'revoked'));
 
     expect(AccessToken::query()->active()->count())->toBe(0);
+});
+
+it('desserre la borne par IP hors production, jamais celle par jeton', function (): void {
+    // La borne par jeton protège les liens : elle vaut la même chose partout.
+    expect((int) config('product.security.rate_limits.tokens_per_token'))->toBe(20);
+
+    // Celle par IP protège l'infrastructure et punit le partage de connexion :
+    // en test, trente navigateurs partagent une adresse (T-79).
+    $issued = [];
+
+    for ($i = 0; $i < 8; $i++) {
+        [$one] = issueRecordLink();
+        $issued[] = $one;
+    }
+
+    // Huit jetons × dix requêtes = quatre-vingts : au-delà des soixante de
+    // production, et sans 429 ici.
+    foreach ($issued as $one) {
+        for ($i = 0; $i < 10; $i++) {
+            $this->get("/r/{$one->plain}")->assertOk();
+        }
+    }
 });

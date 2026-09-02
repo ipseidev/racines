@@ -9,10 +9,8 @@ use App\Exceptions\Domain\OtpExpired;
 use App\Exceptions\Domain\OtpInvalid;
 use App\Exceptions\Domain\OtpLocked;
 use App\Exceptions\Domain\OtpThrottled;
-use App\Models\AccessToken;
 use App\Models\Narrator;
 use App\Models\OtpChallenge;
-use App\Models\Story;
 use App\Services\Tokens\OtpService;
 use App\Support\SensitiveGrant;
 use Illuminate\Http\RedirectResponse;
@@ -21,13 +19,14 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 
 /**
- * Le défi par code à usage unique, atteint depuis un lien d'enregistrement.
+ * Le code d'acte sensible, demandé depuis l'espace narrateur.
  *
- * Le narrateur n'a pas de compte : ce code est la seule preuve que c'est bien
- * lui avant un acte sensible (doc 04 §12). La page ne montre jamais la
- * coordonnée complète, seulement sa forme masquée.
+ * Même mécanique que depuis un lien d'enregistrement, autre sujet : ici le
+ * jeton porte une personne, pas une histoire. La page ne montre que la forme
+ * masquée de la coordonnée — la donner en clair permettrait à qui détient le
+ * lien de la relever.
  */
-final readonly class OtpChallengeController
+final readonly class SpaceOtpController
 {
     public function __construct(private OtpService $otp) {}
 
@@ -51,9 +50,6 @@ final readonly class OtpChallengeController
         try {
             $this->otp->challenge($narrator, OtpPurpose::SensitiveAct, OtpService::channelFor($narrator));
         } catch (OtpThrottled) {
-            // Le code précédent est toujours valable : on le dit, plutôt que
-            // de laisser remonter une erreur technique sur un écran atteint
-            // en touchant deux fois le même bouton.
             return back()->with('status', __('narrator.otp.already_sent'));
         }
 
@@ -91,19 +87,18 @@ final readonly class OtpChallengeController
 
     private static function narratorFor(Request $request): Narrator
     {
-        $token = $request->attributes->get('access_token');
-        $subject = $request->attributes->get('token_subject');
+        $narrator = $request->attributes->get('token_subject');
 
-        abort_unless($token instanceof AccessToken, 404);
-        abort_unless($subject instanceof Story, 404);
+        abort_unless($narrator instanceof Narrator, 404);
 
-        return $subject->narrator;
+        return $narrator;
     }
 
     private static function pendingChallengeFor(Narrator $narrator): ?OtpChallenge
     {
         return OtpChallenge::query()
             ->where('narrator_id', $narrator->id)
+            ->where('purpose', OtpPurpose::SensitiveAct->value)
             ->whereNull('verified_at')
             ->orderByDesc('created_at')
             ->orderByDesc('id')

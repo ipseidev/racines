@@ -25,6 +25,7 @@ use Illuminate\Notifications\Notification;
  *
  * @property string $id
  * @property string $project_id
+ * @property-read Project $project
  * @property string $first_name
  * @property string|null $last_name
  * @property string $display_name

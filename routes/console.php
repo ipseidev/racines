@@ -32,3 +32,9 @@ Schedule::command('prompts:dispatch-due')
 Schedule::job(new PollTranscription)
     ->everyMinute()
     ->withoutOverlapping();
+
+// La corbeille tient sa promesse : trente jours, puis la suppression a lieu
+// sans nouvelle demande — le narrateur a déjà décidé (bloc 07 §6.5).
+Schedule::command('stories:purge-trashed')
+    ->daily()
+    ->withoutOverlapping();

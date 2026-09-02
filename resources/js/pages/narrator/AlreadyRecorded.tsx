@@ -1,4 +1,5 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 import { useT } from '@/hooks/useT';
 
@@ -7,6 +8,8 @@ type Props = {
     question: string | null;
     recordedAt: string | null;
     answerType: string | null;
+    /** Vrai si l'histoire peut encore être masquée depuis ce lien. */
+    canHide?: boolean;
     onRestart?: () => void;
 };
 
@@ -20,9 +23,11 @@ type Props = {
 export default function AlreadyRecorded({
     question,
     recordedAt,
+    canHide = false,
     onRestart,
 }: Props) {
     const t = useT();
+    const [confirmingHide, setConfirmingHide] = useState(false);
 
     // Le message d'une action qui vient d'aboutir — l'envoi d'une réponse
     // écrite, par exemple. Sans lui, la personne atterrit sur « vous avez
@@ -72,6 +77,53 @@ export default function AlreadyRecorded({
             >
                 {t('narrator.already_recorded.restart')}
             </button>
+
+            {/*
+             * Masquer sa propre histoire, sans code : le lien porte
+             * précisément cette histoire, et redemander une preuve
+             * d'identité à quelqu'un qui regrette ce qu'il vient de raconter
+             * le ferait renoncer (glossaire §4). Un écran de confirmation,
+             * puis une seule requête.
+             */}
+            {canHide ? (
+                confirmingHide ? (
+                    <div className="border-brand-muted/40 mt-8 rounded-md border px-4 py-4">
+                        <p>{t('narrator.withdrawals.hide_confirm')}</p>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                router.post(
+                                    `${window.location.pathname}/hide`,
+                                    {},
+                                    {
+                                        preserveScroll: true,
+                                        onFinish: () =>
+                                            setConfirmingHide(false),
+                                    },
+                                )
+                            }
+                            className="bg-brand text-brand-foreground mt-4 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium"
+                        >
+                            {t('narrator.withdrawals.hide')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setConfirmingHide(false)}
+                            className="text-brand-muted mt-3 min-h-[2.75rem] w-full text-base underline"
+                        >
+                            {t('common.actions.cancel')}
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => setConfirmingHide(true)}
+                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg"
+                    >
+                        {t('narrator.withdrawals.hide')}
+                    </button>
+                )
+            ) : null}
         </>
     );
 }

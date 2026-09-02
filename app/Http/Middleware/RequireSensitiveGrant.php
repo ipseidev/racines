@@ -28,7 +28,13 @@ final readonly class RequireSensitiveGrant
 {
     public function __construct(private TokenService $tokens) {}
 
-    public function handle(Request $request, Closure $next): Response
+    /**
+     * @param  string  $challengeRoute  Où envoyer chercher un code. La page
+     *                                  diffère selon l'espace : le lien
+     *                                  d'enregistrement porte une histoire,
+     *                                  l'espace narrateur porte une personne.
+     */
+    public function handle(Request $request, Closure $next, string $challengeRoute = 'narrator.otp.show'): Response
     {
         $plain = $request->cookie(SensitiveGrant::COOKIE);
 
@@ -45,7 +51,7 @@ final readonly class RequireSensitiveGrant
         $token = $request->route('token');
 
         return redirect()
-            ->route('narrator.otp.show', ['token' => $token])
+            ->route($challengeRoute, ['token' => $token])
             ->with('url.intended', $request->fullUrl())
             ->withCookie(SensitiveGrant::forget());
     }

@@ -132,6 +132,19 @@ return [
     // Sécurité : origines autorisées par la politique de contenu à servir
     // des médias. R2 en production, MinIO en local ; complété au bloc 04.
     'security' => [
+        /*
+         * Bornes des routes à jeton. Celle par **jeton** protège du
+         * balayage : c'est elle qui compte, et elle ne bouge pas. Celle par
+         * **IP** protège l'infrastructure, mais elle punit le partage de
+         * connexion — une maison de retraite, une famille derrière un seul
+         * routeur, une suite de tests bout en bout. Elle est donc réglable,
+         * et large hors production (décision T-79).
+         */
+        'rate_limits' => [
+            'tokens_per_token' => (int) env('THROTTLE_TOKENS_PER_TOKEN', 20),
+            'tokens_per_ip' => (int) env('THROTTLE_TOKENS_PER_IP', 60),
+        ],
+
         // L'origine que le **navigateur** contacte, et non celle que contacte
         // le serveur : c'est vers l'endpoint public que partent les envois
         // présignés, et une politique qui l'ignore les bloque en silence.
