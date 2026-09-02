@@ -34,7 +34,27 @@ test('la marque se change depuis l’administration et s’applique sans redépl
     await page.locator('input[type="email"]').first().fill(ADMIN_EMAIL);
     await page.locator('input[type="password"]').first().fill(ADMIN_PASSWORD);
     await page.getByRole('button', { name: /^connexion$/i }).click();
-    await page.waitForURL((url) => /\/admin\/?$/.test(url.pathname));
+
+    // Un échec de connexion ne doit pas se manifester par un délai muet :
+    // on rapporte le message affiché à l'écran.
+    try {
+        await page.waitForURL((url) => /\/admin\/?$/.test(url.pathname), {
+            timeout: 15_000,
+        });
+    } catch (cause) {
+        const messages = await page
+            .locator(
+                '[data-validation-error], .fi-fo-field-wrp-error-message, [role="alert"]',
+            )
+            .allTextContents();
+
+        throw new Error(
+            `Connexion impossible. URL : ${page.url()}. Messages : ${
+                messages.join(' | ') || '(aucun)'
+            }`,
+            { cause },
+        );
+    }
 
     // 1. Un changement de nom et de couleur se voit immédiatement côté public.
     await page.goto('/admin/manage-brand');
