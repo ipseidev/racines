@@ -200,4 +200,4 @@ Si une commande du starter kit a changé de forme (options de `laravel new`, str
 
 La CI passe en 1 minute 42 : dépendances, routes typées, format, lint, types, Vitest, compilation, Pint, PHPStan, Pest, Playwright, audits Composer et npm.
 
-**Reste à faire hors bloc :** augmenter la limite de disque de Docker Desktop (61 Gio pour 292 Go libres sur le Mac) afin d'éviter la récidive de l'incident T-35. Un dossier `/Users/serra/Codes/remento-clonde` contient une pile Sail active sans rapport avec ce dépôt.
+**Suites données le même jour :** la limite de disque de Docker Desktop a été relevée, le dossier doublon a été supprimé, et le dépôt a été renommé `/Users/serra/Codes/racines`. La pile Docker a été remontée sous le nom de projet `racines` après suppression des anciens conteneurs et volumes, vides de toute donnée (décision T-36).
