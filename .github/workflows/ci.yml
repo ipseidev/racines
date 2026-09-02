@@ -111,6 +111,10 @@ jobs:
           npm run types:check
 
       - name: Tests front
+        # Vitest démarre un serveur Vite ; laravel-vite-plugin le refuse en CI.
+        # La compilation de production plus bas n'a pas besoin de cette dérogation.
+        env:
+          LARAVEL_BYPASS_ENV_CHECK: '1'
         run: npm run test
 
       - name: Pint et PHPStan
