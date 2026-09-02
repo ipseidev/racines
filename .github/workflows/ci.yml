@@ -60,6 +60,9 @@ jobs:
       SMS_PROVIDER: fake
       ASR_PROVIDER: fake
       LLM_PROVIDER: fake
+      # Le fournisseur simulé ne rappelle pas, mais la construction d'une URL
+      # de rappel lève si le secret est vide (T-71) : on en pose un.
+      ASR_CALLBACK_SECRET: secret-de-test-pour-integration-continue
       # MinIO émule R2 pour le bout en bout : le navigateur et le serveur le
       # joignent à la même adresse ici, contrairement au poste de travail.
       FILESYSTEM_DISK: r2
