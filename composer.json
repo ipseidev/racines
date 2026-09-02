@@ -13,8 +13,11 @@
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",
+        "laravel/pennant": "^1.26",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
+        "spatie/laravel-model-states": "^2.14",
+        "spatie/laravel-permission": "^8.3",
         "spatie/laravel-settings": "^3.9"
     },
     "require-dev": {
