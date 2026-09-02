@@ -38,7 +38,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) clés + corpus de voix | `bloc-06-done` |
 | 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-07-done` |
 | 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-08-done` |
-| 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ☐ non commencé | `bloc-09-done` |
+| 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-09-done` |
 | 10 | [Tunnel d'achat, Stripe, cadeau, opt-in narrateur](blocs/B10_tunnel_achat_optin.md) | 09 | ☐ non commencé | `bloc-10-done` |
 | 11 | [Back-office support et journal d'audit](blocs/B11_backoffice_audit.md) | 10 | ☐ non commencé | `bloc-11-done` |
 | 12 | [Photos, réponse écrite, contributeurs](blocs/B12_photos_contributeurs.md) | 11 | ☐ non commencé | `bloc-12-done` |

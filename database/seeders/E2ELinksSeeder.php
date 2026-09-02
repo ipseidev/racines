@@ -9,7 +9,10 @@ use App\Actions\AddNarrator;
 use App\Actions\CreateProject;
 use App\Actions\ProposeStory;
 use App\Actions\ValidateStoryAction;
+use App\Engine\Actions\OneTapRegistry;
+use App\Engine\Actions\SwitchBiweekly;
 use App\Enums\AnswerType;
+use App\Enums\Cadence;
 use App\Enums\Channel;
 use App\Enums\Offer;
 use App\Enums\OtpPurpose;
@@ -128,6 +131,9 @@ final class E2ELinksSeeder extends Seeder
      */
     public const FAMILY_LINKS = ['listen', 'listen-react', 'listen-a11y'];
 
+    /** @var list<string> */
+    public const ONE_TAP_LINKS = ['onetap', 'onetap-use', 'onetap-read'];
+
     /** @var array<string, array<string, mixed>> */
     private const LINK_STATE = [
         'expired' => ['expires_at' => '-1 day'],
@@ -201,6 +207,47 @@ final class E2ELinksSeeder extends Seeder
         foreach (self::FAMILY_LINKS as $scenario) {
             $this->seedFamilyLink($owner, $scenario);
         }
+
+        // Un lien par test, comme partout : le second scénario consomme le
+        // sien, et un lien partagé ferait échouer les voisins.
+        foreach (self::ONE_TAP_LINKS as $scenario) {
+            $this->seedOneTapLink($owner, $scenario);
+        }
+    }
+
+    /**
+     * Un lien d'action en un tap, à valeur connue (bloc 09).
+     *
+     * Le scénario de l'alerte J+21 : l'Initiateur·rice touche « passer à une
+     * question toutes les deux semaines », et le rythme change.
+     */
+    private function seedOneTapLink(User $owner, string $scenario): void
+    {
+        $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
+        $project->status = ProjectStatus::Active;
+        $project->cadence = Cadence::Weekly;
+        $project->save();
+
+        app(AddNarrator::class)->handle($project, [
+            'first_name' => 'Odette',
+            'display_name' => 'Odette',
+            'phone_e164' => '+336000'.substr(md5($scenario), 0, 4),
+            'birth_year' => 1943,
+        ]);
+
+        $token = new AccessToken([
+            'type' => TokenType::Action,
+            'scope' => OneTapRegistry::scopeFor(SwitchBiweekly::name()),
+            'expires_at' => now()->addDays(30),
+            // Le décor construit la ligne à la main : sans ce drapeau, le
+            // lien resterait rejouable, et le décor ne ressemblerait plus au
+            // produit — c'est exactement ce qu'un décor ne doit pas faire.
+            'single_use' => TokenType::Action->isSingleUse(),
+        ]);
+
+        $token->token_hash = TokenService::hash(self::token($scenario));
+        $token->subject()->associate($project->refresh());
+        $token->save();
     }
 
     /**

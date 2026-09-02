@@ -5,13 +5,22 @@ Transcription exacte de PRD §5.3 en règles exécutables. Chaque règle est une
 ```php
 interface Rule
 {
-    public static function id(): string;                     // ex. 'link_not_opened'
-    public function detect(CarbonImmutable $now): Collection; // occurrences candidates (projet/histoire)
-    public function occurrenceKey(object $occurrence): string; // pour la clé d'idempotence
-    public function isCapped(object $occurrence): bool;       // limite anti-culpabilisation
-    public function fire(object $occurrence): EngineEvent;    // action + enregistrement
+    public function id(): EngineRuleId;
+    public function audience(Occurrence $occurrence): EngineAudience;   // à qui, et donc quelle limite
+    public function detect(CarbonImmutable $now): Collection;           // occurrences candidates
+    public function isCapped(Occurrence $occurrence): bool;             // limite anti-culpabilisation
+    public function fire(Occurrence $occurrence): array;                // agit, rend `action_taken`
+    public function resumed(EngineEvent $e, CarbonImmutable $n): ?bool; // oui / non / pas encore
 }
 ```
+
+**Trois écarts par rapport au brouillon ci-dessus, décidés au bloc 09 :**
+
+1. `occurrenceKey()` vit sur `Occurrence`, pas sur la règle : la formule est la même pour les onze (`projet:histoire|clé:tentative`), et onze copies d'une même formule finissent par diverger — celle qui diverge envoie deux fois le même message.
+2. `fire()` rend un tableau et non un `EngineEvent` : c'est le **tick** qui écrit la ligne, avant l'action, dans la même transaction. Si chaque règle écrivait la sienne, onze implémentations pourraient se tromper sur l'ordre.
+3. `audience()` dépend de l'**occurrence** : l'invitation restée sans réponse relance le narrateur à J+7 puis en parle à l'Initiateur·rice à J+14. Un public fixe ferait compter la seconde alerte dans le quota du premier.
+
+`resumed()` complète l'interface : c'est elle qui remplit la dernière colonne du tableau ci-dessous.
 
 Le tick (`php artisan engine:tick`, toutes les heures à la minute 07) parcourt les règles dans l'ordre du tableau, ignore les projets `paused`, `frozen_bereavement`, `cancelled`, `completed`, et n'exécute jamais une occurrence dont la `dedupe_key` existe déjà. Les délais sont exprimés en jours calendaires dans le fuseau du projet. Les paramètres chiffrés vivent dans `config/product.php` sous la clé `engine`.
 
@@ -56,7 +65,9 @@ Chaque `fire()` émet `engine_rule_fired` avec `rule_id`, `project_id`, `story_i
 
 ## Tests obligatoires par règle (bloc 09)
 
-Pour chaque règle, dans `tests/Feature/Engine/Rules/<RuleId>Test.php` :
+**État au bloc 09 :** les onze règles sont implémentées et couvertes par 163 tests dans `tests/Feature/Engine/` et `tests/Unit/Engine/` (les sept cas ci-dessous, plus la mesure des reprises). Les fichiers ne suivent pas tous le nom `<RuleId>Test.php` : les deux règles de silence partagent `NarratorSilenceTest.php`, et la pause comme le ralentissement ont leurs propres fichiers (`PauseTest.php`, `DecliningCadenceTest.php`) — elles se testent avec leurs actions, qu'on ne peut pas séparer d'elles.
+
+Pour chaque règle, dans `tests/Feature/Engine/` :
 1. ne se déclenche pas avant le délai ;
 2. se déclenche au délai exact ;
 3. ne se déclenche pas deux fois pour la même occurrence ;

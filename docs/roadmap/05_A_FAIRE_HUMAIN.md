@@ -155,6 +155,7 @@ Les questions hebdomadaires partent par SMS et par courriel.
 
 - **Bloc 07** — validation, visibilité, retraits. ~30 minutes.
 - **Bloc 08** — écoute famille et réactions. ~20 minutes.
+- **Bloc 09** — moteur de complétion. ~20 minutes : forcer trois horodatages sur le projet semé, lancer `engine:tick`, lire les envois, relancer pour vérifier qu'aucun ne se répète, cliquer un lien d'action, puis `engine:report`.
 
 Un piège vérifié : `RedactTokens` masque aussi **les codes à six chiffres** dans les journaux, donc `SMS_PROVIDER=log` ne te donnera pas le code OTP. Le chemin local passe par un narrateur dont le canal préféré est le courriel — le code arrive alors en clair dans Mailpit (`http://localhost:8027`).
 
@@ -220,6 +221,8 @@ Le seul endroit à tenir à jour.
 | 10 | Resend : clé, domaine vérifié, secret de webhook | bloc 05 | ☐ |
 | 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☐ |
 | 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | ☐ |
+| 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☐ |
+| 12ter | Relire le ton des onze messages du moteur | bloc 09 | ☐ |
 | 13 | Cloudflare R2 : 3 compartiments UE + CORS | bloc 16 | ☐ |
 | 14 | Stripe : compte, clés de test, 5 prix | bloc 10 | ☐ |
 | 15 | Polices OFL déposées | bloc 13 | ☐ |
@@ -229,4 +232,4 @@ Le seul endroit à tenir à jour.
 | 19 | **Socle juridique validé par conseil** | bloc 17 | ☐ |
 | 20 | DPA signés (11 sous-traitants) | bloc 17 | ☐ |
 
-**Le chemin le plus court vers trois tags** : lignes 11 et 12 (une heure de ton temps, rien à acheter), puis 1 + 2 + 3 + 5 pour le bloc 06.
+**Le chemin le plus court vers trois tags** : lignes 11, 12 et 12bis (une heure et demie de ton temps, rien à acheter), puis 1 + 2 + 3 + 5 pour le bloc 06.

@@ -220,7 +220,31 @@ Une ligne par proche et par histoire, cumulée. `reached_30s` est un booléen po
 `family_member_id` reste nullable pour l'écoute par QR imprimé (bloc 13), où l'on ne sait pas qui écoute — et où l'on ne cherche pas à le savoir.
 
 ## engine_events (bloc 09) — bigint
-`project_id`, `story_id` nullable, `rule_id` varchar, `occurrence_key` varchar, `dedupe_key` unique (`rule_id:occurrence_key`), `fired_at`, `action_taken` jsonb, `outcome` check nullable (`resumed`, `no_effect`), `outcome_at` nullable, `created_at`. Index `(project_id, rule_id)`.
+`id`, `project_id` uuid FK (`cascadeOnDelete`), `story_id` uuid FK nullable (`nullOnDelete`), `rule_id` check (les onze de `EngineRuleId`), `occurrence_key` varchar (`projet:histoire|clé:tentative`), `dedupe_key` **unique** (`rule_id:occurrence_key`), `fired_at`, `action_taken` jsonb, `outcome` check nullable (`resumed`, `no_effect`), `outcome_at` nullable, `created_at`. Index `(project_id, rule_id)` et `(outcome, fired_at)` — celui que lit `MeasureResumptions` chaque heure.
+
+`dedupe_key` est le cœur du mécanisme : la ligne est insérée **avant** l'envoi, dans la même transaction. Deux ticks simultanés — un `withoutOverlapping` qui a lâché, une reprise de file — ne peuvent donc pas envoyer deux fois le même message. C'est la contrainte de base qui fait le travail, pas une vérification en PHP.
+
+`action_taken` distingue trois cas, et la distinction porte du sens :
+- `told` = à qui le message est **parti** (`narrator`, `initiator`, `family`, `support`) ;
+- `suppressed_by` + `would_have_told` = la règle voulait parler mais une règle plus prioritaire l'avait précédée le même jour. Un événement supprimé porte une `dedupe_key` **datée** (`…:suppressed:AAAA-MM-JJ`) pour ne pas consommer l'idempotence de l'occurrence : le rappel seulement différé doit pouvoir partir plus tard (T-99) ;
+- l'absence des deux = rien n'est parti, et rien n'est compté.
+
+Les compteurs de limite (« deux rappels », « une alerte par mois ») lisent les événements **partis** uniquement : un message qui n'est pas parti n'a relancé personne, et le compter priverait le narrateur d'un rappel qu'il n'a jamais reçu.
+
+`outcome` est ce qui fait du moteur un actif défendable plutôt qu'une collection de messages : sans lui, on saurait combien on a relancé, pas si ça a servi. Un résultat négatif compte autant que l'autre — c'est lui qui dit qu'une règle ne sert à rien.
+
+## support_tickets (bloc 09) — bigint
+`id`, `project_id` uuid FK (`cascadeOnDelete`), `story_id` uuid FK nullable (`nullOnDelete`), `kind` check (`mic_denied_twice`, `phone_option_requested`, `transcription_failed`), `status` check (`open`, `closed`, défaut `open`), `payload` jsonb, `opened_at`, `closed_at` nullable, `closed_by_user_id` FK users nullable, timestamps. Index `(status, kind)`, `(project_id, kind)`.
+
+Les tickets que le produit ouvre **de lui-même**. Une personne de 82 ans qui n'arrive pas à autoriser son micro n'écrit pas au support : elle abandonne, et personne ne sait pourquoi. C'est donc au produit de lever la main à sa place.
+
+`OpenSupportTicket` est idempotent tant qu'un ticket du même genre est **ouvert** pour le même sujet : un support noyé sous les doublons ne traite plus rien. Un ticket fermé puis rouvert, en revanche, est une information nouvelle — le problème est revenu après qu'on l'a cru réglé.
+
+`payload` ne porte que des identifiants et des compteurs : le support lit ces tickets, et ils ne doivent pas devenir une fiche de renseignement.
+
+### access_tokens — ajout du bloc 09
+
+Rien à la table : les jetons `action` utilisent le périmètre existant, sous la forme `["action", "<nom>"]`. La liste des noms est **fermée** (`OneTapRegistry`) et un périmètre inconnu rend 404 — du point de vue du visiteur, un lien bricolé est un lien qui n'existe pas.
 
 ## orders, order_items (bloc 10)
 orders : `id`, `user_id`, `project_id` nullable, `stripe_checkout_session_id` unique, `stripe_payment_intent_id` nullable, `status` check (`pending`, `paid`, `refunded`, `partially_refunded`, `cancelled`), `currency` `eur`, `subtotal_cents`, `total_cents`, `refunded_cents`, `price_variant` check nullable (`99`, `129`), `paid_at`, `withdrawal_deadline_at`, `service_started_at` nullable, timestamps.
