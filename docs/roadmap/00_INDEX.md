@@ -34,7 +34,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 03 | [Jetons, OTP et sécurité des liens](blocs/B03_jetons_securite.md) | 02 | ☑ terminé (2026-09-02) | `bloc-03-done` |
 | 04 | [Page d'enregistrement narrateur et spike navigateur](blocs/B04_enregistrement.md) | 03 | ◐ en cours — code livré, spike appareils réels à jouer | `bloc-04-done` |
 | 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — code livré, envoi réel Twilio/Resend à faire | `bloc-05-done` |
-| 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ☐ non commencé | `bloc-06-done` |
+| 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — code livré, clés réelles et corpus ASR à jouer | `bloc-06-done` |
 | 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ☐ non commencé | `bloc-07-done` |
 | 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ☐ non commencé | `bloc-08-done` |
 | 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ☐ non commencé | `bloc-09-done` |

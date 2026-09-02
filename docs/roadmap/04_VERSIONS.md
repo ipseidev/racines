@@ -45,8 +45,7 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | resend/resend-laravel | v1.4.0 | 05 |
 | twilio/sdk | v8.12.0 | 05 |
 | svix/svix | v2.2.0 | 05 |
-| anthropic-ai/sdk | _à installer_ | 06 |
-| pbmedia/laravel-ffmpeg | _à installer_ | 06 |
+| anthropic-ai/sdk | v0.46.0 | 06 |
 | laravel/cashier | _à installer_ | 10 |
 | spatie/laravel-medialibrary | _à installer_ | 12 |
 | sunspikes/clamav-validator | _à installer_ | 12 |
@@ -59,6 +58,8 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 Telescope n'est pas installé : `laravel/pail` couvre le suivi des journaux en local. À réévaluer au bloc 11 si le besoin d'inspection des requêtes se confirme. S'il l'est, `ignore_paths` doit reprendre les sept préfixes de `TokenType::urlPrefixes()` (décision T-48).
 
 Le bloc 03 n'installe **aucun** paquet : `random_bytes`, `hash`, Monolog et Laravel suffisent.
+
+`pbmedia/laravel-ffmpeg` était prévu au bloc 06 et n'a **pas** été retenu : le transcodage tient en un appel `ffmpeg` et une lecture `ffprobe`, que `Process::fake()` éprouve directement (décision T-69). `ffmpeg` reste requis sur la machine ; les chemins des binaires viennent de `FFMPEG_BINARIES` / `FFPROBE_BINARIES`.
 
 ## npm
 

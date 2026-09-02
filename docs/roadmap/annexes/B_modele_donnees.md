@@ -123,10 +123,21 @@ Nommage des objets (`App\Support\ObjectKeys`) : `projects/{uuid}/stories/{uuid}/
 Ce que le navigateur du narrateur rapporte de sa séance : micro refusé, page cachée, interruption, brouillon repris, envoi échoué. Sans cette table, on ne sait pas *pourquoi* un narrateur n'a pas enregistré, et le taux d'échec de capture du doc 04 §11 n'est pas mesurable.
 
 ## transcripts (bloc 06)
-`id`, `story_id`, `kind` check (`verbatim`, `fluide`, `edited`), `source_transcript_id` FK nullable, `version` int, `provider` varchar nullable (`gladia`, `deepgram`, `claude`, `human`), `provider_job_id` nullable, `language` défaut `fr`, `text` text, `words` jsonb nullable (mots horodatés), `metadata` jsonb (modèle, usage, durée de traitement), `edited_by_type`/`edited_by_id` nullable, `is_current` bool, `created_at`. Règle : `DELETE` interdit sur `kind = verbatim` (règle Postgres `transcripts_verbatim_no_delete` + garde modèle). Unique partiel `(story_id, kind) where is_current`.
+`id` uuid, `story_id` uuid FK, `recording_id` uuid FK nullable (`nullOnDelete` : une réponse écrite n'a pas d'enregistrement), `kind` check (`verbatim`, `fluide`, `edited`), `source_transcript_id` FK nullable (auto-référence, posée par un `ALTER` séparé — Postgres refuse une clé auto-référente dans le `CREATE`), `version` int, `provider` varchar nullable (`gladia`, `deepgram`, `claude`, `human`), `provider_job_id` nullable, `language` défaut `fr`, `text` text, `words` jsonb nullable (mots horodatés), `metadata` jsonb (modèle, usage, durée de traitement, signalements sensibles), `edited_by_type`/`edited_by_id` nullable, `is_current` bool, `created_at` (pas d'`updated_at` : un rendu ne se modifie pas, on en crée un autre).
+
+Index : `(story_id, kind)`, unique partiel `transcripts_one_current_per_kind (story_id, kind) where is_current` — un courant **par espèce**, pas un par histoire : la parole brute, la mise au propre et la correction humaine coexistent, et `Transcript::readableFor()` choisit dans cet ordre `edited` → `fluide` → `verbatim`.
+
+Règle Postgres `transcripts_verbatim_no_delete` (fonction `forbid_verbatim_delete()` + déclencheur `BEFORE DELETE`) : un `DELETE` sur `kind = verbatim` échoue tant que l'histoire n'est pas `deleted`. Garde équivalente dans `Transcript::booted()`, pour que l'erreur soit lisible côté application avant d'atteindre la base.
+
+## transcription_jobs (bloc 06) — bigint
+`id`, `recording_id` uuid FK (`cascadeOnDelete`), `provider` varchar(32), `provider_job_id` varchar nullable (l'identifiant chez le fournisseur), `status` check (`queued`, `processing`, `done`, `failed`, défaut `queued`), `attempts` smallint défaut 0, `submitted_at` nullable, `completed_at` nullable, `error` text nullable, timestamps. Index `(status, submitted_at)` — celui que lit `PollTranscription` chaque minute — et `(provider_job_id)`, celui que lit le webhook.
+
+Table **interne** : elle sert à savoir où en est une demande, pas à conserver un résultat. Le résultat vit dans `transcripts`. Une histoire dont le `transcription_job` est `failed` est un silence inexpliqué pour la famille : c'est ce qui déclenche la notification support.
 
 ## lexicon_entries (bloc 06) — bigint
-`project_id`, `term`, `replacement` nullable, `notes` nullable, `created_by_type/id`, timestamps. Unique `(project_id, term)`.
+`id`, `project_id` uuid FK (`cascadeOnDelete`), `term` varchar, `replacement` varchar nullable, `notes` varchar nullable, `created_by_type`/`created_by_id` nullable, timestamps. Unique `(project_id, term)`.
+
+`replacement` nullable et ce n'est pas un oubli : un nom peut être au lexique **seulement** pour que l'ASR l'entende, sans correction à appliquer ensuite. `LexiconEntry::spelling()` rend alors le terme lui-même. Le lexique sert deux fois : en vocabulaire envoyé au fournisseur avant la transcription, et en correction appliquée au texte après.
 
 ## consent_texts (bloc 02) — bigint
 `id`, `kind` check, `version`, `locale` défaut `fr`, `body` text, `effective_from`, `created_at` (pas d'`updated_at` : un texte publié ne se modifie pas, on en publie un autre). Unique `(kind, version, locale)`. `ConsentText::current($kind, $locale)` retourne la version en vigueur la plus récente.
