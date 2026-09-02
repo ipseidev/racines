@@ -13,8 +13,6 @@ use App\Exceptions\Domain\OtpThrottled;
 use App\Models\Narrator;
 use App\Models\OtpChallenge;
 use App\Notifications\OtpCodeNotification;
-use App\Services\Sms\FakeSmsSender;
-use App\Services\Sms\SmsSender;
 use App\Services\Tokens\OtpService;
 use Database\Factories\OtpChallengeFactory;
 use Illuminate\Support\Facades\Notification;
@@ -22,14 +20,6 @@ use Illuminate\Support\Facades\Notification;
 function otp(): OtpService
 {
     return app(OtpService::class);
-}
-
-function fakeSms(): FakeSmsSender
-{
-    $sender = new FakeSmsSender;
-    app()->instance(SmsSender::class, $sender);
-
-    return $sender;
 }
 
 it('creates a 6 digit challenge hashed in database and sends it on the chosen channel', function (): void {
@@ -173,4 +163,27 @@ it('périme les défis précédents quand un nouveau code est demandé', functio
     otp()->challenge($narrator, OtpPurpose::SensitiveAct, Channel::Sms);
 
     expect($first->refresh()->isExpired())->toBeTrue();
+});
+
+it('envoie un seul code, par SMS, à un narrateur qui a choisi les deux canaux', function (): void {
+    $sms = fakeSms();
+    $narrator = Narrator::factory()->primary()->create([
+        'preferred_channel' => Channel::Both,
+        'email' => 'odette@example.test',
+        'phone_e164' => '+33600000012',
+    ]);
+
+    expect(OtpService::channelFor($narrator))->toBe(Channel::Sms);
+
+    // Deux codes valides en même temps doubleraient la surface d'attaque.
+    $challenge = otp()->challenge($narrator, OtpPurpose::SensitiveAct, OtpService::channelFor($narrator));
+
+    expect($challenge->channel)->toBe(Channel::Sms)
+        ->and($sms->messages())->toHaveCount(1);
+});
+
+it('retombe sur le courriel quand le narrateur veut les deux mais n’a pas de téléphone', function (): void {
+    $narrator = Narrator::factory()->primary()->byEmail()->create(['preferred_channel' => Channel::Both]);
+
+    expect(OtpService::channelFor($narrator))->toBe(Channel::Email);
 });

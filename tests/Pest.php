@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Services\Sms\FakeSmsSender;
+use App\Services\Sms\SmsSender;
+use App\Services\Storage\FakeMediaStorage;
+use App\Services\Storage\MediaStorage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -60,7 +64,27 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Expéditeur de SMS observable, substitué dans le conteneur.
+ *
+ * Déclaré ici et non dans chaque fichier : Pest charge tous les fichiers de
+ * test dans l'espace global, et deux déclarations du même nom se percutent.
+ */
+function fakeSms(): FakeSmsSender
 {
-    // ..
+    $sender = new FakeSmsSender;
+    app()->instance(SmsSender::class, $sender);
+
+    return $sender;
+}
+
+/**
+ * Stockage de médias en mémoire, substitué dans le conteneur.
+ */
+function fakeMediaStorage(): FakeMediaStorage
+{
+    $storage = new FakeMediaStorage;
+    app()->instance(MediaStorage::class, $storage);
+
+    return $storage;
 }

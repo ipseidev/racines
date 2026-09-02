@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Listeners\RevokeRecordTokensOnValidation;
 use App\Models\FamilyMember;
 use App\Models\Narrator;
 use App\Models\Project;
@@ -13,6 +12,7 @@ use App\Models\User;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
+use App\Services\Sms\TwilioSmsSender;
 use App\Services\Storage\FakeMediaStorage;
 use App\Services\Storage\MediaStorage;
 use App\Services\Storage\S3MediaStorage;
@@ -24,13 +24,12 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use RuntimeException;
-use Spatie\ModelStates\Events\StateChanged;
+use Twilio\Rest\Client as TwilioClient;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -59,8 +58,16 @@ final class AppServiceProvider extends ServiceProvider
 
         $this->configureDefaults();
 
-        // Un jeton d'enregistrement meurt avec la validation de son histoire.
-        Event::listen(StateChanged::class, RevokeRecordTokensOnValidation::class);
+        /*
+         * Les écouteurs de `app/Listeners` sont découverts par Laravel d'après
+         * le type de leur paramètre : les enregistrer ici en plus les faisait
+         * tourner **deux fois**, ce qui émettait deux jetons pour une seule
+         * demande de nouveau lien.
+         *
+         * Écouteurs actifs et leur événement :
+         *  - RevokeRecordTokensOnValidation ← Spatie StateChanged
+         *  - SendNewLinkRequestedAlerts     ← App\Events\NewLinkRequested
+         */
 
         $this->configureRateLimiters();
         $this->configureSmsSender();
@@ -148,6 +155,13 @@ final class AppServiceProvider extends ServiceProvider
             return match ($provider) {
                 'fake' => new FakeSmsSender,
                 'log' => new LogSmsSender,
+                'twilio' => new TwilioSmsSender(
+                    new TwilioClient(
+                        (string) config('services.twilio.sid'),
+                        (string) config('services.twilio.token'),
+                    ),
+                    route('webhooks.twilio.status'),
+                ),
                 default => throw new RuntimeException("Unknown SMS provider [{$provider}]."),
             };
         });

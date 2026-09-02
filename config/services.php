@@ -37,6 +37,14 @@ return [
         'driver' => env('MEDIA_DRIVER', 's3'),
     ],
 
+    'twilio' => [
+        'sid' => env('TWILIO_ACCOUNT_SID'),
+        'token' => env('TWILIO_AUTH_TOKEN'),
+        // Numéro de repli, utilisé là où l'expéditeur alphanumérique est
+        // refusé par l'opérateur (doc 04 §9, règle de décision du bloc 05).
+        'from' => env('TWILIO_FROM'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -55,6 +63,8 @@ return [
 
     'resend' => [
         'key' => env('RESEND_API_KEY'),
+        // Secret Svix des webhooks de livraison (bloc 05 §6.5).
+        'webhook_secret' => env('RESEND_WEBHOOK_SECRET'),
     ],
 
     'ses' => [

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Narrator;
 
-use App\Enums\Channel;
 use App\Enums\OtpPurpose;
 use App\Exceptions\Domain\OtpExpired;
 use App\Exceptions\Domain\OtpInvalid;
@@ -38,7 +37,7 @@ final readonly class OtpChallengeController
 
         return inertia('narrator/OtpChallenge', [
             'sentToMasked' => $challenge?->sent_to_masked,
-            'channel' => ($challenge === null ? $narrator->preferred_channel : $challenge->channel)->value,
+            'channel' => ($challenge === null ? OtpService::channelFor($narrator) : $challenge->channel)->value,
             'expiresAt' => $challenge?->expires_at->toIso8601String(),
             'locked' => $challenge?->isLocked() ?? false,
         ]);
@@ -48,7 +47,7 @@ final readonly class OtpChallengeController
     {
         $narrator = self::narratorFor($request);
 
-        $this->otp->challenge($narrator, OtpPurpose::SensitiveAct, $narrator->preferred_channel);
+        $this->otp->challenge($narrator, OtpPurpose::SensitiveAct, OtpService::channelFor($narrator));
 
         return back()->with('status', __('narrator.otp.sent'));
     }
@@ -101,15 +100,5 @@ final readonly class OtpChallengeController
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->first();
-    }
-
-    /**
-     * Le canal du défi suit celui que le narrateur a choisi pour ses prompts :
-     * un code arrivé par un canal inhabituel ressemble à une tentative
-     * d'hameçonnage (doc 04 §9).
-     */
-    public static function channelFor(Narrator $narrator): Channel
-    {
-        return $narrator->preferred_channel;
     }
 }

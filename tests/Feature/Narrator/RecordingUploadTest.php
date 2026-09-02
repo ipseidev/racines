@@ -8,22 +8,12 @@ use App\Jobs\ConcatenateSegments;
 use App\Jobs\ReplicateRecording;
 use App\Models\Recording;
 use App\Models\Story;
-use App\Services\Storage\FakeMediaStorage;
-use App\Services\Storage\MediaStorage;
 use App\Services\Tokens\TokenService;
 use App\States\Story\Proposed;
 use App\States\Story\Recorded;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
-
-function storage(): FakeMediaStorage
-{
-    $storage = new FakeMediaStorage;
-    app()->instance(MediaStorage::class, $storage);
-
-    return $storage;
-}
 
 /**
  * @return array{string, string}
@@ -44,7 +34,7 @@ function recordLink(?Story $story = null): array
 }
 
 it('crée un enregistrement initié avec un identifiant d’envoi', function (): void {
-    storage();
+    fakeMediaStorage();
     [$token, $story] = recordLink();
 
     $response = $this->postJson("/r/{$token}/recordings", [
@@ -64,7 +54,7 @@ it('crée un enregistrement initié avec un identifiant d’envoi', function ():
 });
 
 it('refuse un type de fichier non accepté', function (): void {
-    storage();
+    fakeMediaStorage();
     [$token] = recordLink();
 
     $this->postJson("/r/{$token}/recordings", [
@@ -74,7 +64,7 @@ it('refuse un type de fichier non accepté', function (): void {
 });
 
 it('refuse un envoi annoncé plus gros que la limite', function (): void {
-    storage();
+    fakeMediaStorage();
     [$token] = recordLink();
 
     $this->postJson("/r/{$token}/recordings", [
@@ -84,7 +74,7 @@ it('refuse un envoi annoncé plus gros que la limite', function (): void {
 });
 
 it('signe une part et refuse un numéro hors bornes', function (): void {
-    storage();
+    fakeMediaStorage();
     [$token, $story] = recordLink();
 
     $recording = Recording::query()->findOrFail(
@@ -105,7 +95,7 @@ it('signe une part et refuse un numéro hors bornes', function (): void {
 });
 
 it('refuse un enregistrement qui n’appartient pas à l’histoire du jeton', function (): void {
-    storage();
+    fakeMediaStorage();
     [$token] = recordLink();
 
     $foreign = Recording::factory()->create();
@@ -120,7 +110,7 @@ it('refuse un enregistrement qui n’appartient pas à l’histoire du jeton', f
 
 it('confirme l’enregistrement seulement après un HeadObject réussi', function (): void {
     Queue::fake();
-    $storage = storage();
+    $storage = fakeMediaStorage();
     [$token, $story] = recordLink();
 
     $initiate = $this->postJson("/r/{$token}/recordings", [
@@ -154,7 +144,7 @@ it('confirme l’enregistrement seulement après un HeadObject réussi', functio
 
 it('ne confirme rien et ne transitionne pas quand le stockage ne détient pas l’objet', function (): void {
     Queue::fake();
-    $storage = storage();
+    $storage = fakeMediaStorage();
     [$token, $story] = recordLink();
 
     $initiate = $this->postJson("/r/{$token}/recordings", [
@@ -179,7 +169,7 @@ it('ne confirme rien et ne transitionne pas quand le stockage ne détient pas l�
 });
 
 it('marque un envoi abandonné', function (): void {
-    $storage = storage();
+    $storage = fakeMediaStorage();
     [$token, $story] = recordLink();
 
     $recording = Recording::query()->findOrFail(
@@ -193,7 +183,7 @@ it('marque un envoi abandonné', function (): void {
 });
 
 it('conserve l’ancien enregistrement quand le narrateur recommence', function (): void {
-    storage();
+    fakeMediaStorage();
 
     $story = Story::factory()->recorded()->create();
     $first = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
@@ -222,7 +212,7 @@ it('n’efface jamais le chemin d’un audio confirmé, même par écriture dire
 
 it('demande la concaténation quand il y a plusieurs segments', function (): void {
     Queue::fake();
-    $storage = storage();
+    $storage = fakeMediaStorage();
     [$token, $story] = recordLink();
 
     $recording = Recording::query()->findOrFail(

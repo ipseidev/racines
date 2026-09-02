@@ -197,10 +197,31 @@ final class OtpService
         $destination = match ($channel) {
             Channel::Sms => $subject->phone_e164,
             Channel::Email => $subject->email,
-            Channel::PhoneOperator => null,
+            // Le téléphone opéré n'est pas un canal d'envoi automatique (R-9),
+            // et « les deux » a été résolu avant d'arriver ici.
+            Channel::Both, Channel::PhoneOperator => null,
         };
 
         return $destination === '' ? null : $destination;
+    }
+
+    /**
+     * Canal effectif d'un code à usage unique.
+     *
+     * Un code part sur **un** canal, jamais deux : deux codes valides en même
+     * temps doublent la surface d'attaque pour rien. Quand le narrateur a
+     * choisi les deux, on prend le SMS — c'est celui qu'une personne âgée lit
+     * le plus vite, et la contrainte en base n'accepte que sms ou email.
+     */
+    public static function channelFor(Narrator|FamilyMember $subject): Channel
+    {
+        $preference = $subject->preferred_channel ?? Channel::Sms;
+
+        if ($preference === Channel::Both) {
+            return $subject->phone_e164 === null ? Channel::Email : Channel::Sms;
+        }
+
+        return $preference;
     }
 
     private static function setting(string $key): int

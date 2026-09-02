@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\StoresDatesWithOffset;
+use App\Enums\Channel;
 use Carbon\CarbonImmutable;
 use Database\Factories\FamilyMemberFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -65,6 +66,17 @@ final class FamilyMember extends Model
     public function consents(): MorphMany
     {
         return $this->morphMany(Consent::class, 'subject');
+    }
+
+    /**
+     * Canal de contact d'un proche.
+     *
+     * Ils n'ont pas de préférence enregistrée : un proche est invité par
+     * courriel, et son code éventuel suit le même chemin.
+     */
+    public function getPreferredChannelAttribute(): Channel
+    {
+        return $this->email === null ? Channel::Sms : Channel::Email;
     }
 
     /**

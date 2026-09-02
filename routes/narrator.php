@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Links\VcardController;
 use App\Http\Controllers\Narrator\ClientEventController;
 use App\Http\Controllers\Narrator\OtpChallengeController;
 use App\Http\Controllers\Narrator\RecordingUploadController;
@@ -27,6 +28,12 @@ use Illuminate\Support\Facades\Route;
 | Les routes /n et /i arrivent aux blocs 07 et 10.
 |
 */
+
+// Fiche contact : sans jeton, mais sur le domaine des liens, pour qu'un
+// narrateur puisse enregistrer l'expéditeur de ses questions (doc 04 §9).
+Route::get('/vcard', VcardController::class)
+    ->middleware('throttle:tokens')
+    ->name('narrator.vcard');
 
 Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
     // Page d'enregistrement : explication, permission, enregistrement,

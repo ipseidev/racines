@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Notifications\Channels;
 
+use App\Enums\Channel;
+use App\Models\OutboundMessage;
+use App\Notifications\TracksDelivery;
 use App\Services\Sms\SmsSender;
 use Illuminate\Notifications\Notification;
 
 /**
- * Canal de notification SMS, adossé à `SmsSender`.
+ * Canal SMS, adossé à `SmsSender`, avec suivi de livraison.
  *
- * Passer par un canal Laravel plutôt que par un appel direct permet à
- * `Notification::fake()` de fonctionner dans les tests des blocs suivants,
- * et au bloc 05 de brancher les files et les webhooks de livraison sans
- * toucher aux notifications elles-mêmes.
+ * Chaque envoi laisse une ligne dans `outbound_messages`, portant une clé
+ * d'idempotence : deux exécutions de `prompts:dispatch-due` dans la même
+ * minute ne doivent pas produire deux SMS chez une personne de 82 ans.
  */
 final readonly class SmsChannel
 {
@@ -31,6 +33,37 @@ final readonly class SmsChannel
             return;
         }
 
-        $this->sender->send($to, (string) $notification->toSms($notifiable));
+        $body = (string) $notification->toSms($notifiable);
+        $tracked = $notification instanceof TracksDelivery ? $notification : null;
+        $dedupeKey = $tracked?->dedupeKey(Channel::Sms) ?? 'sms:'.hash('sha256', $to.$body);
+
+        $existing = OutboundMessage::query()->where('dedupe_key', $dedupeKey)->first();
+
+        // Déjà parti : on ne recommence pas.
+        if ($existing instanceof OutboundMessage) {
+            return;
+        }
+
+        $message = new OutboundMessage([
+            'project_id' => $tracked?->projectId(),
+            'channel' => Channel::Sms,
+            'template' => $tracked?->template() ?? 'sms',
+            'payload' => $tracked?->deliveryPayload(),
+            'dedupe_key' => $dedupeKey,
+        ]);
+
+        $message->to_hash = OutboundMessage::hashRecipient($to);
+        $message->to_masked = OutboundMessage::mask($to);
+        $message->save();
+
+        $result = $this->sender->send($to, $body, $dedupeKey);
+
+        if ($result->accepted) {
+            $message->markSent($result->providerMessageId, config('services.sms.provider'));
+
+            return;
+        }
+
+        $message->markFailed($result->error ?? 'refus du fournisseur');
     }
 }

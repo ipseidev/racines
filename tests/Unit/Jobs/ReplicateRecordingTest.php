@@ -4,19 +4,9 @@ declare(strict_types=1);
 
 use App\Jobs\ReplicateRecording;
 use App\Models\Recording;
-use App\Services\Storage\FakeMediaStorage;
-use App\Services\Storage\MediaStorage;
-
-function fakeStorage(): FakeMediaStorage
-{
-    $storage = new FakeMediaStorage;
-    app()->instance(MediaStorage::class, $storage);
-
-    return $storage;
-}
 
 it('copie l’audio confirmé vers le disque de réplique', function (): void {
-    $storage = fakeStorage();
+    $storage = fakeMediaStorage();
     $recording = Recording::factory()->confirmed()->create();
 
     $storage->put((string) $recording->original_path, 'audio', 'audio/webm');
@@ -31,7 +21,7 @@ it('copie l’audio confirmé vers le disque de réplique', function (): void {
 });
 
 it('réplique tous les segments d’un enregistrement interrompu', function (): void {
-    $storage = fakeStorage();
+    $storage = fakeMediaStorage();
     $recording = Recording::factory()->create();
 
     $recording->segments = [
@@ -52,7 +42,7 @@ it('réplique tous les segments d’un enregistrement interrompu', function (): 
 });
 
 it('ne réplique rien tant que l’enregistrement n’est pas confirmé', function (): void {
-    $storage = fakeStorage();
+    $storage = fakeMediaStorage();
     $recording = Recording::factory()->create();
 
     (new ReplicateRecording($recording->id))->handle($storage);
@@ -61,7 +51,7 @@ it('ne réplique rien tant que l’enregistrement n’est pas confirmé', functi
 });
 
 it('est idempotent : rejoué, il ne recopie pas', function (): void {
-    $storage = fakeStorage();
+    $storage = fakeMediaStorage();
     $recording = Recording::factory()->confirmed()->create();
     $storage->put((string) $recording->original_path, 'audio');
 
@@ -84,7 +74,7 @@ it('attend de plus en plus longtemps entre deux essais, jusqu’à une heure', f
 });
 
 it('ne casse pas sur un enregistrement disparu', function (): void {
-    $storage = fakeStorage();
+    $storage = fakeMediaStorage();
 
     (new ReplicateRecording('01a00000-0000-7000-8000-000000000000'))->handle($storage);
 

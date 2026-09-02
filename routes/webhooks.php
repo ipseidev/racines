@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Webhooks\ResendWebhookController;
+use App\Http\Controllers\Webhooks\TwilioStatusController;
+use App\Http\Middleware\VerifyResendSignature;
+use App\Http\Middleware\VerifyTwilioSignature;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Webhooks entrants
@@ -17,3 +23,11 @@ declare(strict_types=1);
 |   /stripe/webhook           paiements, via Cashier   (bloc 10)
 |
 */
+
+Route::post('/webhooks/twilio/status', TwilioStatusController::class)
+    ->middleware(VerifyTwilioSignature::class)
+    ->name('webhooks.twilio.status');
+
+Route::post('/webhooks/resend', ResendWebhookController::class)
+    ->middleware(VerifyResendSignature::class)
+    ->name('webhooks.resend');

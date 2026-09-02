@@ -100,9 +100,10 @@ final class PickNextQuestion
             ->map(fn (QuestionTheme $theme): string => $theme->value)
             ->unique()
             ->sort()
-            ->values();
+            ->values()
+            ->all();
 
-        return $themes->all();
+        return array_values($themes);
     }
 
     public function coversEnoughThemes(Project $project): bool
