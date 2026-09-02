@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-A Laravel + Inertia (React) application for **Racines** (working name, the brand is a runtime setting), a French voice-first family-memoir service (the "Remento clone" of the folder name). Block 00 of the roadmap is done: the app runs under Sail, the quality gate is green, CI is wired. No product feature exists yet; the next block to execute is 01.
+A Laravel + Inertia (React) application for **Racines** (working name, the brand is a runtime setting), a French voice-first family-memoir service (the "Remento clone" of the folder name). Blocks 00 to 02 of the roadmap are done: the app runs under Sail, the quality gate is green, CI is wired, the brand is editable in the Filament admin, and the domain model exists — nine tables, the R-4 story state machine with guarded transitions, roles and fine-grained permissions, policies, factories and seeders. No user-facing feature exists yet; the next block to execute is 03 (bearer tokens and OTP).
+
+The domain is code-first and proven by tests only, with no UI: `app/Enums/` (nineteen string-backed enums, labels in `lang/fr/enums.php`), `app/Models/`, `app/States/Story/` (eleven states) and `app/States/Story/Transitions/` (thirteen transitions), `app/Actions/`, `app/Policies/`, `app/Exceptions/Domain/`. Two invariants are structural, not conventional: `Story::isVisibleToFamily()` is the only source of visibility truth, and `stories.state` is never written outside a transition — `tests/Unit/States/NoDirectStateWriteTest.php` fails if any file in `app/` or `database/seeders/` writes it.
 
 The repo root is the Laravel project. Alongside it: five French-language product documents at v2.3 in `docs/dossier/`, dated Remento screenshots in `docs/reference/` (git-ignored), and the execution roadmap in `docs/roadmap/`.
 
@@ -59,7 +61,7 @@ Every quantitative or market claim carries one taxonomy tag (doc 02): `[FAIT SOU
 
 ## Checks available today
 
-Start the environment with `./vendor/bin/sail up -d`; the app answers on `http://localhost:8001` (ports are offset, decision T-34). The canonical commands are in `docs/roadmap/01_CONVENTIONS.md` §6: `sail composer check` for the whole PHP gate, `sail npm run check` and `sail npm run types:check` for the front, `sail npm run test` for Vitest, `sail npx playwright test` for end-to-end. PHPStan runs at level 8 and must stay at zero errors.
+Start the environment with `./vendor/bin/sail up -d`; the app answers on `http://localhost:8001` (ports are offset, decision T-34). `sail artisan migrate:fresh --seed` gives an admin account, a demo project with one primary narrator, three family members and five stories in five different states — only one of them visible to the family. The canonical commands are in `docs/roadmap/01_CONVENTIONS.md` §6: `sail composer check` for the whole PHP gate, `sail npm run check` and `sail npm run types:check` for the front, `sail npm run test` for Vitest, `sail npx playwright test` for end-to-end. PHPStan runs at level 8 and must stay at zero errors.
 
 One check has no tooling and must be run by hand on the French text, scanning for the vocabulary R-11 forbids:
 

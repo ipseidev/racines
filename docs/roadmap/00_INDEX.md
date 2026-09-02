@@ -30,7 +30,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 |---|---|---|---|---|
 | 00 | [Fondations du dépôt et outillage](blocs/B00_fondations.md) | — | ☑ terminé (2026-09-02) | `bloc-00-done` |
 | 01 | [Marque, réglages, admin Filament, i18n](blocs/B01_marque_reglages_i18n.md) | 00 | ☑ terminé (2026-09-02) | `bloc-01-done` |
-| 02 | [Modèle de domaine et machine d'états](blocs/B02_modele_domaine.md) | 01 | ☐ non commencé | `bloc-02-done` |
+| 02 | [Modèle de domaine et machine d'états](blocs/B02_modele_domaine.md) | 01 | ☑ terminé (2026-09-02) | `bloc-02-done` |
 | 03 | [Jetons, OTP et sécurité des liens](blocs/B03_jetons_securite.md) | 02 | ☐ non commencé | `bloc-03-done` |
 | 04 | [Page d'enregistrement narrateur et spike navigateur](blocs/B04_enregistrement.md) | 03 | ☐ non commencé | `bloc-04-done` |
 | 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ☐ non commencé | `bloc-05-done` |

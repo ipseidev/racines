@@ -37,9 +37,9 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | spatie/laravel-settings | v3.4.6 | 01 |
 | filament/spatie-laravel-settings-plugin | v5.7.8 | 01 |
 | laravel-lang/common (dev) | v6.8 | 01 |
-| spatie/laravel-model-states | _à installer_ | 02 |
-| spatie/laravel-permission | _à installer_ | 02 |
-| laravel/pennant | _à installer_ | 02 |
+| spatie/laravel-model-states | v2.14.2 | 02 |
+| spatie/laravel-permission | v8.3.0 | 02 |
+| laravel/pennant | v1.26.0 | 02 |
 | league/flysystem-aws-s3-v3 | _à installer_ | 04 |
 | laravel/horizon | _à installer_ | 05 |
 | resend/resend-laravel | _à installer_ | 05 |

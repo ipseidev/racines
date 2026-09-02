@@ -66,6 +66,10 @@ Classe de base `App\States\Story\StoryState` (spatie/laravel-model-states), colo
 
 Visibilité à la validation (`stories.visibility`) : `all_family`, `restricted` (liste `story_visibility_family_members`), `book_only`.
 
+**`Story::isVisibleToFamily()` est la seule source de vérité de la visibilité côté proches.** Elle retourne vrai si et seulement si l'état est `shared` ou `in_book` **et** que la visibilité n'est pas `book_only`. Aucun écran, aucune requête, aucun jeton ne recalcule cette règle pour son compte : tout passe par cette méthode. Une histoire « livre uniquement » est donc incluse au livre sans jamais être écoutable en ligne — le narrateur a choisi le papier, pas la diffusion.
+
+Les transitions vivent dans `App\States\Story\Transitions` et nulle part ailleurs. `App\Exceptions\Domain\ForbiddenTransition` est la seule exception qu'un appelant ait à connaître : `StoryState::transitionTo()` traduit le refus du paquet en refus métier. Les gardes qui refusent, aujourd'hui : validation depuis `transcribed` sans `share_decision = share` ; partage d'une histoire `book_only` ; inclusion au livre depuis `validated` hors `book_only` ; validation depuis `recorded` sans `validated_via = phone_operator` **et** sans consentement `phone_call_recording` accordé ; sortie de `hidden` ou de `trashed` vers un autre état que `previous_state` ; restauration d'une corbeille de plus de trente jours ; toute transition depuis `deleted`.
+
 ## 4. Types de jetons (`access_tokens.type`)
 
 | Type | Périmètre | Durée | Invalidé par |
