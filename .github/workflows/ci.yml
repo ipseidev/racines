@@ -117,6 +117,9 @@ jobs:
           LARAVEL_BYPASS_ENV_CHECK: '1'
         run: npm run test
 
+      - name: Compiler les assets
+        run: npm run build
+
       - name: Pint et PHPStan
         run: |
           composer lint:check
@@ -124,9 +127,6 @@ jobs:
 
       - name: Tests PHP
         run: php artisan test
-
-      - name: Compiler les assets
-        run: npm run build
 
       - name: Navigateur Playwright
         run: npx playwright install --with-deps chromium
