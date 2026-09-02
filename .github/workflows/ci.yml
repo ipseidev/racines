@@ -98,8 +98,7 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
-          # --seed crée le compte d'administration dont le test bout en bout a besoin.
-          php artisan migrate --force --seed
+          php artisan migrate --force
 
       # Wayfinder écrit resources/js/routes et resources/js/actions, ignorés par
       # git : sans cette étape, tsc ne trouve pas les modules « @/routes ».
@@ -128,6 +127,11 @@ jobs:
 
       - name: Tests PHP
         run: php artisan test
+
+      # La suite Pest utilise RefreshDatabase, qui recrée la base : les données
+      # du bout en bout doivent être semées après elle, pas avant.
+      - name: Préparer les données du bout en bout
+        run: php artisan migrate:fresh --force --seed
 
       # Le test bout en bout se connecte au back-office : si le compte semé
       # est absent ou son mot de passe différent, on veut le savoir ici.
