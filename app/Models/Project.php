@@ -59,6 +59,22 @@ final class Project extends Model
     /** @use HasFactory<ProjectFactory> */
     use HasFactory, HasUuids;
 
+    /**
+     * Reprend les valeurs par défaut de la migration : une instance qui sort
+     * d'une action doit être lisible sans `refresh()`.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'status' => ProjectStatus::Draft->value,
+        'address_form' => AddressForm::Vous->value,
+        'cadence' => Cadence::Weekly->value,
+        'prompt_day' => 1,
+        'prompt_slot' => PromptSlot::Morning->value,
+        'timezone' => 'Europe/Paris',
+        'validation_variant' => ValidationVariant::Immediate->value,
+    ];
+
     /** @var list<string> */
     protected $fillable = [
         'cohort_id', 'status', 'offer', 'address_form', 'cadence', 'prompt_day',

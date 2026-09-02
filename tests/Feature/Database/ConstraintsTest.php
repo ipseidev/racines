@@ -189,9 +189,11 @@ it('refuse une histoire sans question ni texte personnalisé', function (): void
 });
 
 it('refuse deux textes de consentement de même version pour un même type', function (): void {
+    // La version 1.0 est déjà semée : on en prend une autre pour éprouver
+    // l'unicité et non le seeder.
     $row = [
         'kind' => 'voice_recording',
-        'version' => '1.0',
+        'version' => '9.9',
         'locale' => 'fr',
         'body' => 'Texte provisoire.',
         'effective_from' => now(),

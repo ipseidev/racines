@@ -35,6 +35,11 @@ final class FamilyMember extends Model
     /** @use HasFactory<FamilyMemberFactory> */
     use HasFactory, HasUuids;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'can_contribute' => false,
+    ];
+
     /** @var list<string> */
     protected $fillable = [
         'display_name', 'relationship', 'email', 'phone_e164',

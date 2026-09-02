@@ -32,6 +32,14 @@ final class Question extends Model
     /** @use HasFactory<QuestionFactory> */
     use HasFactory, HasUuids;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'difficulty' => 1,
+        'order_hint' => 0,
+        'is_active' => true,
+        'locale' => 'fr',
+    ];
+
     /** @var list<string> */
     protected $fillable = ['slug', 'text', 'theme', 'difficulty', 'order_hint', 'is_active', 'locale'];
 

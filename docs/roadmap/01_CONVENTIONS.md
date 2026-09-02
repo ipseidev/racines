@@ -176,6 +176,7 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `DB_SSLMODE` | Postgres | `pgsql`, `pgsql`, `5432`, `app`, `sail`, `password`, `prefer` |
 | `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT` | Redis via extension phpredis | `phpredis`, `redis`, vide, `6379` |
 | `QUEUE_CONNECTION`, `CACHE_STORE`, `SESSION_DRIVER` | Tous `redis` à partir du bloc 05 | `redis` |
+| `PENNANT_STORE` | Magasin des drapeaux de fonctionnalité (`database` ou `array`) | `database` |
 | `FILESYSTEM_DISK` | Disque par défaut | `r2` (local : `r2` pointant sur MinIO du Sail, voir bloc 04) |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | Identifiants R2 (jeton limité aux buckets du projet) | — |
 | `R2_ENDPOINT` | `https://<account>.eu.r2.cloudflarestorage.com` pour la juridiction UE | — |

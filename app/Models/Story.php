@@ -64,6 +64,12 @@ final class Story extends Model
     /** @use HasFactory<StoryFactory> */
     use HasFactory, HasStates, HasUuids;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'visibility' => StoryVisibility::AllFamily->value,
+        'printed_in_book' => false,
+    ];
+
     /** @var list<string> */
     protected $fillable = [
         'question_id', 'custom_question_text', 'sequence', 'proposed_at',

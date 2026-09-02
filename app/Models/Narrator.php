@@ -41,10 +41,16 @@ final class Narrator extends Model
     /** @use HasFactory<NarratorFactory> */
     use HasFactory, HasUuids;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'preferred_channel' => Channel::Sms->value,
+        'is_primary' => false,
+    ];
+
     /** @var list<string> */
     protected $fillable = [
         'first_name', 'last_name', 'display_name', 'email', 'phone_e164',
-        'preferred_channel', 'is_primary', 'birth_year', 'opted_in_at',
+        'preferred_channel', 'birth_year', 'opted_in_at',
     ];
 
     /** @return BelongsTo<Project, $this> */
