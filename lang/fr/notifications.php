@@ -48,6 +48,44 @@ return [
         ],
     ],
 
+    /*
+     * Invitation d'un proche (bloc 08). Une invitation à écouter la voix d'un
+     * aïeul est exactement ce qu'un hameçonneur imiterait : la marque est
+     * nommée, le lien part du domaine annoncé, et le message dit qu'aucune
+     * page ne demandera de mot de passe ni de paiement.
+     */
+    'family_invitation' => [
+        'subject' => 'Écoutez les histoires de :narrator',
+        'greeting' => 'Bonjour :name,',
+        'line' => ':inviter vous invite à écouter les histoires que :narrator enregistre.',
+        'button' => 'Écouter les histoires',
+        // La seule protection contre la circulation du lien dans un groupe de
+        // messagerie, et elle vaut mieux qu'une mention en petits caractères.
+        'personal' => 'Ce lien est personnel : il vous identifie. Ne le transmettez qu’à des proches, et jamais dans un groupe public.',
+        'sms' => ':inviter vous invite à écouter les histoires de :narrator sur :brand : :link',
+        'your_relative' => 'votre proche',
+    ],
+
+    /*
+     * Une réaction reçue (bloc 08). Le message **nomme** la personne et cite
+     * son mot : « une réaction » ne fait rien ressentir, « Marie vous dit
+     * merci » si. Et il ne porte aucun lien — on rapporte une bonne
+     * nouvelle, on ne donne pas une tâche.
+     */
+    'reaction_received' => [
+        'subject' => ':names a écouté votre histoire',
+        'greeting' => 'Bonjour :name,',
+        'line' => ':names a écouté « :title ».',
+        'comment' => ':name vous écrit : « :comment »',
+        'sms' => ':names a écouté « :title » sur :brand.',
+        'untitled' => 'votre histoire',
+        'digest' => [
+            'subject' => 'On vous a écouté·e hier',
+            'line' => 'Hier, :count personne(s) ont écouté vos histoires.',
+            'story' => '« :title » : :names',
+        ],
+    ],
+
     'corpus_exhausted' => [
         'subject' => 'Toutes les questions ont été posées',
         'line' => 'Le corpus de questions est épuisé pour ce projet : plus aucune nouvelle question ne partira.',
