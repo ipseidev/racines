@@ -129,6 +129,20 @@ jobs:
       - name: Tests PHP
         run: php artisan test
 
+      # Le test bout en bout se connecte au back-office : si le compte semé
+      # est absent ou son mot de passe différent, on veut le savoir ici.
+      - name: Vérifier le compte d’administration
+        run: |
+          php artisan tinker --execute="
+            \$email = config('product.seeding.admin_email');
+            \$user = App\Models\User::query()->where('email', \$email)->first();
+            if (! \$user) { echo 'ADMIN ABSENT pour '.\$email.PHP_EOL; exit(1); }
+            echo 'admin trouvé, rôle='.\$user->role->value.PHP_EOL;
+            \$ok = Illuminate\Support\Facades\Hash::check(config('product.seeding.admin_password'), \$user->password);
+            echo \$ok ? 'mot de passe conforme'.PHP_EOL : 'MOT DE PASSE NON CONFORME'.PHP_EOL;
+            exit(\$ok ? 0 : 1);
+          "
+
       - name: Navigateur Playwright
         run: npx playwright install --with-deps chromium
 
