@@ -140,11 +140,14 @@ jobs:
           php artisan tinker --execute="
             \$email = config('product.seeding.admin_email');
             \$user = App\Models\User::query()->where('email', \$email)->first();
-            if (! \$user) { echo 'ADMIN ABSENT pour '.\$email.PHP_EOL; exit(1); }
+            throw_unless(\$user, RuntimeException::class, 'Compte d’administration absent : '.\$email);
             echo 'admin trouvé, rôle='.\$user->role->value.PHP_EOL;
-            \$ok = Illuminate\Support\Facades\Hash::check(config('product.seeding.admin_password'), \$user->password);
-            echo \$ok ? 'mot de passe conforme'.PHP_EOL : 'MOT DE PASSE NON CONFORME'.PHP_EOL;
-            exit(\$ok ? 0 : 1);
+            throw_unless(
+              Illuminate\Support\Facades\Hash::check(config('product.seeding.admin_password'), \$user->password),
+              RuntimeException::class,
+              'Mot de passe du compte d’administration non conforme.'
+            );
+            echo 'mot de passe conforme'.PHP_EOL;
           "
 
       - name: Navigateur Playwright
