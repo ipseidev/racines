@@ -83,14 +83,6 @@ final class Brand
         );
     }
 
-    public static function bodyFontSafe(): string
-    {
-        return self::safely(
-            fn (): string => self::settings()->font_body,
-            (string) config('brand.fonts.body'),
-        );
-    }
-
     /**
      * @template T
      *

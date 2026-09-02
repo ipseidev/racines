@@ -28,6 +28,11 @@ yarn-error.log
 /.vscode
 /.zed
 
+# --- Assets publiés par les paquets (régénérés par composer install) ---
+/public/css/filament
+/public/js/filament
+/public/fonts/filament
+
 # --- Projet ---
 # Captures Remento : contiennent des données personnelles de test
 docs/reference/remento-screenshot/

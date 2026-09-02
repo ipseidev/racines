@@ -33,7 +33,6 @@ final class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName(fn (): string => Brand::nameSafe())
             ->colors(fn (): array => ['primary' => Color::hex(Brand::primaryColorSafe())])
-            ->font(fn (): string => Brand::bodyFontSafe())
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

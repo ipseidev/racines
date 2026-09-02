@@ -64,6 +64,10 @@ Format : décision, pourquoi, alternatives écartées, réversibilité. Numérot
 
 Format : `T-nn — date — bloc — décision — pourquoi — à revalider par l'humain : oui/non`.
 
+**T-39 — 2026-09-02 — bloc 01 — Les assets publiés par les paquets ne sont ni versionnés ni formatés.** `composer install` exécute `filament:upgrade`, qui republie `public/css/filament`, `public/js/filament` et `public/fonts/filament`. Les versionner créait un conflit permanent avec le formateur en intégration continue. Ils sont désormais ignorés par git et exclus du formatage, comme tout `public/**`. Vérifié : une suppression suivie de `composer install` les régénère. À revalider : non.
+
+**T-40 — 2026-09-02 — bloc 01 — Le panneau d'administration garde la police de Filament.** Lui passer la police de marque aurait fait charger une police depuis Google Fonts à chaque ouverture du back-office. Filament auto-héberge Inter ; le panneau reprend le nom et la couleur principale de la marque, pas sa typographie. Les pages publiques et narrateur, elles, utilisent les polices de marque, auto-hébergées via le greffon de polices de Vite. À revalider : non.
+
 **T-37 — 2026-09-02 — bloc 01 — Toujours la dernière version stable.** Règle demandée par le fondateur et inscrite en `01_CONVENTIONS.md` §6bis : on installe sans contrainte de version, les numéros de la roadmap sont indicatifs, et `composer outdated --direct` comme `npm outdated` doivent être vides à la clôture de chaque bloc. Appliqué immédiatement : Filament 5.7 au lieu du ^4.0 annoncé, puis montée de `typescript` 5.9 → 7.0.2, `@types/node` 22 → 26.4.1, `lucide-react` 0.475 → 1.39, `@laravel/passkeys` 0.2 → 0.4. Porte qualité verte après chaque montée. À revalider : non.
 
 **T-38 — 2026-09-02 — bloc 01 — Caches générés retirés du suivi git.** Le `git add -A` du bloc 00 avait versionné 69 fichiers de `storage/framework/views`, `storage/logs` et `bootstrap/cache`. Ils sont retirés et chaque dossier porte désormais son `.gitignore` (`*` puis `!.gitignore`), comme le prévoit Laravel, pour que l'arborescence survive à un clone sans versionner son contenu. À revalider : non.

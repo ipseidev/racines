@@ -81,6 +81,9 @@ export default defineConfig({
             // La roadmap et le dossier produit sont rédigés à la main :
             // le reflux automatique casserait les tableaux et la mise en forme.
             'docs/**',
+            // Assets publiés par les paquets : régénérés à chaque
+            // « composer install », ils ne nous appartiennent pas.
+            'public/**',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
         ],
