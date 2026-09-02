@@ -43,6 +43,18 @@ final class Links
         return self::for(TokenType::ListenProject, $plain);
     }
 
+    /**
+     * Le lien direct vers **une** histoire.
+     *
+     * Même préfixe que le lien de projet — les deux vivent sur `/l` — parce
+     * qu'un proche n'a pas à distinguer deux formes d'adresse : il clique, il
+     * écoute.
+     */
+    public static function listenStory(string $plain): string
+    {
+        return self::for(TokenType::ListenStory, $plain);
+    }
+
     public static function qr(string $plain): string
     {
         return self::for(TokenType::Qr, $plain);

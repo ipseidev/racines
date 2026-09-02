@@ -124,6 +124,17 @@ return [
         'phone' => 'Téléphone',
     ],
 
+    'support_ticket_kind' => [
+        'mic_denied_twice' => 'Micro refusé deux fois',
+        'phone_option_requested' => 'Option téléphone demandée',
+        'transcription_failed' => 'Transcription échouée',
+    ],
+
+    'support_ticket_status' => [
+        'open' => 'Ouvert',
+        'closed' => 'Fermé',
+    ],
+
     'reaction_type' => [
         'heart' => 'J’ai aimé',
         'thanks' => 'Merci',

@@ -86,6 +86,123 @@ return [
         ],
     ],
 
+    /*
+     * Moteur de complétion (bloc 09, annexe C).
+     *
+     * Le ton est la partie la plus délicate du produit. Trois règles, tenues
+     * par un test (`ForbiddenVocabularyTest`) :
+     *
+     *  — jamais « vous n'avez pas », jamais « toujours pas », jamais
+     *    « dernier rappel » : le narrateur n'a rien promis, il raconte quand
+     *    il veut ;
+     *  — la porte reste ouverte, sans échéance : « quand vous voudrez »,
+     *    « votre histoire vous attend » ;
+     *  — l'Initiateur·rice n'est jamais mise en cause non plus : on lui
+     *    propose un geste, on ne lui reproche pas un silence.
+     */
+    'engine' => [
+        'greeting' => 'Bonjour :name,',
+
+        // J+7 : le narrateur n'a pas encore accepté l'invitation.
+        'invitation_reminder' => [
+            'subject' => 'Votre livre de souvenirs vous attend',
+            'line' => ':inviter aimerait recueillir vos souvenirs. Il n’y a rien à installer, et vous répondez en parlant, quand vous voulez.',
+            'sms' => ':name, :inviter aimerait recueillir vos souvenirs sur :brand. Quand vous voulez : :link',
+            'button' => 'Découvrir',
+        ],
+
+        // J+14 : on en parle à l'Initiateur·rice, avec un geste à faire.
+        'invitation_alert' => [
+            'subject' => 'Un coup de main pour :narrator ?',
+            'line' => 'L’invitation de :narrator n’a pas encore été ouverte. Cela arrive souvent : un SMS d’un numéro inconnu se remarque moins qu’un message de vous.',
+            'sms' => ':name, un message de vous aiderait :narrator à démarrer : :link',
+            'button' => 'Renvoyer moi-même le lien',
+            'audio_hint' => 'Un message vocal de trente secondes fonctionne mieux qu’un texte : votre voix se reconnaît.',
+        ],
+
+        // J+3 : le lien de la question n'a jamais été ouvert.
+        'link_resend' => [
+            'subject' => 'Votre question de la semaine',
+            'line' => 'Voici de nouveau votre question, au cas où le message précédent se serait perdu.',
+            'sms' => ':name, votre question de la semaine vous attend chez :brand : :link',
+            'button' => 'Répondre en parlant',
+        ],
+
+        // J+2 : un enregistrement commencé et jamais envoyé.
+        'draft_waiting' => [
+            'subject' => 'Votre histoire vous attend',
+            'line' => 'Vous avez commencé à raconter, et votre enregistrement est resté sur votre téléphone. Il est toujours là : reprenez quand vous voulez.',
+            'sms' => ':name, votre enregistrement est resté sur votre téléphone. Il vous attend : :link',
+            'button' => 'Reprendre mon enregistrement',
+        ],
+
+        // J+4 : une histoire transcrite attend une décision.
+        'validation_reminder' => [
+            'subject' => 'Votre histoire est prête à relire',
+            'line' => 'Le texte de votre histoire est prêt. Relisez-le quand vous voulez, puis dites-nous ce que vous souhaitez en faire.',
+            'sms' => ':name, votre histoire est prête à relire chez :brand : :link',
+            'button' => 'Relire mon histoire',
+        ],
+
+        // J+5 : une histoire partagée que personne n'a écoutée.
+        'new_story_nudge' => [
+            'subject' => ':narrator a partagé une nouvelle histoire',
+            'line' => ':narrator a raconté « :title ». Deux minutes d’écoute, et un mot de vous lui feront plaisir.',
+            'sms' => ':narrator a partagé une nouvelle histoire sur :brand : :link',
+            'button' => 'Écouter',
+        ],
+
+        // Trois histoires partagées sans une seule réaction.
+        'react_suggestion' => [
+            'subject' => ':narrator raconte, et personne ne répond',
+            'line' => ':narrator a partagé :count histoires. Un cœur suffit : c’est ce qui donne envie de raconter la suivante.',
+            'sms' => ':name, un cœur sur la dernière histoire de :narrator suffirait : :link',
+            'button' => 'Envoyer un cœur',
+        ],
+
+        // J+10 de silence : une question plus légère.
+        'lighter_question' => [
+            'subject' => 'Une question plus légère',
+            'line' => 'En voici une plus simple, pour le plaisir. Une minute suffit, et vous pouvez tout aussi bien la laisser de côté.',
+            'sms' => ':name, une question plus légère vous attend chez :brand : :link',
+            'button' => 'Répondre en parlant',
+        ],
+
+        // J+21 de silence : on en parle à l'Initiateur·rice, quatre gestes.
+        'initiator_alert' => [
+            'subject' => 'Des nouvelles de :narrator ?',
+            'line' => ':narrator n’a pas enregistré depuis trois semaines. Ce n’est pas grave, et ça se débloque souvent d’un coup de fil. Voici ce que vous pouvez faire.',
+            'sms' => ':name, un coup de fil à :narrator débloquerait peut-être les choses : :link',
+            'button' => 'Renvoyer le lien moi-même',
+            'switch' => 'Passer à une question toutes les deux semaines',
+            'call' => 'J’appelle :narrator moi-même',
+            'phone' => 'Proposer l’enregistrement par téléphone',
+        ],
+
+        // Une pause demandée, confirmée avec sa date de reprise.
+        'pause_confirmed' => [
+            'subject' => 'C’est noté : pause jusqu’au :date',
+            'line' => 'Vous ne recevrez aucune question jusqu’au :date. Nous reprendrons tranquillement à cette date, et vous pourrez toujours écrire avant si vous en avez envie.',
+            'sms' => ':name, c’est noté : aucune question jusqu’au :date. Nous reprendrons à cette date.',
+        ],
+
+        // À l'échéance de la pause.
+        'resume' => [
+            'subject' => 'On reprend quand vous voulez',
+            'line' => 'Votre pause se termine. Voici une question, sans obligation : elle vous attendra le temps qu’il faudra.',
+            'sms' => ':name, votre pause se termine. Une question vous attend chez :brand : :link',
+            'button' => 'Répondre en parlant',
+        ],
+
+        // Un rythme qui ralentit : réduire vaut mieux qu'arrêter.
+        'slower_rhythm_offer' => [
+            'subject' => 'Une question toutes les deux semaines ?',
+            'line' => 'Une question par semaine, c’est peut-être beaucoup. Une toutes les deux semaines laisse plus de place, et le livre se construit tout aussi bien.',
+            'sms' => ':name, préférez-vous une question toutes les deux semaines ? :link',
+            'button' => 'Oui, toutes les deux semaines',
+        ],
+    ],
+
     'corpus_exhausted' => [
         'subject' => 'Toutes les questions ont été posées',
         'line' => 'Le corpus de questions est épuisé pour ce projet : plus aucune nouvelle question ne partira.',

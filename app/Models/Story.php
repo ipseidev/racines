@@ -139,6 +139,12 @@ final class Story extends Model
         return $this->visibility !== StoryVisibility::BookOnly;
     }
 
+    /** @return HasMany<ClientEvent, $this> */
+    public function clientEvents(): HasMany
+    {
+        return $this->hasMany(ClientEvent::class);
+    }
+
     /** @return HasMany<Reaction, $this> */
     public function reactions(): HasMany
     {

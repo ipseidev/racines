@@ -129,9 +129,13 @@ it('refuse d’enregistrer un consentement dont le texte n’existe pas', functi
 });
 
 it('prend la version la plus récente quand le texte a changé', function (): void {
+    // `now()` et non `now()->subHour()` : le texte semé prend effet au début
+    // de la journée, et une heure en arrière tombe la veille quand la suite
+    // tourne entre minuit et une heure. Le test échouait alors pour une
+    // raison qui n'avait rien à voir avec le produit (T-97).
     ConsentText::factory()->ofKind(ConsentKind::Transcription)->create([
         'version' => '2.0',
-        'effective_from' => now()->subHour(),
+        'effective_from' => now(),
     ]);
 
     $narrator = Narrator::factory()->primary()->create();
