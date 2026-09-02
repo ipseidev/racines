@@ -103,8 +103,20 @@ Contraintes : `stories_question_present_check` (`question_id is not null or cust
 | confirmed_at | nullable | posé après `HeadObject` réussi |
 | checksum_sha256 | char(64) nullable | |
 | is_current | bool | un seul courant par histoire (index unique partiel) |
-| device_info | jsonb | user-agent, plateforme, navigateur, version |
+| segments | jsonb | une entrée par continuité de flux : `{number, upload_id, key, bytes, etag}`. Un appel entrant ou une veille en ajoute une |
+| device_info | jsonb | plateforme, navigateur, version, durée annoncée par le client |
 | created_at, updated_at | | |
+
+Index : `(story_id)`, unique partiel `recordings_one_current (story_id) where is_current`. Contraintes `check` sur `source` et `upload_status`.
+
+Déclencheur `recordings_original_immutable` : une fois `confirmed_at` posé **et** `original_path` renseigné, `original_path` ne peut plus changer. Il laisse en revanche le renseigner une première fois après confirmation — un enregistrement interrompu est confirmé sur ses segments, qui sont ce qui est en sécurité, et son fichier recollé n'arrive qu'ensuite (`ConcatenateSegments`).
+
+Nommage des objets (`App\Support\ObjectKeys`) : `projects/{uuid}/stories/{uuid}/recordings/{uuid}/segment-01.{ext}`, puis `original.{ext}` et `derived.{ext}`. Trois identifiants opaques et rien d'autre : un chemin circule dans les journaux et dans les URL présignées.
+
+## client_events (bloc 04) — bigint
+`id`, `story_id` FK nullable, `event` varchar (liste fermée `App\Enums\ClientEventName`), `payload` jsonb (≤ 2 Ko, aucune donnée personnelle en clair), `created_at`. Index `(event, created_at)`, `(story_id)`.
+
+Ce que le navigateur du narrateur rapporte de sa séance : micro refusé, page cachée, interruption, brouillon repris, envoi échoué. Sans cette table, on ne sait pas *pourquoi* un narrateur n'a pas enregistré, et le taux d'échec de capture du doc 04 §11 n'est pas mesurable.
 
 ## transcripts (bloc 06)
 `id`, `story_id`, `kind` check (`verbatim`, `fluide`, `edited`), `source_transcript_id` FK nullable, `version` int, `provider` varchar nullable (`gladia`, `deepgram`, `claude`, `human`), `provider_job_id` nullable, `language` défaut `fr`, `text` text, `words` jsonb nullable (mots horodatés), `metadata` jsonb (modèle, usage, durée de traitement), `edited_by_type`/`edited_by_id` nullable, `is_current` bool, `created_at`. Règle : `DELETE` interdit sur `kind = verbatim` (règle Postgres `transcripts_verbatim_no_delete` + garde modèle). Unique partiel `(story_id, kind) where is_current`.

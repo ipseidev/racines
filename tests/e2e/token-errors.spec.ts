@@ -22,7 +22,7 @@ const blockingViolations = async (
 };
 
 test('un lien valable ouvre la page du narrateur', async ({ page }) => {
-    const response = await page.goto(link('record'));
+    const response = await page.goto(link('a11y'));
 
     expect(response?.status()).toBe(200);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -76,7 +76,7 @@ test('le bouton de renvoi enregistre la demande', async ({ page }) => {
 test('les pages à jeton ne sont ni mises en cache ni indexées', async ({
     page,
 }) => {
-    const response = await page.goto(link('record'));
+    const response = await page.goto(link('a11y'));
 
     expect(response?.headers()['cache-control']).toContain('no-store');
     expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow');

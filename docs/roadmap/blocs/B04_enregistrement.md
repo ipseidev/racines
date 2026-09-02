@@ -1,6 +1,6 @@
 # Bloc 04 — Page d'enregistrement narrateur et spike navigateur
 
-Statut : ☐ non commencé · Dépend de : 03 · Tag de fin : `bloc-04-done`
+Statut : ◐ en cours — code livré et éprouvé, spike appareils réels à exécuter (§6.7) · Dépend de : 03 · Tag de fin : `bloc-04-done`
 Références dossier : PRD P0-3, P0-5, P0-7 (audio source), US-01, US-06, doc 04 §11 (SLO capture), §12 (fichiers), spike §8.2 ; décisions T-09, T-10, T-26, T-27.
 
 ## 1. Objectif
@@ -58,18 +58,18 @@ sail npm i -D fake-indexeddb
 ## 6. Étapes
 
 ### 6.1 Stockage
-- [ ] `config/filesystems.php` : disques `r2`, `r2_replica`, `r2_backups` (driver `s3`, `endpoint` = `R2_ENDPOINT`, `use_path_style_endpoint` = `AWS_USE_PATH_STYLE_ENDPOINT`, `region` `auto`, `bucket` respectif, `visibility` `private`, `throw` `true`).
-- [ ] `App\Services\Storage\MediaStorage` (interface) : `createMultipartUpload(string $key, string $mime): string $uploadId`, `presignPart(string $key, string $uploadId, int $partNumber, int $ttlMinutes = 15): string`, `completeMultipart(string $key, string $uploadId, array $parts): void`, `abortMultipart(...)`, `head(string $key): ObjectInfo` (taille, ETag, mime), `copy(string $key, string $toDisk): void`, `temporaryUrl(string $key, int $minutes): string`, `delete(string $key): void`. Implémentation `S3MediaStorage` (client `Aws\S3\S3Client` construit depuis la config du disque) et `FakeMediaStorage` (mémoire).
-- [ ] Nommage des clés : `App\Support\ObjectKeys::recordingSegment(Recording $r, int $n, string $ext)`.
-- [ ] Test `MediaStorageTest` vert. Vérifier manuellement contre MinIO que la présignature et le CORS fonctionnent (`docker/minio/cors.json` autorisant `http://localhost` en `PUT` avec exposition de l'en-tête `ETag`).
+- [x] `config/filesystems.php` : disques `r2`, `r2_replica`, `r2_backups` (driver `s3`, `endpoint` = `R2_ENDPOINT`, `use_path_style_endpoint` = `AWS_USE_PATH_STYLE_ENDPOINT`, `region` `auto`, `bucket` respectif, `visibility` `private`, `throw` `true`).
+- [x] `App\Services\Storage\MediaStorage` (interface) : `createMultipartUpload(string $key, string $mime): string $uploadId`, `presignPart(string $key, string $uploadId, int $partNumber, int $ttlMinutes = 15): string`, `completeMultipart(string $key, string $uploadId, array $parts): void`, `abortMultipart(...)`, `head(string $key): ObjectInfo` (taille, ETag, mime), `copy(string $key, string $toDisk): void`, `temporaryUrl(string $key, int $minutes): string`, `delete(string $key): void`. Implémentation `S3MediaStorage` (client `Aws\S3\S3Client` construit depuis la config du disque) et `FakeMediaStorage` (mémoire).
+- [x] Nommage des clés : `App\Support\ObjectKeys::recordingSegment(Recording $r, int $n, string $ext)`.
+- [x] Test `MediaStorageTest` vert. Vérifier manuellement contre MinIO que la présignature et le CORS fonctionnent (`docker/minio/cors.json` autorisant `http://localhost` en `PUT` avec exposition de l'en-tête `ETag`).
 
 ### 6.2 Table et modèle `Recording`, `client_events`
-- [ ] Migrations `create_recordings_table` (annexe B + `segments jsonb`) avec trigger `recordings_original_immutable` (`BEFORE UPDATE` : si `OLD.confirmed_at IS NOT NULL AND NEW.original_path <> OLD.original_path` → `RAISE EXCEPTION`), `create_client_events_table`.
-- [ ] Modèle `Recording` (`HasUuids`, casts, `story()`, scope `current()`), `ClientEvent`.
-- [ ] Factory `RecordingFactory` avec états `initiated()`, `confirmed()`.
+- [x] Migrations `create_recordings_table` (annexe B + `segments jsonb`) avec trigger `recordings_original_immutable` (`BEFORE UPDATE` : si `OLD.confirmed_at IS NOT NULL AND NEW.original_path <> OLD.original_path` → `RAISE EXCEPTION`), `create_client_events_table`.
+- [x] Modèle `Recording` (`HasUuids`, casts, `story()`, scope `current()`), `ClientEvent`.
+- [x] Factory `RecordingFactory` avec états `initiated()`, `confirmed()`.
 
 ### 6.3 Routes et contrôleurs
-- [ ] `routes/narrator.php`, groupe `resolve.token:record`, `throttle:tokens`, `no-store` :
+- [x] `routes/narrator.php`, groupe `resolve.token:record`, `throttle:tokens`, `no-store` :
   - `GET /r/{token}` → `RecordPageController::show`
   - `POST /r/{token}/recordings` → `RecordingUploadController::initiate` (Form Request : `mime` in accepted, `expected_bytes` ≤ max)
   - `POST /r/{token}/recordings/{recording}/parts/{part}/sign` → `sign`
@@ -77,27 +77,27 @@ sail npm i -D fake-indexeddb
   - `POST /r/{token}/recordings/{recording}/abort` → `abort`
   - `POST /r/{token}/events` → `ClientEventController::store` (`throttle:client-events` 120/min)
   - `POST /r/{token}/written-answer` → `WrittenAnswerController::store`
-- [ ] `{recording}` doit appartenir à l'histoire du jeton (binding scopé) ; sinon 404.
-- [ ] Actions : `InitiateRecording`, `CompleteRecording` (complète, `head`, vérifie `original_bytes ≤ max`, pose `confirmed_at`, transition `RecordStory`, dispatch `ConcatenateSegments` si `segments_count > 1` puis `ReplicateRecording`), `AbortRecording`, `SubmitWrittenAnswer`.
-- [ ] Tests Pest verts.
+- [x] `{recording}` doit appartenir à l'histoire du jeton (binding scopé) ; sinon 404.
+- [x] Actions : `InitiateRecording`, `CompleteRecording` (complète, `head`, vérifie `original_bytes ≤ max`, pose `confirmed_at`, transition `RecordStory`, dispatch `ConcatenateSegments` si `segments_count > 1` puis `ReplicateRecording`), `AbortRecording`, `SubmitWrittenAnswer`.
+- [x] Tests Pest verts.
 
 ### 6.4 Jobs média
-- [ ] File `media`. `ConcatenateSegments` : télécharge les segments dans un répertoire temporaire, `ffmpeg -f concat -safe 0 -i list.txt -c copy original.{ext}`, téléverse en `original_path`, conserve la liste dans `segments`. `Process::fake()` dans les tests.
-- [ ] `ReplicateRecording` : `copy(original_path, 'r2_replica')`, pose `replicated_at` ; `tries 5`, `backoff [30, 120, 600, 1800, 3600]` ; `failed()` journalise en `error` avec `recording_id` (c'est un incident P1 potentiel, doc 04 §11).
-- [ ] Le dérivé MP3 et la durée `ffprobe` arrivent au bloc 06 (`TranscodeRecording`).
+- [x] File `media`. `ConcatenateSegments` : télécharge les segments dans un répertoire temporaire, `ffmpeg -f concat -safe 0 -i list.txt -c copy original.{ext}`, téléverse en `original_path`, conserve la liste dans `segments`. `Process::fake()` dans les tests.
+- [x] `ReplicateRecording` : `copy(original_path, 'r2_replica')`, pose `replicated_at` ; `tries 5`, `backoff [30, 120, 600, 1800, 3600]` ; `failed()` journalise en `error` avec `recording_id` (c'est un incident P1 potentiel, doc 04 §11).
+- [x] Le dérivé MP3 et la durée `ffprobe` arrivent au bloc 06 (`TranscodeRecording`).
 
 ### 6.5 Front : moteur d'enregistrement
-- [ ] `resources/js/recorder/recorderMachine.ts` : reducer pur `(state, event) → state` avec les états de §5 et un contexte `{ elapsedSeconds, segments, warningShown, permissionRetries }`.
-- [ ] `resources/js/recorder/mime.ts` : `pickMimeType()`.
-- [ ] `resources/js/recorder/draftStore.ts` : base Dexie `recorder`, tables `drafts` (`storyRef`, `mime`, `segments`, `createdAt`, `uploadedParts`), `chunks` (`storyRef`, `segment`, `index`, `blob`). Quota : si `estimate()` indique < 50 Mo libres, avertir sans bloquer.
-- [ ] `resources/js/recorder/useMediaRecorder.ts` : `getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })`, `MediaRecorder` avec `timeslice = 5000`, chaque `dataavailable` → `draftStore.appendChunk` ; gère `pause()/resume()` ; sur `visibilitychange` → si le recorder est `inactive` alors qu'on était en `recording`, émettre `INTERRUPTED` (les tranches sont déjà persistées) ; `RESUME_AFTER_INTERRUPTION` crée un nouveau segment.
-- [ ] `resources/js/recorder/uploader.ts` : construit un `Blob` par segment depuis les tranches, découpe en parts de 5 Mio (dernière part libre), `initiate` → `sign` → `PUT` présigné (ETag lu depuis l'en-tête) → `complete` ; parallélisme 2 ; reprise depuis `uploadedParts` ; backoff ; en cas d'échec définitif, état `upload_failed` avec bouton « Réessayer » et message « Votre enregistrement est conservé sur votre téléphone ».
-- [ ] `resources/js/recorder/levelMeter.ts` (AudioContext + AnalyserNode, 12 barres), `wakeLock.ts` (`navigator.wakeLock?.request('screen')`, silencieux si absent).
-- [ ] `client-events.ts` : envoi `fetch` best-effort (`keepalive: true`) de chaque transition notable.
-- [ ] Tests Vitest verts.
+- [x] `resources/js/recorder/recorderMachine.ts` : reducer pur `(state, event) → state` avec les états de §5 et un contexte `{ elapsedSeconds, segments, warningShown, permissionRetries }`.
+- [x] `resources/js/recorder/mime.ts` : `pickMimeType()`.
+- [x] `resources/js/recorder/draftStore.ts` : base Dexie `recorder`, tables `drafts` (`storyRef`, `mime`, `segments`, `createdAt`, `uploadedParts`), `chunks` (`storyRef`, `segment`, `index`, `blob`). Quota : si `estimate()` indique < 50 Mo libres, avertir sans bloquer.
+- [x] `resources/js/recorder/useMediaRecorder.ts` : `getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })`, `MediaRecorder` avec `timeslice = 5000`, chaque `dataavailable` → `draftStore.appendChunk` ; gère `pause()/resume()` ; sur `visibilitychange` → si le recorder est `inactive` alors qu'on était en `recording`, émettre `INTERRUPTED` (les tranches sont déjà persistées) ; `RESUME_AFTER_INTERRUPTION` crée un nouveau segment.
+- [x] `resources/js/recorder/uploader.ts` : construit un `Blob` par segment depuis les tranches, découpe en parts de 5 Mio (dernière part libre), `initiate` → `sign` → `PUT` présigné (ETag lu depuis l'en-tête) → `complete` ; parallélisme 2 ; reprise depuis `uploadedParts` ; backoff ; en cas d'échec définitif, état `upload_failed` avec bouton « Réessayer » et message « Votre enregistrement est conservé sur votre téléphone ».
+- [x] `resources/js/recorder/levelMeter.ts` (AudioContext + AnalyserNode, 12 barres), `wakeLock.ts` (`navigator.wakeLock?.request('screen')`, silencieux si absent).
+- [x] `client-events.ts` : envoi `fetch` best-effort (`keepalive: true`) de chaque transition notable.
+- [x] Tests Vitest verts.
 
 ### 6.6 Front : pages
-- [ ] `narrator/Record.tsx` orchestre les écrans :
+- [x] `narrator/Record.tsx` orchestre les écrans :
   1. **Explication** : « {Prénom}, voici votre question de la semaine » ; carte question en 24 px ; encart « Quand vous appuierez sur le bouton, votre téléphone demandera l'autorisation d'utiliser le micro. Choisissez “Autoriser”. » ; bouton unique « Je suis prêt·e ».
   2. **Permission** : spinner et rappel ; en cas de refus → `MicHelp`.
   3. **Enregistrement** : bouton rond ≥ 88 px « Commencer » puis « Pause » / « Reprendre », minuteur, vu-mètre, bouton « Terminer » ; bandeau discret à 10 min ; arrêt à 20 min avec explication.
@@ -105,22 +105,22 @@ sail npm i -D fake-indexeddb
   5. **Envoi** : barre de progression, « Ne fermez pas cette page, mais si cela arrive votre enregistrement est conservé ».
   6. **Confirmation** : « Votre histoire est enregistrée. Merci {Prénom}. » (l'écran des trois choix de partage est ajouté au bloc 07).
   Au chargement : si un brouillon existe pour `story_ref`, écran « Reprendre mon enregistrement » / « Recommencer ».
-- [ ] `narrator/MicHelp.tsx` : détection `ios` / `android` / `samsung` / `other` via `navigator.userAgent` ; captures schématiques en SVG inline ; « Réessayer » une seule fois ; « Répondre par écrit ».
-- [ ] `narrator/WrittenAnswer.tsx` : textarea 20 px, compteur, « Envoyer ».
-- [ ] `narrator/AlreadyRecorded.tsx` : « Vous avez déjà répondu à cette question le {date} » ; « Recommencer » (nouvel enregistrement) ; « Fermer ».
-- [ ] Toutes les chaînes dans `lang/fr/narrator.php`. `address_form` piloté par le projet.
-- [ ] Tests Vitest et Playwright verts.
+- [x] `narrator/MicHelp.tsx` : détection `ios` / `android` / `samsung` / `other` via `navigator.userAgent` ; captures schématiques en SVG inline ; « Réessayer » une seule fois ; « Répondre par écrit ».
+- [x] `narrator/WrittenAnswer.tsx` : textarea 20 px, compteur, « Envoyer ».
+- [x] `narrator/AlreadyRecorded.tsx` : « Vous avez déjà répondu à cette question le {date} » ; « Recommencer » (nouvel enregistrement) ; « Fermer ».
+- [x] Toutes les chaînes dans `lang/fr/narrator.php`. `address_form` piloté par le projet.
+- [x] Tests Vitest et Playwright verts.
 
 ### 6.7 Spike navigateur (appareils réels)
 - [ ] Déployer une version de test accessible en HTTPS (tunnel `sail share` ou staging du bloc 16 s'il existe déjà ; le micro exige HTTPS hors `localhost`).
-- [ ] Remplir `docs/spikes/navigateur.md` : matrice iPhone Safari (iOS N et N-1), Android Chrome (N et N-1), Samsung Internet ; scénarios : appel entrant pendant l'enregistrement ; verrouillage 2 min ; changement d'application 5 min ; purge d'onglet (ouvrir 10 onglets lourds puis revenir) ; 4G bridée à 1 Mb/s pendant l'envoi ; refus puis réautorisation du micro. Colonnes : résultat, segments produits, perte de données (oui/non), remarques.
+- [ ] Remplir `docs/spikes/navigateur.md` (protocole écrit, matrice et scénarios prêts) : matrice iPhone Safari (iOS N et N-1), Android Chrome (N et N-1), Samsung Internet ; scénarios : appel entrant pendant l'enregistrement ; verrouillage 2 min ; changement d'application 5 min ; purge d'onglet (ouvrir 10 onglets lourds puis revenir) ; 4G bridée à 1 Mb/s pendant l'envoi ; refus puis réautorisation du micro. Colonnes : résultat, segments produits, perte de données (oui/non), remarques.
 - [ ] Si un scénario perd des données confirmées à l'écran : bloquant, corriger avant de clore le bloc. Si un scénario perd des données **avant** confirmation : documenter le taux, l'objectif est < 2 % (doc 04 §11).
 
 ### 6.8 Clôture
-- [ ] Annexe B mise à jour (`recordings.segments`, `client_events`).
-- [ ] `04_VERSIONS.md` : flysystem S3, dexie.
-- [ ] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts.
-- [ ] Commit `chore(bloc-04): terminé`, tag `bloc-04-done`.
+- [x] Annexe B mise à jour (`recordings.segments`, `client_events`).
+- [x] `04_VERSIONS.md` : flysystem S3, dexie.
+- [x] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts.
+- [ ] Commit `chore(bloc-04): terminé`, tag `bloc-04-done` — **après** le spike.
 
 ## 7. Checkpoint démontrable
 
@@ -132,9 +132,9 @@ sail npm i -D fake-indexeddb
 
 ## 8. Critères de sortie
 
-- [ ] Aucune confirmation à l'écran sans `HeadObject` réussi (revue du code de `CompleteRecording`).
-- [ ] Aucun texte visible hors `t()`.
-- [ ] Budget JavaScript respecté.
+- [x] Aucune confirmation à l'écran sans `HeadObject` réussi (revue du code de `CompleteRecording`).
+- [x] Aucun texte visible hors `t()`.
+- [x] Budget JavaScript respecté.
 - [ ] Le spike ne montre aucune perte après confirmation.
 
 ## 9. Règle de décision par défaut
@@ -143,4 +143,90 @@ Si `MediaRecorder` est indisponible sur un navigateur de la matrice, afficher l'
 
 ## 10. Note de checkpoint
 
-_Date, exécutant, résultat, écarts :_
+**2026-09-02 — code livré et éprouvé — bloc non clos : le spike §6.7 exige des
+appareils réels.**
+
+### Ce qui est démontré, automatiquement
+
+- `sail artisan storage:prepare-local` crée les trois seaux ; l'envoi présigné
+  fonctionne contre MinIO, vérifié dans un vrai navigateur.
+- **Parcours nominal bout en bout** : lien → explication → permission →
+  enregistrement → pause → reprise → vérification → envoi → « Votre histoire
+  est enregistrée ». L'objet est ensuite relu au stockage : 641 octets
+  annoncés, 641 octets détenus, même ETag. L'histoire est en `recorded`, et
+  `ReplicateRecording` a posé `replicated_at` et `replica_path`.
+- **Rechargement en pleine phrase** : le brouillon est proposé, l'envoi
+  aboutit.
+- **Micro refusé** : aide propre à la plateforme, un seul nouvel essai,
+  réponse écrite acceptée, histoire en `recorded` avec `answer_type = text`.
+- **Accessibilité** : zéro violation axe `serious`/`critical` sur les trois
+  écrans, police de la zone principale ≥ 18 px, tous les boutons ≥ 44 px de
+  haut, aucun compte à rebours.
+- **Budget** : sous 150 Ko de JavaScript gzip sur `/r/*`, mesuré en
+  compressant les réponses dans le test — le serveur local ne compresse pas.
+- Porte verte : Pint, PHPStan niveau 8, **333 tests Pest**, 76 tests Vitest,
+  17 tests Playwright.
+
+### Ce qui reste, et qui ne peut pas être fait sans toi
+
+§6.7 et les points 1 et 5 du checkpoint demandent un iPhone et un Android
+réels, en HTTPS, pour éprouver l'appel entrant, la mise en veille, la purge
+d'onglet et la 4G bridée. `docs/spikes/navigateur.md` est écrit : matrice de
+cinq appareils, dix scénarios, tableau de relevé, et la règle de clôture —
+**une seule perte après confirmation est bloquante**. Il reste à le jouer.
+
+Tant qu'il n'est pas joué, ce bloc reste `◐ en cours` et n'est pas taggé. Le
+code des blocs suivants ne dépend pas du spike ; la promesse commerciale de la
+reprise iOS, elle, en dépend, et le dossier interdit de la faire avant.
+
+**Écarts par rapport au plan :**
+
+- **Un envoi multipart par segment**, et non un par enregistrement (T-54). Le
+  modèle du bloc ne tenait pas : deux continuités de flux déposées comme des
+  parts consécutives d'un même envoi produisent un conteneur illisible.
+  `POST /recordings` n'accepte donc plus `segments_count` — on ne sait pas
+  d'avance combien d'appels une personne va recevoir — et un segment s'ouvre à
+  la demande.
+- Le déclencheur d'immuabilité laisse **renseigner** `original_path` une
+  première fois après confirmation : un enregistrement interrompu est confirmé
+  sur ses segments, et son fichier recollé n'arrive qu'ensuite.
+- `R2_PUBLIC_ENDPOINT` ajouté (T-56) : en local, MinIO n'a pas la même adresse
+  depuis le conteneur et depuis le navigateur.
+- MinIO n'implémente pas `PutBucketCors` (T-58) : la règle de
+  `docker/minio/cors.json` est à reporter dans la console Cloudflare au
+  bloc 16, avec l'exposition de l'`ETag`.
+- La durée `ffprobe` et le dérivé MP3 restent au bloc 06, comme prévu.
+- `client_duration_seconds` est rangé dans `device_info` plutôt que dans une
+  colonne : c'est une valeur annoncée par le client, indicative, à comparer
+  plus tard à la vraie durée.
+
+**Défauts trouvés et corrigés en chemin :**
+
+- **Le brouillon local ne survivait pas à un rechargement.** Les `Blob`
+  stockés dans IndexedDB ressortaient inutilisables. Corrigé en stockant des
+  octets bruts (T-55) — et c'est justement Safari iOS qui invalide ces
+  références quand il purge un onglet, donc le scénario cible.
+- **La politique de contenu bloquait l'envoi lui-même.** `connect-src` listait
+  l'adresse vue par le serveur, pas celle contactée par le navigateur. Trouvé
+  en lisant la console du navigateur pendant un test bout en bout, pas par un
+  test unitaire.
+- **Le budget JavaScript était dépassé de 51 Ko** et la politique de contenu
+  refusait le style injecté par les notifications de l'espace authentifié.
+  Les deux avaient la même cause : l'enveloppe globale chargeait la barre
+  latérale, les info-bulles et les notifications sur une page narrateur (T-57).
+- **Les tests bout en bout se marchaient sur les pieds** : ils partageaient un
+  seul lien, donc une seule histoire (T-59).
+- **Le limiteur des pages étouffait la mesure** : 20 requêtes par minute et par
+  jeton rendaient inatteignables les 120 événements du bloc (T-60).
+- **`ffmpeg` peut rendre 0 sans produire de fichier** : le job levait alors un
+  chemin pointant le vide. Il vérifie désormais la présence du fichier.
+
+**Ce que le bloc laisse ouvert :**
+
+- Le spike appareils réels (§6.7).
+- L'écran des trois choix de partage après la confirmation arrive au bloc 07,
+  comme prévu.
+- Le vu-mètre et le verrou d'écran sont écrits mais non branchés dans la page :
+  ils demandent un `AudioContext` et une API absents de jsdom, donc du spike
+  pour être jugés utiles. À trancher avec les résultats.
+- La durée réelle, le dérivé MP3 et la transcription : bloc 06.

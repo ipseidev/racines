@@ -40,7 +40,7 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | spatie/laravel-model-states | v2.14.2 | 02 |
 | spatie/laravel-permission | v8.3.0 | 02 |
 | laravel/pennant | v1.26.0 | 02 |
-| league/flysystem-aws-s3-v3 | _à installer_ | 04 |
+| league/flysystem-aws-s3-v3 | v3.35.3 | 04 |
 | laravel/horizon | _à installer_ | 05 |
 | resend/resend-laravel | _à installer_ | 05 |
 | twilio/sdk, svix/svix | _à installer_ | 05 |
@@ -75,8 +75,10 @@ Le bloc 03 n'installe **aucun** paquet : `random_bytes`, `hash`, Monolog et Lara
 | @playwright/test | 1.62.1 | 00 |
 | wait-on | dernière | 00 (CI) |
 | @axe-core/playwright | 4.13.0 | 00 |
-| dexie | _à installer_ | 04 |
+| dexie | 4.4.5 | 04 |
 | pagedjs | _à installer_ | 13 |
 | posthog-js | _à installer_ | 15 |
+| fake-indexeddb (dev) | 6.2.5 | 04 |
+| @testing-library/user-event (dev) | 14.6.7 | 04 |
 
 `vite-plus` fournit oxlint, oxfmt et Vitest : ni ESLint, ni Prettier, ni Vitest ne sont installés séparément (décision T-30).

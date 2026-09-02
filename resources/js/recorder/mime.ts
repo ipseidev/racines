@@ -19,16 +19,21 @@ export type MimeSupportProbe = (mimeType: string) => boolean;
  * Premier type produit par ce navigateur, ou `null` s'il n'en sait produire
  * aucun — cas où l'on bascule sur l'aide et la réponse écrite.
  */
+/**
+ * La sonde est enveloppée plutôt que passée par référence : détacher
+ * `MediaRecorder.isTypeSupported` de sa classe lui fait perdre son contexte
+ * sur certains moteurs.
+ */
+const nativeProbe: MimeSupportProbe = (mimeType) =>
+    globalThis.MediaRecorder?.isTypeSupported(mimeType) ?? false;
+
 export function pickMimeType(
-    isTypeSupported: MimeSupportProbe | undefined = globalThis.MediaRecorder
-        ?.isTypeSupported,
+    isTypeSupported: MimeSupportProbe | undefined = nativeProbe,
 ): string | null {
-    if (typeof isTypeSupported !== 'function') {
-        return null;
-    }
+    const probe = isTypeSupported ?? nativeProbe;
 
     for (const candidate of PREFERRED_MIME_TYPES) {
-        if (isTypeSupported(candidate)) {
+        if (probe(candidate)) {
             return candidate;
         }
     }

@@ -26,6 +26,7 @@ final class DatabaseSeeder extends Seeder
             $this->call([
                 AdminUserSeeder::class,
                 DemoProjectSeeder::class,
+                E2ELinksSeeder::class,
             ]);
         }
     }

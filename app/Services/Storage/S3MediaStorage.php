@@ -35,7 +35,9 @@ final class S3MediaStorage implements MediaStorage
 
     public function presignPart(string $key, string $uploadId, int $partNumber, int $ttlMinutes = 15): string
     {
-        $client = $this->client();
+        // Signée sur l'adresse que verra le navigateur : une URL signée pour
+        // un hôte et présentée à un autre est refusée.
+        $client = $this->client(public: true);
 
         $command = $client->getCommand('UploadPart', [
             'Bucket' => $this->bucket(),
@@ -128,14 +130,15 @@ final class S3MediaStorage implements MediaStorage
         Storage::disk($this->disk)->put($key, $contents, $mime === null ? [] : ['ContentType' => $mime]);
     }
 
-    private function client(): S3Client
+    private function client(bool $public = false): S3Client
     {
         $config = config("filesystems.disks.{$this->disk}");
+        $endpointKey = $public ? 'public_endpoint' : 'endpoint';
 
         return new S3Client([
             'version' => 'latest',
             'region' => is_array($config) ? (string) ($config['region'] ?? 'auto') : 'auto',
-            'endpoint' => is_array($config) ? (string) ($config['endpoint'] ?? '') : '',
+            'endpoint' => is_array($config) ? (string) ($config[$endpointKey] ?? $config['endpoint'] ?? '') : '',
             'use_path_style_endpoint' => is_array($config) && (bool) ($config['use_path_style_endpoint'] ?? false),
             'credentials' => [
                 'key' => is_array($config) ? (string) ($config['key'] ?? '') : '',

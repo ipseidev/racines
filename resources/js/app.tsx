@@ -1,12 +1,20 @@
 import { createInertiaApp } from '@inertiajs/react';
-import { Toaster } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { lazy, Suspense } from 'react';
 import { initializeTheme } from '@/hooks/use-appearance';
-import AppLayout from '@/layouts/app-layout';
-import AuthLayout from '@/layouts/auth-layout';
-import FamilyLayout from '@/layouts/family-layout';
-import NarratorLayout from '@/layouts/narrator-layout';
-import SettingsLayout from '@/layouts/settings/layout';
+
+/*
+ * Les mises en page sont chargées à la demande.
+ *
+ * Sans cela, l'espace authentifié — sa barre latérale, ses info-bulles, ses
+ * notifications — voyageait dans le même paquet que la page d'enregistrement,
+ * ouverte en 4G sur de vieux téléphones. Le budget de 150 Ko par page
+ * narrateur (convention §4) ne tenait pas.
+ */
+const AppLayout = lazy(() => import('@/layouts/app-layout'));
+const AuthLayout = lazy(() => import('@/layouts/auth-layout'));
+const FamilyLayout = lazy(() => import('@/layouts/family-layout'));
+const NarratorLayout = lazy(() => import('@/layouts/narrator-layout'));
+const SettingsLayout = lazy(() => import('@/layouts/settings/layout'));
 
 const brandName =
     document
@@ -38,12 +46,9 @@ void createInertiaApp({
     },
     strictMode: true,
     withApp(app) {
-        return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
-        );
+        // `Suspense` seulement : les fournisseurs d'interface de l'espace
+        // authentifié vivent désormais dans `AppLayout`, où ils servent.
+        return <Suspense fallback={null}>{app}</Suspense>;
     },
     progress: {
         color: '#4B5563',

@@ -20,6 +20,9 @@ export default defineConfig({
     projects: [
         {
             name: 'chromium',
+            // La suite tourne en parallèle : chaque scénario a son propre lien
+            // d'enregistrement, semé par `E2ELinksSeeder`.
+            testIgnore: /brand\.spec\.ts/,
             use: {
                 ...devices['Desktop Chrome'],
                 launchOptions: {
@@ -29,6 +32,15 @@ export default defineConfig({
                     ],
                 },
             },
+        },
+        {
+            // Le test de marque écrit dans des réglages partagés par toute
+            // l'application : il change le nom et les couleurs que les autres
+            // pages lisent. Il tourne donc seul, et après les autres.
+            name: 'brand',
+            testMatch: /brand\.spec\.ts/,
+            dependencies: ['chromium'],
+            use: { ...devices['Desktop Chrome'] },
         },
     ],
 });

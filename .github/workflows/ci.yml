@@ -60,6 +60,18 @@ jobs:
       SMS_PROVIDER: fake
       ASR_PROVIDER: fake
       LLM_PROVIDER: fake
+      # MinIO émule R2 pour le bout en bout : le navigateur et le serveur le
+      # joignent à la même adresse ici, contrairement au poste de travail.
+      FILESYSTEM_DISK: r2
+      R2_ACCESS_KEY_ID: sail
+      R2_SECRET_ACCESS_KEY: password
+      R2_ENDPOINT: http://127.0.0.1:9000
+      R2_PUBLIC_ENDPOINT: http://127.0.0.1:9000
+      R2_REGION: auto
+      R2_BUCKET_MEDIA: media
+      R2_BUCKET_MEDIA_REPLICA: media-replica
+      R2_BUCKET_BACKUPS: backups
+      AWS_USE_PATH_STYLE_ENDPOINT: 'true'
 
     steps:
       - name: Récupérer le code
@@ -94,11 +106,28 @@ jobs:
       - name: Dépendances front
         run: npm ci
 
+      # Les conteneurs de service de GitHub n'acceptent pas de commande
+      # personnalisée, et MinIO en exige une : on le lance à la main.
+      - name: Démarrer MinIO
+        run: |
+          docker run -d --name minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=sail \
+            -e MINIO_ROOT_PASSWORD=password \
+            minio/minio:latest server /data
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:9000/minio/health/live >/dev/null; then
+              echo "MinIO prêt"; break
+            fi
+            sleep 2
+          done
+
       - name: Préparer l’environnement
         run: |
           cp .env.example .env
           php artisan key:generate
           php artisan migrate --force
+          php artisan storage:prepare-local
 
       # Wayfinder écrit resources/js/routes et resources/js/actions, ignorés par
       # git : sans cette étape, tsc ne trouve pas les modules « @/routes ».

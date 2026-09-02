@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 import { useT } from '@/hooks/useT';
 
@@ -24,6 +24,13 @@ export default function AlreadyRecorded({
 }: Props) {
     const t = useT();
 
+    // Le message d'une action qui vient d'aboutir — l'envoi d'une réponse
+    // écrite, par exemple. Sans lui, la personne atterrit sur « vous avez
+    // déjà répondu » sans savoir que c'est elle qui vient de le faire.
+    const status =
+        (usePage().props.flash as { status?: string | null } | undefined)
+            ?.status ?? null;
+
     const date =
         recordedAt === null
             ? null
@@ -44,6 +51,15 @@ export default function AlreadyRecorded({
             {question !== null ? (
                 <p className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-4 text-[1.25rem]">
                     {question}
+                </p>
+            ) : null}
+
+            {status !== null ? (
+                <p
+                    role="status"
+                    className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-3"
+                >
+                    {status}
                 </p>
             ) : null}
 

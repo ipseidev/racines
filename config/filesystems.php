@@ -62,6 +62,10 @@ return [
             'region' => env('R2_REGION', 'auto'),
             'bucket' => env('R2_BUCKET_MEDIA'),
             'endpoint' => env('R2_ENDPOINT'),
+            // Adresse vue par le navigateur, pour les URLs présignées. En
+            // local, MinIO répond sur un autre hôte depuis le Mac que depuis
+            // le conteneur ; en production, c'est la même.
+            'public_endpoint' => env('R2_PUBLIC_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'visibility' => 'private',
             'throw' => true,
@@ -75,6 +79,10 @@ return [
             'region' => env('R2_REGION', 'auto'),
             'bucket' => env('R2_BUCKET_MEDIA_REPLICA'),
             'endpoint' => env('R2_ENDPOINT'),
+            // Adresse vue par le navigateur, pour les URLs présignées. En
+            // local, MinIO répond sur un autre hôte depuis le Mac que depuis
+            // le conteneur ; en production, c'est la même.
+            'public_endpoint' => env('R2_PUBLIC_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'visibility' => 'private',
             'throw' => true,
@@ -88,6 +96,10 @@ return [
             'region' => env('R2_REGION', 'auto'),
             'bucket' => env('R2_BUCKET_BACKUPS'),
             'endpoint' => env('R2_ENDPOINT'),
+            // Adresse vue par le navigateur, pour les URLs présignées. En
+            // local, MinIO répond sur un autre hôte depuis le Mac que depuis
+            // le conteneur ; en production, c'est la même.
+            'public_endpoint' => env('R2_PUBLIC_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'visibility' => 'private',
             'throw' => true,

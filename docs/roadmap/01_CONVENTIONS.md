@@ -179,7 +179,9 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `PENNANT_STORE` | Magasin des drapeaux de fonctionnalité (`database` ou `array`) | `database` |
 | `FILESYSTEM_DISK` | Disque par défaut | `r2` (local : `r2` pointant sur MinIO du Sail, voir bloc 04) |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | Identifiants R2 (jeton limité aux buckets du projet) | — |
-| `R2_ENDPOINT` | `https://<account>.eu.r2.cloudflarestorage.com` pour la juridiction UE | — |
+| `R2_ENDPOINT` | `https://<account>.eu.r2.cloudflarestorage.com` pour la juridiction UE | `http://minio:9000` |
+| `R2_PUBLIC_ENDPOINT` | Adresse **vue par le navigateur** pour les URLs présignées ; identique à `R2_ENDPOINT` en production | `http://localhost:9001` |
+| `R2_REGION` | Région S3 ; R2 n'en a pas, `auto` convient | `auto` |
 | `R2_BUCKET_MEDIA`, `R2_BUCKET_MEDIA_REPLICA`, `R2_BUCKET_BACKUPS` | Trois buckets distincts | `media`, `media-replica`, `backups` |
 | `MAIL_MAILER`, `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `MAIL_FROM_ADDRESS` | Email via Resend ; local : `smtp` vers Mailpit | `resend` / `smtp` |
 | `SMS_PROVIDER` | `twilio` ou `fake` | `fake` |

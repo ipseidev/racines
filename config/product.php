@@ -132,10 +132,14 @@ return [
     // Sécurité : origines autorisées par la politique de contenu à servir
     // des médias. R2 en production, MinIO en local ; complété au bloc 04.
     'security' => [
-        'media_hosts' => array_values(array_filter([
+        // L'origine que le **navigateur** contacte, et non celle que contacte
+        // le serveur : c'est vers l'endpoint public que partent les envois
+        // présignés, et une politique qui l'ignore les bloque en silence.
+        'media_hosts' => array_values(array_unique(array_filter([
+            env('R2_PUBLIC_ENDPOINT', env('R2_ENDPOINT')),
             env('R2_ENDPOINT'),
             env('AWS_ENDPOINT'),
-        ])),
+        ]))),
     ],
 
     // Comptes semés en local et en test (jamais en production)
