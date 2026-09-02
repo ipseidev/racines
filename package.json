@@ -57,7 +57,7 @@
         "@testing-library/jest-dom": "^7.0.1",
         "@testing-library/react": "^16.3.3",
         "@testing-library/user-event": "^14.6.7",
-        "@types/node": "^22.13.5",
+        "@types/node": "^26.4.0",
         "babel-plugin-react-compiler": "^1.0.0",
         "jsdom": "^30.0.1",
         "vite-plus": "0.3.0",
