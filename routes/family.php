@@ -6,6 +6,7 @@ use App\Http\Controllers\Family\HomePageController;
 use App\Http\Controllers\Family\ListenProgressController;
 use App\Http\Controllers\Family\ReactionController;
 use App\Http\Controllers\Family\StoryPageController;
+use App\Http\Controllers\Initiator\OneTapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,9 +23,26 @@ use Illuminate\Support\Facades\Route;
 |   /x/{token}   téléchargement d'un export            (jeton export)
 |
 | Aucune histoire n'est servie ici sans passer par VisibleStoriesForFamilyMember.
-| Les routes /q, /a et /x arrivent aux blocs 09, 13 et 14.
+| Les routes /q et /x arrivent aux blocs 13 et 14.
 |
 */
+
+/*
+ * Actions en un tap de l'Initiateur·rice (bloc 09).
+ *
+ * `GET` lit le jeton **sans le consommer** : la page de confirmation d'un
+ * lien à usage unique doit pouvoir s'afficher sans le griller. Seul le `POST`
+ * le consomme, et une seule fois.
+ */
+Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
+    Route::get('/a/{token}', [OneTapController::class, 'show'])
+        ->middleware('resolve.token:action,peek')
+        ->name('initiator.one_tap.show');
+
+    Route::post('/a/{token}', [OneTapController::class, 'store'])
+        ->middleware('resolve.token:action')
+        ->name('initiator.one_tap.store');
+});
 
 Route::middleware([
     'throttle:tokens',

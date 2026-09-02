@@ -46,6 +46,10 @@ void createInertiaApp({
                 return NarratorLayout;
             case name.startsWith('family/'):
                 return FamilyLayout;
+            // Les pages d'action en un tap s'ouvrent depuis un SMS, sans
+            // compte : même sobriété que les autres espaces à jeton.
+            case name.startsWith('initiator/'):
+                return FamilyLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:

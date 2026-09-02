@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\MeasureResumptions;
 use App\Jobs\PollTranscription;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -43,4 +44,17 @@ Schedule::command('stories:purge-trashed')
 // 23 h chez une personne de 85 ans n'est pas une bonne nouvelle (bloc 08).
 Schedule::command('reactions:send-digests')
     ->dailyAt('09:00')
+    ->withoutOverlapping();
+
+// Le moteur de complétion : onze règles, toutes les heures à la minute sept.
+// Décalé de l'heure ronde, où tout ce qui tourne sur la machine se réveille
+// en même temps (bloc 09).
+Schedule::command('engine:tick')
+    ->cron((string) config('product.engine.tick_cron'))
+    ->withoutOverlapping();
+
+// Ce que les relances ont produit. Sans cette mesure, le moteur ne serait
+// qu'un émetteur de messages.
+Schedule::job(new MeasureResumptions)
+    ->hourly()
     ->withoutOverlapping();

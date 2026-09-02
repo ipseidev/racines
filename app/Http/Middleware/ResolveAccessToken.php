@@ -31,7 +31,13 @@ final readonly class ResolveAccessToken
      *                         un lien d'histoire mènent à la même page, et le
      *                         périmètre reste déclaré sur la route.
      */
-    public function handle(Request $request, Closure $next, string $types): Response
+    /**
+     * @param  string  $mode  `peek` vérifie le lien **sans le consommer** : la
+     *                        page de confirmation d'une action en un tap doit
+     *                        pouvoir montrer un lien à usage unique sans le
+     *                        griller avant que le bouton soit touché.
+     */
+    public function handle(Request $request, Closure $next, string $types, string $mode = 'consume'): Response
     {
         $expected = array_map(
             fn (string $type): TokenType => TokenType::tryFrom($type)
@@ -45,7 +51,9 @@ final readonly class ResolveAccessToken
             throw TokenNotFound::make($expected[0]);
         }
 
-        $token = $this->tokens->resolve($plain, ...$expected);
+        $token = $mode === 'peek'
+            ? $this->tokens->peek($plain, ...$expected)
+            : $this->tokens->resolve($plain, ...$expected);
 
         $request->attributes->set('access_token', $token);
         $request->attributes->set('token_subject', $token->subject);

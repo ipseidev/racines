@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Engine;
 
+use App\Enums\AnalyticsEvent;
 use App\Enums\EngineAudience;
 use App\Enums\EngineRuleId;
 use App\Enums\ProjectStatus;
 use App\Models\EngineEvent;
 use App\Models\Project;
+use App\Services\Analytics\Analytics;
+use App\Services\Analytics\LogAnalytics;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +59,10 @@ final readonly class EngineTick
     /**
      * @param  list<Rule>  $rules  Dans l'ordre de l'annexe C.
      */
-    public function __construct(private array $rules) {}
+    public function __construct(
+        private array $rules,
+        private Analytics $analytics = new LogAnalytics,
+    ) {}
 
     public function run(CarbonImmutable $now): TickReport
     {
@@ -177,6 +183,14 @@ final readonly class EngineTick
                 if ($audience === EngineAudience::Narrator) {
                     $spokenToNarrator[$occurrence->project->id] = $rule->id();
                 }
+
+                $this->analytics->capture(AnalyticsEvent::EngineRuleFired, [
+                    'rule_id' => $rule->id()->value,
+                    'project_id' => $occurrence->project->id,
+                    'story_id' => $occurrence->story?->id,
+                    'attempt' => $occurrence->attempt,
+                    'told' => $audience->value,
+                ], $occurrence->project->id);
 
                 $report->fired++;
             });

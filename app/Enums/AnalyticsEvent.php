@@ -24,4 +24,12 @@ enum AnalyticsEvent: string
     case NarratorNotified = 'narrator_notified';
     /** Calculé au bloc 09, déclaré ici pour que la chaîne soit lisible. */
     case StoryRecordedWithin7dOfNotification = 'story_recorded_within_7d_of_notification';
+
+    /*
+     * Moteur de complétion (bloc 09). Les deux vont ensemble : le premier dit
+     * qu'on a relancé, le second qu'on a servi à quelque chose. Sans le
+     * second, le moteur ne serait qu'un émetteur de messages.
+     */
+    case EngineRuleFired = 'engine_rule_fired';
+    case EngineRuleResumed = 'engine_rule_resumed';
 }

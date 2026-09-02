@@ -85,6 +85,29 @@ final class TokenService
      */
     public function resolve(string $plain, TokenType $expected, TokenType ...$alsoAccepted): AccessToken
     {
+        $token = $this->peek($plain, $expected, ...$alsoAccepted);
+
+        $token->use_count++;
+        $token->last_used_at = now();
+
+        if ($token->single_use) {
+            $token->used_at = now();
+        }
+
+        $token->save();
+
+        return $token;
+    }
+
+    /**
+     * Vérifie un lien **sans le consommer**.
+     *
+     * Un lien à usage unique doit pouvoir être **montré** avant d'être joué :
+     * la page de confirmation d'une action en un tap l'affiche, et si elle le
+     * consommait, le bouton de cette même page ne marcherait plus.
+     */
+    public function peek(string $plain, TokenType $expected, TokenType ...$alsoAccepted): AccessToken
+    {
         $accepted = [$expected, ...$alsoAccepted];
         $token = $this->locate($plain);
 
@@ -107,15 +130,6 @@ final class TokenService
         if ($token->isUsed()) {
             throw TokenUsed::make($token->type);
         }
-
-        $token->use_count++;
-        $token->last_used_at = now();
-
-        if ($token->single_use) {
-            $token->used_at = now();
-        }
-
-        $token->save();
 
         return $token;
     }
