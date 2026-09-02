@@ -22,7 +22,9 @@ export default defineConfig({
             name: 'chromium',
             // La suite tourne en parallèle : chaque scénario a son propre lien
             // d'enregistrement, semé par `E2ELinksSeeder`.
-            testIgnore: /brand\.spec\.ts/,
+            testIgnore:
+                /brand\.spec\.ts|record-happy-path\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
+            dependencies: ['recorder'],
             use: {
                 ...devices['Desktop Chrome'],
                 launchOptions: {
@@ -41,6 +43,33 @@ export default defineConfig({
             testMatch: /brand\.spec\.ts/,
             dependencies: ['chromium'],
             use: { ...devices['Desktop Chrome'] },
+        },
+        {
+            /*
+             * Les tests qui enregistrent pour de vrai dépendent du **temps
+             * réel** : `MediaRecorder` doit avoir écrit ses tranches sur le
+             * disque du navigateur, et le micro simulé est une ressource
+             * partagée. Lancés en parallèle avec le reste, ils échouent pour
+             * une raison qui n'a rien à voir avec le produit.
+             *
+             * Ils tournent donc en tête, sur un seul ouvrier, machine au
+             * repos. Allonger les délais aurait masqué le problème sans le
+             * régler.
+             */
+            name: 'recorder',
+            testMatch:
+                /record-happy-path\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
+            workers: 1,
+            fullyParallel: false,
+            use: {
+                ...devices['Desktop Chrome'],
+                launchOptions: {
+                    args: [
+                        '--use-fake-ui-for-media-stream',
+                        '--use-fake-device-for-media-stream',
+                    ],
+                },
+            },
         },
     ],
 });

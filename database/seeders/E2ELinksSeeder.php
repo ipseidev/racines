@@ -7,19 +7,36 @@ namespace Database\Seeders;
 use App\Actions\AddNarrator;
 use App\Actions\CreateProject;
 use App\Actions\ProposeStory;
+use App\Actions\ValidateStoryAction;
+use App\Enums\AnswerType;
+use App\Enums\Channel;
 use App\Enums\Offer;
+use App\Enums\OtpPurpose;
 use App\Enums\ProjectStatus;
 use App\Enums\QuestionTheme;
+use App\Enums\ShareDecision;
 use App\Enums\TokenType;
+use App\Enums\TranscriptKind;
+use App\Enums\ValidatedVia;
+use App\Enums\ValidationVariant;
 use App\Models\AccessToken;
+use App\Models\OtpChallenge;
 use App\Models\Project;
 use App\Models\Question;
+use App\Models\Recording;
 use App\Models\Story;
+use App\Models\Transcript;
 use App\Models\User;
+use App\Services\Tokens\OtpService;
 use App\Services\Tokens\TokenService;
+use App\States\Story\Recorded;
+use App\States\Story\Shared;
+use App\States\Story\ToReview;
+use App\States\Story\Transcribed;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -49,7 +66,55 @@ final class E2ELinksSeeder extends Seeder
         'budget' => 'Quel voyage vous a le plus marqué ?',
         'expired' => 'Quelle est votre plus belle rencontre ?',
         'revoked' => 'Qu’aimeriez-vous que l’on retienne de vous ?',
+        // Bloc 07 : un scénario par variante de validation, plus un retrait.
+        'variant-a' => 'Quel jeu aimiez-vous enfant ?',
+        // Trois liens pour la variante B, et non un seul : la suite tourne en
+        // parallèle, et un test qui corrige le texte ne doit pas travailler
+        // sur l'histoire qu'un autre vient de partager (leçon de T-59).
+        'variant-b' => 'Quelle odeur vous ramène à votre enfance ?',
+        'variant-b-edit' => 'Quel plat vous rappelle votre mère ?',
+        'variant-b-share' => 'Quelle fête aimiez-vous le plus ?',
+        'withdraw' => 'Quel conseil donneriez-vous à vos petits-enfants ?',
     ];
+
+    /**
+     * Les scénarios du bloc 07 demandent un décor plus riche qu'un lien : une
+     * variante de validation, un état d'histoire, parfois des transcriptions.
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    private const BLOCK_07 = [
+        // Variante A : l'histoire vient d'être enregistrée, les trois choix
+        // s'affichent après la confirmation. Le lien reste `proposed` pour
+        // que la suite puisse enregistrer pour de vrai.
+        'variant-a' => ['variant' => 'immediate'],
+        // Variante B : le texte est prêt, la relecture attend.
+        'variant-b' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true],
+        'variant-b-edit' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true],
+        'variant-b-share' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true],
+        // Un récit partagé, qu'on va masquer depuis son propre lien.
+        'withdraw' => ['variant' => 'immediate', 'reach' => 'shared'],
+    ];
+
+    /**
+     * Coordonnées et code connus de la suite, pour l'espace narrateur.
+     *
+     * Trois coordonnées, et non une : trois demandes de code par heure et par
+     * coordonnée est la bonne règle produit, c'est donc la suite qui doit
+     * avoir de quoi jouer chaque scénario sans se marcher dessus.
+     *
+     * @var array<string, string>
+     */
+    public const SPACE_NARRATORS = [
+        'space' => '+33600000042',
+        'space-code' => '+33600000043',
+        'space-wrong' => '+33600000044',
+        'space-act' => '+33600000045',
+        'space-del' => '+33600000046',
+        'space-read' => '+33600000047',
+    ];
+
+    public const SPACE_CODE = '424242';
 
     /** @var array<string, array<string, mixed>> */
     private const LINK_STATE = [
@@ -104,10 +169,167 @@ final class E2ELinksSeeder extends Seeder
                 ['text' => $text, 'theme' => QuestionTheme::Childhood],
             );
 
-            $story = app(ProposeStory::class)->handle($project, $question);
+            // Les scénarios du bloc 07 vivent chacun dans **leur** projet :
+            // la variante de validation est un réglage de projet, et deux
+            // variantes ne cohabitent pas.
+            $host = isset(self::BLOCK_07[$scenario])
+                ? $this->projectForScenario($owner, $scenario)
+                : $project;
 
+            $story = app(ProposeStory::class)->handle($host, $question);
+
+            $this->prepareStory($story, $scenario);
             $this->seedLink($story, $scenario);
         }
+
+        foreach (self::SPACE_NARRATORS as $scenario => $phone) {
+            $this->seedNarratorSpace($owner, $scenario, $phone);
+        }
+    }
+
+    /**
+     * Un projet dédié, avec sa variante et son narrateur.
+     */
+    private function projectForScenario(User $owner, string $scenario): Project
+    {
+        $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
+        $project->status = ProjectStatus::Active;
+        $project->validation_variant = ValidationVariant::from(
+            (string) self::BLOCK_07[$scenario]['variant'],
+        );
+        $project->save();
+
+        app(AddNarrator::class)->handle($project, [
+            'first_name' => 'Odette',
+            'display_name' => 'Odette',
+            'phone_e164' => '+3360000'.substr(md5($scenario), 0, 4),
+            'birth_year' => 1943,
+        ]);
+
+        return $project->refresh();
+    }
+
+    /**
+     * Amène l'histoire à l'état que le scénario attend, transcriptions
+     * comprises. On passe par les transitions, jamais par une écriture
+     * directe de `state` : le test doit rencontrer le produit, pas un décor
+     * qui lui ressemble.
+     */
+    private function prepareStory(Story $story, string $scenario): void
+    {
+        $target = self::BLOCK_07[$scenario]['reach'] ?? null;
+
+        if ($target === null) {
+            return;
+        }
+
+        $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+        $recording->forceFill(['duration_seconds' => '124.00'])->save();
+
+        $story->state->transitionTo(Recorded::class, AnswerType::Audio);
+        $story->state->transitionTo(Transcribed::class);
+
+        if (self::BLOCK_07[$scenario]['transcripts'] ?? false) {
+            $this->seedTranscripts($story, $recording);
+        }
+
+        // Sans `default` : si un scénario réclame un état non traité,
+        // l'analyse statique le dit, et à défaut le semis échoue tout de
+        // suite plutôt que de bâtir un décor incomplet en silence.
+        match ($target) {
+            'to_review' => $story->state->transitionTo(ToReview::class),
+            'shared' => $this->share($story),
+        };
+    }
+
+    private function share(Story $story): void
+    {
+        $story->share_decision = ShareDecision::Share;
+        $story->share_decided_at = now();
+        $story->save();
+
+        app(ValidateStoryAction::class)->handle($story, ValidatedVia::RecordingEnd);
+        $story->state->transitionTo(Shared::class);
+    }
+
+    private function seedTranscripts(Story $story, Recording $recording): void
+    {
+        foreach ([
+            [TranscriptKind::Verbatim, 'gladia', 'Alors euh je me souviens de l’odeur du pain, voilà quoi, chez ma grand-mère.'],
+            [TranscriptKind::Fluide, 'claude', 'Je me souviens de l’odeur du pain chez ma grand-mère.'],
+        ] as [$kind, $provider, $text]) {
+            $transcript = new Transcript([
+                'kind' => $kind,
+                'version' => 1,
+                'provider' => $provider,
+                'language' => 'fr',
+                'text' => $text,
+            ]);
+
+            $transcript->story()->associate($story);
+            $transcript->recording()->associate($recording);
+            $transcript->save();
+        }
+
+        $story->title = 'L’odeur du pain';
+        $story->save();
+    }
+
+    /**
+     * L'espace narrateur : une coordonnée connue, un défi en attente dont le
+     * code est connu, et un lien direct.
+     *
+     * Le code est **semé**, pas exposé par une route de test : une route qui
+     * révèle des codes à usage unique est exactement le genre d'affordance
+     * qui finit activée quelque part (décision T-78).
+     */
+    private function seedNarratorSpace(User $owner, string $scenario, string $phone): void
+    {
+        $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
+        $project->status = ProjectStatus::Active;
+        $project->save();
+
+        $narrator = app(AddNarrator::class)->handle($project, [
+            'first_name' => 'Odette',
+            'display_name' => 'Odette',
+            'phone_e164' => $phone,
+            'birth_year' => 1943,
+        ]);
+
+        $question = Question::query()->firstOrCreate(
+            ['slug' => 'e2e-'.$scenario],
+            ['text' => 'Quel métier rêviez-vous de faire ?', 'theme' => QuestionTheme::Childhood],
+        );
+
+        $story = app(ProposeStory::class)->handle($project->refresh(), $question);
+        Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+        $story->state->transitionTo(Recorded::class, AnswerType::Audio);
+        $story->state->transitionTo(Transcribed::class);
+        $this->share($story);
+
+        $challengeId = (string) Str::uuid7();
+
+        $challenge = new OtpChallenge([
+            'purpose' => OtpPurpose::NarratorSpace,
+            'channel' => Channel::Sms,
+            'sent_to_masked' => OtpService::mask($phone),
+            'expires_at' => now()->addYear(),
+        ]);
+
+        $challenge->id = $challengeId;
+        $challenge->narrator_id = $narrator->id;
+        $challenge->code_hash = OtpService::hashCode(self::SPACE_CODE, $challengeId);
+        $challenge->save();
+
+        $token = new AccessToken([
+            'type' => TokenType::NarratorSpace,
+            'scope' => ['read', 'withdraw'],
+            'expires_at' => now()->addDays(30),
+        ]);
+
+        $token->token_hash = TokenService::hash(self::token($scenario));
+        $token->subject()->associate($narrator);
+        $token->save();
     }
 
     /**
