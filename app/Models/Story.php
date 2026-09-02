@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\AnswerType;
 use App\Enums\DeletionRequestedBy;
 use App\Enums\ShareDecision;
@@ -64,7 +65,7 @@ use Spatie\ModelStates\HasStates;
 final class Story extends Model
 {
     /** @use HasFactory<StoryFactory> */
-    use HasFactory, HasStates, HasUuids;
+    use HasFactory, HasStates, HasUuids, StoresDatesWithOffset;
 
     /** @var array<string, mixed> */
     protected $attributes = [

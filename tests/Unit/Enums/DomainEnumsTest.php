@@ -6,6 +6,7 @@ use App\Enums\AddressForm;
 use App\Enums\AnswerType;
 use App\Enums\Cadence;
 use App\Enums\Channel;
+use App\Enums\ClientEventName;
 use App\Enums\CohortPhase;
 use App\Enums\ConsentChannel;
 use App\Enums\ConsentKind;
@@ -13,14 +14,17 @@ use App\Enums\ConsentStatus;
 use App\Enums\DeletionRequestedBy;
 use App\Enums\Offer;
 use App\Enums\OtpPurpose;
+use App\Enums\OutboundMessageStatus;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Enums\PromptSlot;
 use App\Enums\QuestionTheme;
+use App\Enums\RecordingSource;
 use App\Enums\ShareDecision;
 use App\Enums\StoryVisibility;
 use App\Enums\TokenIssuedReason;
 use App\Enums\TokenType;
+use App\Enums\UploadStatus;
 use App\Enums\UserRole;
 use App\Enums\ValidatedVia;
 use App\Enums\ValidationVariant;
@@ -35,6 +39,7 @@ function domainEnums(): array
         AnswerType::class,
         Cadence::class,
         Channel::class,
+        ClientEventName::class,
         CohortPhase::class,
         ConsentChannel::class,
         ConsentKind::class,
@@ -42,14 +47,17 @@ function domainEnums(): array
         DeletionRequestedBy::class,
         Offer::class,
         OtpPurpose::class,
+        OutboundMessageStatus::class,
         ProjectMemberRole::class,
         ProjectStatus::class,
         PromptSlot::class,
         QuestionTheme::class,
+        RecordingSource::class,
         ShareDecision::class,
         StoryVisibility::class,
         TokenIssuedReason::class,
         TokenType::class,
+        UploadStatus::class,
         UserRole::class,
         ValidatedVia::class,
         ValidationVariant::class,

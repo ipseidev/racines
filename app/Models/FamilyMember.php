@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use Carbon\CarbonImmutable;
 use Database\Factories\FamilyMemberFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -35,7 +36,7 @@ use Illuminate\Notifications\Notification;
 final class FamilyMember extends Model
 {
     /** @use HasFactory<FamilyMemberFactory> */
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasUuids, Notifiable, StoresDatesWithOffset;
 
     /** @var array<string, mixed> */
     protected $attributes = [

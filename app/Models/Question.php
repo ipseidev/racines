@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\QuestionTheme;
 use Database\Factories\QuestionFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,7 +31,7 @@ use Illuminate\Support\Carbon;
 final class Question extends Model
 {
     /** @use HasFactory<QuestionFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     /** @var array<string, mixed> */
     protected $attributes = [

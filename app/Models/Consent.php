@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\ConsentChannel;
 use App\Enums\ConsentKind;
 use App\Enums\ConsentStatus;
@@ -36,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 final class Consent extends Model
 {
     /** @use HasFactory<ConsentFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     public const UPDATED_AT = null;
 

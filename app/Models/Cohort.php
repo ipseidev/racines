@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\CohortPhase;
 use Database\Factories\CohortFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 final class Cohort extends Model
 {
     /** @use HasFactory<CohortFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     /** @var list<string> */
     protected $fillable = ['name', 'phase', 'started_at', 'notes'];

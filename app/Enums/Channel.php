@@ -19,11 +19,38 @@ enum Channel: string
 
     case Sms = 'sms';
     case Email = 'email';
+    case Both = 'both';
     case PhoneOperator = 'phone_operator';
 
+    /** Canaux qu'un message sortant peut réellement emprunter. */
     /** @return list<string> */
     public static function outboundValues(): array
     {
         return [self::Sms->value, self::Email->value];
+    }
+
+    /**
+     * Ce qu'un narrateur peut choisir : l'un, l'autre, ou les deux.
+     *
+     * @return list<string>
+     */
+    public static function narratorPreferences(): array
+    {
+        return [self::Sms->value, self::Email->value, self::Both->value];
+    }
+
+    /**
+     * Canaux effectifs d'une préférence.
+     *
+     * @return list<self>
+     */
+    public function resolve(): array
+    {
+        return match ($this) {
+            self::Sms => [self::Sms],
+            self::Email => [self::Email],
+            self::Both => [self::Sms, self::Email],
+            self::PhoneOperator => [],
+        };
     }
 }

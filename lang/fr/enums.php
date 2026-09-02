@@ -51,7 +51,52 @@ return [
     'channel' => [
         'sms' => 'SMS',
         'email' => 'Courriel',
+        'both' => 'SMS et courriel',
         'phone_operator' => 'Téléphone (opérateur)',
+    ],
+
+    'outbound_message_status' => [
+        'queued' => 'En attente d’envoi',
+        'sent' => 'Accepté par l’opérateur',
+        'delivered' => 'Reçu',
+        'failed' => 'Échec d’envoi',
+        'bounced' => 'Adresse refusée',
+        'undelivered' => 'Non délivré',
+    ],
+
+    'recording_source' => [
+        'browser' => 'Navigateur',
+        'phone_operator' => 'Appel téléphonique',
+        'upload_admin' => 'Déposé par le support',
+    ],
+
+    'upload_status' => [
+        'initiated' => 'Ouvert',
+        'uploading' => 'Envoi en cours',
+        'completed' => 'Envoyé',
+        'failed' => 'Échec',
+        'aborted' => 'Abandonné',
+    ],
+
+    'client_event_name' => [
+        'mic_denied' => 'Micro refusé',
+        'mic_granted' => 'Micro autorisé',
+        'recorder_unsupported' => 'Navigateur incapable d’enregistrer',
+        'recording_started' => 'Enregistrement commencé',
+        'recording_paused' => 'Enregistrement en pause',
+        'recording_resumed' => 'Enregistrement repris',
+        'recording_stopped' => 'Enregistrement terminé',
+        'page_hidden' => 'Page quittée',
+        'interrupted' => 'Enregistrement interrompu',
+        'resumed_from_draft' => 'Reprise depuis le brouillon',
+        'draft_discarded' => 'Brouillon abandonné',
+        'soft_warning_reached' => 'Alerte de durée atteinte',
+        'hard_stop_reached' => 'Arrêt à la durée maximale',
+        'upload_started' => 'Envoi commencé',
+        'upload_retried' => 'Envoi réessayé',
+        'upload_failed' => 'Envoi échoué',
+        'storage_quota_low' => 'Peu de place sur l’appareil',
+        'written_answer_chosen' => 'Réponse écrite choisie',
     ],
 
     'share_decision' => [

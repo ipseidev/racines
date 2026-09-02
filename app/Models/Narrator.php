@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\Channel;
 use App\Enums\ConsentKind;
 use App\Enums\ConsentStatus;
@@ -41,7 +42,7 @@ use Illuminate\Notifications\Notification;
 final class Narrator extends Model
 {
     /** @use HasFactory<NarratorFactory> */
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasUuids, Notifiable, StoresDatesWithOffset;
 
     /** @var array<string, mixed> */
     protected $attributes = [

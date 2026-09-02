@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\ProjectMemberRole;
 use Database\Factories\ProjectMemberFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,7 +26,7 @@ use Illuminate\Support\Carbon;
 final class ProjectMember extends Model
 {
     /** @use HasFactory<ProjectMemberFactory> */
-    use HasFactory;
+    use HasFactory, StoresDatesWithOffset;
 
     /** @var list<string> */
     protected $fillable = ['project_id', 'user_id', 'role'];

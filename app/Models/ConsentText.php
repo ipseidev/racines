@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\ConsentKind;
 use Carbon\CarbonImmutable;
 use Database\Factories\ConsentTextFactory;
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 final class ConsentText extends Model
 {
     /** @use HasFactory<ConsentTextFactory> */
-    use HasFactory;
+    use HasFactory, StoresDatesWithOffset;
 
     public const UPDATED_AT = null;
 

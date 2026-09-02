@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\TokenIssuedReason;
 use App\Enums\TokenType;
 use Carbon\CarbonImmutable;
@@ -42,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 final class AccessToken extends Model
 {
     /** @use HasFactory<AccessTokenFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     public const UPDATED_AT = null;
 

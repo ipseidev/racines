@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\RecordingSource;
 use App\Enums\UploadStatus;
 use Carbon\CarbonImmutable;
@@ -42,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class Recording extends Model
 {
     /** @use HasFactory<RecordingFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     /** @var array<string, mixed> */
     protected $attributes = [

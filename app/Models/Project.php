@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\AddressForm;
 use App\Enums\Cadence;
 use App\Enums\Offer;
@@ -57,7 +58,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 final class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     /**
      * Reprend les valeurs par défaut de la migration : une instance qui sort
@@ -132,6 +133,16 @@ final class Project extends Model
     public function consents(): HasMany
     {
         return $this->hasMany(Consent::class);
+    }
+
+    /**
+     * Ce que l'Initiateur·rice a changé au corpus pour ce projet.
+     *
+     * @return HasMany<ProjectQuestionSetting, $this>
+     */
+    public function questionSettings(): HasMany
+    {
+        return $this->hasMany(ProjectQuestionSetting::class);
     }
 
     /**

@@ -18,6 +18,7 @@ final class ReferenceDataSeeder extends Seeder
         $this->call([
             RolesAndPermissionsSeeder::class,
             ConsentTextSeeder::class,
+            QuestionSeeder::class,
         ]);
     }
 }

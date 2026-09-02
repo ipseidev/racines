@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\StoresDatesWithOffset;
 use App\Enums\Channel;
 use App\Enums\OtpPurpose;
 use Carbon\CarbonImmutable;
@@ -36,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class OtpChallenge extends Model
 {
     /** @use HasFactory<OtpChallengeFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, StoresDatesWithOffset;
 
     public const UPDATED_AT = null;
 
