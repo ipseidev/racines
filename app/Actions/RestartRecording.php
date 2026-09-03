@@ -29,10 +29,26 @@ use Illuminate\Support\Facades\Log;
  */
 final readonly class RestartRecording
 {
-    /** @var list<class-string> */
-    private const ALLOWED = [Recorded::class, Transcribed::class, ToReview::class];
+    /**
+     * Les états depuis lesquels le geste est **permis**.
+     *
+     * `Proposed` y figure alors qu'il n'y a rien à y faire, et c'est le point
+     * du correctif : « il n'y a rien à faire » et « c'est interdit » sont deux
+     * réponses différentes. Un second clic — bouton retour, double tap, réseau
+     * lent — ne doit pas produire un refus sec au visage de quelqu'un qui
+     * voulait simplement recommencer. La page qui suit est de toute façon
+     * celle qu'il attendait.
+     *
+     * @var list<class-string>
+     */
+    private const ALLOWED = [
+        Proposed::class,
+        Recorded::class,
+        Transcribed::class,
+        ToReview::class,
+    ];
 
-    public function canRestart(Story $story): bool
+    public function mayRestart(Story $story): bool
     {
         foreach (self::ALLOWED as $state) {
             if ($story->state instanceof $state) {

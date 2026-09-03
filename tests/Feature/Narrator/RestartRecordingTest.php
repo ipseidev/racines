@@ -13,6 +13,7 @@ use App\States\Story\Recorded;
 use App\States\Story\Shared;
 use App\States\Story\ToReview;
 use App\States\Story\Transcribed;
+use Illuminate\Support\Facades\DB;
 
 /**
  * « Recommencer », depuis le lien d'une histoire déjà racontée.
@@ -128,4 +129,39 @@ it('journalise l’acte, parce qu’un enregistrement remplacé doit s’expliqu
         'action' => 'restarted Story',
         'subject_id' => $story->id,
     ]);
+});
+
+it('tolère un second appel : recommencer deux fois n’est pas une faute', function (): void {
+    // Le défaut signalé pendant le checkpoint. Le premier clic ramène
+    // l'histoire à « proposée » ; le second — bouton retour, double tap,
+    // réseau lent — tombait sur une garde qui refusait cet état, alors que
+    // l'action elle-même est écrite pour ne rien faire. « Il n'y a rien à
+    // faire » et « c'est interdit » sont deux réponses différentes, et un
+    // refus sec au visage de quelqu'un de 82 ans n'est pas la bonne.
+    $story = Story::factory()->create();
+    $story->state->transitionTo(Recorded::class);
+    Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+
+    $plain = recordTokenFor($story);
+
+    $this->post("/r/{$plain}/restart")->assertRedirect("/r/{$plain}");
+    $this->post("/r/{$plain}/restart")->assertRedirect("/r/{$plain}");
+
+    expect($story->fresh()->state)->toBeInstanceOf(Proposed::class);
+});
+
+it('ne journalise pas deux fois un acte qui n’a eu lieu qu’une fois', function (): void {
+    $story = Story::factory()->create();
+    $story->state->transitionTo(Recorded::class);
+    Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+
+    $plain = recordTokenFor($story);
+
+    $this->post("/r/{$plain}/restart");
+    $this->post("/r/{$plain}/restart");
+
+    expect(DB::table('audit_logs')
+        ->where('action', 'restarted Story')
+        ->where('subject_id', $story->id)
+        ->count())->toBe(1);
 });

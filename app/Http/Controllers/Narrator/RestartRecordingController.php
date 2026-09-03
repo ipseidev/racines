@@ -29,7 +29,7 @@ final readonly class RestartRecordingController
 
         abort_unless($token instanceof AccessToken, 404);
         abort_unless($story instanceof Story, 404);
-        abort_unless($this->restart->canRestart($story), 403);
+        abort_unless($this->restart->mayRestart($story), 403);
 
         $this->restart->handle($story);
 

@@ -75,7 +75,7 @@ final class RecordPageController
                 // précisément cette histoire (bloc 07 §6.5).
                 'canHide' => ! $story->state instanceof Hidden,
                 // Recommencer aussi, tant qu'elle n'a rien validé (bloc 04).
-                'canRestart' => $this->restart->canRestart($story),
+                'canRestart' => $this->restart->mayRestart($story),
                 'restartAction' => route('narrator.record.restart', ['token' => $request->route('token')], false),
             ]);
         }
