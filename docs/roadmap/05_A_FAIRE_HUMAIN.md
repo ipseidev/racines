@@ -187,11 +187,12 @@ Tout le mode opératoire — jouer un achat, rejouer un événement, diagnostiqu
 
 ## §2. Ce qui ne demande que ton temps
 
-**Rien à acheter, rien à créer.** Cinq checkpoints sont codés et n'attendent qu'un humain pour être déroulés, en local, avec les fournisseurs simulés.
+**Rien à acheter, rien à créer.** Six checkpoints sont codés et n'attendent qu'un humain pour être déroulés, en local, avec les fournisseurs simulés.
 
 - **Bloc 07** — validation, visibilité, retraits. ~30 minutes.
 - **Bloc 08** — écoute famille et réactions. ~20 minutes.
 - **Bloc 09** — moteur de complétion. ~20 minutes : forcer trois horodatages sur le projet semé, lancer `engine:tick`, lire les envois, relancer pour vérifier qu'aucun ne se répète, cliquer un lien d'action, puis `engine:report`.
+- **Bloc 12** — les photos. ~15 minutes, et deux préalables gratuits : `sail up -d clamav` une première fois (deux à trois minutes, un demi-gigaoctet de signatures, gardé ensuite), puis une **photo prise avec ton iPhone** — c'est le seul moyen d'éprouver la conversion HEIC, qu'aucun outil de cette image ne sait fabriquer. Vérifie avec `exiftool` sur l'original stocké qu'il ne reste aucune coordonnée GPS : c'est le point le plus important du bloc.
 - **Bloc 11, points 1 à 4** — le back-office. ~20 minutes : configurer ta double authentification à la première connexion sur `/admin` (l'application d'authentification de ton téléphone suffit), ouvrir la fiche d'une histoire, corriger un mot, puis `sail artisan audit:verify` — et pour voir la garde fonctionner, tenter un `update audit_logs set action='x'` en base, qui doit échouer. Le point 5 demande Stripe.
 - **Bloc 10, points 3 à 5** — le cadeau, l'opt-in et l'espace Initiateur·rice. ~20 minutes, sans Stripe : `sail artisan migrate:fresh --seed` puis ouvrir `/i/demo-optin-accept-linkxxxxxxxxxxxxxxxxxxxxx` (accepter) et `/i/demo-optin-refuse-linkxxxxxxxxxxxxxxxxxxxxx` (refuser), et se connecter en `espace@example.test` pour l'espace. Les points 1 et 2 du checkpoint, eux, demandent Stripe.
 
@@ -265,6 +266,7 @@ Le seul endroit à tenir à jour.
 | 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | ☐ |
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil | bloc 10 | ☐ |
 | 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☐ |
+| 12octies | 15 min pour le checkpoint du bloc 12 (+ `sail up -d clamav`, une photo iPhone) | bloc 12 | ☐ |
 | 12septies | Relire les six playbooks du support (`resources/playbooks/`) | bloc 11 | ☐ |
 | 13 | Cloudflare R2 : 3 compartiments UE + CORS | bloc 16 | ☐ |
 | 14 | Stripe : compte, clés de test, 5 prix (`price_…`), CLI pour le webhook | **bloc 10, livré et bloqué** | ☐ |

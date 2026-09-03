@@ -134,6 +134,32 @@ services:
                 - local
             retries: 3
             timeout: 5s
+    # ClamAV, pour le contrôle antivirus des photos déposées (bloc 12).
+    #
+    # Le démon met deux à trois minutes à se lever la première fois : il
+    # télécharge la base de signatures, un demi-gigaoctet. Le volume la
+    # conserve d'un démarrage à l'autre, sans quoi chaque `sail up` la
+    # retéléchargerait.
+    #
+    # `ANTIVIRUS_SCANNER=fake` permet de travailler sans ce service. Ne le
+    # laissez pas ainsi : les tests le forcent déjà, et le mettre à `fake`
+    # dans `.env` reviendrait à ne pas avoir d'antivirus là où il compte.
+    clamav:
+        image: 'clamav/clamav:stable'
+        ports:
+            - '${FORWARD_CLAMAV_PORT:-3310}:3310'
+        volumes:
+            - 'sail-clamav:/var/lib/clamav'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - /usr/local/bin/clamdcheck.sh
+            interval: 30s
+            retries: 5
+            start_period: 300s
+            timeout: 10s
 networks:
     sail:
         driver: bridge
@@ -143,4 +169,6 @@ volumes:
     sail-redis:
         driver: local
     sail-minio:
+        driver: local
+    sail-clamav:
         driver: local

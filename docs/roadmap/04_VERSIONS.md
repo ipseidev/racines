@@ -11,9 +11,9 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | PostgreSQL | 18.6 | Sail ; managé DigitalOcean en production | CI : image `postgres:18` |
 | Redis | 8.10.1 | Sail ; Forge en production | CI : image `redis:7` |
 | ffmpeg | 6.1.1 | Inclus dans l'image Sail | Bloc 06 |
-| imagick | inclus | Extension `php8.5-imagick` de l'image Sail | Bloc 12 |
+| imagick | inclus, avec HEIC et HEIF | Extension `php8.5-imagick` de l'image Sail | Bloc 12. Sait **lire** le HEIC, pas l'écrire — d'où l'écart T-119 |
 | Chromium | à installer | Bloc 13 (Browsershot) et Playwright | |
-| ClamAV | à installer | Bloc 12 | |
+| ClamAV | image `clamav/clamav:stable` | Service Sail (bloc 12) ; `clamav-daemon` sur Forge au bloc 16 |
 | poppler-utils | à installer | Bloc 13 (`pdfinfo`) | |
 
 ## Composer
@@ -48,8 +48,8 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | anthropic-ai/sdk | v0.46.0 | 06 |
 | laravel/cashier | v16.8.0 | 10 |
 | stripe/stripe-php | v21.3.1 | 10 (transitif de cashier) |
-| spatie/laravel-medialibrary | _à installer_ | 12 |
-| sunspikes/clamav-validator | _à installer_ | 12 |
+| spatie/laravel-medialibrary | v11.23.6 | 12 |
+| ~~sunspikes/clamav-validator~~ | **non retenu** | 12 (décision T-118) |
 | spatie/browsershot | _à installer_ | 13 |
 | endroid/qr-code | _à installer_ | 13 |
 | maennchen/zipstream-php | _à installer_ | 14 |
@@ -61,6 +61,10 @@ Telescope n'est pas installé : `laravel/pail` couvre le suivi des journaux en l
 Le bloc 03 n'installe **aucun** paquet : `random_bytes`, `hash`, Monolog et Laravel suffisent.
 
 Le bloc 10 n'installe que `laravel/cashier`. Les pages légales sont rendues avec `league/commonmark` 2.10.0, **déjà** présent comme dépendance du framework : ajouter un convertisseur markdown pour trois fichiers aurait été une dépendance de plus à suivre. Le rendu serveur d'Inertia ne demande aucun paquet non plus — `@inertiajs/react/server` est fourni par le paquet npm déjà installé (décision T-107).
+
+`sunspikes/clamav-validator` était prévu au bloc 12 et n'a **pas** été retenu : sa dernière version stable ne déclare pas Laravel 13, et son travail tient en quarante lignes de protocole `INSTREAM`. `App\Services\Antivirus\ClamavScanner` le remplace, avec un doublon `FakeScanner` que la règle de validation d'un paquet n'aurait pas permis (décision T-118).
+
+`spatie/laravel-medialibrary` est en 11.23.6 : la branche 12 existe en `dev` seulement, et la 11 déclare `illuminate/* ^13.0`. La migration publiée a été reprise (`uuidMorphs`, `jsonb`, `timestampsTz`, un index de plus) — voir l'annexe B.
 
 `pbmedia/laravel-ffmpeg` était prévu au bloc 06 et n'a **pas** été retenu : le transcodage tient en un appel `ffmpeg` et une lecture `ffprobe`, que `Process::fake()` éprouve directement (décision T-69). `ffmpeg` reste requis sur la machine ; les chemins des binaires viennent de `FFMPEG_BINARIES` / `FFPROBE_BINARIES`.
 

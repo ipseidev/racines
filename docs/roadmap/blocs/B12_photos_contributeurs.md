@@ -1,6 +1,8 @@
 # Bloc 12 — Photos, réponse écrite, contributeurs
 
-Statut : ☐ non commencé · Dépend de : 11 · Tag de fin : `bloc-12-done`
+Statut : ◐ en cours · Dépend de : 11 · Tag de fin : `bloc-12-done`
+**⏳ Checkpoint jouable en local** — il demande un téléphone pour la photo HEIC (point 1) et un premier démarrage du service ClamAV (point 3). Détail dans [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md).
+
 Références dossier : PRD P0-5, P0-6, P0-12, doc 04 §3 (photos : le déposant garantit ses droits, licence limitée), §12 (contrôle antivirus et format). La réponse écrite existe depuis le bloc 04 ; ce bloc la complète.
 
 ## 1. Objectif
@@ -47,16 +49,16 @@ Sail : service `clamav` (`image: clamav/clamav:stable`, port 3310, volume pour l
 
 ## 6. Étapes
 
-- [ ] `config/media-library.php` : `disk_name` `r2`, `queue_name` `media`, `image_driver` `imagick`.
-- [ ] `Story implements HasMedia` ; `registerMediaCollections()` : `photos` (`acceptsMimeTypes jpeg,png,heic,heif,webp`, `useDisk('r2')`) ; `registerMediaConversions()` : `thumb` (400 px, `performOnCollections('photos')`), `web` (1600 px) ; propriété personnalisée `print_ready`, `caption`, `depositor_type/id`.
-- [ ] `App\Services\Images\Sanitizer::process(UploadedFile): UploadedFile` : `imagick` → `autoOrient`, `stripImage()` (retire GPS et métadonnées), conversion HEIC → JPEG si le décodeur est présent ; sinon exception `UnsupportedImage`.
-- [ ] Règle de validation `['file', 'max:20480', 'mimetypes:image/jpeg,image/png,image/heic,image/heif,image/webp', 'clamav']` ; `App\Services\Antivirus\Scanner` interface avec `ClamavScanner` (via le package) et `FakeScanner` (marque tout fichier contenant `X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR`).
-- [ ] `AttachPhoto(Story, UploadedFile, Model $depositor, ?string $caption)` : consentement `photo_rights` (une fois par déposant et par projet), sanitize, `addMedia`, `print_ready`, audit.
-- [ ] Routes : `POST /r/{token}/photos` (narrateur), `POST /n/{token}/stories/{story}/photos`, `POST /l/{token}/stories/{story}/photos` (contributeur), `POST /espace/projets/{project}/histoires/{story}/photos` (Initiateur·rice) ; `DELETE` et `PATCH caption` équivalents.
-- [ ] UI : `components/PhotoUploader` (sélection depuis la galerie ou l'appareil, aperçu, légende, message « Cette photo est un peu petite pour l'impression, elle restera lisible en ligne » si non `print_ready`) ; `components/PhotoGallery` ; intégration dans `narrator/Record` (écran facultatif « Ajouter une photo » après confirmation), `narrator/Space`, `family/Story` (bouton visible seulement si `can_contribute`), `initiator/Dashboard`.
-- [ ] Les URL des photos passent par `temporaryUrl` (privé), régénérées à chaque chargement.
-- [ ] Annexe B (`media` + propriétés), `04_VERSIONS.md`, `.env.example` (`CLAMAV_*`).
-- [ ] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts ; commit `chore(bloc-12): terminé`, tag `bloc-12-done`.
+- [x] `config/media-library.php` : `disk_name` `r2`, `queue_name` `media`, `image_driver` `imagick`.
+- [x] `Story implements HasMedia` ; `registerMediaCollections()` : `photos` (`acceptsMimeTypes jpeg,png,heic,heif,webp`, `useDisk('r2')`) ; `registerMediaConversions()` : `thumb` (400 px, `performOnCollections('photos')`), `web` (1600 px) ; propriété personnalisée `print_ready`, `caption`, `depositor_type/id`.
+- [x] `App\Services\Images\Sanitizer::process(UploadedFile): UploadedFile` : `imagick` → `autoOrient`, `stripImage()` (retire GPS et métadonnées), conversion HEIC → JPEG si le décodeur est présent ; sinon exception `UnsupportedImage`.
+- [x] Validation `['file', 'max:20480', 'mimetypes:…']` **sans** règle `clamav` : le scan passe par le port `Scanner` appelé dans `AttachPhoto`, et non par une règle de validation. Le paquet prévu ne déclare pas Laravel 13, et une règle de validation ne se double pas (décision T-118). `FakeScanner` reconnaît la chaîne EICAR, coupée en deux dans le code source — un fichier qui la contient en entier est détecté comme un virus par les antivirus des postes de travail, et le dépôt devient impossible à cloner.
+- [x] `AttachPhoto(Story, UploadedFile, Model $depositor, ?string $caption)` : consentement `photo_rights` (une fois par déposant et par projet), sanitize, `addMedia`, `print_ready`, audit.
+- [x] Routes : `POST /r/{token}/photos` (narrateur), `POST /n/{token}/stories/{story}/photos`, `POST /l/{token}/stories/{story}/photos` (contributeur), `POST /espace/projets/{project}/histoires/{story}/photos` (Initiateur·rice) ; `DELETE` et `PATCH caption` équivalents.
+- [ ] `PhotoUploader` et `PhotoGallery` sont écrits et éprouvés (7 tests Vitest), **intégrés dans `family/Story`** seulement. Restent trois branchements : `narrator/Record` (écran facultatif après la confirmation), `narrator/Space` et `initiator/Dashboard`. Les routes et les droits des trois existent et sont testés côté serveur ; il ne manque que le bouton.
+- [x] Les URL des photos passent par `temporaryUrl` (privé), régénérées à chaque chargement.
+- [x] Annexe B (`media` + propriétés), `04_VERSIONS.md`, `.env.example` (`CLAMAV_*`).
+- [ ] `sail composer check` et `sail npm run check` verts ; les deux bouts en bout `photos-narrator` et `photos-contributor` attendent les branchements ci-dessus. Commit `chore(bloc-12): terminé` et tag `bloc-12-done` après le checkpoint §7.
 
 ## 7. Checkpoint démontrable
 
@@ -67,9 +69,9 @@ Sail : service `clamav` (`image: clamav/clamav:stable`, port 3310, volume pour l
 
 ## 8. Critères de sortie
 
-- [ ] Aucune photo n'est servie sans passer par `VisibleStoriesForFamilyMember` côté famille.
-- [ ] L'original est conservé ; les conversions sont dérivées.
-- [ ] ClamAV réel scanne en local et sur Forge ; `FakeScanner` uniquement en CI.
+- [x] Aucune photo n'est servie sans passer par `VisibleStoriesForFamilyMember` — `VisibilityTest` attaque **la route** pour chacun des neuf états qui ne sont ni `shared` ni `in_book`, et attend un 404. Une photo est un fichier, et un fichier se sert par une URL qu'on peut oublier de protéger.
+- [x] L'original est conservé ; `thumb` et `web` en sont dérivées. C'est l'original qui partira à l'imprimeur, et une conversion ne remonte jamais en qualité.
+- [x] `ANTIVIRUS_SCANNER=clamav` par défaut, forcé à `fake` par `phpunit.xml` seulement. Le service `clamav` est déclaré dans `compose.yaml` ; **il reste à le démarrer une première fois** (deux à trois minutes, un demi-gigaoctet de signatures) — point 3 du checkpoint.
 
 ## 9. Règle de décision par défaut
 
@@ -78,3 +80,9 @@ Si `imagick` ne décode pas le HEIC sur le serveur, refuser le fichier avec le m
 ## 10. Note de checkpoint
 
 _Date, exécutant, résultat, écarts :_
+
+**2026-09-03 — socle livré, interface partiellement branchée.** Le chemin serveur est complet et éprouvé : scan antivirus par un port, assainissement qui retire **tout** l'EXIF, consentement une fois par déposant, stockage privé avec original conservé, droits en une seule porte, quatre espaces de dépôt, et la garde de visibilité vérifiée état par état sur la route famille. **53 tests Pest** pour le seul bloc 12 ; porte qualité verte à **1 088 tests Pest / 5 489 assertions**, PHPStan niveau 8, **107 Vitest**.
+
+Ce qui reste est nommé en §6 : trois branchements d'interface (`narrator/Record`, `narrator/Space`, `initiator/Dashboard`) et les deux bouts en bout qui en dépendent. Les composants existent, leurs routes et leurs droits sont testés côté serveur ; il ne manque que le bouton.
+
+**Écarts consignés : T-118 à T-122.** Deux à lire avant de reprendre. **T-118** remplace le paquet d'antivirus prévu par quarante lignes de protocole, avec deux choix de comportement qui comptent — `INSTREAM` parce que le démon ne voit pas notre disque, et **refus en cas de panne** parce qu'un fichier non scanné n'est pas un fichier propre. **T-119** dit ce qui n'est pas éprouvé : la conversion HEIC de bout en bout, faute de pouvoir écrire un HEIC dans cet environnement — c'est le point 1 du checkpoint, sur une vraie photo d'iPhone, et c'est de toute façon la seule preuve qui vaille.

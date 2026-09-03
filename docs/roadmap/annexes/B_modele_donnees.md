@@ -296,6 +296,22 @@ La chaîne commence à une **racine littérale** de 64 caractères (`AuditLog::G
 
 Une table d'une seule ligne, et son unique raison d'être est le **verrou**. `previous_hash` se lit sur la dernière ligne écrite, et deux transactions concurrentes liraient la même — une fourche silencieuse que la vérification ne signalerait qu'au passage suivant. Verrouiller la dernière ligne d'une table en append-only ne dit rien à celui qui insère juste après ; verrouiller une ligne dédiée en `SELECT … FOR UPDATE`, si.
 
+## media (bloc 12) — bigint
+
+Table de `spatie/laravel-medialibrary`, **publiée puis reprise**. `id`, `model_type` et `model_id` (**`uuidMorphs`**), `uuid` unique nullable, `collection_name`, `name`, `file_name`, `mime_type` nullable, `disk`, `conversions_disk` nullable, `size`, `manipulations` / `custom_properties` / `generated_conversions` / `responsive_images` en **`jsonb`**, `order_column` indexé, `timestampsTz`. Index `(model_type, model_id, collection_name)`.
+
+Quatre écarts par rapport au gabarit du paquet, chacun avec sa raison (écart T-121). `uuidMorphs` : le gabarit suppose des clés entières, et la première photo jointe échouait sur un « invalid input syntax for type bigint ». `jsonb` : les propriétés personnalisées portent `print_ready`, `caption` et le déposant, et on les interroge — un `json` en Postgres ne s'indexe pas. `timestampsTz` : tout le schéma porte le fuseau (convention §13). Et l'index composite, parce que la galerie d'une histoire est **la** requête de cette table alors que le paquet ne la prévoit pas.
+
+Propriétés personnalisées de la collection `photos` :
+
+| Clé | Rôle |
+|---|---|
+| `caption` | La légende, au plus 200 caractères. Elle apparaît sous l'image dans le livre ; **coupée** plutôt que refusée, une légende trop longue étant une contrainte de mise en page et non une erreur de la personne. |
+| `print_ready` | Le petit côté atteint-il 1 200 px ? Une **information**, jamais un refus : une photo de photo est peut-être la seule qui existe de quelqu'un. |
+| `depositor_type` / `depositor_id` | Qui a déposé, sous l'**alias** de la carte polymorphe. Sert au texte alternatif (« Photo jointe par Claire ») et au droit de retirer sa propre photo. |
+
+Ce que la table ne contient **pas** : aucune métadonnée d'image. `App\Services\Images\Sanitizer` retire tout l'EXIF avant l'écriture — coordonnées GPS comprises, et c'est le premier objet du bloc.
+
 ## Tables de packages
 `settings` (spatie/laravel-settings, bloc 01), `permissions`/`roles`/`model_has_*` (spatie/laravel-permission, bloc 02), `features` (Pennant, bloc 02), `media` (spatie/laravel-medialibrary, bloc 12), `jobs`, `failed_jobs`, `job_batches`, `cache`, `sessions`, `telescope_*` (local).
 
