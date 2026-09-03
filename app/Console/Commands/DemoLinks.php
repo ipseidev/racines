@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Enums\TokenType;
+use App\Features\ReactionNotificationTiming;
 use App\Models\FamilyMember;
 use App\Models\Story;
 use App\Support\Links;
 use Database\Seeders\E2ELinksSeeder;
 use Illuminate\Console\Command;
+use Laravel\Pennant\Feature;
 
 /**
  * La feuille des vérifications humaines.
@@ -106,6 +108,25 @@ final class DemoLinks extends Command
     }
 
     private const NO_SEED = '⚠ décor absent — sail artisan migrate:fresh --seed';
+
+    /**
+     * L'état du drapeau des réactions, imprimé dans la feuille.
+     *
+     * C'est un état **invisible** qui invalide silencieusement le point 3 : un
+     * projet passé à « lendemain matin » n'envoie plus rien tout de suite, et
+     * rien à l'écran ne le dit. La feuille l'affiche donc, parce qu'elle a
+     * déjà fait perdre une vérification (écart T-131).
+     */
+    private static function reactionTiming(string $scenario): string
+    {
+        $subject = E2ELinksSeeder::subjectOf($scenario);
+
+        if (! $subject instanceof FamilyMember && ! $subject instanceof Story) {
+            return self::NO_SEED;
+        }
+
+        return (string) Feature::for($subject->project)->value(ReactionNotificationTiming::class);
+    }
 
     /** L'identifiant du projet qui porte un scénario. */
     private static function projectId(string $scenario): string
@@ -208,7 +229,10 @@ final class DemoLinks extends Command
             [
                 'bloc' => '08',
                 'titre' => 'La famille écoute',
-                'avant' => ['le drapeau des réactions vaut `immediate` par défaut sur tout projet.'],
+                'avant' => [
+                    'les points sont à jouer **dans l’ordre** : le point 4 change le drapeau des réactions, et le point 3 ne veut plus rien dire après lui.',
+                    'drapeau du projet d’essai, en ce moment : **'.self::reactionTiming('listen-react').'**.',
+                ],
                 'etapes' => [
                     [
                         'quoi' => 'Inviter un proche : le courriel arrive dans Mailpit avec son lien d’écoute, qui doit s’ouvrir.',
@@ -219,12 +243,20 @@ final class DemoLinks extends Command
                         'url' => self::link(TokenType::ListenProject, 'listen'),
                     ],
                     [
-                        'quoi' => 'Écouter 35 secondes, réagir « Merci » avec un mot : le narrateur reçoit le prénom et le mot dans la minute.',
+                        'quoi' => 'Écouter 35 secondes, puis réagir « Merci » avec un mot. La notification est **différée d’une minute**, à dessein : un cœur et un merci envoyés d’affilée ne font qu’un seul SMS. Il faut donc attendre soixante secondes avant de conclure.',
                         'url' => self::link(TokenType::ListenProject, 'listen-react'),
                     ],
                     [
-                        'quoi' => 'Passer le drapeau à `next-morning`, réagir de nouveau : rien ne part. Le digest du lendemain, lui, part.',
-                        'cmd' => 'reactions:send-digests',
+                        'quoi' => 'Passer le drapeau à « lendemain matin », puis réagir de nouveau : rien ne doit partir.',
+                        'cmd' => 'demo:reaction-timing next-morning',
+                    ],
+                    [
+                        'quoi' => 'Antidater la réaction — le résumé lit celles de la veille — puis l’envoyer.',
+                        'cmd' => 'demo:reaction-timing --veille  puis  sail artisan reactions:send-digests',
+                    ],
+                    [
+                        'quoi' => 'Remettre le drapeau où il était, sinon le point 3 ne sera plus jouable.',
+                        'cmd' => 'demo:reaction-timing immediate',
                     ],
                     [
                         'quoi' => 'Forger l’adresse de l’histoire que vous venez de masquer, sur son propre lien famille : page « non disponible », et aucune donnée dans la réponse — ni le titre, ni le texte, ni l’audio.',

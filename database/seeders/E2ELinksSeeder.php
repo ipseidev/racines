@@ -471,7 +471,10 @@ final class E2ELinksSeeder extends Seeder
         $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
         $recording->forceFill([
             'derived_mp3_path' => ObjectKeys::recordingDerivative($recording, 'mp3'),
-            'duration_seconds' => '124.00',
+            // La durée annoncée est celle du fichier réellement semé : un
+            // lecteur qui afficherait deux minutes sur quarante-cinq secondes
+            // d'audio mentirait à qui écoute.
+            'duration_seconds' => self::silentMp3Seconds(),
         ])->save();
 
         // Un vrai objet sur le stockage : sans lui, l'URL présignée mène à un
@@ -515,11 +518,46 @@ final class E2ELinksSeeder extends Seeder
      * arrive et que la lecture démarre, ce qui est tout ce que le bout en
      * bout demande.
      */
-    private static function silentMp3(): string
-    {
-        $frame = "\xFF\xFB\x90\x00".str_repeat("\x00", 400);
+    /**
+     * Un MP3 réellement silencieux, et réellement lisible.
+     *
+     * La version précédente annonçait 128 kbit/s dans son en-tête — ce qui
+     * impose des trames de 417 octets — mais n'en écrivait que 404. Aucun
+     * décodeur ne peut lire cela : le navigateur rendait
+     * `MEDIA_ERR_SRC_NOT_SUPPORTED`, le compteur du lecteur restait à zéro, et
+     * comme la progression d'écoute vient du lecteur, il n'y avait ni seuil de
+     * trente secondes franchi ni écoute enregistrée. La moitié du bloc 08
+     * devenait injouable (écart T-131).
+     *
+     * On écrit donc des trames conformes : MPEG-1 Layer III, 32 kbit/s,
+     * 44,1 kHz, mono, sans CRC. La taille d'une trame se déduit de son
+     * en-tête — `floor(144 × 32000 / 44100)` = 104 octets — et sa durée du
+     * nombre d'échantillons d'une trame Layer III, 1152, divisé par la
+     * fréquence. Quarante-cinq secondes pèsent ainsi 180 Ko, ce qui laisse
+     * franchir le seuil sans alourdir le semis.
+     *
+     * Fabriqué en PHP et non par `ffmpeg` : le conteneur en a un,
+     * l'intégration continue non, et un décor qui ne se sème que sur la
+     * machine du développeur n'est pas un décor.
+     */
+    private const MP3_FRAME_BYTES = 104;
 
-        return str_repeat($frame, 40);
+    private const MP3_FRAME_SECONDS = 1152 / 44100;
+
+    /** La durée exacte du fichier semé, en secondes. */
+    public static function silentMp3Seconds(int $seconds = 45): string
+    {
+        $frames = (int) ceil($seconds / self::MP3_FRAME_SECONDS);
+
+        return number_format($frames * self::MP3_FRAME_SECONDS, 2, '.', '');
+    }
+
+    public static function silentMp3(int $seconds = 45): string
+    {
+        $frame = "\xFF\xFB\x10\xC4".str_repeat("\x00", self::MP3_FRAME_BYTES - 4);
+        $frames = (int) ceil($seconds / self::MP3_FRAME_SECONDS);
+
+        return str_repeat($frame, $frames);
     }
 
     /**
@@ -622,7 +660,7 @@ final class E2ELinksSeeder extends Seeder
         }
 
         $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
-        $recording->forceFill(['duration_seconds' => '124.00'])->save();
+        $recording->forceFill(['duration_seconds' => self::silentMp3Seconds()])->save();
 
         if (self::BLOCK_07[$scenario]['audio'] ?? false) {
             $recording->forceFill([
