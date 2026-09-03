@@ -11,6 +11,9 @@ export default defineConfig({
     plugins: lazyPlugins(() => [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            // Rendu serveur : les pages publiques doivent être lisibles sans
+            // JavaScript et indexables. Construit par `npm run build:ssr`.
+            ssr: 'resources/js/ssr.tsx',
             refresh: true,
             // Polices auto-hébergées : aucune requête vers un tiers depuis les
             // pages narrateur. La liste doit rester alignée sur les options du

@@ -171,3 +171,67 @@
         @apply bg-background text-foreground;
     }
 }
+
+/*
+ * Champs de formulaire des espaces publics, narrateur et Initiateur·rice.
+ *
+ * Une classe et non un composant : ces pages n'embarquent pas la bibliothèque
+ * d'interface de l'espace authentifié (budget de 150 Ko par page, convention
+ * §4). La hauteur minimale de 2,75 rem est la cible tactile du dossier, et la
+ * taille de police 1,0625 rem évite le zoom automatique de Safari iOS sur
+ * n'importe quel champ plus petit que 16 px.
+ */
+@layer components {
+    .input {
+        @apply border-brand-muted/40 bg-brand-surface text-brand-text min-h-[2.75rem] w-full rounded-md border px-3 py-2 text-[1.0625rem];
+    }
+
+    /*
+     * Les pages légales : du markdown converti côté serveur, donc sans
+     * classes. La mise en forme se fait ici, sur les balises.
+     */
+    .legal-prose h1 {
+        @apply font-display text-3xl leading-tight font-semibold;
+    }
+
+    .legal-prose h2 {
+        @apply font-display mt-10 text-2xl leading-tight font-semibold;
+    }
+
+    .legal-prose p,
+    .legal-prose ul,
+    .legal-prose ol,
+    .legal-prose table {
+        @apply mt-4;
+    }
+
+    .legal-prose ul {
+        @apply list-disc pl-6;
+    }
+
+    .legal-prose ol {
+        @apply list-decimal pl-6;
+    }
+
+    .legal-prose li {
+        @apply mt-2;
+    }
+
+    .legal-prose a {
+        @apply underline;
+    }
+
+    .legal-prose strong {
+        @apply font-medium;
+    }
+
+    /* Un tableau large défile dans son cadre, sans faire défiler la page. */
+    .legal-prose table {
+        @apply block w-full overflow-x-auto text-base;
+    }
+
+    .legal-prose th,
+    .legal-prose td {
+        @apply border-brand-muted/40 border px-3 py-2 text-left align-top;
+    }
+}

@@ -14,6 +14,8 @@ const AppLayout = lazy(() => import('@/layouts/app-layout'));
 const AuthLayout = lazy(() => import('@/layouts/auth-layout'));
 const FamilyLayout = lazy(() => import('@/layouts/family-layout'));
 const NarratorLayout = lazy(() => import('@/layouts/narrator-layout'));
+const InitiatorLayout = lazy(() => import('@/layouts/initiator-layout'));
+const PublicLayout = lazy(() => import('@/layouts/public-layout'));
 const SettingsLayout = lazy(() => import('@/layouts/settings/layout'));
 
 const meta = (name: string) =>
@@ -36,8 +38,6 @@ void createInertiaApp({
     title: (title) => (title ? `${title} · ${brandName}` : brandName),
     layout: (name) => {
         switch (true) {
-            case name === 'welcome':
-                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             // Espaces sans compte : mise en page sobre, texte large, aucune
@@ -46,10 +46,18 @@ void createInertiaApp({
                 return NarratorLayout;
             case name.startsWith('family/'):
                 return FamilyLayout;
+            // Les pages publiques portent le pied de page légal partout, y
+            // compris dans le tunnel : on doit pouvoir lire les conditions
+            // sans revenir en arrière et perdre sa saisie.
+            case name.startsWith('public/'):
+                return PublicLayout;
             // Les pages d'action en un tap s'ouvrent depuis un SMS, sans
-            // compte : même sobriété que les autres espaces à jeton.
-            case name.startsWith('initiator/'):
+            // compte : même sobriété que les autres espaces à jeton, et
+            // surtout pas la navigation d'un espace où l'on n'est pas connecté.
+            case name === 'initiator/OneTapConfirm':
                 return FamilyLayout;
+            case name.startsWith('initiator/'):
+                return InitiatorLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:

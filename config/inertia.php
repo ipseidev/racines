@@ -17,11 +17,18 @@ return [
     |
     */
 
+    /*
+     * Éteint par défaut, et c'est délibéré : le rendu serveur est un service
+     * séparé (`php artisan inertia:start-ssr`). Activé par défaut, chaque
+     * requête de test tenterait une connexion vers 127.0.0.1:13714 — la suite
+     * s'interdit toute dépendance réseau (convention §5). Il s'allume par
+     * `INERTIA_SSR_ENABLED=true` en local pour le vérifier, et en production
+     * où le service tourne sous supervision (décision T-107).
+     */
     'ssr' => [
-        'enabled' => true,
-        'url' => 'http://127.0.0.1:13714',
-        // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
-
+        'enabled' => env('INERTIA_SSR_ENABLED', false),
+        'url' => env('INERTIA_SSR_URL', 'http://127.0.0.1:13714'),
+        'bundle' => base_path('bootstrap/ssr/ssr.js'),
     ],
 
     /*
