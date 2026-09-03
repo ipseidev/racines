@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Links\VcardController;
 use App\Http\Controllers\Narrator\ClientEventController;
 use App\Http\Controllers\Narrator\HideOwnStoryController;
+use App\Http\Controllers\Narrator\OptInController;
 use App\Http\Controllers\Narrator\OtpChallengeController;
 use App\Http\Controllers\Narrator\PauseController;
 use App\Http\Controllers\Narrator\RecordingUploadController;
@@ -179,6 +180,31 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
             Route::post('/n/{token}/pause', PauseController::class)
                 ->name('narrator.space.pause');
         });
+    });
+
+    /*
+     * Opt-in du narrateur (bloc 10). Le moment H0 : le cadeau se propose, il
+     * ne s'impose pas. Cette page ne propose **aucun** enregistrement avant
+     * l'acceptation, et les deux boutons sont de même taille.
+     */
+    Route::get('/i/farewell', [OptInController::class, 'farewell'])
+        ->name('narrator.optin.farewell');
+
+    Route::middleware('resolve.token:invitation')->group(function (): void {
+        Route::get('/i/{token}', [OptInController::class, 'show'])
+            ->name('narrator.optin.show');
+
+        Route::post('/i/{token}/accepter', [OptInController::class, 'accept'])
+            ->name('narrator.optin.accept');
+
+        Route::post('/i/{token}/refuser', [OptInController::class, 'refuse'])
+            ->name('narrator.optin.refuse');
+
+        Route::get('/i/{token}/bienvenue', [OptInController::class, 'welcome'])
+            ->name('narrator.optin.welcome');
+
+        Route::post('/i/{token}/souhaits', [OptInController::class, 'storeDirectives'])
+            ->name('narrator.optin.directives');
     });
 
     // Code à usage unique pour les actes sensibles (doc 04 §12).

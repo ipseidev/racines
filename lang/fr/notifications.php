@@ -203,6 +203,49 @@ return [
         ],
     ],
 
+    /*
+     * L'invitation-cadeau (bloc 10). Le message le plus délicat du produit :
+     * il arrive sans être attendu, d'un expéditeur inconnu, et propose de
+     * raconter sa vie. Trois choses le rendent crédible — le nom de la
+     * personne qui offre, son message personnel, et la phrase qui dit
+     * qu'aucune page ne demandera de mot de passe ni de paiement.
+     *
+     * Il ne demande **rien** : juste de découvrir de quoi il s'agit.
+     */
+    'gift_invitation' => [
+        'subject' => ':inviter vous offre un livre de vos souvenirs',
+        'greeting' => 'Bonjour :name,',
+        'line' => ':inviter aimerait recueillir vos souvenirs et en faire un livre, avec :brand. Vous répondez en parlant, quand vous voulez, et vous décidez de tout.',
+        'button' => 'Découvrir, sans engagement',
+        'no_obligation' => 'Rien ne commence avant que vous ayez dit oui. Et vous pouvez dire non : c’est prévu, et c’est respecté.',
+        'sms' => ':name, :inviter vous offre un livre de vos souvenirs avec :brand. Pour découvrir : :link — ce lien ne demandera jamais de mot de passe ni de paiement.',
+    ],
+
+    'checkout' => [
+        'confirmation' => [
+            'subject' => 'Votre commande est confirmée',
+            'greeting' => 'Bonjour :name,',
+            'line' => 'Merci. Tout est prêt pour recueillir les souvenirs de :narrator.',
+            'gift_date' => 'L’invitation lui sera envoyée le :date, à neuf heures.',
+            // Dit maintenant plutôt qu'au moment du refus : la déception ne
+            // doit pas se doubler d'une surprise.
+            'free_to_refuse' => 'Il reste entièrement libre d’accepter ou non. S’il préfère ne pas participer, nous vous remboursons intégralement.',
+            'withdrawal' => 'Vous disposez d’un droit de rétractation jusqu’au :date. Vous pouvez l’exercer depuis votre espace, sans justification.',
+        ],
+    ],
+
+    'initiator' => [
+        'invitation_refused' => [
+            'subject' => 'Des nouvelles de votre cadeau',
+            'greeting' => 'Bonjour :name,',
+            'line' => ':narrator a préféré ne pas participer pour le moment.',
+            // On respecte à voix haute, et on ne suggère aucune relance.
+            'respect' => 'C’est son choix, et nous le respectons. Cela arrive, et ce n’est pas un échec : proposer était déjà une attention.',
+            'button' => 'Voir ma commande',
+            'refund' => 'Vous êtes remboursé·e intégralement si vous le souhaitez — il suffit de nous le dire depuis votre espace, sans justification.',
+        ],
+    ],
+
     'corpus_exhausted' => [
         'subject' => 'Toutes les questions ont été posées',
         'line' => 'Le corpus de questions est épuisé pour ce projet : plus aucune nouvelle question ne partira.',
@@ -226,4 +269,15 @@ return [
         'sms' => ':brand : votre code est :code. Il expire dans :minutes minutes. Ne le communiquez à personne.',
     ],
 
+    /*
+     * Interne, adressé au support et à lui seul : le narrateur a parlé,
+     * l'audio est en sécurité, et le texte n'arrive pas. Pour la famille cela
+     * ressemble à un silence inexpliqué, et il faut reprendre à la main avant
+     * que quiconque s'en aperçoive.
+     */
+    'transcription_failed' => [
+        'subject' => 'Transcription en échec — reprise manuelle nécessaire',
+        'line' => 'L’enregistrement :recording n’a pas pu être transcrit après plusieurs tentatives. L’audio d’origine est intact.',
+        'action' => 'Relancer la transcription depuis l’administration, ou basculer le fournisseur de secours. Prévenir la famille si l’attente dépasse quarante-huit heures.',
+    ],
 ];

@@ -58,3 +58,10 @@ Schedule::command('engine:tick')
 Schedule::job(new MeasureResumptions)
     ->hourly()
     ->withoutOverlapping();
+
+// Les coordonnées d'un narrateur qui n'a jamais dit oui partent au bout de
+// trente jours : il les a reçues d'un proche, il n'a pas choisi de nous les
+// confier (bloc 10 §6.5).
+Schedule::command('narrators:delete-unaccepted-contacts')
+    ->daily()
+    ->withoutOverlapping();

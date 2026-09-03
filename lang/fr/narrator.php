@@ -187,6 +187,53 @@ return [
             'book_only_hint' => 'Elle sera imprimée, mais personne ne l’écoutera en ligne.',
         ],
         'keep_for_book' => 'Garder cette histoire pour le livre',
+        /*
+     * Opt-in (bloc 10). Le moment H0. Deux principes de rédaction : on
+     * explique avant de demander, et on n'attend rien. « Non merci » est un
+     * bouton de même taille que « J'accepte » — rendre le refus discret ne
+     * produit pas des oui, ça produit des gens qui ne répondent pas.
+     */
+        'optin' => [
+            'title' => ':inviter vous offre un livre de vos souvenirs',
+            'intro' => 'Voici de quoi il s’agit, et ce que cela veut dire pour vous. Prenez le temps de lire : rien ne commence avant votre accord.',
+            'what_it_means' => [
+                'one' => 'Chaque semaine, vous recevez une question. Vous y répondez en parlant, depuis votre téléphone, quand vous voulez.',
+                'two' => 'Nous mettons votre récit au propre. Vous le relisez, vous le corrigez si vous voulez, et **vous** décidez qui peut l’écouter.',
+                'three' => 'À la fin, vos histoires deviennent un livre. Vous pouvez arrêter, faire une pause ou tout supprimer à tout moment.',
+            ],
+            'consents_title' => 'Vos accords',
+            'consents_intro' => 'Chacun est distinct, et chacun se retire quand vous voulez.',
+            'read' => 'Lire le texte',
+            'sensitive_title' => 'Sujets personnels',
+            'preferences_title' => 'Comment vous préférez être contacté·e',
+            'channel' => 'Par quel moyen ?',
+            'cadence' => 'À quel rythme ?',
+            'day' => 'Quel jour ?',
+            'slot' => 'À quel moment de la journée ?',
+            'phone_confirm' => 'Votre numéro',
+            'address_form' => 'Comment souhaitez-vous qu’on vous parle ?',
+            'accept' => 'J’accepte',
+            'refuse' => 'Non merci',
+            'accepted' => 'C’est noté. Bienvenue.',
+            'refuse_title' => 'Vous préférez ne pas',
+            'refuse_intro' => 'C’est votre choix, et il est respecté. Vous pouvez nous dire pourquoi, si vous voulez — ce n’est pas obligatoire.',
+            'refuse_confirm' => 'Confirmer mon refus',
+            'welcome' => [
+                'title' => 'Bienvenue, :first_name',
+                'body' => 'Votre première question arrivera le :date. D’ici là, vous n’avez rien à faire.',
+                'body_soon' => 'Votre première question arrivera bientôt. D’ici là, vous n’avez rien à faire.',
+                'vcard' => 'Ajouter notre contact à votre téléphone',
+                'vcard_why' => 'Vos questions arriveront de ce numéro : l’enregistrer évite qu’elles ressemblent à un message inconnu.',
+                'wishes_title' => 'Vos souhaits pour plus tard',
+                'wishes_intro' => 'Vous pouvez dire dès maintenant ce que vous souhaitez qu’il advienne de vos histoires. Ou le faire plus tard, ou jamais.',
+                'wishes_later' => 'Plus tard',
+            ],
+            'farewell' => [
+                'title' => 'C’est noté',
+                'body' => 'Merci de nous l’avoir dit. Nous ne vous écrirons plus à ce sujet, et vos coordonnées seront effacées dans trente jours.',
+            ],
+        ],
+
         'thanks' => [
             'share' => 'Merci. Vos proches peuvent maintenant écouter cette histoire.',
             'keep_private' => 'Merci. Cette histoire reste pour vous seul·e.',
@@ -280,4 +327,100 @@ return [
         'close' => 'Fermer',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Opt-in : le moment H0
+    |--------------------------------------------------------------------------
+    |
+    | La page qui décide de tout. Elle explique avant de demander, elle ne
+    | propose aucun enregistrement, et ses deux boutons sont de même taille :
+    | un non franc vaut mieux qu'un silence.
+    |
+    */
+
+    'optin' => [
+        'greeting' => 'Bonjour :name,',
+        'title' => ':inviter vous offre quelque chose',
+        'from' => 'Un message de :inviter',
+        'listen_message' => 'Écouter son message',
+
+        'means' => [
+            'title' => 'Ce que cela veut dire pour vous',
+            'one' => 'Vous recevez une question par semaine, et vous y répondez en parlant, depuis votre téléphone. Deux minutes suffisent.',
+            'two' => 'Vous relisez le texte avant que quiconque le voie, et vous décidez seul·e de ce qui est partagé. Rien ne part sans votre accord.',
+            'three' => 'Vous pouvez arrêter, masquer une histoire ou tout supprimer à tout moment, sans avoir à vous justifier.',
+        ],
+
+        'consents' => [
+            'title' => 'Vos accords',
+            'intro' => 'Chaque accord est séparé, et chacun se retire indépendamment des autres.',
+            'read' => 'Lire le texte',
+            'hide' => 'Masquer le texte',
+            'version' => 'Version :version',
+        ],
+
+        'settings' => [
+            'title' => 'Comment nous vous joignons',
+            'channel' => 'Par quel moyen ?',
+            'phone' => 'Votre numéro de téléphone',
+            'phone_hint' => 'Au format international, par exemple +33 6 12 34 56 78.',
+            'phone_confirm' => 'Nous vous écrirons à ce numéro : est-il correct ?',
+            'cadence' => 'À quelle fréquence ?',
+            'day' => 'Quel jour ?',
+            'slot' => 'À quel moment de la journée ?',
+            'address_form' => 'Préférez-vous qu’on vous dise « vous » ou « tu » ?',
+        ],
+
+        'days' => [
+            '1' => 'Lundi',
+            '2' => 'Mardi',
+            '3' => 'Mercredi',
+            '4' => 'Jeudi',
+            '5' => 'Vendredi',
+            '6' => 'Samedi',
+            '7' => 'Dimanche',
+        ],
+
+        'accept' => 'J’accepte',
+        'refuse' => 'Non merci',
+        'accepted' => 'C’est noté. Bienvenue.',
+        'already_answered' => 'Vous avez déjà répondu à cette invitation. Si vous souhaitez changer d’avis, écrivez-nous à :email.',
+        'no_password' => 'Cette page ne vous demandera jamais de mot de passe, de paiement ni de code.',
+
+        'refusal' => [
+            'title' => 'Vous préférez ne pas',
+            'body' => 'C’est votre choix, et il est respecté. Voulez-vous nous dire pourquoi ? Ce n’est pas obligatoire.',
+            'no_reason' => 'Je préfère ne rien dire',
+            'confirm' => 'Confirmer mon refus',
+            'back' => 'Revenir en arrière',
+        ],
+    ],
+
+    'optin_welcome' => [
+        'title' => 'Bienvenue, :name',
+        'body' => 'Votre première question arrive :when. Vous n’avez rien à installer et rien à préparer.',
+        'when_unknown' => 'très bientôt',
+        'vcard' => [
+            'title' => 'Ajoutez-nous à vos contacts',
+            'body' => 'Nos messages arriveront toujours de ce contact. Si un message vous parvient d’ailleurs en nous imitant, c’est qu’il est faux.',
+            'button' => 'Ajouter le contact',
+        ],
+        'wishes' => [
+            'title' => 'Vos souhaits pour plus tard',
+            'body' => 'Vous pouvez nous dire, dès maintenant ou dans longtemps, ce qu’il faudra faire de vos histoires après votre décès. Vos souhaits passent avant la demande de vos proches.',
+            'start' => 'Dire mes souhaits maintenant',
+            'later' => 'Plus tard',
+            'deferred' => 'C’est noté. Vous pourrez nous le dire quand vous voudrez, depuis votre espace.',
+            'saved' => 'Vos souhaits sont enregistrés. Vous pourrez les changer quand vous voudrez.',
+            'save' => 'Enregistrer mes souhaits',
+            'referent' => 'La personne à qui nous nous adresserons (facultatif)',
+            'note' => 'Une précision, si vous le souhaitez',
+        ],
+    ],
+
+    'optin_farewell' => [
+        'title' => 'C’est noté',
+        'body' => 'Nous ne vous écrirons plus à ce sujet. Vos coordonnées seront supprimées dans les trente jours.',
+        'reassure' => 'La personne qui vous a invité·e est prévenue avec tact, et sera remboursée si elle le souhaite.',
+    ],
 ];
