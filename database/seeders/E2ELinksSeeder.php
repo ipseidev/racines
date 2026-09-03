@@ -44,6 +44,8 @@ use App\States\Story\Shared;
 use App\States\Story\ToReview;
 use App\States\Story\Transcribed;
 use App\Support\ObjectKeys;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -769,5 +771,31 @@ final class E2ELinksSeeder extends Seeder
     public static function token(string $scenario): string
     {
         return str_pad("demo-{$scenario}-link", 43, 'x');
+    }
+
+    /**
+     * Le sujet que porte le lien d'un scénario.
+     *
+     * La recherche vit ici et non chez l'appelant : `token_hash` ne se lit que
+     * dans le service de jetons et les trois fichiers qui le masquent — une
+     * garde le vérifie, et elle a raison, puisqu'une empreinte calculée un peu
+     * partout est la façon dont un jeton finit par fuir. Ce semis possède déjà
+     * la correspondance entre un scénario et son lien ; il est donc le bon
+     * endroit pour rendre ce que ce lien désigne.
+     *
+     * Rend `null` quand la base n'est pas semée, ou pas migrée : la feuille
+     * des vérifications doit rester imprimable, c'est précisément l'état où
+     * l'on en a le plus besoin.
+     */
+    public static function subjectOf(string $scenario): ?Model
+    {
+        try {
+            return AccessToken::query()
+                ->where('token_hash', TokenService::hash(self::token($scenario)))
+                ->first()
+                ?->subject;
+        } catch (QueryException) {
+            return null;
+        }
     }
 }

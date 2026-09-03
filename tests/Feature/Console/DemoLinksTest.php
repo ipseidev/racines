@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\AccessToken;
+use App\Services\Tokens\TokenService;
 use App\Settings\BrandSettings;
 use Database\Seeders\E2ELinksSeeder;
 
@@ -77,5 +79,28 @@ it('se limite à un bloc quand on le lui demande', function (): void {
     $this->artisan('demo:liens', ['--bloc' => '07'])
         ->expectsOutputToContain(E2ELinksSeeder::token('variant-a'))
         ->doesntExpectOutputToContain(E2ELinksSeeder::token('listen'))
+        ->assertSuccessful();
+});
+
+it('résout les identifiants du bloc 08 quand le décor est semé', function (): void {
+    // Un identifiant de projet et un UUID d'histoire changent à chaque semis :
+    // les écrire dans la feuille les rendrait faux le lendemain. La commande
+    // les lit donc en base, et la feuille reste vraie.
+    $this->seed(E2ELinksSeeder::class);
+
+    $token = AccessToken::query()
+        ->where('token_hash', TokenService::hash(E2ELinksSeeder::token('listen')))
+        ->firstOrFail();
+
+    $this->artisan('demo:liens', ['--bloc' => '08'])
+        ->expectsOutputToContain((string) $token->subject->project_id)
+        ->assertSuccessful();
+});
+
+it('reste utilisable quand le décor n’est pas semé', function (): void {
+    // Sans décor, la commande doit dire quoi faire plutôt que planter : c'est
+    // précisément l'état où l'on a le plus besoin d'elle.
+    $this->artisan('demo:liens', ['--bloc' => '08'])
+        ->expectsOutputToContain('migrate:fresh --seed')
         ->assertSuccessful();
 });

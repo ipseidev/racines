@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Enums\TokenType;
+use App\Models\FamilyMember;
+use App\Models\Story;
 use App\Support\Links;
 use Database\Seeders\E2ELinksSeeder;
 use Illuminate\Console\Command;
@@ -103,6 +105,32 @@ final class DemoLinks extends Command
         }
     }
 
+    private const NO_SEED = '⚠ décor absent — sail artisan migrate:fresh --seed';
+
+    /** L'identifiant du projet qui porte un scénario. */
+    private static function projectId(string $scenario): string
+    {
+        $subject = E2ELinksSeeder::subjectOf($scenario);
+
+        if ($subject instanceof FamilyMember || $subject instanceof Story) {
+            return (string) $subject->project_id;
+        }
+
+        return self::NO_SEED;
+    }
+
+    /** L'adresse forgée d'une histoire, pour éprouver ce qu'un lien ne doit pas ouvrir. */
+    private static function storyUrl(string $familyScenario, string $storyScenario): string
+    {
+        $story = E2ELinksSeeder::subjectOf($storyScenario);
+
+        if (! $story instanceof Story) {
+            return self::NO_SEED;
+        }
+
+        return self::link(TokenType::ListenProject, $familyScenario).'/stories/'.$story->id;
+    }
+
     private static function record(string $scenario): string
     {
         return Links::record(E2ELinksSeeder::token($scenario));
@@ -180,11 +208,11 @@ final class DemoLinks extends Command
             [
                 'bloc' => '08',
                 'titre' => 'La famille écoute',
-                'avant' => ['les réactions immédiates demandent le drapeau `immediate` (réglages du projet).'],
+                'avant' => ['le drapeau des réactions vaut `immediate` par défaut sur tout projet.'],
                 'etapes' => [
                     [
-                        'quoi' => 'Inviter un proche : le courriel arrive dans Mailpit avec son lien d’écoute.',
-                        'cmd' => 'family:invite {projet} "Marie" marie@example.test',
+                        'quoi' => 'Inviter un proche : le courriel arrive dans Mailpit avec son lien d’écoute, qui doit s’ouvrir.',
+                        'cmd' => 'family:invite '.self::projectId('listen').' "Marie" marie@example.test',
                     ],
                     [
                         'quoi' => 'Ouvrir un lien d’écoute : seules les histoires partagées apparaissent. Masquer une histoire depuis l’espace narrateur la fait disparaître aussitôt.',
@@ -199,7 +227,8 @@ final class DemoLinks extends Command
                         'cmd' => 'reactions:send-digests',
                     ],
                     [
-                        'quoi' => 'Forger l’adresse d’une histoire masquée : page « non disponible », et aucune donnée dans la réponse.',
+                        'quoi' => 'Forger l’adresse de l’histoire que vous venez de masquer, sur son propre lien famille : page « non disponible », et aucune donnée dans la réponse — ni le titre, ni le texte, ni l’audio.',
+                        'url' => self::storyUrl('withdraw-famille', 'withdraw'),
                     ],
                 ],
             ],
