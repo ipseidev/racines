@@ -14,6 +14,7 @@ use App\States\Story\Transitions\KeepStoryPrivate;
 use App\States\Story\Transitions\MarkTranscribed;
 use App\States\Story\Transitions\RecordStory;
 use App\States\Story\Transitions\RequestReview;
+use App\States\Story\Transitions\RestartRecording;
 use App\States\Story\Transitions\RestoreStory;
 use App\States\Story\Transitions\ShareStory;
 use App\States\Story\Transitions\TrashStory;
@@ -60,6 +61,14 @@ abstract class StoryState extends State
             // pas une validation, et l'histoire doit quitter la file des
             // relances sans que rien soit gravé (bloc 07 §9).
             ->allowTransition(ToReview::class, Transcribed::class, KeepStoryPrivate::class)
+            // « Recommencer » : la question est de nouveau posée. Le seul
+            // retour complet, et le seul moyen de garder une entrée unique
+            // dans « enregistrée » (bloc 04, page `AlreadyRecorded`).
+            ->allowTransition(
+                [Recorded::class, Transcribed::class, ToReview::class],
+                Proposed::class,
+                RestartRecording::class,
+            )
             // Une seule classe de validation : elle inspecte le contexte et
             // refuse ce que la garde de l'état source interdit (bloc 02 §9).
             ->allowTransition(

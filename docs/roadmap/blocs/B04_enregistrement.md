@@ -110,7 +110,7 @@ sail npm i -D fake-indexeddb
   Au chargement : si un brouillon existe pour `story_ref`, écran « Reprendre mon enregistrement » / « Recommencer ».
 - [x] `narrator/MicHelp.tsx` : détection `ios` / `android` / `samsung` / `other` via `navigator.userAgent` ; captures schématiques en SVG inline ; « Réessayer » une seule fois ; « Répondre par écrit ».
 - [x] `narrator/WrittenAnswer.tsx` : textarea 20 px, compteur, « Envoyer ».
-- [x] `narrator/AlreadyRecorded.tsx` : « Vous avez déjà répondu à cette question le {date} » ; « Recommencer » (nouvel enregistrement) ; « Fermer ».
+- [x] `narrator/AlreadyRecorded.tsx` : « Vous avez déjà répondu à cette question le {date} » ; « Recommencer » (nouvel enregistrement) ; « Fermer ». **Cette case était cochée à tort jusqu'au 3 septembre 2026** : le bouton appelait une prop fonction qu'une page rendue par le serveur ne peut pas recevoir, et la transition de retour n'existait pas côté machine d'états. Corrigé, écart T-127.
 - [x] Toutes les chaînes dans `lang/fr/narrator.php`. `address_form` piloté par le projet.
 - [x] Tests Vitest et Playwright verts.
 
@@ -198,6 +198,19 @@ reprise iOS, elle, en dépend, et le dossier interdit de la faire avant.
 - MinIO n'implémente pas `PutBucketCors` (T-58) : la règle de
   `docker/minio/cors.json` est à reporter dans la console Cloudflare au
   bloc 16, avec l'exposition de l'`ETag`.
+- **« Recommencer » n'a jamais rien fait, et la case §6.5 était cochée**
+  (T-127, trouvé par un humain le 3 septembre 2026, pendant le checkpoint du
+  bloc 07). Le bouton de `AlreadyRecorded` appelait une prop fonction qu'une
+  page rendue par le serveur ne peut pas recevoir, et côté serveur la
+  transition de retour n'existait pas : la seule entrée dans « enregistrée »
+  partait de « proposée ». La page était donc le cul-de-sac que son propre
+  commentaire jurait qu'elle n'était pas. Corrigé par la transition
+  `RestartRecording`, une route `POST /r/{token}/restart` sans code, un
+  journal d'audit `restarted Story`, et le test de composant qui manquait —
+  celui qui vérifie que le clic **appelle le serveur**, non qu'il appelle une
+  fonction. Rien dans la chaîne ne pouvait l'attraper : PHPStan ne voit pas
+  les props React, TypeScript trouvait la prop optionnelle donc valide, et un
+  bouton mort ne casse aucune assertion.
 - La durée `ffprobe` et le dérivé MP3 restent au bloc 06, comme prévu.
 - `client_duration_seconds` est rangé dans `device_info` plutôt que dans une
   colonne : c'est une valeur annoncée par le client, indicative, à comparer

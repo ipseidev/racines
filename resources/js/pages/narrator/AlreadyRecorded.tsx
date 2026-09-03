@@ -10,7 +10,15 @@ type Props = {
     answerType: string | null;
     /** Vrai si l'histoire peut encore être masquée depuis ce lien. */
     canHide?: boolean;
-    onRestart?: () => void;
+    /**
+     * Vrai si l'histoire peut encore être racontée de nouveau. Faux dès
+     * qu'elle est validée : des proches ont pu l'entendre, et remplacer
+     * l'audio derrière un lien qu'ils gardent leur ferait écouter autre chose
+     * que ce qu'on leur avait annoncé.
+     */
+    canRestart?: boolean;
+    /** L'adresse du geste, donnée par le serveur comme pour les autres actes. */
+    restartAction: string;
 };
 
 /**
@@ -24,7 +32,8 @@ export default function AlreadyRecorded({
     question,
     recordedAt,
     canHide = false,
-    onRestart,
+    canRestart = false,
+    restartAction,
 }: Props) {
     const t = useT();
     const [confirmingHide, setConfirmingHide] = useState(false);
@@ -68,15 +77,19 @@ export default function AlreadyRecorded({
                 </p>
             ) : null}
 
-            <p className="mt-6">{t('narrator.already_recorded.body')}</p>
+            {canRestart ? (
+                <p className="mt-6">{t('narrator.already_recorded.body')}</p>
+            ) : null}
 
-            <button
-                type="button"
-                onClick={() => onRestart?.()}
-                className="border-brand-muted/40 mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
-            >
-                {t('narrator.already_recorded.restart')}
-            </button>
+            {canRestart ? (
+                <button
+                    type="button"
+                    onClick={() => router.post(restartAction)}
+                    className="border-brand-muted/40 mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                >
+                    {t('narrator.already_recorded.restart')}
+                </button>
+            ) : null}
 
             {/*
              * Masquer sa propre histoire, sans code : le lien porte

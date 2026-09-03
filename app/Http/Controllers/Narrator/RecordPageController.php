@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Narrator;
 
+use App\Actions\RestartRecording;
 use App\Features\ValidationVariant;
 use App\Models\AccessToken;
 use App\Models\Story;
@@ -26,6 +27,8 @@ use Laravel\Pennant\Feature;
  */
 final class RecordPageController
 {
+    public function __construct(private readonly RestartRecording $restart) {}
+
     public function __invoke(Request $request): Response
     {
         $token = $request->attributes->get('access_token');
@@ -71,6 +74,9 @@ final class RecordPageController
                 // Masquer se propose depuis ce lien, sans code : il porte
                 // précisément cette histoire (bloc 07 §6.5).
                 'canHide' => ! $story->state instanceof Hidden,
+                // Recommencer aussi, tant qu'elle n'a rien validé (bloc 04).
+                'canRestart' => $this->restart->canRestart($story),
+                'restartAction' => route('narrator.record.restart', ['token' => $request->route('token')], false),
             ]);
         }
 

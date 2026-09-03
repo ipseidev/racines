@@ -11,6 +11,7 @@ use App\Http\Controllers\Narrator\PauseController;
 use App\Http\Controllers\Narrator\RecordingUploadController;
 use App\Http\Controllers\Narrator\RecordPageController;
 use App\Http\Controllers\Narrator\RequestNewLinkController;
+use App\Http\Controllers\Narrator\RestartRecordingController;
 use App\Http\Controllers\Narrator\ReviewController;
 use App\Http\Controllers\Narrator\ShareDecisionController;
 use App\Http\Controllers\Narrator\SpaceAccessController;
@@ -111,6 +112,12 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
         // raconter doit pouvoir le retirer tout de suite (bloc 07 §6.5).
         Route::post('/r/{token}/hide', HideOwnStoryController::class)
             ->name('narrator.record.hide');
+
+        // Recommencer : même geste de regret que le masquage, même absence de
+        // code. Elle ne retire pas, elle redit — et l'ancien enregistrement
+        // reste (bloc 04, page `AlreadyRecorded`).
+        Route::post('/r/{token}/restart', RestartRecordingController::class)
+            ->name('narrator.record.restart');
 
         // Relecture (variante B et « décider plus tard »), sur le même jeton :
         // le narrateur n'a pas deux liens à distinguer dans ses SMS.
