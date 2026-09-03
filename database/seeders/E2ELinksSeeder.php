@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Actions\AcceptInvitation;
 use App\Actions\AddFamilyMember;
 use App\Actions\AddNarrator;
 use App\Actions\CreateProject;
 use App\Actions\ProposeStory;
+use App\Actions\RecordConsent;
 use App\Actions\ValidateStoryAction;
 use App\Engine\Actions\OneTapRegistry;
 use App\Engine\Actions\SwitchBiweekly;
 use App\Enums\AnswerType;
 use App\Enums\Cadence;
 use App\Enums\Channel;
+use App\Enums\ConsentChannel;
 use App\Enums\Offer;
 use App\Enums\OtpPurpose;
 use App\Enums\ProjectStatus;
@@ -25,6 +28,7 @@ use App\Enums\ValidatedVia;
 use App\Enums\ValidationVariant;
 use App\Models\AccessToken;
 use App\Models\Invitation;
+use App\Models\Narrator;
 use App\Models\OtpChallenge;
 use App\Models\Project;
 use App\Models\Question;
@@ -231,7 +235,7 @@ final class E2ELinksSeeder extends Seeder
         $project->status = ProjectStatus::Active;
         $project->save();
 
-        app(AddNarrator::class)->handle($project, [
+        $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
             'phone_e164' => '+33600000001',
@@ -372,7 +376,7 @@ final class E2ELinksSeeder extends Seeder
         $project->next_prompt_at = now()->addDays(3);
         $project->save();
 
-        app(AddNarrator::class)->handle($project, [
+        $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
             'phone_e164' => '+33600000099',
@@ -417,7 +421,7 @@ final class E2ELinksSeeder extends Seeder
         $project->cadence = Cadence::Weekly;
         $project->save();
 
-        app(AddNarrator::class)->handle($project, [
+        $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
             'phone_e164' => '+336000'.substr(md5($scenario), 0, 4),
@@ -449,7 +453,7 @@ final class E2ELinksSeeder extends Seeder
         $project->status = ProjectStatus::Active;
         $project->save();
 
-        app(AddNarrator::class)->handle($project, [
+        $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
             'phone_e164' => '+3360001'.substr(md5($scenario), 0, 4),
@@ -547,6 +551,41 @@ final class E2ELinksSeeder extends Seeder
         $token->save();
     }
 
+    /**
+     * Une narratrice de projet actif, avec les consentements qu'elle aurait.
+     *
+     * En production, les cinq consentements de l'opt-in sont posés ensemble à
+     * l'acceptation : une personne qui reçoit des questions les a forcément.
+     * Le décor les créait par `AddNarrator` seul, donc sans aucun — et
+     * `RenderFluide` refusant de rendre un texte sans `ai_rendering`, **toute
+     * chaîne réellement jouée en local s'arrêtait au mot à mot**, en silence,
+     * avec un simple `fluide.skipped_no_consent` dans le journal. La page de
+     * relecture affichait « Alors euh je me souviens… » au lieu du texte mis
+     * au propre, et la conclusion évidente devant l'écran était « le rendu IA
+     * est cassé ».
+     *
+     * Les consentements passent par `RecordConsent`, comme partout ailleurs :
+     * un décor qui insérerait ses lignes à la main ne prouverait pas que le
+     * chemin réel fonctionne.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function consentingNarrator(Project $project, array $attributes): Narrator
+    {
+        $narrator = app(AddNarrator::class)->handle($project, $attributes);
+
+        foreach (AcceptInvitation::CONSENTS as $kind) {
+            app(RecordConsent::class)->handle(
+                $narrator,
+                $project,
+                $kind,
+                ConsentChannel::Web,
+            );
+        }
+
+        return $narrator;
+    }
+
     private function projectForScenario(User $owner, string $scenario): Project
     {
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
@@ -556,7 +595,7 @@ final class E2ELinksSeeder extends Seeder
         );
         $project->save();
 
-        app(AddNarrator::class)->handle($project, [
+        $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
             'phone_e164' => '+3360000'.substr(md5($scenario), 0, 4),
@@ -660,7 +699,7 @@ final class E2ELinksSeeder extends Seeder
         $project->status = ProjectStatus::Active;
         $project->save();
 
-        $narrator = app(AddNarrator::class)->handle($project, [
+        $narrator = $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
             'phone_e164' => $phone,
