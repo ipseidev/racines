@@ -45,6 +45,9 @@
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
         <!-- Le rendu serveur est un service : la suite ne se connecte à rien. -->
         <env name="INERTIA_SSR_ENABLED" value="false" force="true"/>
+        <!-- Le démon ClamAV n’existe pas en intégration continue. -->
+        <env name="ANTIVIRUS_SCANNER" value="fake" force="true"/>
+        <env name="MEDIA_DISK" value="r2" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>

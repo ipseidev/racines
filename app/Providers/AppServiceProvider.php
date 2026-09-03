@@ -11,6 +11,9 @@ use App\Models\Story;
 use App\Models\User;
 use App\Services\Analytics\Analytics;
 use App\Services\Analytics\LogAnalytics;
+use App\Services\Antivirus\ClamavScanner;
+use App\Services\Antivirus\FakeScanner;
+use App\Services\Antivirus\Scanner;
 use App\Services\Llm\AnthropicMessages;
 use App\Services\Llm\ClaudeStoryRenderer;
 use App\Services\Llm\FakeStoryRenderer;
@@ -46,6 +49,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use InvalidArgumentException;
 use Laravel\Pennant\Feature;
 use RuntimeException;
 use Twilio\Rest\Client as TwilioClient;
@@ -102,6 +106,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureStoryRenderer();
         $this->configureAnalytics();
         $this->configurePayments();
+        $this->configureAntivirus();
     }
 
     /**
@@ -126,6 +131,32 @@ final class AppServiceProvider extends ServiceProvider
         ) {
             'fake' => new FakeRefunds,
             default => new StripeRefunds,
+        });
+    }
+
+    /**
+     * Le contrôle antivirus passe par un port (bloc 12).
+     *
+     * ClamAV parle un protocole de socket que rien dans Laravel
+     * n'intercepte : un test qui aurait oublié un doublon aurait attendu une
+     * connexion pendant trente secondes avant d'échouer sans dire pourquoi.
+     * Et le démon n'existe pas en intégration continue.
+     *
+     * Un scanner inconnu **lève** plutôt que de rendre « propre » : échouer
+     * fort vaut mieux qu'un antivirus qui fait semblant.
+     */
+    private function configureAntivirus(): void
+    {
+        $this->app->singleton(Scanner::class, function (): Scanner {
+            $driver = (string) config('services.antivirus.scanner');
+
+            return match ($driver) {
+                'clamav' => new ClamavScanner,
+                'fake' => new FakeScanner,
+                default => throw new InvalidArgumentException(
+                    "Scanner antivirus inconnu : {$driver}. Attendu `clamav` ou `fake`.",
+                ),
+            };
         });
     }
 

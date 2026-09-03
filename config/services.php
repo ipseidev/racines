@@ -53,6 +53,18 @@ return [
      * tunnel : ils diffèrent entre le mode test et le mode live, et une
      * constante oubliée ferait facturer le mauvais montant.
      */
+    /*
+     * Le contrôle antivirus des fichiers déposés (bloc 12).
+     *
+     * `clamav` ou `fake`, jamais déduit de l'environnement (T-61) : un
+     * fournisseur déduit finit par être le faux en production.
+     */
+    'antivirus' => [
+        'scanner' => env('ANTIVIRUS_SCANNER', 'clamav'),
+        'host' => env('CLAMAV_HOST', 'clamav'),
+        'port' => env('CLAMAV_PORT', 3310),
+    ],
+
     'stripe' => [
         // `stripe` ou `fake` ; jamais déduit de l'environnement (leçon T-61).
         'driver' => env('STRIPE_DRIVER', 'stripe'),

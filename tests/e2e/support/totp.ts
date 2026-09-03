@@ -81,7 +81,9 @@ const sleep = (milliseconds: number) =>
  *
  * On attend jusqu'à trente secondes, ce qui est long pour un test — et
  * beaucoup plus court qu'un diagnostic de « connexion impossible » sur une
- * intégration continue qui ne dit pas pourquoi.
+ * intégration continue qui ne dit pas pourquoi. Le projet `admin` de
+ * `playwright.config.ts` accorde donc soixante secondes par test : trente par
+ * défaut ne suffisent pas quand l'attente peut en consommer trente.
  */
 export async function freshTotp(secret = E2E_TOTP_SECRET): Promise<string> {
     let counter = Math.floor(Date.now() / 1000 / 30);

@@ -52,6 +52,15 @@ export default defineConfig({
             dependencies: ['chromium'],
             workers: 1,
             fullyParallel: false,
+            /*
+             * Soixante secondes, et non les trente par défaut : deux
+             * connexions rapprochées tombent dans la même fenêtre TOTP de
+             * trente secondes, et Filament refuse la réémission d'un même
+             * code. `freshTotp()` attend alors la fenêtre suivante — une
+             * attente légitime, qui dépassait le délai par défaut et faisait
+             * échouer la CI là où le local passait par chance (écart T-120).
+             */
+            timeout: 60_000,
             use: { ...devices['Desktop Chrome'] },
         },
         {
