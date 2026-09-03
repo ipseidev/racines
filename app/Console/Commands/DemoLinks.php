@@ -136,12 +136,24 @@ final class DemoLinks extends Command
                         'url' => self::record('variant-b').'/review',
                     ],
                     [
-                        'quoi' => 'Variante B, second lien — décider « Garder pour moi ». Rien ne doit partir à la famille.',
+                        'quoi' => '↳ le même projet vu par la famille : après le partage, l’histoire doit apparaître ici.',
+                        'url' => self::link(TokenType::ListenProject, 'variant-b-famille'),
+                    ],
+                    [
+                        'quoi' => 'Variante B, second lien — décider « Garder pour moi ».',
                         'url' => self::record('variant-b-share').'/review',
                     ],
                     [
-                        'quoi' => 'Masquer un récit déjà partagé depuis son propre lien d’enregistrement. Il doit disparaître côté famille aussitôt.',
+                        'quoi' => '↳ le même projet vu par la famille : rien ne doit jamais apparaître ici. C’est la promesse entière du bloc.',
+                        'url' => self::link(TokenType::ListenProject, 'variant-b-share-famille'),
+                    ],
+                    [
+                        'quoi' => 'Masquer un récit déjà partagé, depuis son propre lien d’enregistrement.',
                         'url' => self::record('withdraw'),
+                    ],
+                    [
+                        'quoi' => '↳ le même projet vu par la famille : une histoire avant, aucune après. Recharger, sans attendre.',
+                        'url' => self::link(TokenType::ListenProject, 'withdraw-famille'),
                     ],
                     [
                         'quoi' => 'Son espace personnel, par le chemin réel : demander un code pour '.E2ELinksSeeder::SPACE_NARRATORS['space'].' (le SMS part dans le journal en local), ou entrer directement par le lien ci-dessous. Le code du décor est '.E2ELinksSeeder::SPACE_CODE.'.',

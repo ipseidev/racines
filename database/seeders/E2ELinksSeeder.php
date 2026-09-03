@@ -96,11 +96,19 @@ final class E2ELinksSeeder extends Seeder
         // que la suite puisse enregistrer pour de vrai.
         'variant-a' => ['variant' => 'immediate'],
         // Variante B : le texte est prêt, la relecture attend.
-        'variant-b' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true],
+        //
+        // `family` apparie un lien d'écoute **sur le projet du scénario**. Sans
+        // lui, « elle décide, et la famille voit ou ne voit pas » ne se vérifie
+        // avec aucun lien du décor : les liens d'écoute du bloc 08 vivent
+        // chacun dans leur propre projet, et la variante de validation étant un
+        // réglage de projet, ces scénarios ne peuvent pas les rejoindre.
+        'variant-b' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true, 'family' => true],
         'variant-b-edit' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true],
-        'variant-b-share' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true],
-        // Un récit partagé, qu'on va masquer depuis son propre lien.
-        'withdraw' => ['variant' => 'immediate', 'reach' => 'shared'],
+        'variant-b-share' => ['variant' => 'deferred', 'reach' => 'to_review', 'transcripts' => true, 'family' => true],
+        // Un récit partagé, qu'on va masquer depuis son propre lien. Il porte
+        // ses transcriptions et son audio : c'est le seul scénario où la
+        // famille doit voir quelque chose **avant** que la personne agisse.
+        'withdraw' => ['variant' => 'immediate', 'reach' => 'shared', 'transcripts' => true, 'audio' => true, 'family' => true],
     ];
 
     /**
@@ -241,6 +249,10 @@ final class E2ELinksSeeder extends Seeder
 
             $this->prepareStory($story, $scenario);
             $this->seedLink($story, $scenario);
+
+            if (self::BLOCK_07[$scenario]['family'] ?? false) {
+                $this->seedPairedFamilyLink($host, $owner, $scenario);
+            }
         }
 
         foreach (self::SPACE_NARRATORS as $scenario => $phone) {
@@ -499,6 +511,34 @@ final class E2ELinksSeeder extends Seeder
     /**
      * Un projet dédié, avec sa variante et son narrateur.
      */
+    /**
+     * Un lien d'écoute sur le projet d'un scénario du bloc 07.
+     *
+     * Nommé `{scénario}-famille`, pour qu'on lise d'un coup d'œil ce qu'il
+     * observe. C'est l'autre moitié de chaque vérification du bloc : la
+     * personne décide sur son lien, et la famille voit — ou ne voit plus —
+     * sur celui-ci.
+     */
+    private function seedPairedFamilyLink(Project $project, User $owner, string $scenario): void
+    {
+        $member = app(AddFamilyMember::class)->handle($project, $owner, [
+            'display_name' => 'Marie',
+            'email' => "marie-{$scenario}-famille@example.test",
+            'can_contribute' => false,
+        ]);
+
+        $token = new AccessToken([
+            'type' => TokenType::ListenProject,
+            'scope' => ['listen', 'react'],
+            'expires_at' => now()->addMonths(12),
+        ]);
+
+        $token->token_hash = TokenService::hash(self::token($scenario.'-famille'));
+        $token->subject()->associate($member);
+        $token->issuedTo()->associate($member);
+        $token->save();
+    }
+
     private function projectForScenario(User $owner, string $scenario): Project
     {
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
@@ -534,6 +574,20 @@ final class E2ELinksSeeder extends Seeder
 
         $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
         $recording->forceFill(['duration_seconds' => '124.00'])->save();
+
+        if (self::BLOCK_07[$scenario]['audio'] ?? false) {
+            $recording->forceFill([
+                'derived_mp3_path' => ObjectKeys::recordingDerivative($recording, 'mp3'),
+            ])->save();
+
+            // Un vrai objet sur le stockage : sans lui, l'URL présignée mène
+            // à un 404 et le lecteur de la page famille ne joue rien.
+            app(MediaStorage::class)->put(
+                (string) $recording->derived_mp3_path,
+                self::silentMp3(),
+                'audio/mpeg',
+            );
+        }
 
         $story->state->transitionTo(Recorded::class, AnswerType::Audio);
         $story->state->transitionTo(Transcribed::class);
