@@ -6,9 +6,8 @@ namespace App\Http\Controllers\Initiator;
 
 use App\Actions\InviteFamilyMember;
 use App\Actions\ReissueFamilyLink;
-use App\Enums\TokenType;
+use App\Actions\RemoveFamilyMember;
 use App\Models\FamilyMember;
-use App\Services\Tokens\TokenService;
 use App\Support\InitiatorProject;
 use App\Support\Links;
 use Illuminate\Http\RedirectResponse;
@@ -94,16 +93,9 @@ final readonly class FamilyController
     {
         $found = self::ownMember($request, $member);
 
-        // Retiré, pas supprimé : savoir qu'une personne a eu accès fait
-        // partie de ce qu'on doit pouvoir répondre plus tard.
-        $found->removed_at = now();
-        $found->save();
-
-        app(TokenService::class)->revokeAllFor(
-            $found,
-            TokenType::ListenProject,
-            'removed_by_initiator',
-        );
+        // Retiré, pas supprimé, et le jeton révoqué dans le même geste :
+        // l'action porte les deux, et le back-office l'appelle aussi.
+        app(RemoveFamilyMember::class)->handle($found, 'removed_by_initiator');
 
         return back()->with('status', __('initiator.family.removed'));
     }

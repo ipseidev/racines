@@ -18,7 +18,10 @@ use App\Services\Llm\SdkAnthropicMessages;
 use App\Services\Llm\StoryRenderer;
 use App\Services\Payments\CheckoutSessions;
 use App\Services\Payments\FakeCheckoutSessions;
+use App\Services\Payments\FakeRefunds;
+use App\Services\Payments\Refunds;
 use App\Services\Payments\StripeCheckoutSessions;
+use App\Services\Payments\StripeRefunds;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
@@ -113,6 +116,16 @@ final class AppServiceProvider extends ServiceProvider
         ) {
             'fake' => new FakeCheckoutSessions,
             default => new StripeCheckoutSessions,
+        });
+
+        // Le remboursement passe par le même portillon, et c'est là que
+        // l'enjeu est le plus grand : sans port, un test qui aurait oublié un
+        // doublon aurait pu rembourser un vrai paiement.
+        $this->app->singleton(Refunds::class, fn (): Refunds => match (
+            (string) config('services.stripe.driver')
+        ) {
+            'fake' => new FakeRefunds,
+            default => new StripeRefunds,
         });
     }
 

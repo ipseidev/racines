@@ -37,33 +37,45 @@ final readonly class ResumeFromPause
             ->whereIn('status', [ProjectStatus::Paused->value, ProjectStatus::Active->value])
             ->get();
 
-        $resumed = 0;
-
         foreach ($due as $project) {
-            $project->paused_until = null;
-            $project->status = ProjectStatus::Active;
-            $project->next_prompt_at = $this->schedule->handle($project);
-            $project->save();
-
-            $narrator = $project->primaryNarrator;
-
-            if ($narrator !== null) {
-                $narrator->notify(new EngineNotification(
-                    rule: EngineRuleId::PauseRequested,
-                    key: 'resume',
-                    project: $project,
-                    payload: ['occurrence_key' => 'resume:'.$project->id],
-                ));
-            }
-
-            $resumed++;
-
-            Log::info('engine.pause_resumed', [
-                'project_id' => $project->id,
-                'next_prompt_at' => $project->next_prompt_at?->toIso8601String(),
-            ]);
+            $this->resume($project);
         }
 
-        return $resumed;
+        return $due->count();
+    }
+
+    /**
+     * Réveiller **un** projet, tout de suite.
+     *
+     * Extrait de la boucle pour que le back-office puisse l'appeler : le
+     * support doit pouvoir reprendre avant l'échéance quand une famille le
+     * demande, et la règle du bloc 11 est qu'aucune écriture Eloquent ne vit
+     * dans `app/Filament`. Deux chemins, une seule logique — sinon la reprise
+     * à la main oublierait le message, ou le recalcul du créneau.
+     */
+    public function resume(Project $project): Project
+    {
+        $project->paused_until = null;
+        $project->status = ProjectStatus::Active;
+        $project->next_prompt_at = $this->schedule->handle($project);
+        $project->save();
+
+        $narrator = $project->primaryNarrator;
+
+        if ($narrator !== null) {
+            $narrator->notify(new EngineNotification(
+                rule: EngineRuleId::PauseRequested,
+                key: 'resume',
+                project: $project,
+                payload: ['occurrence_key' => 'resume:'.$project->id],
+            ));
+        }
+
+        Log::info('engine.pause_resumed', [
+            'project_id' => $project->id,
+            'next_prompt_at' => $project->next_prompt_at?->toIso8601String(),
+        ]);
+
+        return $project;
     }
 }
