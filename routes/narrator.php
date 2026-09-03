@@ -19,6 +19,7 @@ use App\Http\Controllers\Narrator\SpaceOtpController;
 use App\Http\Controllers\Narrator\ThanksController;
 use App\Http\Controllers\Narrator\WithdrawalController;
 use App\Http\Controllers\Narrator\WrittenAnswerController;
+use App\Http\Controllers\Photos\PhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -121,6 +122,20 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
 
         Route::post('/r/{token}/review/decision', [ReviewController::class, 'decide'])
             ->name('narrator.review.decision');
+
+        /*
+         * Les photos (bloc 12), sur le même jeton et sans identifiant
+         * d'histoire : le lien porte **une** histoire, et son périmètre
+         * s'arrête là. Rien à deviner, rien à confondre.
+         */
+        Route::post('/r/{token}/photos', [PhotoController::class, 'store'])
+            ->name('narrator.photos.store');
+
+        Route::patch('/r/{token}/photos/{photo}', [PhotoController::class, 'updateCaption'])
+            ->name('narrator.photos.caption');
+
+        Route::delete('/r/{token}/photos/{photo}', [PhotoController::class, 'destroy'])
+            ->name('narrator.photos.destroy');
     });
 
     /*
@@ -180,6 +195,24 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
             Route::post('/n/{token}/pause', PauseController::class)
                 ->name('narrator.space.pause');
         });
+
+        /*
+         * Les photos depuis l'espace : **pas** un acte sensible.
+         *
+         * Retirer une histoire est irréversible pour la famille ; joindre une
+         * photo ne l'est pas, et exiger un code à chaque photo découragerait
+         * précisément la personne qu'on veut encourager. Le retrait d'une
+         * photo n'en est pas non plus : elle vient d'être déposée, et on ne
+         * demande pas un code pour défaire ce qu'on vient de faire.
+         */
+        Route::post('/n/{token}/stories/{story}/photos', [PhotoController::class, 'store'])
+            ->name('narrator.space.photos.store');
+
+        Route::patch('/n/{token}/stories/{story}/photos/{photo}', [PhotoController::class, 'updateCaption'])
+            ->name('narrator.space.photos.caption');
+
+        Route::delete('/n/{token}/stories/{story}/photos/{photo}', [PhotoController::class, 'destroy'])
+            ->name('narrator.space.photos.destroy');
     });
 
     /*

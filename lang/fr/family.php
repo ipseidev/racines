@@ -52,6 +52,10 @@ return [
     ],
 
     'story' => [
+        'photo_alt' => 'Photo jointe par :first_name',
+        'someone' => 'un proche',
+        'photos' => 'Les photos',
+        'add_photo' => 'Ajouter une photo',
         // Dit à qui lit d'où vient le texte. La voix reste la référence : la
         // mention nomme la personne, pas le modèle, et le lecteur peut
         // toujours écouter l'enregistrement d'origine (bloc 08).

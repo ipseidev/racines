@@ -7,6 +7,7 @@ use App\Http\Controllers\Family\ListenProgressController;
 use App\Http\Controllers\Family\ReactionController;
 use App\Http\Controllers\Family\StoryPageController;
 use App\Http\Controllers\Initiator\OneTapController;
+use App\Http\Controllers\Photos\PhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -63,6 +64,23 @@ Route::middleware([
         ->withoutMiddleware('throttle:tokens')
         ->middleware('throttle:client-events')
         ->name('family.stories.listen');
+
+    /*
+     * Les photos d'un proche contributeur (bloc 12).
+     *
+     * Le droit de contribuer est explicite, accordé personne par personne par
+     * l'Initiateur·rice, et vérifié par `PhotoAccess` : un jeton d'écoute
+     * valide ne suffit pas. Retirer se limite à ses propres photos — un
+     * cercle d'écoute n'a pas besoin d'un outil de plus pour se disputer.
+     */
+    Route::post('/l/{token}/stories/{story}/photos', [PhotoController::class, 'store'])
+        ->name('family.photos.store');
+
+    Route::patch('/l/{token}/stories/{story}/photos/{photo}', [PhotoController::class, 'updateCaption'])
+        ->name('family.photos.caption');
+
+    Route::delete('/l/{token}/stories/{story}/photos/{photo}', [PhotoController::class, 'destroy'])
+        ->name('family.photos.destroy');
 
     Route::post('/l/{token}/stories/{story}/reactions', [ReactionController::class, 'store'])
         ->name('family.stories.react');

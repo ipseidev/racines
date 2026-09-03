@@ -2,6 +2,8 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AudioPlayer from '@/components/AudioPlayer';
+import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
+import PhotoUploader from '@/components/PhotoUploader';
 import { useT } from '@/hooks/useT';
 
 type ReactionRow = {
@@ -23,6 +25,9 @@ type Props = {
     aiLabel: string;
     reactions: ReactionRow[];
     yourReactions: string[];
+    photos: Photo[];
+    /** Vrai seulement si ce proche a le droit d'ajouter des photos. */
+    canContribute: boolean;
     siblings: { previous: string | null; next: string | null };
 };
 
@@ -49,6 +54,8 @@ export default function Story({
     aiLabel,
     reactions,
     yourReactions,
+    photos,
+    canContribute,
     siblings,
 }: Props) {
     const t = useT();
@@ -232,6 +239,29 @@ export default function Story({
                     </ul>
                 </section>
             ) : null}
+
+            {/*
+             * Les photos après le texte, et pas avant : c'est la voix qui
+             * compte, et une grille d'images en tête de page ferait passer
+             * l'histoire pour une galerie.
+             *
+             * Le retrait n'est offert qu'à qui peut contribuer — et le
+             * serveur revérifie que la photo est bien la sienne : un bouton
+             * n'est pas une autorisation.
+             */}
+            <PhotoGallery
+                photos={photos}
+                onRemove={
+                    canContribute
+                        ? (id) =>
+                              router.delete(`${base}/photos/${id}`, {
+                                  preserveScroll: true,
+                              })
+                        : undefined
+                }
+            />
+
+            {canContribute && <PhotoUploader action={`${base}/photos`} />}
 
             <nav className="mt-12 flex flex-wrap gap-4">
                 {siblings.previous === null ? null : (

@@ -8,6 +8,7 @@ use App\Http\Controllers\Initiator\OrdersController;
 use App\Http\Controllers\Initiator\ProjectSettingsController;
 use App\Http\Controllers\Initiator\QuestionsController;
 use App\Http\Controllers\Initiator\SpaceController;
+use App\Http\Controllers\Photos\PhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,5 +54,14 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
         Route::post('/reglages/lexique', [ProjectSettingsController::class, 'addLexicon'])->name('settings.lexicon');
         Route::delete('/reglages/lexique/{entry}', [ProjectSettingsController::class, 'removeLexicon'])->name('settings.lexicon.remove');
         Route::post('/reglages/pause', [ProjectSettingsController::class, 'pause'])->name('settings.pause');
+
+        /*
+         * Les photos, côté Initiateur·rice (bloc 12). C'est souvent elle qui
+         * a les photos de famille numérisées, et le narrateur qui n'a pas
+         * envie de les chercher.
+         */
+        Route::post('/histoires/{story}/photos', [PhotoController::class, 'store'])->name('photos.store');
+        Route::patch('/histoires/{story}/photos/{photo}', [PhotoController::class, 'updateCaption'])->name('photos.caption');
+        Route::delete('/histoires/{story}/photos/{photo}', [PhotoController::class, 'destroy'])->name('photos.destroy');
     });
 });
