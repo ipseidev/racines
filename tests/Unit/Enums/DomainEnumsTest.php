@@ -89,14 +89,19 @@ it('reprend les dix thèmes du corpus de questions', function (): void {
     ]);
 });
 
-it('reprend les huit consentements du dossier 04 §2, plus celui du mandat', function (): void {
+it('reprend les huit consentements du dossier 04 §2, plus trois ajoutés en route', function (): void {
     expect(EnumCheck::of(ConsentKind::class))->toBe([
         'voice_recording', 'transcription', 'ai_rendering', 'family_sharing',
         'sensitive_categories', 'phone_call_recording', 'photo_rights',
         'post_mortem_directives',
-        // Neuvième, ajouté au bloc 07 (T-77) : le mandat exige un
-        // consentement journalisé, et le dossier ne l'avait pas nommé parce
-        // qu'il ne décrivait pas encore la délégation.
+        // Neuvième, bloc 07 (T-77) : le mandat exige un consentement
+        // journalisé, et le dossier ne l'avait pas nommé parce qu'il ne
+        // décrivait pas encore la délégation.
         'mandate_delegation',
+        // Dixième et onzième, bloc 10 : les deux consentements de
+        // l'acheteur. Le premier fait perdre une partie du droit de
+        // rétractation, le second n'est jamais requis pour payer — et c'est
+        // pourquoi ils sont séparés l'un de l'autre et des CGV.
+        'early_service_start', 'marketing_email',
     ]);
 });

@@ -164,6 +164,10 @@ it('toutes les routes par jeton portent les trois protections', function (): voi
         'narrator.space.request.show',
         'narrator.space.request.send',
         'narrator.space.request.verify',
+        // L'écran d'adieu s'affiche **après** un refus, quand le jeton
+        // d'invitation vient d'être consommé : exiger un jeton valide y
+        // renverrait une erreur à quelqu'un qui vient de dire non.
+        'narrator.optin.farewell',
     ];
 
     // Idem pour le limiteur : la route des événements du navigateur porte le

@@ -7,7 +7,7 @@ use Inertia\Testing\AssertableInertia;
 it('affiche la page d’accueil', function (): void {
     $this->get('/')
         ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('welcome'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('public/Landing'));
 });
 
 it('sert l’application sur le fuseau et la langue du produit', function (): void {

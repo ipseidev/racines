@@ -24,6 +24,7 @@ use App\Enums\TranscriptKind;
 use App\Enums\ValidatedVia;
 use App\Enums\ValidationVariant;
 use App\Models\AccessToken;
+use App\Models\Invitation;
 use App\Models\OtpChallenge;
 use App\Models\Project;
 use App\Models\Question;
@@ -134,6 +135,28 @@ final class E2ELinksSeeder extends Seeder
     /** @var list<string> */
     public const ONE_TAP_LINKS = ['onetap', 'onetap-use', 'onetap-read'];
 
+    /**
+     * Liens d'invitation à valeur connue (bloc 10).
+     *
+     * Un par scénario, et pour une raison plus forte qu'ailleurs : l'opt-in
+     * est **définitif**. Un lien partagé entre le test qui accepte et celui
+     * qui refuse ferait échouer le second sur l'écran « vous avez déjà
+     * répondu », et pour une fois le produit aurait raison.
+     *
+     * @var list<string>
+     */
+    public const INVITATION_LINKS = ['optin-accept', 'optin-refuse'];
+
+    /**
+     * Le compte de l'Initiateur·rice pour la suite bout en bout.
+     *
+     * Séparé du compte propriétaire des autres décors : `InitiatorProject`
+     * prend le projet **le plus récent** d'une personne, et le compte
+     * `liens@example.test` en possède une douzaine. Un espace dont on ne sait
+     * pas quel projet il affiche ne se teste pas.
+     */
+    public const INITIATOR_EMAIL = 'espace@example.test';
+
     /** @var array<string, array<string, mixed>> */
     private const LINK_STATE = [
         'expired' => ['expires_at' => '-1 day'],
@@ -213,6 +236,120 @@ final class E2ELinksSeeder extends Seeder
         foreach (self::ONE_TAP_LINKS as $scenario) {
             $this->seedOneTapLink($owner, $scenario);
         }
+
+        foreach (self::INVITATION_LINKS as $scenario) {
+            $this->seedInvitationLink($owner, $scenario);
+        }
+
+        $this->seedInitiatorSpace();
+    }
+
+    /**
+     * Un cadeau en attente de réponse (bloc 10).
+     *
+     * Le narrateur est joignable par courriel : la suite n'a pas de téléphone,
+     * et le canal ne change rien à ce que la page d'opt-in demande.
+     */
+    private function seedInvitationLink(User $owner, string $scenario): void
+    {
+        $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
+        $project->status = ProjectStatus::AwaitingAcceptance;
+        $project->gift_message = 'J’aimerais garder tes histoires, maman.';
+        $project->gift_sent_at = now()->subHours(2);
+        $project->save();
+
+        $narrator = app(AddNarrator::class)->handle($project, [
+            'first_name' => 'Odette',
+            'display_name' => 'Odette',
+            'email' => "odette+{$scenario}@example.test",
+            'preferred_channel' => Channel::Email,
+            'birth_year' => 1943,
+        ]);
+
+        // Le narrateur n'a pas encore accepté : `AddNarrator` pose
+        // `opted_in_at`, et un décor qui le garderait ferait passer la page
+        // pour déjà répondue.
+        $narrator->forceFill(['opted_in_at' => null])->save();
+
+        $token = new AccessToken([
+            'type' => TokenType::Invitation,
+            'scope' => ['opt_in'],
+            'expires_at' => now()->addDays(30),
+            'single_use' => TokenType::Invitation->isSingleUse(),
+        ]);
+
+        $token->token_hash = TokenService::hash(self::token($scenario));
+        $token->subject()->associate($project->refresh());
+        $token->issuedTo()->associate($narrator);
+        $token->save();
+
+        $invitation = new Invitation([
+            'channel' => Channel::Email,
+            'attempt' => 1,
+            'sent_at' => now()->subHours(2),
+        ]);
+
+        $invitation->project()->associate($project);
+        $invitation->narrator()->associate($narrator);
+        $invitation->token()->associate($token);
+        $invitation->save();
+    }
+
+    /**
+     * L'espace de l'Initiateur·rice, avec de quoi montrer la garde de
+     * visibilité : une histoire partagée qui porte son titre, une histoire
+     * transcrite qui ne le porte pas.
+     */
+    private function seedInitiatorSpace(): void
+    {
+        $initiator = User::query()->firstOrCreate(
+            ['email' => self::INITIATOR_EMAIL],
+            [
+                'name' => 'Camille',
+                'password' => Hash::make((string) config('product.seeding.admin_password')),
+                'email_verified_at' => now(),
+            ],
+        );
+
+        if (Project::query()->where('owner_user_id', $initiator->id)->exists()) {
+            return;
+        }
+
+        $project = app(CreateProject::class)->handle($initiator, Offer::Pilot, []);
+        $project->status = ProjectStatus::Active;
+        $project->next_prompt_at = now()->addDays(3);
+        $project->save();
+
+        app(AddNarrator::class)->handle($project, [
+            'first_name' => 'Odette',
+            'display_name' => 'Odette',
+            'phone_e164' => '+33600000099',
+            'birth_year' => 1943,
+        ]);
+
+        app(AddFamilyMember::class)->handle($project->refresh(), $initiator, [
+            'display_name' => $initiator->name,
+            'email' => $initiator->email,
+        ]);
+
+        // Une question en cours : sans elle, « copier le lien de cette
+        // semaine » n'a rien à réémettre.
+        $current = Question::query()->firstOrCreate(
+            ['slug' => 'e2e-espace-courante'],
+            ['text' => 'Quel était le métier de votre mère ?', 'theme' => QuestionTheme::Childhood],
+        );
+
+        app(ProposeStory::class)->handle($project, $current);
+
+        // Et une histoire partagée, qui porte son titre.
+        $shared = Question::query()->firstOrCreate(
+            ['slug' => 'e2e-espace-partagee'],
+            ['text' => 'Où avez-vous grandi ?', 'theme' => QuestionTheme::Childhood],
+        );
+
+        $story = app(ProposeStory::class)->handle($project, $shared);
+        $this->prepareStory($story, 'withdraw');
+        $story->refresh()->forceFill(['title' => 'Le village de mon enfance'])->save();
     }
 
     /**
