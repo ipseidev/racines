@@ -9,10 +9,10 @@ use App\Models\Project;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Route as RouteFacade;
 
 /**
  * Le journal d'audit : append-only, et chaîné.
@@ -180,7 +180,10 @@ final class AuditLog
 
     public static function hashIp(?string $ip): ?string
     {
-        $ip ??= App::runningInConsole() ? null : Request::ip();
+        // Même règle que pour le contexte : une route résolue signifie qu'on
+        // répond à une requête, et c'est la seule situation où une adresse IP
+        // veut dire quelque chose.
+        $ip ??= RouteFacade::current() === null ? null : Request::ip();
 
         return $ip === null || $ip === '' ? null : hash('sha256', $ip);
     }
@@ -188,19 +191,24 @@ final class AuditLog
     /**
      * Le contexte de l'action.
      *
-     * `system` quand personne n'est connecté et qu'on tourne en console : une
-     * purge programmée n'a pas d'auteur humain, et prétendre le contraire
-     * serait pire que de l'admettre.
+     * On regarde si une **route** est résolue, et non `runningInConsole()` :
+     * sous PHPUnit, ce dernier rend vrai même pendant qu'une requête de test
+     * est traitée, et toute lecture depuis le panneau se serait retrouvée
+     * inscrite comme venant de la console. Une route résolue signifie qu'on
+     * répond à une requête ; son absence signifie une commande, une file ou
+     * le planificateur.
+     *
+     * `system` quand personne n'est connecté hors requête : une purge
+     * programmée n'a pas d'auteur humain, et prétendre le contraire serait
+     * pire que de l'admettre.
      */
     public static function context(): ActorContext
     {
-        if (App::runningInConsole()) {
+        if (RouteFacade::current() === null) {
             return Auth::check() ? ActorContext::Cli : ActorContext::System;
         }
 
-        $path = Request::path();
-
-        return str_starts_with($path, 'admin')
+        return str_starts_with(Request::path(), 'admin')
             ? ActorContext::Filament
             : ActorContext::Web;
     }
