@@ -10,6 +10,13 @@ import { expect, test } from '@playwright/test';
  */
 const OPTIN = `/i/${'demo-optin-accept-link'.padEnd(43, 'x')}`;
 
+/*
+ * Un lien par test, et ici la règle est plus stricte qu'ailleurs : l'opt-in
+ * est définitif. Le test du dessus accepte pour de bon ; celui du dessous a
+ * besoin d'une page encore intacte, donc de son propre lien.
+ */
+const PARTIAL = `/i/${'demo-optin-accept-partial-link'.padEnd(43, 'x')}`;
+
 test('accepte le cadeau et voit sa première question annoncée', async ({
     page,
 }) => {
@@ -62,7 +69,7 @@ test('accepte le cadeau et voit sa première question annoncée', async ({
 });
 
 test('refuse d’avancer sans les cinq accords', async ({ page }) => {
-    await page.goto(OPTIN);
+    await page.goto(PARTIAL);
 
     const boxes = page.getByRole('checkbox');
     await boxes.nth(0).check();

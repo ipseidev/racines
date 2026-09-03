@@ -141,11 +141,13 @@ Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc
 | `sail npm run types:check` | `tsc --noEmit` |
 | `sail npm run test` | Vitest, une passe |
 | `sail npm run test:watch` | Vitest en continu |
-| `E2E_BASE_URL=http://localhost:8001 npx playwright test` | Tests bout en bout, **depuis le Mac** (voir la note ci-dessous) |
+| `E2E_BASE_URL=http://localhost:8001 npx playwright test --workers=1` | Tests bout en bout, **depuis le Mac et en série** (voir la note ci-dessous) |
 | `sail npm run build` | Compile les assets |
 | `sail artisan migrate:fresh --seed` | Base locale propre avec le corpus et un projet de démonstration |
 
 L'application locale répond sur `http://localhost:8001`, Mailpit sur `http://localhost:8027`, la console MinIO sur `http://localhost:8901` (ports décalés, décision T-34).
+
+**`--workers=1` n'est pas facultatif.** L'intégration continue joue la suite avec un seul ouvrier ; en parallèle, deux tests qui se disputent le même décor passent par chance et échouent en série (écart T-111). Une suite verte en parallèle et rouge en série ne prouve rien : c'est la version en série qui compte.
 
 **Playwright tourne depuis le Mac, pas depuis le conteneur** (`E2E_BASE_URL=http://localhost:8001 npx playwright test`). La raison est dans `R2_PUBLIC_ENDPOINT` : les URLs présignées d'envoi sont signées pour l'adresse **vue par le navigateur**, soit `http://localhost:9001` — le port que Docker publie sur l'hôte. Un navigateur lancé dans le conteneur y trouve une connexion refusée, et les trois tests qui enregistrent pour de vrai échouent sur un délai dépassé sans dire pourquoi (écart T-110). La CI, elle, sert l'application avec `php artisan serve` sur le runner : même situation qu'un Mac.
 

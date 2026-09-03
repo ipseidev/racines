@@ -139,13 +139,19 @@ final class E2ELinksSeeder extends Seeder
      * Liens d'invitation à valeur connue (bloc 10).
      *
      * Un par scénario, et pour une raison plus forte qu'ailleurs : l'opt-in
-     * est **définitif**. Un lien partagé entre le test qui accepte et celui
-     * qui refuse ferait échouer le second sur l'écran « vous avez déjà
-     * répondu », et pour une fois le produit aurait raison.
+     * est **définitif**. Un lien partagé entre deux tests fait échouer le
+     * second sur l'écran « vous avez déjà répondu », et pour une fois le
+     * produit a raison.
+     *
+     * Trois liens et non deux : `optin-accept` accepte pour de bon,
+     * `optin-accept-partial` ne coche qu'une case et doit trouver la page
+     * intacte, `optin-refuse` décline. En parallèle les deux premiers
+     * passaient par chance ; à un seul ouvrier — comme en intégration
+     * continue — le premier consommait le lien du second (écart T-111).
      *
      * @var list<string>
      */
-    public const INVITATION_LINKS = ['optin-accept', 'optin-refuse'];
+    public const INVITATION_LINKS = ['optin-accept', 'optin-accept-partial', 'optin-refuse'];
 
     /**
      * Le compte de l'Initiateur·rice pour la suite bout en bout.
