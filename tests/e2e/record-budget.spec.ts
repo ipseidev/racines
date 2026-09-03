@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
 import { expect, test } from '@playwright/test';
@@ -11,6 +12,24 @@ import { expect, test } from '@playwright/test';
 const RECORD_LINK = `/r/${'demo-budget-link'.padEnd(43, 'x')}`;
 
 const BUDGET_BYTES = 150 * 1024;
+
+/*
+ * Mesurable uniquement sur les assets **construits**.
+ *
+ * Le serveur de développement sert chaque module séparément et sans
+ * minification : la page pèse alors huit fois le budget (1 200 Ko mesurés le
+ * 3 septembre 2026), et le test échoue sur une propriété de l'outillage, pas
+ * du produit. Un rouge qui veut dire « tu es en mode développement » fait
+ * perdre le temps de celui qui le lit — il vaut mieux le dire.
+ *
+ * Pour le jouer en local : `npm run build`, retirer `public/hot`, lancer, puis
+ * remettre `public/hot`. L'intégration continue construit toujours, donc le
+ * budget y est vérifié à chaque poussée.
+ */
+test.skip(
+    () => existsSync('public/hot'),
+    'Le serveur de développement de Vite tourne : le poids mesuré serait celui des modules non regroupés.',
+);
 
 test('la page d’enregistrement tient dans 150 Ko de JavaScript', async ({
     page,

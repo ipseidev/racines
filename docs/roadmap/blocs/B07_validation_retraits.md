@@ -127,7 +127,7 @@ Joué en local, sur le décor de `demo:liens --bloc=07`, dans Chrome sur macOS.
 | §7 | Résultat |
 |---|---|
 | 1. Variante A, « Partager » | **ok** — les trois choix apparaissent sans présélection et sans minuteur |
-| 2. Variante A, « Décider plus tard » | **non joué** — le décor n'avait qu'un lien de variante A, consommé par le point 1. Le scénario `variant-a-later` est ajouté pour cela |
+| 2. Variante A, « Décider plus tard » | **ok** — joué le soir même sur le scénario `variant-a-later` ajouté pour cela. Rien ne part avant la décision ; la notification arrive après la transcription ; la relecture montre les deux textes ; la correction tient ; l'histoire apparaît côté famille après le partage |
 | 3. Variante B, les trois choix | **ok** — correction d'un mot conservée après rechargement, partage effectif |
 | 4. Espace narrateur : masquer, corbeille, restaurer, supprimer | **ok** — le masquage retire l'histoire côté famille aussitôt ; la suppression exige `SUPPRIMER` en entier |
 | 5. `stories:purge-trashed` à J-31 | **ok** — l'histoire passe en `deleted`, les deux objets du stockage et les transcriptions ont disparu |
@@ -152,7 +152,35 @@ issues : elle partage → l'histoire apparaît ; elle garde pour soi → rien
 n'apparaît jamais ; elle remet à plus tard → rien avant la décision ; elle
 masque → une histoire avant, aucune après.
 
-**Ce qui reste avant le tag.** Le point 2 ci-dessus, désormais jouable.
+**Quatre défauts trouvés en jouant le point 2, tous corrigés.** Aucun n'était
+visible pour la chaîne de tests, et c'est ce qui les rend intéressants.
+
+1. **« Recommencer » n'avait jamais rien fait** (T-127). Le bouton appelait une
+   prop fonction qu'une page rendue par le serveur ne peut pas recevoir, et la
+   transition de retour n'existait pas côté machine d'états. La case §6.5 du
+   bloc 04 était cochée sur une intention. Une garde nouvelle refuse désormais
+   toute prop de type fonction sur une page rendue par le serveur.
+2. **Puis « Recommencer » refusait le second clic**, ma propre régression : la
+   garde interdisait l'état où le premier clic venait justement de placer
+   l'histoire. « Il n'y a rien à faire » et « c'est interdit » sont deux
+   réponses différentes.
+3. **Le décor n'avait consenti à rien** (T-128). Zéro ligne de consentement en
+   base, donc `RenderFluide` sautait le rendu et toute chaîne réellement jouée
+   en local s'arrêtait au mot à mot, en silence. Les transcriptions **semées**
+   des autres scénarios masquaient entièrement le trou.
+4. **Aucune navigation côté client ne fonctionnait en mode développement**
+   (T-129). Deux racines React sur `#app` : l'une tenait le routeur, l'autre le
+   DOM. L'intégration continue ne peut structurellement pas le voir — elle
+   construit les assets et ne lance jamais le serveur de développement.
+
+**Le point 5 joué en vrai** : une histoire mise à la corbeille à J-31 passe en
+`deleted`, ses deux objets de stockage et ses transcriptions disparaissent, et
+la ligne reste — une famille qui demande « où est passé le récit de maman ? »
+mérite une réponse.
+
+**Portail au moment de la clôture** : Pint, PHPStan niveau 8, **1 151 tests**
+Pest / 5 687 assertions, **110** Vitest, **65** Playwright verts en local sur
+assets construits, CI verte sur `main`.
 
 ---
 
@@ -185,6 +213,8 @@ masque → une histoire avant, aucune après.
 - **T-84** — les tests d'enregistrement tournent en série, avant les autres.
 - **T-85** — un champ de saisie ne disparaît plus au bout de deux secondes.
 
-### Portail qualité
+### Portail qualité, à la livraison du code (2026-09-02)
 
 `sail composer check` vert (Pint, Larastan niveau 8, **619 tests**, 3 063 assertions), `sail npm run check` vert, `tsc --noEmit` vert, Vitest **82 tests** verts, Playwright **32 tests** verts.
+
+Les chiffres de la **clôture** figurent dans la note de checkpoint du 3 septembre : la suite a grossi entre-temps, et les deux instantanés valent d'être distingués.
