@@ -286,12 +286,14 @@ it('reconnaît quand même une vraie comparaison de jeton', function (): void {
 });
 
 it('ne lit l’empreinte du jeton que dans le service de jetons', function (): void {
-    // Le processeur de journalisation nomme la colonne pour la masquer : il ne
-    // la lit pas, il empêche qu'elle s'écrive.
+    // Deux exceptions, de même nature : le processeur de journalisation et le
+    // masqueur du journal d'audit **nomment** la colonne pour la masquer. Ils
+    // ne la lisent pas, ils empêchent qu'elle s'écrive.
     $allowed = [
         'Services/Tokens/TokenService.php',
         'Models/AccessToken.php',
         'Logging/RedactTokens.php',
+        'Audit/Redactor.php',
     ];
     $offenders = [];
 

@@ -204,6 +204,21 @@ return [
         'revoked' => 'Retiré',
     ],
 
+    /*
+     * D'où vient une action inscrite au journal d'audit. « Le support a
+     * masqué une histoire » et « une commande planifiée a masqué une
+     * histoire » sont deux faits différents, et un journal qui les
+     * confondrait ne servirait à rien le jour où il faut répondre à une
+     * famille.
+     */
+    'actor_context' => [
+        'web' => 'Depuis le site',
+        'filament' => 'Depuis l’administration',
+        'cli' => 'En ligne de commande',
+        'phone_operator' => 'Par un opérateur au téléphone',
+        'system' => 'Automatique',
+    ],
+
     'consent_channel' => [
         'web' => 'Sur le site',
         'phone' => 'Par téléphone',

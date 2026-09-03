@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Concerns\StoresDatesWithOffset;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -40,7 +42,7 @@ use Spatie\Permission\Traits\HasRoles;
  */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-final class User extends Authenticatable implements FilamentUser, MustVerifyEmail, PasskeyUser
+final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use Billable, HasFactory, HasRoles, Notifiable, PasskeyAuthenticatable, StoresDatesWithOffset, TwoFactorAuthenticatable;
@@ -60,6 +62,75 @@ final class User extends Authenticatable implements FilamentUser, MustVerifyEmai
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->can('admin.access');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Double authentification du back-office
+    |--------------------------------------------------------------------------
+    |
+    | Filament et Fortify savent l'un et l'autre stocker un secret TOTP. On
+    | n'en garde **qu'un**, sur les colonnes de Fortify, et Filament vient
+    | lire là. Deux magasins finiraient par diverger, et le jour où ils
+    | divergent quelqu'un reste dehors avec un code valide en main.
+    |
+    | Le secret est chiffré par le chiffreur de l'application, comme le fait
+    | Fortify : une fuite de base ne donne pas les seconds facteurs.
+    |
+    */
+
+    public function getAppAuthenticationSecret(): ?string
+    {
+        $secret = $this->two_factor_secret;
+
+        return $secret === null ? null : decrypt($secret);
+    }
+
+    public function saveAppAuthenticationSecret(?string $secret): void
+    {
+        $this->forceFill([
+            'two_factor_secret' => $secret === null ? null : encrypt($secret),
+            // Confirmé au moment où le secret est enregistré : Filament ne
+            // valide un code qu'après l'avoir fait vérifier à l'écran, donc
+            // arriver ici signifie que le facteur fonctionne.
+            'two_factor_confirmed_at' => $secret === null ? null : now(),
+        ])->save();
+    }
+
+    public function getAppAuthenticationHolderName(): string
+    {
+        // Le courriel et non le nom : c'est ce qui s'affiche dans
+        // l'application d'authentification, et un « admin » anonyme au milieu
+        // de douze comptes ne se retrouve pas.
+        return $this->email;
+    }
+
+    /**
+     * @return array<string>|null
+     */
+    public function getAppAuthenticationRecoveryCodes(): ?array
+    {
+        $codes = $this->two_factor_recovery_codes;
+
+        if ($codes === null) {
+            return null;
+        }
+
+        $decoded = json_decode(decrypt($codes), true);
+
+        return is_array($decoded) ? array_values(array_map(strval(...), $decoded)) : null;
+    }
+
+    /**
+     * @param  array<string>|null  $codes
+     */
+    public function saveAppAuthenticationRecoveryCodes(?array $codes): void
+    {
+        $this->forceFill([
+            'two_factor_recovery_codes' => $codes === null
+                ? null
+                : encrypt((string) json_encode(array_values($codes))),
+        ])->save();
     }
 
     /**

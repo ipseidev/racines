@@ -16,7 +16,11 @@ it('refuse le panneau à une Initiateur·rice', function (): void {
 });
 
 it('ouvre le panneau aux trois rôles du personnel', function (UserRole $role): void {
-    $this->actingAs(User::factory()->create(['role' => $role]))
+    // `withAppAuthentication` : depuis le bloc 11, la double authentification
+    // est obligatoire, et un compte sans second facteur est renvoyé vers sa
+    // configuration avant toute page. `MfaTest` éprouve ce renvoi ; ici on
+    // vérifie la permission d'accès, une fois le facteur en place.
+    $this->actingAs(User::factory()->withAppAuthentication()->create(['role' => $role]))
         ->get('/admin')
         ->assertOk();
 })->with([

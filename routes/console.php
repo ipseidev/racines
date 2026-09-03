@@ -65,3 +65,15 @@ Schedule::job(new MeasureResumptions)
 Schedule::command('narrators:delete-unaccepted-contacts')
     ->daily()
     ->withoutOverlapping();
+
+/*
+ * L'intégrité du journal d'audit, tous les jours.
+ *
+ * Une vérification qu'il faut penser à lancer n'est pas une vérification. Le
+ * trigger empêche l'altération accidentelle ; cette commande détecte
+ * l'altération délibérée, la seule qui compte, et elle ne sert que si elle
+ * tourne sans qu'on y pense.
+ */
+Schedule::command('audit:verify')
+    ->dailyAt('04:30')
+    ->withoutOverlapping();

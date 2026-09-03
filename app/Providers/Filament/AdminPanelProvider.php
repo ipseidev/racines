@@ -6,6 +6,8 @@ namespace App\Providers\Filament;
 
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\Brand;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -32,6 +34,33 @@ final class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            /*
+             * Double authentification **obligatoire** (doc 04 §12), et pas
+             * « recommandée ». La raison est dans ce que le back-office
+             * donne : la voix et les récits intimes de familles entières. Un
+             * mot de passe support qui fuit, c'est la fuite de tout.
+             *
+             * Une application TOTP et des codes de récupération, jamais de
+             * SMS : un second facteur qui passe par le réseau téléphonique
+             * n'en est pas un — et ce produit sait déjà que le smishing est le
+             * risque n°1 de son public.
+             *
+             * Tant qu'elle n'est pas configurée, aucune page ne s'ouvre : le
+             * `authMiddleware` ci-dessous s'en charge, après `Authenticate` et
+             * après le contrôle de permission de `canAccessPanel()`. L'ordre
+             * compte — on ne demande pas à un client de configurer une
+             * application d'authentification pour un panneau qu'il n'ouvrira
+             * jamais.
+             */
+            ->multiFactorAuthentication(
+                // Pas de `brandName()` : le fournisseur retombe sur celui du
+                // panneau, qui est déjà résolu paresseusement depuis les
+                // réglages. Le passer ici forcerait une lecture de la base à
+                // chaque construction du panneau, et n'accepte pas de
+                // fermeture.
+                AppAuthentication::make()->recoverable(),
+                isRequired: true,
+            )
             ->brandName(fn (): string => Brand::nameSafe())
             ->colors(fn (): array => ['primary' => Color::hex(Brand::primaryColorSafe())])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -61,6 +90,7 @@ final class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureMultiFactorAuthenticationIsEnabled::class,
             ]);
     }
 }

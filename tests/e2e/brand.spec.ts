@@ -1,5 +1,7 @@
 import { expect, type Page, test } from '@playwright/test';
 
+import { E2E_TOTP_SECRET, totp } from './support/totp';
+
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@example.test';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'password';
 
@@ -33,7 +35,23 @@ test('la marque se change depuis l’administration et s’applique sans redépl
     await page.goto('/admin/login');
     await page.locator('input[type="email"]').first().fill(ADMIN_EMAIL);
     await page.locator('input[type="password"]').first().fill(ADMIN_PASSWORD);
+
     await page.getByRole('button', { name: /^connexion$/i }).click();
+
+    /*
+     * La double authentification est obligatoire depuis le bloc 11 : la
+     * connexion passe par un second écran qui demande un code à six chiffres.
+     * Le secret est celui semé par `E2ELinksSeeder`, et le code est calculé
+     * ici — voir `support/totp.ts` pour la raison.
+     */
+    await expect(
+        page.getByRole('heading', { name: /vérifier votre identité/i }),
+    ).toBeVisible();
+
+    await page.getByRole('group').locator('input').first().click();
+    await page.keyboard.type(totp(E2E_TOTP_SECRET), { delay: 30 });
+
+    await page.getByRole('button', { name: /confirmer la connexion/i }).click();
 
     // Un échec de connexion ne doit pas se manifester par un délai muet :
     // on rapporte le message affiché à l'écran.

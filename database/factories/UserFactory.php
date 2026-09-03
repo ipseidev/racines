@@ -58,6 +58,25 @@ final class UserFactory extends Factory
         return $this->state(fn (): array => ['role' => UserRole::SupportReadonly]);
     }
 
+    /**
+     * Un compte dont la double authentification est déjà configurée.
+     *
+     * Le secret est chiffré comme le fait Fortify, et les codes de
+     * récupération sont posés : sans eux, `AppAuthentication::isEnabled()`
+     * rend vrai mais l'écran de récupération casserait. Un décor doit
+     * ressembler au produit, sinon il ne prouve rien.
+     */
+    public function withAppAuthentication(): static
+    {
+        return $this->state(fn (): array => [
+            'two_factor_secret' => encrypt('JBSWY3DPEHPK3PXP'),
+            'two_factor_recovery_codes' => encrypt((string) json_encode([
+                'aaaa-bbbb', 'cccc-dddd', 'eeee-ffff',
+            ])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+    }
+
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [

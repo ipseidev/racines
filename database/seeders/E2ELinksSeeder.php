@@ -169,11 +169,25 @@ final class E2ELinksSeeder extends Seeder
         'revoked' => ['revoked_at' => '-1 hour'],
     ];
 
+    /**
+     * Le secret TOTP du compte d'administration, pour la suite bout en bout.
+     *
+     * Un secret partagé, connu de quiconque lit le dépôt — et c'est pour cela
+     * qu'il vit **ici** et non dans `AdminUserSeeder` : ce seeder refuse de
+     * tourner en production. La double authentification du back-office est
+     * obligatoire depuis le bloc 11, et un test qui ne saurait pas produire de
+     * code ne pourrait la franchir qu'en la désactivant. Une garde désactivée
+     * en test est une garde qu'on ne teste pas.
+     */
+    public const E2E_TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
     public function run(): void
     {
         if (app()->isProduction()) {
             throw new RuntimeException('Ce seeder ne doit pas tourner en production.');
         }
+
+        $this->seedAdminSecondFactor();
 
         // Le décor comprend les compteurs de limitation de débit, qui vivent
         // dans le cache et survivent à `migrate:fresh`. Sans ce vidage, le
@@ -248,6 +262,18 @@ final class E2ELinksSeeder extends Seeder
         }
 
         $this->seedInitiatorSpace();
+    }
+
+    /**
+     * Le second facteur du compte d'administration, à valeur connue.
+     */
+    private function seedAdminSecondFactor(): void
+    {
+        $admin = User::query()
+            ->where('email', (string) config('product.seeding.admin_email'))
+            ->first();
+
+        $admin?->saveAppAuthenticationSecret(self::E2E_TOTP_SECRET);
     }
 
     /**
