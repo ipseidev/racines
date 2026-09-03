@@ -81,7 +81,7 @@ return [
         'untitled' => 'votre histoire',
         'digest' => [
             'subject' => 'On vous a écouté·e hier',
-            'line' => 'Hier, :count personne(s) ont écouté vos histoires.',
+            'line' => 'Hier, une personne a écouté vos histoires.|Hier, :count personnes ont écouté vos histoires.',
             'story' => '« :title » : :names',
         ],
     ],

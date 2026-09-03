@@ -164,8 +164,11 @@ it('appelle des clés qui existent', function (): void {
         ->name('*.php');
 
     foreach ($files as $file) {
+        // `__()` et `trans_choice()` : la seconde forme existe dès qu'un
+        // texte doit s'accorder, et une clé qui échappe au scanner n'est plus
+        // vérifiée par personne.
         preg_match_all(
-            "/__\('([a-z][a-z0-9_]*\.[A-Za-z0-9_.]+)'\s*[,)]/",
+            "/(?:__|trans_choice)\('([a-z][a-z0-9_]*\.[A-Za-z0-9_.]+)'\s*[,)]/",
             $file->getContents(),
             $matches,
         );

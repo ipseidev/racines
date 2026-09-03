@@ -135,3 +135,28 @@ it('parcourt bien les valeurs, et non le contenu brut des fichiers', function ()
         expect($string)->not->toContain('*');
     }
 });
+
+/**
+ * Le pluriel entre parenthèses est un pluriel qu'on n'a pas écrit.
+ *
+ * Trouvé au checkpoint du bloc 08 : le résumé des réactions partait en SMS
+ * chez la narratrice avec « Hier, 1 personne(s) ont écouté vos histoires ».
+ * Deux fautes en huit mots — la parenthèse, et l'accord du verbe — dans un
+ * message qui doit donner envie de raconter la suite. Laravel sait choisir
+ * entre deux formes (`trans_choice`) ; s'en passer fait payer au lecteur le
+ * confort de celui qui écrit.
+ */
+it('n’écrit jamais un pluriel entre parenthèses dans un texte visible', function (): void {
+    $offenders = [];
+
+    foreach (productLangFiles() as $file) {
+        foreach (translatedStrings($file) as $value) {
+            // `(s)`, `(e)`, `(es)` et leurs variantes accolées à un mot.
+            if (preg_match('/\w\((s|e|es|x)\)/u', $value) === 1) {
+                $offenders[] = basename($file).' : '.$value;
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], 'Pluriels entre parenthèses : '.implode(' | ', $offenders));
+});

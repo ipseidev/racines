@@ -49,8 +49,23 @@ final class ReactionDigestNotification extends Notification implements TracksDel
 
     public function toSms(mixed $notifiable): string
     {
-        return __('notifications.reaction_received.digest.line', [
-            'count' => (string) count($this->listeners()),
+        return $this->headline();
+    }
+
+    /**
+     * « Une personne a écouté » ou « trois personnes ont écouté ».
+     *
+     * Écrit avec `trans_choice` et non `__` : la forme précédente disait
+     * « 1 personne(s) ont écouté vos histoires », deux fautes en huit mots
+     * dans un message dont le seul rôle est de donner envie de raconter la
+     * suite (écart T-130).
+     */
+    private function headline(): string
+    {
+        $count = count($this->listeners());
+
+        return trans_choice('notifications.reaction_received.digest.line', $count, [
+            'count' => (string) $count,
         ]);
     }
 
@@ -59,9 +74,7 @@ final class ReactionDigestNotification extends Notification implements TracksDel
         $message = (new MailMessage)
             ->subject(__('notifications.reaction_received.digest.subject'))
             ->greeting(__('notifications.reaction_received.greeting', ['name' => $notifiable->first_name]))
-            ->line(__('notifications.reaction_received.digest.line', [
-                'count' => (string) count($this->listeners()),
-            ]));
+            ->line($this->headline());
 
         foreach ($this->byStory() as $line) {
             $message->line($line);
