@@ -7,6 +7,7 @@ use App\Models\FamilyMember;
 use App\Models\Story;
 use App\Models\User;
 use App\Support\PhotoAccess;
+use App\Support\PhotoPresenter;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -138,4 +139,38 @@ it('laisse corriger une légende plus largement qu’on ne retire', function ():
     // un service, pas une intrusion — retirer sa photo en serait une.
     expect(PhotoAccess::canEditCaption($story, $deClaire, $paul))->toBeTrue()
         ->and(PhotoAccess::canRemove($story, $deClaire, $paul))->toBeFalse();
+});
+
+it('ne montre à l’Initiateur·rice que ses propres photos sur une histoire non partagée', function (): void {
+    $story = Story::factory()->create();
+    $owner = $story->project->owner;
+    $narrator = narratorOf($story);
+
+    app(AttachPhoto::class)->handle($story, photoFile(), $narrator, 'La photo du narrateur');
+    app(AttachPhoto::class)->handle($story, photoFile(), $owner, 'La mienne');
+
+    /*
+     * L'invariant du bloc 08, appliqué aux photos : une photo est du
+     * **contenu**, comme le texte et la voix. Il aurait été facile de le
+     * perdre ici — le tableau de bord est « son » espace, et rien n'y
+     * rappelle qu'une photo jointe par le narrateur à un récit non partagé ne
+     * lui appartient pas encore.
+     */
+    $visible = PhotoPresenter::forInitiator($story->refresh(), $owner);
+
+    expect($visible)->toHaveCount(1)
+        ->and($visible[0]['caption'])->toBe('La mienne');
+});
+
+it('lui montre tout dès que l’histoire est partagée', function (): void {
+    $story = Story::factory()->shared()->create();
+    $owner = $story->project->owner;
+    $narrator = narratorOf($story);
+
+    app(AttachPhoto::class)->handle($story, photoFile(), $narrator, 'La photo du narrateur');
+    app(AttachPhoto::class)->handle($story, photoFile(), $owner, 'La mienne');
+
+    // Partagée veut dire partagée : le narrateur a décidé.
+    expect(PhotoPresenter::forInitiator($story->refresh(), $owner))
+        ->toHaveCount(2);
 });

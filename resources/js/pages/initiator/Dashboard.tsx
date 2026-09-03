@@ -1,5 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 
+import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
+import PhotoUploader from '@/components/PhotoUploader';
 import { useT } from '@/hooks/useT';
 
 type Story = {
@@ -11,6 +13,7 @@ type Story = {
     title: string | null;
     recordedAt: string | null;
     sharedAt: string | null;
+    photos: Photo[];
 };
 
 type Props = {
@@ -212,6 +215,27 @@ export default function Dashboard({
                                 <p className="text-brand-muted mt-1 text-base">
                                     {story.label}
                                 </p>
+
+                                {/*
+                                 * Ses photos, et seulement les siennes tant
+                                 * que l'histoire n'est pas partagée : une
+                                 * photo est du contenu, comme le texte et la
+                                 * voix. Le serveur filtre ; l'écran n'a rien
+                                 * à décider.
+                                 */}
+                                <PhotoGallery
+                                    photos={story.photos}
+                                    onRemove={(id) =>
+                                        router.delete(
+                                            `/espace/histoires/${story.id}/photos/${id}`,
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                />
+
+                                <PhotoUploader
+                                    action={`/espace/histoires/${story.id}/photos`}
+                                />
                             </li>
                         ))}
                     </ol>

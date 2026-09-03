@@ -55,10 +55,11 @@ Sail : service `clamav` (`image: clamav/clamav:stable`, port 3310, volume pour l
 - [x] Validation `['file', 'max:20480', 'mimetypes:…']` **sans** règle `clamav` : le scan passe par le port `Scanner` appelé dans `AttachPhoto`, et non par une règle de validation. Le paquet prévu ne déclare pas Laravel 13, et une règle de validation ne se double pas (décision T-118). `FakeScanner` reconnaît la chaîne EICAR, coupée en deux dans le code source — un fichier qui la contient en entier est détecté comme un virus par les antivirus des postes de travail, et le dépôt devient impossible à cloner.
 - [x] `AttachPhoto(Story, UploadedFile, Model $depositor, ?string $caption)` : consentement `photo_rights` (une fois par déposant et par projet), sanitize, `addMedia`, `print_ready`, audit.
 - [x] Routes : `POST /r/{token}/photos` (narrateur), `POST /n/{token}/stories/{story}/photos`, `POST /l/{token}/stories/{story}/photos` (contributeur), `POST /espace/projets/{project}/histoires/{story}/photos` (Initiateur·rice) ; `DELETE` et `PATCH caption` équivalents.
-- [ ] `PhotoUploader` et `PhotoGallery` sont écrits et éprouvés (7 tests Vitest), **intégrés dans `family/Story`** seulement. Restent trois branchements : `narrator/Record` (écran facultatif après la confirmation), `narrator/Space` et `initiator/Dashboard`. Les routes et les droits des trois existent et sont testés côté serveur ; il ne manque que le bouton.
+- [x] `PhotoUploader` et `PhotoGallery` (7 tests Vitest), branchés dans les **quatre** espaces : `family/Story`, `narrator/Space`, `narrator/Record` (écran facultatif replié, après la confirmation et jamais avant — proposer une photo au milieu ferait abandonner le récit à mi-chemin) et `initiator/Dashboard`. Le budget de 150 Ko de la page d'enregistrement tient toujours (113,9 Ko).
 - [x] Les URL des photos passent par `temporaryUrl` (privé), régénérées à chaque chargement.
 - [x] Annexe B (`media` + propriétés), `04_VERSIONS.md`, `.env.example` (`CLAMAV_*`).
-- [ ] `sail composer check` et `sail npm run check` verts ; les deux bouts en bout `photos-narrator` et `photos-contributor` attendent les branchements ci-dessus. Commit `chore(bloc-12): terminé` et tag `bloc-12-done` après le checkpoint §7.
+- [x] `sail composer check`, `sail npm run check` et les 65 tests bout en bout verts. `photos-contributor` couvre les deux faces : le contributeur dépose, et le proche sans droit **ne voit pas le bouton**.
+- [ ] Commit `chore(bloc-12): terminé` et tag `bloc-12-done` — après le checkpoint §7.
 
 ## 7. Checkpoint démontrable
 
@@ -81,8 +82,10 @@ Si `imagick` ne décode pas le HEIC sur le serveur, refuser le fichier avec le m
 
 _Date, exécutant, résultat, écarts :_
 
-**2026-09-03 — socle livré, interface partiellement branchée.** Le chemin serveur est complet et éprouvé : scan antivirus par un port, assainissement qui retire **tout** l'EXIF, consentement une fois par déposant, stockage privé avec original conservé, droits en une seule porte, quatre espaces de dépôt, et la garde de visibilité vérifiée état par état sur la route famille. **53 tests Pest** pour le seul bloc 12 ; porte qualité verte à **1 088 tests Pest / 5 489 assertions**, PHPStan niveau 8, **107 Vitest**.
+**2026-09-03 — code livré, checkpoint non joué.** Le chemin serveur est complet et éprouvé : scan antivirus par un port, assainissement qui retire **tout** l'EXIF, consentement une fois par déposant, stockage privé avec original conservé, droits en une seule porte, quatre espaces de dépôt, et la garde de visibilité vérifiée état par état sur la route famille. **53 tests Pest** pour le seul bloc 12 ; porte qualité verte à **1 088 tests Pest / 5 489 assertions**, PHPStan niveau 8, **107 Vitest**.
 
-Ce qui reste est nommé en §6 : trois branchements d'interface (`narrator/Record`, `narrator/Space`, `initiator/Dashboard`) et les deux bouts en bout qui en dépendent. Les composants existent, leurs routes et leurs droits sont testés côté serveur ; il ne manque que le bouton.
+L'interface est branchée dans les quatre espaces, et le budget de 150 Ko de la page d'enregistrement tient toujours. **1 090 tests Pest / 5 494 assertions**, **107 Vitest**, **65 Playwright**.
+
+Un invariant a été précisé en route, et il ne figurait nulle part : une photo est du **contenu**, comme le texte et la voix. Sur une histoire que le narrateur n'a pas partagée, l'Initiateur·rice ne voit donc que **ses propres** dépôts. Il aurait été facile de le perdre — le tableau de bord est « son » espace, et rien n'y rappelle qu'une photo jointe par le narrateur à un récit non partagé ne lui appartient pas encore.
 
 **Écarts consignés : T-118 à T-122.** Deux à lire avant de reprendre. **T-118** remplace le paquet d'antivirus prévu par quarante lignes de protocole, avec deux choix de comportement qui comptent — `INSTREAM` parce que le démon ne voit pas notre disque, et **refus en cas de panne** parce qu'un fichier non scanné n'est pas un fichier propre. **T-119** dit ce qui n'est pas éprouvé : la conversion HEIC de bout en bout, faute de pouvoir écrire un HEIC dans cet environnement — c'est le point 1 du checkpoint, sur une vraie photo d'iPhone, et c'est de toute façon la seule preuve qui vaille.

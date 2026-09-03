@@ -15,7 +15,6 @@ use App\Models\Transcript;
 use App\Queries\VisibleStoriesForFamilyMember;
 use App\Services\Storage\MediaStorage;
 use Illuminate\Http\Request;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * Ce que l'espace famille montre d'une histoire, et rien de plus.
@@ -103,67 +102,15 @@ final class FamilyPresenter
             ]),
             'reactions' => self::reactions($story),
             'yourReactions' => self::reactionTypesOf($story, $member),
-            'photos' => self::photos($story),
+            // Mise en forme une seule fois, dans `PhotoPresenter` : les
+            // quatre espaces la partagent, et une seconde version
+            // oublierait le texte alternatif ou servirait une URL
+            // permanente là où elle doit être temporaire.
+            'photos' => PhotoPresenter::forStory($story),
             // Le bouton d'ajout n'existe que pour qui peut contribuer : un
             // bouton grisé invite à demander pourquoi, un bouton absent non.
             'canContribute' => PhotoAccess::canAttach($story, $member),
         ];
-    }
-
-    /**
-     * Les photos jointes, avec leurs URL temporaires.
-     *
-     * Cette méthode n'est appelée que depuis `storyProps`, qui n'est appelée
-     * que pour une histoire déjà passée par `VisibleStoriesForFamilyMember`.
-     * C'est la seule porte, et c'est ce qui garantit qu'une photo d'histoire
-     * non partagée n'est jamais servie — critère de sortie du bloc 12.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private static function photos(Story $story): array
-    {
-        return array_values($story->getMedia(Story::PHOTOS)
-            ->map(fn (Media $photo): array => [
-                'id' => $photo->id,
-                'caption' => $photo->getCustomProperty('caption'),
-                // Régénérées à chaque chargement : une URL de photo de
-                // famille ne traîne pas dans un historique de navigation.
-                'thumbUrl' => $photo->hasGeneratedConversion('thumb')
-                    ? $photo->getTemporaryUrl(now()->addHour(), 'thumb')
-                    : $photo->getTemporaryUrl(now()->addHour()),
-                'url' => $photo->hasGeneratedConversion('web')
-                    ? $photo->getTemporaryUrl(now()->addHour(), 'web')
-                    : $photo->getTemporaryUrl(now()->addHour()),
-                'alt' => $photo->getCustomProperty('caption')
-                    ?? __('family.story.photo_alt', [
-                        'first_name' => self::depositorName($story, $photo),
-                    ]),
-            ])
-            ->all());
-    }
-
-    /**
-     * Le prénom du déposant, pour le texte alternatif.
-     *
-     * « Photo jointe par Claire » plutôt que « Photo » : un lecteur d'écran
-     * qui annonce dix fois « Photo » ne dit rien, et le prénom situe l'image
-     * dans la famille.
-     */
-    private static function depositorName(Story $story, Media $photo): string
-    {
-        $type = $photo->getCustomProperty('depositor_type');
-        $id = $photo->getCustomProperty('depositor_id');
-
-        if ($type === 'narrator') {
-            return $story->narrator->first_name;
-        }
-
-        if ($type === 'family_member' && is_string($id)) {
-            return FamilyMember::query()->whereKey($id)->value('display_name')
-                ?? __('family.story.someone');
-        }
-
-        return __('family.story.someone');
     }
 
     /**

@@ -63,7 +63,7 @@ export default function PhotoUploader({ action, onDone }: Props) {
     return (
         <form onSubmit={send} className="mt-6 flex flex-col gap-4">
             <label className="flex flex-col gap-1">
-                <span className="font-medium">{t('narrator.photos.add')}</span>
+                <span className="font-medium">{t('common.photos.add')}</span>
                 <input
                     ref={input}
                     type="file"
@@ -72,7 +72,7 @@ export default function PhotoUploader({ action, onDone }: Props) {
                     className="input"
                 />
                 <span className="text-brand-muted text-base">
-                    {t('narrator.photos.add_help')}
+                    {t('common.photos.add_help')}
                 </span>
             </label>
 
@@ -90,7 +90,7 @@ export default function PhotoUploader({ action, onDone }: Props) {
 
                     <label className="flex flex-col gap-1">
                         <span className="font-medium">
-                            {t('narrator.photos.caption')}
+                            {t('common.photos.caption')}
                         </span>
                         <input
                             type="text"
@@ -102,7 +102,7 @@ export default function PhotoUploader({ action, onDone }: Props) {
                             className="input"
                         />
                         <span className="text-brand-muted text-base">
-                            {t('narrator.photos.caption_help')}
+                            {t('common.photos.caption_help')}
                         </span>
                     </label>
 

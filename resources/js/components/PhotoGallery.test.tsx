@@ -5,8 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 import PhotoGallery, { type Photo } from './PhotoGallery';
 
 const catalogue = {
-    common: { actions: { close: 'Fermer' } },
-    narrator: {
+    common: {
+        actions: { close: 'Fermer' },
+        // Dans `common` : les quatre espaces affichent le même dépôt, et
+        // seul `common` voyage avec toutes les pages.
         photos: {
             title: 'Les photos',
             remove: 'Retirer cette photo',

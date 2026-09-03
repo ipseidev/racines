@@ -1,6 +1,8 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
+import PhotoUploader from '@/components/PhotoUploader';
 import { useT } from '@/hooks/useT';
 
 type Story = {
@@ -13,6 +15,7 @@ type Story = {
     visibility: string;
     printedInBook: boolean;
     restorableUntil: string | null;
+    photos: Photo[];
 };
 
 type Props = {
@@ -245,6 +248,26 @@ export default function Space({
                                     )
                                 ) : null}
                             </div>
+
+                            {/*
+                             * Les photos de l'histoire, sous les gestes de
+                             * retrait. Le narrateur retire n'importe laquelle
+                             * — y compris ce qu'un proche a joint à son
+                             * récit : c'est le sien.
+                             */}
+                            <PhotoGallery
+                                photos={story.photos}
+                                onRemove={(id) =>
+                                    router.delete(
+                                        `${window.location.pathname}/stories/${story.id}/photos/${id}`,
+                                        { preserveScroll: true },
+                                    )
+                                }
+                            />
+
+                            <PhotoUploader
+                                action={`${window.location.pathname}/stories/${story.id}/photos`}
+                            />
                         </li>
                     ))}
                 </ul>

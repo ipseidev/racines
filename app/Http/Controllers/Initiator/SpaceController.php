@@ -8,10 +8,12 @@ use App\Enums\EngineAudience;
 use App\Models\EngineEvent;
 use App\Models\Project;
 use App\Models\Story;
+use App\Models\User;
 use App\States\Story\InBook;
 use App\States\Story\Proposed;
 use App\States\Story\Shared;
 use App\Support\InitiatorProject;
+use App\Support\PhotoPresenter;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
@@ -53,7 +55,7 @@ final class SpaceController
                 'pausedUntil' => $project->paused_until?->toIso8601String(),
                 'narratorFirstName' => $narrator?->first_name,
             ],
-            'stories' => self::timeline($project),
+            'stories' => self::timeline($project, $user),
             'hasCurrentStory' => self::hasCurrentStory($project),
             'alerts' => self::alerts($project),
             'listensAsFamilyMember' => self::listensAsFamilyMember($project, $user->email),
@@ -70,13 +72,13 @@ final class SpaceController
      *
      * @return list<array<string, mixed>>
      */
-    private static function timeline(Project $project): array
+    private static function timeline(Project $project, User $owner): array
     {
         return array_values($project->stories()
             ->with('question')
             ->orderByDesc('sequence')
             ->get()
-            ->map(function (Story $story): array {
+            ->map(function (Story $story) use ($owner): array {
                 $shared = $story->state instanceof Shared || $story->state instanceof InBook;
 
                 return [
@@ -90,6 +92,14 @@ final class SpaceController
                     'title' => $shared ? $story->title : null,
                     'recordedAt' => $story->recorded_at?->toIso8601String(),
                     'sharedAt' => $story->shared_at?->toIso8601String(),
+                    /*
+                     * Une photo est du **contenu**, comme le texte et la
+                     * voix : sur une histoire non partagée, elle ne voit que
+                     * ses propres dépôts. Le tableau de bord est « son »
+                     * espace, et rien n'y rappellerait qu'une photo jointe
+                     * par quelqu'un d'autre ne lui appartient pas encore.
+                     */
+                    'photos' => PhotoPresenter::forInitiator($story, $owner),
                 ];
             })
             ->all());

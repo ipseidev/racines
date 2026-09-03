@@ -75,8 +75,8 @@ final readonly class PhotoController
         }
 
         return back()->with('status', $media->getCustomProperty('print_ready') === true
-            ? __('narrator.photos.added')
-            : __('narrator.photos.added_small'));
+            ? __('common.photos.added')
+            : __('common.photos.added_small'));
     }
 
     public function updateCaption(Request $request, string $photo, ?string $story = null): RedirectResponse
@@ -90,7 +90,7 @@ final readonly class PhotoController
 
         $this->captions->handle($target, $found, self::actorFor($request), $validated['caption'] ?? null);
 
-        return back()->with('status', __('narrator.photos.caption_saved'));
+        return back()->with('status', __('common.photos.caption_saved'));
     }
 
     public function destroy(Request $request, string $photo, ?string $story = null): RedirectResponse
@@ -99,7 +99,7 @@ final readonly class PhotoController
 
         $this->remove->handle($target, self::photoOf($target, $photo), self::actorFor($request));
 
-        return back()->with('status', __('narrator.photos.removed'));
+        return back()->with('status', __('common.photos.removed'));
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Models\Narrator;
 use App\Models\Story;
 use App\States\Story\Proposed;
 use App\States\Story\Trashed;
+use App\Support\PhotoPresenter;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
@@ -51,6 +52,10 @@ final class SpaceController
                 'restorableUntil' => $story->state instanceof Trashed
                     ? $story->trashed_at?->addDays($retention)->toIso8601String()
                     : null,
+                // Les photos de l'histoire, avec leurs URL temporaires : le
+                // narrateur voit ce qui est joint à son récit, et peut le
+                // retirer — c'est le sien, y compris ce qu'un proche y a mis.
+                'photos' => PhotoPresenter::forStory($story),
             ])
             ->all();
 

@@ -55,7 +55,7 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
     return (
         <section aria-labelledby="photos-title" className="mt-8">
             <h2 id="photos-title" className="text-xl font-medium">
-                {t('narrator.photos.title')}
+                {t('common.photos.title')}
             </h2>
 
             <ul className="mt-4 flex flex-wrap gap-3">
@@ -117,7 +117,7 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                                 }}
                                 className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-3"
                             >
-                                {t('narrator.photos.remove')}
+                                {t('common.photos.remove')}
                             </button>
                         )}
                     </div>

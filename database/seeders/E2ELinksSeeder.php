@@ -130,7 +130,7 @@ final class E2ELinksSeeder extends Seeder
      *
      * @var list<string>
      */
-    public const FAMILY_LINKS = ['listen', 'listen-react', 'listen-a11y'];
+    public const FAMILY_LINKS = ['listen', 'listen-react', 'listen-a11y', 'listen-photo'];
 
     /** @var list<string> */
     public const ONE_TAP_LINKS = ['onetap', 'onetap-use', 'onetap-read'];
@@ -464,6 +464,10 @@ final class E2ELinksSeeder extends Seeder
         $member = app(AddFamilyMember::class)->handle($project, $owner, [
             'display_name' => 'Marie',
             'email' => 'marie-'.$scenario.'@example.test',
+            // Un seul scénario porte le droit de contribuer : le bloc 12
+            // vérifie aussi l'**absence** du bouton pour les autres, et un
+            // décor où tout le monde contribue ne prouverait que la moitié.
+            'can_contribute' => $scenario === 'listen-photo',
         ]);
 
         $token = new AccessToken([

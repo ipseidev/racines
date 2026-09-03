@@ -23,6 +23,8 @@ import { uploadDraft } from '@/recorder/uploader';
 import { useMediaRecorder } from '@/recorder/useMediaRecorder';
 import { requestWakeLock } from '@/recorder/wakeLock';
 
+import PhotoUploader from '@/components/PhotoUploader';
+
 import MicHelp from './MicHelp';
 import ShareDecision from './ShareDecision';
 import WrittenAnswer from './WrittenAnswer';
@@ -88,6 +90,7 @@ export default function Record({
     const [snapshot, setSnapshot] = useState<RecorderSnapshot>(initialSnapshot);
     const [draft, setDraft] = useState<Draft | null>(null);
     const [progress, setProgress] = useState(0);
+    const [addingPhoto, setAddingPhoto] = useState(false);
     const [reviewUrl, setReviewUrl] = useState<string | null>(null);
     const [writing, setWriting] = useState(false);
     const [roomWarning, setRoomWarning] = useState(false);
@@ -619,6 +622,30 @@ export default function Record({
                             </p>
                         )
                     ) : null}
+
+                    {/*
+                     * L'ajout d'une photo, **après** la confirmation et
+                     * jamais avant : l'enregistrement est ce qui compte, et
+                     * proposer une photo au milieu ferait abandonner le
+                     * récit à mi-chemin.
+                     *
+                     * Facultatif de bout en bout : replié derrière un lien,
+                     * et sans conséquence si on l'ignore.
+                     */}
+                    {addingPhoto ? (
+                        <PhotoUploader
+                            action={`${basePath}/photos`}
+                            onDone={() => setAddingPhoto(false)}
+                        />
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => setAddingPhoto(true)}
+                            className="border-brand-muted/40 mt-8 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                        >
+                            {t('common.photos.add')}
+                        </button>
+                    )}
                 </section>
             ) : null}
 
