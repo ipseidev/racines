@@ -23,7 +23,7 @@ export default defineConfig({
             // La suite tourne en parallèle : chaque scénario a son propre lien
             // d'enregistrement, semé par `E2ELinksSeeder`.
             testIgnore:
-                /brand\.spec\.ts|record-happy-path\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
+                /brand\.spec\.ts|admin-audit-trail\.spec\.ts|record-happy-path\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
             dependencies: ['recorder'],
             use: {
                 ...devices['Desktop Chrome'],
@@ -36,12 +36,22 @@ export default defineConfig({
             },
         },
         {
-            // Le test de marque écrit dans des réglages partagés par toute
-            // l'application : il change le nom et les couleurs que les autres
-            // pages lisent. Il tourne donc seul, et après les autres.
-            name: 'brand',
-            testMatch: /brand\.spec\.ts/,
+            /*
+             * Les tests du back-office, seuls et après les autres.
+             *
+             * Deux raisons distinctes. Le test de marque écrit dans des
+             * réglages partagés par toute l'application : il change le nom et
+             * les couleurs que les autres pages lisent. Et la page de
+             * connexion du panneau limite le nombre de tentatives — deux
+             * fichiers qui s'y connectent en parallèle finissent par se faire
+             * refuser l'un l'autre, pour une raison qui n'a rien à voir avec
+             * le produit.
+             */
+            name: 'admin',
+            testMatch: /brand\.spec\.ts|admin-audit-trail\.spec\.ts/,
             dependencies: ['chromium'],
+            workers: 1,
+            fullyParallel: false,
             use: { ...devices['Desktop Chrome'] },
         },
         {

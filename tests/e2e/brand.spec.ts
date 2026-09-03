@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { E2E_TOTP_SECRET, totp } from './support/totp';
+import { freshTotp } from './support/totp';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@example.test';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'password';
@@ -49,7 +49,7 @@ test('la marque se change depuis l’administration et s’applique sans redépl
     ).toBeVisible();
 
     await page.getByRole('group').locator('input').first().click();
-    await page.keyboard.type(totp(E2E_TOTP_SECRET), { delay: 30 });
+    await page.keyboard.type(await freshTotp(), { delay: 30 });
 
     await page.getByRole('button', { name: /confirmer la connexion/i }).click();
 

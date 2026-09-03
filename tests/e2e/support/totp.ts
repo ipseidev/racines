@@ -60,3 +60,39 @@ export function totp(secret: string, atSeconds = Date.now() / 1000): string {
 
 /** Le secret semé pour le compte d'administration du bout en bout. */
 export const E2E_TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
+/**
+ * La dernière fenêtre de trente secondes déjà consommée par ce worker.
+ *
+ * Filament refuse la **réémission d'un même code** : c'est une protection
+ * contre le rejeu, et elle est juste. Conséquence pour la suite : deux
+ * connexions dans la même fenêtre de trente secondes échouent, et l'échec
+ * ressemble à un mot de passe faux. Le module étant chargé une fois par
+ * worker, cette variable suffit à s'en souvenir d'un fichier à l'autre.
+ */
+let lastUsedCounter: number | null = null;
+
+const sleep = (milliseconds: number) =>
+    new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+/**
+ * Un code utilisable **maintenant**, en attendant la fenêtre suivante si la
+ * courante a déjà servi.
+ *
+ * On attend jusqu'à trente secondes, ce qui est long pour un test — et
+ * beaucoup plus court qu'un diagnostic de « connexion impossible » sur une
+ * intégration continue qui ne dit pas pourquoi.
+ */
+export async function freshTotp(secret = E2E_TOTP_SECRET): Promise<string> {
+    let counter = Math.floor(Date.now() / 1000 / 30);
+
+    if (lastUsedCounter === counter) {
+        const nextWindow = (counter + 1) * 30 * 1000;
+        await sleep(Math.max(0, nextWindow - Date.now()) + 500);
+        counter = Math.floor(Date.now() / 1000 / 30);
+    }
+
+    lastUsedCounter = counter;
+
+    return totp(secret, counter * 30);
+}

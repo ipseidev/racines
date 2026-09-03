@@ -132,6 +132,26 @@ Colonnes : `subject_type/subject_id` (narrateur, proche ou utilisateur), `projec
 
 Les cinq premiers sont les maillons de la chaîne H2, mesurés **séparément** : un taux global ne dirait pas *où* la chaîne casse — page jamais ouverte, écoute abandonnée à dix secondes, réaction jamais envoyée, notification jamais reçue. Aucun de ces événements ne porte de donnée personnelle : des identifiants opaques et des durées, jamais un prénom, une coordonnée, un jeton ni le contenu d'un message.
 
+## 7ter. Actions du journal d'audit (`audit_logs.action`, bloc 11)
+
+Forme : **verbe au passé, puis nom de classe du sujet** — `viewed Story`, `played Recording`, `edited Transcript`, `refunded Order`. Le verbe au passé parce qu'une ligne d'audit décrit un fait accompli ; le nom de classe parce qu'il est stable et qu'il se retrouve par `subject_type`.
+
+| Action | Quand |
+|---|---|
+| `viewed <Classe>` | Une page de consultation du panneau s'ouvre. Une ligne par visite, pas par battement de l'interface. |
+| `played Recording` | Une URL d'écoute a été demandée. Distinct de `viewed Recording` : lire une fiche technique n'est pas écouter la voix de quelqu'un. |
+| `edited Transcript` | Une correction crée une nouvelle version. Le journal garde la **taille** du changement, jamais les deux textes. |
+| `hided Story`, `trashed Story`, `restored Story` | Retrait ou remise, avec le motif — la trace de la demande du narrateur. |
+| `paused Project`, `resumed Project`, `rescheduled Project`, `froze Project` | Les quatre gestes du support sur le rythme. Le gel porte le motif. |
+| `reissued AccessToken`, `reissued ListenLink`, `revoked AccessToken` | Émission ou fermeture d'un lien. Jamais le lien lui-même. |
+| `removed FamilyMember` | Accès retiré, ligne conservée. |
+| `refunded Order` | Remboursement demandé, avec le motif et le montant. |
+| `changed UserRole` | Rôle modifié, avec l'ancien et le nouveau. |
+| `edited PilotSettings` | Prix, mode ou validation juridique changés. |
+| `purged Recording` | Purge programmée. Acteur `system` : une purge n'a pas d'auteur humain. |
+
+Ce que le contenu ne porte **jamais** : un lien en clair, un courriel, un numéro, un mot de passe, un code. `App\Audit\Redactor` les remplace avant l'insertion — et une ligne d'audit ne peut pas être modifiée après coup, donc ce qui y passe y reste.
+
 ## 8. Espaces d'URL (hôte `LINKS_DOMAIN`)
 
 | Préfixe | Espace | Jeton |

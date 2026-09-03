@@ -18,7 +18,7 @@ Chaque bloc arrêté par une de ces lignes le dit en tête de son fichier. Quand
 
 ## §1. Ce qui débloque du travail déjà écrit
 
-Quatre blocs sont codés, testés et poussés, mais ne peuvent pas être tagués sans ça : **04** (téléphones réels), **05** (Twilio, Resend), **06** (clés, corpus de voix) et **10** (Stripe).
+Quatre blocs sont codés, testés et poussés, mais ne peuvent pas être tagués sans ça : **04** (téléphones réels), **05** (Twilio, Resend), **06** (clés, corpus de voix) et **10** (Stripe). Le **11** n'attend que vingt minutes de ton temps pour ses quatre premiers points.
 
 ### 1.1 Clé Anthropic — débloque le bloc 06
 
@@ -187,11 +187,12 @@ Tout le mode opératoire — jouer un achat, rejouer un événement, diagnostiqu
 
 ## §2. Ce qui ne demande que ton temps
 
-**Rien à acheter, rien à créer.** Deux blocs sont codés et n'attendent qu'un humain pour dérouler leur checkpoint, en local, avec les fournisseurs simulés.
+**Rien à acheter, rien à créer.** Cinq checkpoints sont codés et n'attendent qu'un humain pour être déroulés, en local, avec les fournisseurs simulés.
 
 - **Bloc 07** — validation, visibilité, retraits. ~30 minutes.
 - **Bloc 08** — écoute famille et réactions. ~20 minutes.
 - **Bloc 09** — moteur de complétion. ~20 minutes : forcer trois horodatages sur le projet semé, lancer `engine:tick`, lire les envois, relancer pour vérifier qu'aucun ne se répète, cliquer un lien d'action, puis `engine:report`.
+- **Bloc 11, points 1 à 4** — le back-office. ~20 minutes : configurer ta double authentification à la première connexion sur `/admin` (l'application d'authentification de ton téléphone suffit), ouvrir la fiche d'une histoire, corriger un mot, puis `sail artisan audit:verify` — et pour voir la garde fonctionner, tenter un `update audit_logs set action='x'` en base, qui doit échouer. Le point 5 demande Stripe.
 - **Bloc 10, points 3 à 5** — le cadeau, l'opt-in et l'espace Initiateur·rice. ~20 minutes, sans Stripe : `sail artisan migrate:fresh --seed` puis ouvrir `/i/demo-optin-accept-linkxxxxxxxxxxxxxxxxxxxxx` (accepter) et `/i/demo-optin-refuse-linkxxxxxxxxxxxxxxxxxxxxx` (refuser), et se connecter en `espace@example.test` pour l'espace. Les points 1 et 2 du checkpoint, eux, demandent Stripe.
 
 Un piège vérifié : `RedactTokens` masque aussi **les codes à six chiffres** dans les journaux, donc `SMS_PROVIDER=log` ne te donnera pas le code OTP. Le chemin local passe par un narrateur dont le canal préféré est le courriel — le code arrive alors en clair dans Mailpit (`http://localhost:8027`).
@@ -263,6 +264,8 @@ Le seul endroit à tenir à jour.
 | 12ter | Relire le ton des onze messages du moteur | bloc 09 | ☐ |
 | 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | ☐ |
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil | bloc 10 | ☐ |
+| 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☐ |
+| 12septies | Relire les six playbooks du support (`resources/playbooks/`) | bloc 11 | ☐ |
 | 13 | Cloudflare R2 : 3 compartiments UE + CORS | bloc 16 | ☐ |
 | 14 | Stripe : compte, clés de test, 5 prix (`price_…`), CLI pour le webhook | **bloc 10, livré et bloqué** | ☐ |
 | 15 | Polices OFL déposées | bloc 13 | ☐ |

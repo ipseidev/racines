@@ -242,6 +242,25 @@ return [
         'family' => 'La famille',
         'fired_at' => 'Déclenchée le',
         'outcome' => 'Suite',
+
+        /*
+         * Les onze règles, nommées par ce qu'elles observent et non par ce
+         * qu'elles envoient : « le lien n'a pas été ouvert » est un fait ;
+         * « relance » est une interprétation.
+         */
+        'rules' => [
+            'invitation_not_accepted' => 'Invitation sans réponse',
+            'link_not_opened' => 'Lien non ouvert',
+            'mic_denied' => 'Micro refusé',
+            'recording_abandoned' => 'Enregistrement abandonné',
+            'recorded_not_validated' => 'Enregistré, pas encore relu',
+            'validated_not_listened' => 'Partagé, pas encore écouté',
+            'three_stories_no_reaction' => 'Trois histoires sans réaction',
+            'narrator_silence_10d' => 'Dix jours sans histoire',
+            'narrator_silence_21d' => 'Vingt-et-un jours sans histoire',
+            'pause_requested' => 'Pause demandée',
+            'declining_cadence' => 'Rythme qui ralentit',
+        ],
     ],
 
     'phone_options' => [
@@ -308,5 +327,34 @@ return [
             'done' => 'Correction enregistrée.',
             'done_help' => 'Une nouvelle version a été créée. Le mot à mot est intact.',
         ],
+    ],
+
+    'engine_report' => [
+        'title' => 'Rapport du moteur',
+        'days' => 'Période',
+        'last_week' => 'Sept derniers jours',
+        'last_month' => 'Trente derniers jours',
+        'last_quarter' => 'Quatre-vingt-dix derniers jours',
+        'cohort' => 'Cohorte',
+        'all_cohorts' => 'Toutes les cohortes',
+        'rule' => 'Règle',
+        'fired' => 'Déclenchements',
+        'resumed' => 'Reprises',
+        'rate' => 'Taux',
+        'median' => 'Délai médian',
+        'empty' => 'Aucun déclenchement sur cette période.',
+    ],
+
+    'dashboard' => [
+        'active_projects' => 'Projets actifs',
+        'active_projects_help' => 'Des questions partent chaque semaine.',
+        'shared_stories' => 'Histoires partagées',
+        'shared_stories_help' => 'Sur les trente derniers jours.',
+        'failed_messages' => 'Envois échoués',
+        'failed_messages_help' => 'Dernières 24 h. Le seul compteur qu’on veut voir à zéro : personne ne se plaindra d’une question qui n’est jamais partie.',
+        'open_tickets' => 'Tickets ouverts',
+        'open_tickets_help' => 'Les plus vieux d’abord dans la file.',
+        'phone_option' => 'Option téléphone',
+        'phone_option_help' => 'Places prises sur le plafond livrable.',
     ],
 ];

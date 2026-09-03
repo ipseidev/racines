@@ -283,7 +283,18 @@ Une directive courante par narrateur, la dernière exprimée : on ne garde pas l
 `id`, `name`, `phase` check (`0A`, `0B`, `launch`), `started_at`, `notes`, timestamps.
 
 ## audit_logs (bloc 11) — bigint
-`occurred_at`, `actor_user_id` nullable, `actor_role`, `actor_context` check (`web`, `filament`, `cli`, `phone_operator`, `system`), `action` varchar, `subject_type`, `subject_id`, `project_id` nullable, `ip_hash` nullable, `payload` jsonb (diff avant/après, données personnelles masquées), `previous_hash` char(64), `hash` char(64). Trigger `audit_logs_append_only` : `BEFORE UPDATE OR DELETE … RAISE EXCEPTION`. `hash = sha256(previous_hash || occurred_at || action || subject_type || subject_id || payload::text)`.
+`occurred_at`, `actor_user_id` nullable (`nullOnDelete`), `actor_role`, `actor_context` check (`web`, `filament`, `cli`, `phone_operator`, `system`), `action` varchar, `subject_type` et `subject_id` nullable, `project_id` nullable, `ip_hash` char(64) nullable, `payload` jsonb (masqué par `App\Audit\Redactor`), `previous_hash` char(64), `hash` char(64). Index `(project_id, occurred_at)`, `(actor_user_id, occurred_at)`, `(subject_type, subject_id)`.
+
+Trigger `audit_logs_append_only` : `BEFORE UPDATE OR DELETE … RAISE EXCEPTION`. Il protège de l'erreur et du script maladroit, pas de qui détient les droits de désactiver un trigger — d'où la chaîne d'empreintes, qui rend l'altération **détectable** plutôt que de la prévenir.
+
+`hash = sha256(previous_hash | occurred_at | action | subject_type | subject_id | payload)`, avec deux formes **canoniques** et non le texte brut : l'horodatage normalisé en UTC à la seconde, et le contenu réencodé clés triées. Postgres rend l'horodatage dans son propre format et réordonne les clés d'un `jsonb` ; hacher ce qu'on a inséré rendait toute ligne relue incohérente avec elle-même (écart T-112).
+
+La chaîne commence à une **racine littérale** de 64 caractères (`AuditLog::GENESIS`) et non à `null`. Sans elle, un journal amputé de ses cent premières lignes ressemblerait à un journal neuf, et `audit:verify` ne pourrait pas distinguer les deux.
+
+## audit_chain_head (bloc 11)
+`id` smallint primaire avec check `id = 1`, `hash` char(64).
+
+Une table d'une seule ligne, et son unique raison d'être est le **verrou**. `previous_hash` se lit sur la dernière ligne écrite, et deux transactions concurrentes liraient la même — une fourche silencieuse que la vérification ne signalerait qu'au passage suivant. Verrouiller la dernière ligne d'une table en append-only ne dit rien à celui qui insère juste après ; verrouiller une ligne dédiée en `SELECT … FOR UPDATE`, si.
 
 ## Tables de packages
 `settings` (spatie/laravel-settings, bloc 01), `permissions`/`roles`/`model_has_*` (spatie/laravel-permission, bloc 02), `features` (Pennant, bloc 02), `media` (spatie/laravel-medialibrary, bloc 12), `jobs`, `failed_jobs`, `job_batches`, `cache`, `sessions`, `telescope_*` (local).
