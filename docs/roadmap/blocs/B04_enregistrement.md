@@ -211,6 +211,23 @@ reprise iOS, elle, en dépend, et le dossier interdit de la faire avant.
   fonction. Rien dans la chaîne ne pouvait l'attraper : PHPStan ne voit pas
   les props React, TypeScript trouvait la prop optionnelle donc valide, et un
   bouton mort ne casse aucune assertion.
+- **Le décor local n'avait consenti à rien** (T-128, même séance). Zéro ligne de
+  consentement en base, donc `RenderFluide` sautait le rendu et toute chaîne
+  réellement jouée en local s'arrêtait au mot à mot, **en silence** — un
+  `fluide.skipped_no_consent` en niveau `info`, rien de plus. Les
+  transcriptions **semées** des autres scénarios masquaient entièrement le
+  trou : le décor paraissait complet, et ne l'était que pour les histoires
+  qu'on n'enregistrait pas. Pas de trou produit derrière — les cinq
+  consentements sont posés ensemble à l'acceptation — mais un décor qui ne
+  représente aucun état atteignable ne prouve rien.
+- **Aucune navigation côté client ne fonctionnait en mode développement**
+  (T-129, même séance). Deux racines React sur `#app` : l'une tenait le
+  routeur et mettait l'URL à jour, l'autre tenait le DOM et gardait l'écran.
+  Le serveur de développement réimportait `app.tsx` avec son marqueur
+  d'invalidation, et le corps du module tournait deux fois. L'intégration
+  continue ne peut structurellement pas le voir : elle construit les assets et
+  ne lance jamais Vite en écoute. Corrigé par une garde dans le seul module qui
+  monte quelque chose, et la conséquence est écrite dans les conventions §6.
 - La durée `ffprobe` et le dérivé MP3 restent au bloc 06, comme prévu.
 - `client_duration_seconds` est rangé dans `device_info` plutôt que dans une
   colonne : c'est une valeur annoncée par le client, indicative, à comparer

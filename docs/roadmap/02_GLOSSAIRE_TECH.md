@@ -149,6 +149,8 @@ Forme : **verbe au passé, puis nom de classe du sujet** — `viewed Story`, `pl
 | `changed UserRole` | Rôle modifié, avec l'ancien et le nouveau. |
 | `edited PilotSettings` | Prix, mode ou validation juridique changés. |
 | `attached Photo`, `removed Photo`, `edited PhotoCaption` | Dépôt, retrait et légende d'une photo (bloc 12). Le journal garde la **taille** d'une légende, jamais son texte : une légende peut nommer des personnes. |
+| `restarted Story` | Le narrateur recommence son enregistrement (bloc 04). L'ancien est conservé, `is_current` à faux : « pourquoi la famille entend-elle un autre enregistrement qu'à l'origine ? » doit avoir une réponse des mois plus tard. |
+| `closed SupportTicket` | Un ticket de support est clos depuis le panneau (bloc 11). |
 | `purged Recording` | Purge programmée. Acteur `system` : une purge n'a pas d'auteur humain. |
 
 Ce que le contenu ne porte **jamais** : un lien en clair, un courriel, un numéro, un mot de passe, un code. `App\Audit\Redactor` les remplace avant l'insertion — et une ligne d'audit ne peut pas être modifiée après coup, donc ce qui y passe y reste.

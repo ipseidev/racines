@@ -125,6 +125,22 @@ _Date, exécutant, résultat, écarts :_
 - **T-91** — tirer le curseur ne compte pas comme de l'écoute.
 - **T-92** — le plafond de notification se lit dans les messages envoyés.
 - **T-93** — la façade d'analytics existe avant PostHog, pour que les événements soient posés au bon endroit.
+- **T-130** — « Hier, 1 personne(s) ont écouté » : deux fautes en huit mots, dans le seul message dont le rôle est de donner envie de raconter la suite. Corrigé par `trans_choice`, avec deux gardes — aucun pluriel entre parenthèses dans un texte visible, et le scanner de clés voit désormais `trans_choice` autant que `__`.
+- **T-131** — l'audio du décor n'était pas un MP3 lisible : les trames annonçaient 128 kbit/s et n'en faisaient pas la taille. Sans lecture, pas de progression, donc aucun seuil de trente secondes franchi et **zéro écoute enregistrée** — la moitié de ce bloc était injouable, et les tests bout en bout ne l'avaient jamais vu parce qu'ils n'écoutent pas. La seconde moitié de l'écart est une faute de la feuille de vérification, pas du produit : le point 4 était jouable avant le point 3, et basculer le drapeau des réactions rend le point 3 muet.
+
+### Où en est le checkpoint
+
+**2026-09-03, en cours.** Points 1 et 2 validés par un humain : l'invitation
+part, son lien s'ouvre, et la liste ne montre que les histoires partagées. Les
+points 3 à 5 restent à jouer, décor et outillage prêts
+(`sail artisan demo:liens --bloc=08`).
+
+Une question de produit reste ouverte, et elle appartient au fondateur : **le
+SMS de réaction ne porte pas le mot écrit par le proche.** Le courriel le
+porte, mais un narrateur joignable par SMS seulement apprend qu'on l'a écouté
+sans apprendre ce qu'on lui a dit. Or le §7.3 demande « le prénom **et** le
+mot », et c'est le mot qui donne envie de raconter la suite. Contre : il
+s'affiche alors sur un écran verrouillé.
 
 ### Portail qualité
 

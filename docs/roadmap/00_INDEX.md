@@ -86,6 +86,7 @@ Un bloc marqué `◐` a son code livré, testé et poussé ; il attend son check
 | Marque changée tardivement | 01 | Zéro occurrence du nom dans le code, test automatique |
 | Vendeur R2 hors UE | 16 | Bucket créé avec juridiction UE, DPA, alternative Scaleway documentée sans changement de code |
 | Coût humain de l'option téléphone D-9 | 17 | Plafond à 10 familles dans `PilotSettings`, compteur bloquant au checkout |
+| **Défaut d'interface qu'aucune assertion ne voit** | tous | Trois sont sortis du seul checkpoint du bloc 07 : un bouton relié à rien (T-127), un décor sans consentement qui arrêtait la chaîne en silence (T-128), deux racines React qui cassaient toute la navigation en mode développement (T-129). Ni PHPStan, ni TypeScript, ni Playwright ne pouvaient les voir. Mitigation : les checkpoints humains ne sont pas une formalité, et chaque défaut trouvé laisse une garde derrière lui |
 
 ## Fichiers du dossier
 
@@ -105,4 +106,12 @@ docs/roadmap/
 
 docs/runbooks/
 └── stripe.md                    ← brancher le compte, puis diagnostiquer un paiement (bloc 10)
+
+docs/spikes/
+├── asr.md                       ← règle de choix du fournisseur, écrite avant les chiffres
+└── navigateur.md                ← matrice d'appareils et dix scénarios de capture (bloc 04)
+
+docs/corpus/
+├── README.md                    ← ordre de lecture et observations des deux lectures du Fluide
+└── essai-0X-….txt               ← cinq mots à mot, chacun visant une trahison différente
 ```

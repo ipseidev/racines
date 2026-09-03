@@ -308,13 +308,13 @@ Le seul endroit à tenir à jour.
 | 3 | `ASR_CALLBACK_SECRET` généré | bloc 06 | ☐ |
 | 4 | Clé Deepgram *(optionnelle)* | bloc 06 | ☐ |
 | 5 | **Corpus : 10 voix de 65 ans et plus, avec références relues** | bloc 06 | ☐ |
-| 6 | Lecture humaine du Fluide sur 5 histoires | bloc 06 | ☐ |
+| 6 | Lecture humaine du Fluide sur 5 histoires | bloc 06 | **à moitié** — 5 mots à mot **écrits** lus le 2026-09-03, deux défauts corrigés (`fluide-v2`, T-126) ; reste 5 histoires **réelles**, dans la même séance que le corpus de voix |
 | 7 | iPhone réel + Android réel *(5 idéalement, dont Samsung Internet)* | bloc 04 | ☐ |
 | 8 | Accès HTTPS (tunnel ou préproduction) | bloc 04 | ☐ |
 | 9 | Twilio : SID, token, numéro vérifié | bloc 05 — **attend le nom** | ☐ |
 | 10 | Resend : clé, domaine vérifié, secret de webhook | bloc 05 — **attend le nom** | ☐ |
-| 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☐ |
-| 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | ☐ |
+| 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☑ **fait le 2026-09-03** — cinq points sur cinq, quatre écarts trouvés et corrigés (T-127 à T-129), bloc tagué |
+| 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | **en cours** — points 1 et 2 validés le 2026-09-03, deux écarts déjà corrigés (T-130, T-131) |
 | 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☐ |
 | 12ter | Relire le ton des onze messages du moteur | bloc 09 | ☐ |
 | 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | ☐ |

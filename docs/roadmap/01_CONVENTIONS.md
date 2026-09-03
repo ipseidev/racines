@@ -126,7 +126,7 @@ Ces conventions s'appliquent à tout le code, tous les tests et tous les documen
 
 ## 6. Commandes canoniques
 
-Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc 00. On n'en invente pas d'autres.
+Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc 00. **On n'en invente pas d'autres pour le portail qualité** : une seconde façon de lancer les tests finit toujours par en dire autre chose. L'outillage des vérifications humaines est une famille distincte, listée plus bas.
 
 | Commande | Fait |
 |---|---|
@@ -146,6 +146,28 @@ Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc
 | `sail artisan migrate:fresh --seed` | Base locale propre avec le corpus et un projet de démonstration |
 
 L'application locale répond sur `http://localhost:8001`, Mailpit sur `http://localhost:8027`, la console MinIO sur `http://localhost:8901` (ports décalés, décision T-34).
+
+### Outillage des vérifications humaines
+
+Six checkpoints demandent quelqu'un devant un navigateur, et aucun ne se joue
+sans un lien à jeton de quarante-trois caractères, un identifiant de projet, un
+code à six chiffres ou un état de drapeau. Ces commandes existent pour cela.
+Toutes **refusent de tourner en production**, et toutes lisent leurs valeurs
+dans le décor plutôt que de les recopier — une feuille de test fausse coûte
+plus cher que pas de feuille du tout.
+
+| Commande | Fait |
+|---|---|
+| `laradev` | Démarre tout : Sail, journaux, Vite. `--tunnel` ouvre deux tunnels Cloudflare et construit les assets (un téléphone ne joint pas Vite sur `localhost`) ; `--clamav` démarre l'antivirus ; `--fresh` resème |
+| `larakill` | Arrête tout et **restaure `.env`** depuis `.laradev.state` : un `LINKS_DOMAIN` mort ferait répondre 404 à chaque lien à jeton |
+| `sail artisan demo:liens` | La feuille des vérifications : liens réels, comptes, codes, et en rouge ce qui attend encore une clé ou un appareil. `--bloc=07` n'en imprime qu'un |
+| `sail artisan demo:reaction-timing` | Affiche ou bascule le drapeau des réactions du projet d'essai ; `--veille` antidate une réaction pour que le résumé la voie (bloc 08) |
+| `sail artisan fluide:try --file=…` | Soumet un mot à mot au vrai modèle et imprime le rendu à côté, sans rien écrire en base (bloc 06, corpus dans `docs/corpus/`) |
+
+**Ces commandes ne remplacent jamais la vraie.** `demo:reaction-timing --veille`
+prépare l'état, mais c'est `reactions:send-digests` — celle qui tournera à 9 h
+en production — que la vérification doit exercer. Envelopper la commande réelle
+reviendrait à tester l'enveloppe.
 
 **`--workers=1` n'est pas facultatif.** L'intégration continue joue la suite avec un seul ouvrier ; en parallèle, deux tests qui se disputent le même décor passent par chance et échouent en série (écart T-111). Une suite verte en parallèle et rouge en série ne prouve rien : c'est la version en série qui compte.
 
