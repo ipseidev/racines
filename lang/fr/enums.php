@@ -219,6 +219,17 @@ return [
         'system' => 'Automatique',
     ],
 
+    /*
+     * La forme du livrable selon la matière (PRD §10). « Chapitre fondateur »
+     * n'est pas un lot de consolation : c'est un objet relié, court, qui
+     * existe — et le libellé doit s'entendre ainsi.
+     */
+    'book_format' => [
+        'book' => 'Livre',
+        'booklet' => 'Livret',
+        'founding_chapter' => 'Chapitre fondateur',
+    ],
+
     'consent_channel' => [
         'web' => 'Sur le site',
         'phone' => 'Par téléphone',

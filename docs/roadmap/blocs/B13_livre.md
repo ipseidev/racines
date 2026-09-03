@@ -1,6 +1,6 @@
 # Bloc 13 — Livre : book-ready, BAT, PDF, QR, impression
 
-Statut : ☐ non commencé · Dépend de : 12 · Tag de fin : `bloc-13-done`
+Statut : ◐ en cours (socle de maturité livré) · Dépend de : 12 · Tag de fin : `bloc-13-done`
 Références dossier : PRD P0-13, P0-14, P0-15, §10 (sortie honorable : livre, livret, chapitre fondateur, prolongation, crédit d'impression), R-6 (book-ready), R-2 (M+12 à M+15), doc 04 §7 (QR : lecture non authentifiée par défaut, code famille optionnel, D-8), §10 (BAT obligatoire, « l'imprimé est définitif ») ; décisions T-11, T-12.
 
 ## 1. Objectif
@@ -46,9 +46,10 @@ Sail et Forge : Node ≥ 22, Chromium pour Puppeteer (`npx puppeteer browsers in
 ## 6. Étapes
 
 ### 6.1 Tables et calculs
-- [ ] Migrations `create_books_table`, `create_book_chapters_table` (annexe B) + colonnes `proposed_format`, `extension_granted_at`, `print_credit_expires_at`, `acknowledged_final_print`, `acknowledged_lexicon_reviewed`, `foreword` text, `text_version_policy` (`edited_or_fluide|verbatim`).
-- [ ] `ComputeBookReadiness(Project): BookReadiness` (mots, minutes, pages estimées = `mots/280 + photos×0,5 + chapitres×0,5`, thèmes, `sensitive_reviewed` = toutes les histoires avec `sensitive_flags` ont `visibility` posée explicitement par le narrateur) ; seuils dans `config('product.book_ready')`.
-- [ ] `books:evaluate` (`daily()`) : met à jour `books` (créé à la première histoire validée), `book_ready_at`, `proposed_format`, applique les règles M+12 et M+15 de PRD §10, notifie `notifications.book.ready` (une fois) et `notifications.book.format_proposal`.
+- [x] Migrations `create_books_table` et `create_book_chapters_table`, avec toutes les colonnes prévues. `books.project_id` est **unique** : une famille n'a pas deux livres en cours, et une réimpression est un état du même livre.
+- [x] `ComputeBookReadiness` et `BookReadiness`, 14 tests. Les marqueurs sensibles sont lus dans les **métadonnées du rendu Fluide**, où le bloc 06 les écrit, et « visibilité tranchée » veut dire une décision de partage explicite — `decide_later` n'en est pas une (écart T-125).
+- [x] `books:evaluate` (`dailyAt('05:00')`), 9 tests : livre créé à la première histoire validée, `book_ready_at` posé **une seule fois**, prolongation M+12 accordée **une seule fois**, dormance M+15 avec crédit d'impression de vingt-quatre mois. Un projet gelé par un deuil est ignoré — un gel arrête tout, y compris les échéances.
+- [ ] Les deux notifications (`book.ready`, `book.format_proposal`) : la commande calcule et enregistre, elle n'écrit pas encore aux familles.
 
 ### 6.2 Gabarit `classic`
 - [ ] `resources/views/book/classic/layout.blade.php` + `chapter.blade.php`, CSS `resources/css/book-classic.css` avec `@page { size: 200mm 250mm; margin: 18mm 16mm 20mm 16mm }` (taille dans `config('product.book.trim_size')`, à confirmer avec le devis 0A), pages de garde, titre courant, folios, `break-before: page` par chapitre, styles `.chapter-title`, `.question`, `.date`, `.photo` (pleine largeur, légende), `.qr-box` (QR 28 mm + « Scannez pour entendre {Prénom} raconter »), sommaire généré par Paged.js (`target-counter`).
@@ -97,3 +98,9 @@ Tant que l'imprimeur n'est pas connu, le PDF reste en RGB sans passe PDF/X ; le 
 ## 10. Note de checkpoint
 
 _Date, exécutant, résultat, écarts :_
+
+**2026-09-03 — socle de maturité livré, le reste du bloc est à faire.** Ce qui existe : les deux tables, `ComputeBookReadiness` et `BookReadiness`, `ProposeBookFormat`, et `books:evaluate` planifiée — **29 tests** pour ce seul socle, porte qualité verte à 1 119 tests Pest.
+
+Ce qui reste, dans l'ordre où je le reprendrai : le gabarit `classic` et le port `HtmlToPdf` (avec `FakeHtmlToPdf`, Browsershot demandant Chromium dans l'image Sail), les jetons QR et la page `/q/{token}`, la sélection des chapitres, l'espace `/espace/livre`, le fournisseur d'impression manuel, les deux notifications, et la ressource Filament.
+
+**Une observation produit à trancher avant d'écrire la jauge** (§9 du bloc et la note ci-dessous) : à 280 mots par page, les 12 000 mots de R-6 ne font que **48 pages** — bien en dessous des 60 exigées. Le critère de pages est donc le verrou réel, et il faut environ 15 400 mots pour un livre de dix chapitres, ou des photos. Afficher un pourcentage de mots dans la jauge ferait croire à une famille qu'elle y est presque alors qu'il lui manque un quart de la matière. Un test le nomme explicitement.

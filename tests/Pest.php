@@ -2,12 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Enums\TranscriptKind;
+use App\Models\Project;
+use App\Models\Question;
+use App\Models\Recording;
+use App\Models\Story;
+use App\Models\Transcript;
 use App\Services\Analytics\Analytics;
 use App\Services\Analytics\LogAnalytics;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\SmsSender;
 use App\Services\Storage\FakeMediaStorage;
 use App\Services\Storage\MediaStorage;
+use App\States\Story\Validated;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -118,4 +125,43 @@ function fakeMediaStorage(): FakeMediaStorage
     app()->instance(MediaStorage::class, $storage);
 
     return $storage;
+}
+
+/**
+ * Une histoire validée avec sa matière : mots, thème, minutes d'audio.
+ *
+ * Déclarée ici parce que trois fichiers du bloc 13 en ont besoin — maturité,
+ * évaluation quotidienne, sélection des chapitres — et que Pest charge tous
+ * les fichiers de test dans l'espace global.
+ */
+function storyWithWords(
+    Project $project,
+    int $words,
+    ?string $theme = null,
+    float $minutes = 0.0,
+): Story {
+    $question = Question::factory()->create($theme === null ? [] : ['theme' => $theme]);
+
+    $story = Story::factory()->create([
+        'project_id' => $project->id,
+        'question_id' => $question->id,
+        'state' => Validated::class,
+        'validated_at' => now(),
+    ]);
+
+    Transcript::factory()->create([
+        'story_id' => $story->id,
+        'kind' => TranscriptKind::Fluide,
+        'is_current' => true,
+        'text' => trim(str_repeat('mot ', $words)),
+    ]);
+
+    if ($minutes > 0.0) {
+        Recording::factory()->confirmed()->create([
+            'story_id' => $story->id,
+            'duration_seconds' => (string) round($minutes * 60, 2),
+        ]);
+    }
+
+    return $story;
 }

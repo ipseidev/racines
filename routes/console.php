@@ -77,3 +77,14 @@ Schedule::command('narrators:delete-unaccepted-contacts')
 Schedule::command('audit:verify')
     ->dailyAt('04:30')
     ->withoutOverlapping();
+
+/*
+ * La maturité des livres, et la sortie honorable.
+ *
+ * Tôt le matin, avant que les familles ne regardent leur jauge — et
+ * quotidiennement, parce que les échéances M+12 et M+15 sont des promesses de
+ * vente, pas des rappels qu'on pense à envoyer.
+ */
+Schedule::command('books:evaluate')
+    ->dailyAt('05:00')
+    ->withoutOverlapping();
