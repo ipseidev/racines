@@ -14,6 +14,23 @@ Chaque bloc arrêté par une de ces lignes le dit en tête de son fichier. Quand
 >
 > Pour éditer : `! nano .env` depuis la conversation, ou ton éditeur habituel.
 
+## La feuille des vérifications
+
+Six checkpoints attendent quelqu'un devant un navigateur. Aucun ne se joue sans un
+lien à jeton de quarante-trois caractères, un téléphone connu ou un code à six
+chiffres — et rien de tout cela ne se retient.
+
+```
+sail artisan demo:liens            # la feuille entière
+sail artisan demo:liens --bloc=07  # un seul bloc
+```
+
+La commande imprime les URL réelles du décor local, les comptes, les codes, et
+marque en rouge les étapes qui attendent encore quelque chose de ce document.
+Elle lit les valeurs dans `E2ELinksSeeder` — elle ne peut pas mentir sans qu'un
+test échoue. Si un lien répond 404, le décor n'est pas semé : `sail artisan
+migrate:fresh --seed` (qui **efface** la base locale).
+
 ---
 
 ## §0. Ce qui dépend du nom et du domaine — et ce qui n'en dépend pas
