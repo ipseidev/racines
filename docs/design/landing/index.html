@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Racines — Un livre de ses souvenirs, dans sa voix</title>
+<meta name="description" content="Chaque semaine, une question. Elle répond en parlant. À la fin, un livre imprimé, et sa voix à chaque page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* ------------------------------------------------------------------
+   Tokens — palette issue de l'analyse colorimétrique du 3 septembre 2026.
+   Deux couleurs signature (vert forêt, terracotta), un métal discret (or),
+   le reste en neutres chauds. La terracotta est la SEULE couleur chaude
+   saturée de la page : elle est réservée à l'action.
+------------------------------------------------------------------ */
+:root {
+  --cream:       #FBF6EE;   /* fond de page */
+  --paper:       #FFFFFF;   /* surface, cartes */
+  --linen:       #F3EADB;   /* fond de section chaud */
+  --sand:        #E0D6C7;   /* filets, bordures, champs */
+  --forest:      #2F4A3F;   /* marque, titres, navigation */
+  --forest-deep: #24392F;   /* fond du bandeau sombre */
+  --terracotta:  #B0432A;   /* action, et rien d'autre */
+  --terracotta-deep: #8F361F;
+  --sage:        #7C9A8E;   /* décor : onde, aplats non textuels */
+  --gold:        #C9A24B;   /* filets, badge, détail premium — jamais en petit texte */
+  --ink:         #26211C;   /* texte courant */
+  --ink-2:       #5A5049;   /* texte secondaire */
+  --on-dark:     #F7F1E6;   /* texte sur le bandeau sombre */
+  --on-dark-2:   #C9C0B2;
+
+  --display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --body: "Inter", "Helvetica Neue", Arial, sans-serif;
+
+  --container: 1180px;
+  --radius: 10px;
+  --radius-lg: 18px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 19px;
+  line-height: 1.6;
+  font-feature-settings: "cv11", "ss01";
+}
+img { max-width: 100%; height: auto; display: block; }  /* sans `height: auto`, l'attribut height devient une hauteur fixe et étire la photo */
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 3px; border-radius: 4px; }
+
+/* Typographie ----------------------------------------------------- */
+h1, h2, h3, .display {
+  font-family: var(--display);
+  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+  font-weight: 500;
+  color: var(--forest);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin: 0;
+}
+h1 { font-size: clamp(2.5rem, 5.2vw, 4.25rem); line-height: 1.04; }
+h2 { font-size: clamp(2rem, 3.6vw, 3rem); line-height: 1.1; }
+h3 { font-size: 1.55rem; line-height: 1.22; font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 36; }
+p { margin: 0; }
+.lede { font-size: 1.2rem; line-height: 1.55; color: var(--ink-2); max-width: 34em; }
+.eyebrow {
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--forest); display: inline-flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--gold); }
+.muted { color: var(--ink-2); }
+.small { font-size: 0.95rem; }
+
+/* Mise en page ---------------------------------------------------- */
+.container { width: min(var(--container), 100% - 48px); margin-inline: auto; }
+.section { padding-block: clamp(64px, 9vw, 120px); }
+.section--linen { background: var(--linen); }
+.section--dark { background: var(--forest-deep); color: var(--on-dark); }
+.section--dark h2, .section--dark h3 { color: var(--on-dark); }
+.section--dark .eyebrow { color: var(--on-dark-2); }
+.section--dark .muted { color: var(--on-dark-2); }
+.section-head { display: grid; gap: 20px; max-width: 42em; margin-bottom: clamp(40px, 5vw, 64px); }
+
+/* Boutons --------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 0 28px; border-radius: var(--radius);
+  font-family: var(--body); font-size: 1.05rem; font-weight: 600; text-decoration: none;
+  border: 2px solid transparent; cursor: pointer; transition: background-color .15s, border-color .15s, transform .15s;
+}
+.btn--primary { background: var(--terracotta); color: #fff; }
+.btn--primary:hover { background: var(--terracotta-deep); }
+.btn--primary:active { transform: translateY(1px); }
+.btn--ghost { background: transparent; color: var(--forest); border-color: var(--forest); }
+.btn--ghost:hover { background: rgba(47, 74, 63, 0.06); }
+.section--dark .btn--ghost { color: var(--on-dark); border-color: var(--on-dark-2); }
+.btn-note { font-size: 0.9rem; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+.btn-note svg { width: 16px; height: 16px; flex: none; }
+
+/* En-tête --------------------------------------------------------- */
+.header { padding-block: 22px; border-bottom: 1px solid var(--sand); background: var(--cream); }
+.header .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.wordmark { font-family: var(--display); font-variation-settings: "SOFT" 80, "WONK" 1, "opsz" 36; font-weight: 600; font-size: 1.65rem; color: var(--forest); text-decoration: none; letter-spacing: -0.01em; display: inline-flex; align-items: baseline; gap: 10px; }
+.wordmark small { font-family: var(--body); font-size: 0.7rem; font-weight: 500; color: var(--ink-2); letter-spacing: 0.06em; text-transform: uppercase; }
+.nav { display: flex; align-items: center; gap: 28px; }
+.nav a { text-decoration: none; font-weight: 500; font-size: 1rem; color: var(--ink); }
+.nav a:hover { color: var(--forest); }
+.header .btn { min-height: 46px; padding-inline: 20px; font-size: 0.98rem; }
+.nav-links { display: flex; gap: 28px; }
+@media (max-width: 900px) { .nav-links { display: none; } }
+
+/* Héros ----------------------------------------------------------- */
+.hero { padding-block: clamp(48px, 7vw, 96px) clamp(64px, 8vw, 112px); }
+.hero .container { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+.hero-copy { display: grid; gap: 28px; }
+.hero-copy h1 em { font-style: italic; font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144; color: var(--forest); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.hero-proof { display: grid; gap: 12px; padding-top: 8px; }
+.check { display: flex; align-items: flex-start; gap: 12px; font-size: 1.02rem; color: var(--ink); }
+.check svg { width: 22px; height: 22px; flex: none; margin-top: 3px; color: var(--forest); }
+
+.hero-visual { position: relative; }
+.hero-visual img { width: 100%; aspect-ratio: 5 / 4; object-fit: cover; object-position: 60% 25%; border-radius: var(--radius-lg); }
+.hero-visual .credit { position: absolute; right: 14px; bottom: 10px; font-size: 0.7rem; color: rgba(255,255,255,.75); }
+
+/* La carte « question de la semaine » : l'objet du rituel, posé sur la photo. */
+.question-card {
+  position: absolute; left: -24px; bottom: -28px; width: min(380px, 88%);
+  background: var(--paper); border-radius: var(--radius-lg); padding: 22px 24px;
+  box-shadow: 0 24px 60px rgba(38, 33, 28, 0.18), 0 2px 6px rgba(38, 33, 28, 0.08);
+  display: grid; gap: 14px;
+}
+.question-card .label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; }
+.question-card .q { font-family: var(--display); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 24; font-size: 1.35rem; line-height: 1.3; color: var(--forest); }
+.wave { display: flex; align-items: center; gap: 3px; height: 34px; }
+.wave i { display: block; width: 4px; border-radius: 2px; background: var(--sage); height: 30%; animation: wave 1.6s ease-in-out infinite; }
+.wave i:nth-child(3n) { height: 70%; animation-delay: -0.3s; }
+.wave i:nth-child(3n+1) { height: 45%; animation-delay: -0.9s; }
+.wave i:nth-child(5n) { height: 90%; animation-delay: -1.2s; }
+@keyframes wave { 0%, 100% { transform: scaleY(0.55); } 50% { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .wave i { animation: none; } }
+.wave-row { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; color: var(--ink-2); }
+.wave-row b { color: var(--forest); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .hero .container { grid-template-columns: 1fr; }
+  .hero-visual { margin-top: 12px; }
+  .question-card { left: 12px; bottom: -36px; width: min(360px, calc(100% - 24px)); }
+  .hero-visual { margin-bottom: 44px; }
+}
+
+/* Comment ça marche ----------------------------------------------- */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+.step { display: grid; gap: 16px; align-content: start; }
+.step img { aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); }
+.step .n { font-family: var(--display); font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 72; font-size: 2.6rem; line-height: 1; color: var(--gold); font-weight: 400; }
+.step p { color: var(--ink-2); font-size: 1.02rem; }
+@media (max-width: 1000px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .steps { grid-template-columns: 1fr; } }
+
+/* Le fond : ce qui ne change pas ---------------------------------- */
+.promises { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(40px, 6vw, 96px); align-items: start; }
+.promise-list { display: grid; }
+.promise { padding: 26px 0; border-top: 1px solid rgba(201, 162, 75, 0.45); display: grid; gap: 8px; }
+.promise:last-child { border-bottom: 1px solid rgba(201, 162, 75, 0.45); }
+.promise h3 { color: var(--on-dark); }
+.promise p { color: var(--on-dark-2); font-size: 1rem; }
+
+/* La comparaison mot à mot / texte mis au propre : la preuve, pas la promesse. */
+.compare { background: var(--paper); color: var(--ink); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,.25); }
+.compare-head { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--sand); }
+.compare-head div { padding: 14px 22px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.compare-head div + div { border-left: 1px solid var(--sand); color: var(--forest); }
+.compare-body { display: grid; grid-template-columns: 1fr 1fr; }
+.compare-body > div { padding: 22px; font-size: 1rem; line-height: 1.65; }
+.compare-body .verbatim { color: var(--ink-2); font-style: italic; background: var(--linen); }
+.compare-body .fluide { border-left: 1px solid var(--sand); font-family: var(--display); font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 18; font-size: 1.12rem; color: var(--ink); }
+.compare-foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 22px; border-top: 1px solid var(--sand); font-size: 0.92rem; color: var(--ink-2); }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--sand); font-size: 0.9rem; font-weight: 500; color: var(--forest); background: var(--paper); }
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--sage); }
+@media (max-width: 900px) { .promises { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .compare-head, .compare-body { grid-template-columns: 1fr; } .compare-head div + div, .compare-body .fluide { border-left: 0; border-top: 1px solid var(--sand); } }
+
+/* Le livre -------------------------------------------------------- */
+.book { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: clamp(40px, 6vw, 96px); align-items: center; }
+.book-visual { position: relative; }
+.book-visual img { aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-lg); }
+.page-card {
+  position: absolute; right: -20px; bottom: -28px; width: 250px;
+  background: var(--paper); border-radius: 6px; padding: 18px 18px 16px;
+  box-shadow: 0 24px 60px rgba(38, 33, 28, 0.2);
+  display: grid; gap: 10px; border-top: 3px solid var(--gold);
+}
+.page-card .t { font-family: var(--display); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 18; font-size: 1.05rem; color: var(--forest); line-height: 1.25; }
+.page-card .lines { display: grid; gap: 6px; }
+.page-card .lines i { display: block; height: 6px; border-radius: 3px; background: var(--sand); }
+.page-card .lines i:nth-child(2) { width: 92%; } .page-card .lines i:nth-child(3) { width: 78%; } .page-card .lines i:nth-child(4) { width: 86%; }
+.page-card .qr { display: flex; align-items: center; gap: 12px; padding-top: 6px; }
+.page-card canvas { width: 62px; height: 62px; image-rendering: pixelated; border: 1px solid var(--sand); padding: 3px; background: #fff; }
+.page-card .qr span { font-size: 0.78rem; color: var(--ink-2); line-height: 1.4; }
+.book-copy { display: grid; gap: 24px; }
+.book-copy ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.book-copy li { display: flex; gap: 12px; align-items: flex-start; color: var(--ink); }
+.book-copy li svg { width: 22px; height: 22px; flex: none; margin-top: 3px; color: var(--forest); }
+@media (max-width: 900px) { .book { grid-template-columns: 1fr; } .book-visual { margin-bottom: 40px; } .page-card { right: 8px; } }
+
+/* L'offre --------------------------------------------------------- */
+.offer { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+.offer-card { background: var(--paper); border: 1px solid var(--sand); border-radius: var(--radius-lg); padding: clamp(28px, 4vw, 44px); display: grid; gap: 24px; }
+.price { display: flex; align-items: baseline; gap: 14px; }
+.price .amount { font-family: var(--display); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144; font-size: 4rem; line-height: 1; color: var(--forest); font-variant-numeric: tabular-nums; }
+.price .per { color: var(--ink-2); font-size: 1rem; max-width: 14em; line-height: 1.4; }
+.includes { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.includes li { display: flex; gap: 12px; align-items: flex-start; }
+.includes li svg { width: 22px; height: 22px; flex: none; margin-top: 3px; color: var(--forest); }
+.offer-cta { display: grid; gap: 12px; }
+.options { display: grid; gap: 14px; }
+.option { display: flex; justify-content: space-between; gap: 16px; padding: 18px 0; border-top: 1px solid var(--sand); }
+.option:last-child { border-bottom: 1px solid var(--sand); }
+.option b { display: block; font-weight: 600; color: var(--forest); }
+.option span { color: var(--ink-2); font-size: 1rem; }
+.option .p { font-family: var(--display); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 24; font-size: 1.4rem; color: var(--forest); white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) { .offer { grid-template-columns: 1fr; } }
+
+/* Pied de page ---------------------------------------------------- */
+.footer { border-top: 1px solid var(--sand); padding-block: 40px; color: var(--ink-2); font-size: 0.95rem; }
+.footer .container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px 40px; align-items: center; }
+.footer nav { display: flex; flex-wrap: wrap; gap: 20px; }
+.footer a { text-decoration: none; }
+.footer a:hover { color: var(--forest); text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <a class="wordmark" href="#">Racines <small>nom provisoire</small></a>
+    <nav class="nav" aria-label="Navigation principale">
+      <div class="nav-links">
+        <a href="#comment">Comment ça marche</a>
+        <a href="#promesses">Ce qui ne change pas</a>
+        <a href="#livre">Le livre</a>
+        <a href="#offre">L'offre</a>
+      </div>
+      <a class="btn btn--primary" href="#offre">J'offre ce livre</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- Héros ============================================================ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-copy">
+      <h1>Un livre de ses souvenirs, <em>dans sa voix.</em></h1>
+      <p class="lede">Chaque semaine, une question. Elle répond en parlant, depuis son téléphone. À la fin de l'année, un livre imprimé de ses histoires — et sa voix à chaque page.</p>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#offre">J'offre ce livre — 49 €</a>
+        <a class="btn btn--ghost" href="#comment">Comment ça marche</a>
+      </div>
+      <p class="btn-note"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>Un seul paiement, pas d'abonnement. Ses souvenirs restent privés.</p>
+      <div class="hero-proof">
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Aucune application, aucun mot de passe : un lien, elle parle.</span></div>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Ses mots sont mis au propre, jamais réécrits — le mot à mot est conservé à côté.</span></div>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>C'est elle qui décide de ce que la famille entend.</span></div>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Un livre relié, avec un code à scanner pour l'entendre raconter.</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <img src="img/hero.jpg" alt="Une femme assise à la table de sa cuisine, le téléphone à la main, songeuse." width="1400" height="933">
+      <div class="question-card" aria-label="Exemple de question de la semaine">
+        <div class="label"><span>Question de la semaine</span><span>Odette</span></div>
+        <p class="q">Quelle odeur vous ramène à votre enfance ?</p>
+        <div class="wave-row">
+          <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <span><b>Elle répond en parlant.</b> 2 min 14</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comment ça marche ================================================ -->
+<section class="section" id="comment">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Comment ça marche</span>
+      <h2>Une question par semaine. Le reste, on s'en occupe.</h2>
+      <p class="lede">Rien à installer, rien à écrire. Une année de questions, à son rythme, et un livre au bout.</p>
+    </div>
+    <div class="steps">
+      <article class="step">
+        <img src="img/etape-1.jpg" alt="Une main tient deux photographies anciennes de famille." loading="lazy" width="1400" height="930">
+        <div class="n">1</div>
+        <h3>Une question arrive</h3>
+        <p>Par SMS ou par courriel, chaque semaine, à l'heure qui lui convient. Vous pouvez choisir les questions, ou nous laisser faire.</p>
+      </article>
+      <article class="step">
+        <img src="img/etape-2.jpg" alt="Une femme âgée sourit, en cardigan gris." loading="lazy" width="1400" height="933">
+        <div class="n">2</div>
+        <h3>Elle répond en parlant</h3>
+        <p>Elle ouvre le lien, elle raconte. Deux minutes ou vingt. Si le téléphone sonne au milieu, rien n'est perdu.</p>
+      </article>
+      <article class="step">
+        <img src="img/etape-3.jpg" alt="Un livre ouvert, photographié de près." loading="lazy" width="1400" height="934">
+        <div class="n">3</div>
+        <h3>Ses mots, mis au propre</h3>
+        <p>Les hésitations s'effacent, ses tournures restent. Le mot à mot est conservé à côté — on ne remplace jamais ce qu'elle a dit.</p>
+      </article>
+      <article class="step">
+        <img src="img/etape-4.jpg" alt="Une famille réunie autour d'une table, sur une photographie ancienne." loading="lazy" width="1400" height="933">
+        <div class="n">4</div>
+        <h3>La famille écoute</h3>
+        <p>Chaque histoire qu'elle choisit de partager arrive à ses proches. Ils l'écoutent, ils lui répondent d'un mot. Elle le reçoit.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Ce qui ne change pas ============================================= -->
+<section class="section section--dark" id="promesses">
+  <div class="container">
+    <div class="promises">
+      <div>
+        <div class="section-head">
+          <span class="eyebrow">Ce qui ne change pas</span>
+          <h2>Ses souvenirs lui appartiennent.</h2>
+          <p class="lede muted">Trois règles que rien ne fait plier, parce qu'un livre de famille ne vaut que par la confiance qu'on lui accorde.</p>
+        </div>
+        <div class="promise-list">
+          <div class="promise">
+            <h3>Rien n'est inventé</h3>
+            <p>Le texte mis au propre garde ses mots, son ordre, sa façon de dire. Une date impossible reste une date impossible : on ne corrige pas les souvenirs.</p>
+          </div>
+          <div class="promise">
+            <h3>Elle décide, à chaque histoire</h3>
+            <p>Partager, garder pour elle, ou décider plus tard. Rien n'est présélectionné, rien ne presse. Et elle peut retirer une histoire à tout moment.</p>
+          </div>
+          <div class="promise">
+            <h3>Hébergé en Europe, et à vous</h3>
+            <p>Les enregistrements et les textes restent la propriété de la famille. Vous pouvez tout télécharger, et tout effacer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare" aria-label="Exemple : le mot à mot et le texte mis au propre, côte à côte">
+        <div class="compare-head"><div>Mot à mot</div><div>Texte mis au propre</div></div>
+        <div class="compare-body">
+          <div class="verbatim">alors euh… ma grand-mère elle habitait à Saint-Aubin, enfin Saint-Aubin-du-Cormier, et euh chaque dimanche on y allait, on y allait en voiture avec mon père, ça faisait… je sais plus, une heure de route peut-être. Et elle faisait le pain elle-même, dans le four, le four à bois derrière la maison.</div>
+          <div class="fluide">Ma grand-mère, elle habitait à Saint-Aubin-du-Cormier, et chaque dimanche on y allait en voiture avec mon père. Ça faisait… je sais plus, une heure de route peut-être. Et elle faisait le pain elle-même, dans le four à bois derrière la maison.</div>
+        </div>
+        <div class="compare-foot">
+          <span>Puis elle choisit :</span>
+          <span class="chip">Partager</span>
+          <span class="chip">Garder pour moi</span>
+          <span class="chip">Décider plus tard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Le livre ========================================================= -->
+<section class="section section--linen" id="livre">
+  <div class="container">
+    <div class="book">
+      <div class="book-visual">
+        <img src="img/livre.jpg" alt="Un homme âgé regarde deux photographies anciennes qu'il tient dans ses mains." loading="lazy" width="1400" height="875">
+        <div class="page-card" aria-hidden="true">
+          <div class="t">L'odeur du pain de ma grand-mère</div>
+          <div class="lines"><i></i><i></i><i></i><i></i></div>
+          <div class="qr"><canvas id="qr" width="21" height="21"></canvas><span>Scannez pour l'entendre raconter</span></div>
+        </div>
+      </div>
+      <div class="book-copy">
+        <span class="eyebrow">Le livre</span>
+        <h2>Sur chaque page, la photo, l'histoire — et sa voix.</h2>
+        <p class="lede">Au bout de l'année, ses histoires sont relues par la famille, mises en page et imprimées. Chaque chapitre porte un petit code : on le scanne, et on l'entend.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Un livre relié, imprimé en France, avec les photos que la famille a ajoutées.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Vous relisez et validez chaque page avant l'impression.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Les enregistrements restent écoutables des années après, code ou pas.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- L'offre ========================================================== -->
+<section class="section" id="offre">
+  <div class="container">
+    <div class="offer">
+      <div>
+        <div class="section-head">
+          <span class="eyebrow">L'offre</span>
+          <h2>Un paiement. Une année. Un livre.</h2>
+          <p class="lede">Pas d'abonnement à surveiller, pas de renouvellement discret. Vous offrez l'année, elle raconte à son rythme, et le livre arrive.</p>
+        </div>
+        <div class="options">
+          <div class="option">
+            <div><b>Option téléphone</b><span>Elle préfère qu'on l'appelle ? Une personne lui pose la question de vive voix, chaque semaine.</span></div>
+            <div class="p">+25 €</div>
+          </div>
+          <div class="option">
+            <div><b>Exemplaire supplémentaire</b><span>Pour que chaque enfant ait le sien.</span></div>
+            <div class="p">45 €</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="offer-card">
+        <div class="price"><span class="amount">49 €</span><span class="per">une année de questions, et le livre imprimé</span></div>
+        <ul class="includes">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Une question par semaine, pendant un an</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Ses histoires mises au propre, mot à mot conservé</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>L'écoute pour toute la famille, et les réponses d'un mot</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Un livre relié, avec un code à scanner par chapitre</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>Tous les enregistrements téléchargeables, à jamais</span></li>
+        </ul>
+        <div class="offer-cta">
+          <a class="btn btn--primary" href="#">Je commence son livre</a>
+          <p class="btn-note"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>Paiement sécurisé · Vous pouvez changer d'avis pendant 14 jours</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <span>© 2026 · <span class="muted">Racines est un nom provisoire.</span> Données hébergées dans l'Union européenne.</span>
+    <nav aria-label="Pied de page">
+      <a href="#">Conditions</a>
+      <a href="#">Confidentialité</a>
+      <a href="#">Nous écrire</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+// Un motif façon QR, déterministe, pour la maquette de page : décoratif, il ne
+// mène nulle part. Le vrai code arrivera avec le livre (bloc 13).
+(function () {
+  const c = document.getElementById('qr');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const n = 21;
+  let seed = 7;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  ctx.fillStyle = '#26211C';
+  const finder = (x, y) => {
+    ctx.fillRect(x, y, 7, 7);
+    ctx.clearRect(x + 1, y + 1, 5, 5);
+    ctx.fillRect(x + 2, y + 2, 3, 3);
+  };
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const inFinder = (x < 8 && y < 8) || (x > 12 && y < 8) || (x < 8 && y > 12);
+    if (!inFinder && rnd() > 0.55) ctx.fillRect(x, y, 1, 1);
+  }
+  finder(0, 0); finder(14, 0); finder(0, 14);
+})();
+</script>
+</body>
+</html>
