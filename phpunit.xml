@@ -40,8 +40,11 @@
         <env name="MEDIA_DRIVER" value="fake" force="true"/>
         <env name="ASR_PROVIDER" value="fake" force="true"/>
         <env name="LLM_PROVIDER" value="fake" force="true"/>
+        <env name="STRIPE_DRIVER" value="fake" force="true"/>
         <env name="ASR_CALLBACK_SECRET" value="secret-de-test-pour-les-rappels-asr"/>
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <!-- Le rendu serveur est un service : la suite ne se connecte à rien. -->
+        <env name="INERTIA_SSR_ENABLED" value="false" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>

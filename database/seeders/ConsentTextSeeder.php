@@ -29,6 +29,8 @@ final class ConsentTextSeeder extends Seeder
         ConsentKind::PhotoRights->value => 'Vous confirmez pouvoir déposer cette photo et en autoriser l’usage dans le livre de la famille.',
         ConsentKind::PostMortemDirectives->value => 'Vous indiquez ce qu’il faudra faire de vos histoires après votre décès. Vos directives prévalent sur la demande de vos proches.',
         ConsentKind::MandateDelegation->value => 'Vous autorisez un proche que vous désignez à valider vos histoires à votre place, quand vous ne le faites pas vous-même. Vous pouvez retirer cette autorisation à tout moment, et elle cesse aussitôt.',
+        ConsentKind::EarlyServiceStart->value => 'Vous demandez que le service numérique démarre immédiatement, sans attendre la fin du délai de rétractation de quatorze jours. Vous conservez ce droit, mais nous pourrons retenir une part correspondant à ce qui aura déjà été fourni.',
+        ConsentKind::MarketingEmail->value => 'Vous acceptez de recevoir de nos nouvelles par courriel. Ce n’est jamais nécessaire pour acheter ni pour utiliser le service, et un lien de désinscription figure dans chaque message.',
     ];
 
     public function run(): void

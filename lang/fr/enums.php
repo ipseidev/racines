@@ -97,6 +97,10 @@ return [
         'upload_failed' => 'Envoi échoué',
         'storage_quota_low' => 'Peu de place sur l’appareil',
         'written_answer_chosen' => 'Réponse écrite choisie',
+        // Bloc 10 : quelqu'un a répondu « vous-même » à la première
+        // étape du tunnel. C'est une information de marché, pas une
+        // erreur de saisie.
+        'self_narration_interest' => 'Intérêt pour raconter sa propre histoire',
     ],
 
     'share_decision' => [
@@ -124,10 +128,51 @@ return [
         'phone' => 'Téléphone',
     ],
 
+    'order_status' => [
+        'pending' => 'En attente de paiement',
+        'paid' => 'Payée',
+        'refunded' => 'Remboursée',
+        'partially_refunded' => 'Partiellement remboursée',
+        'cancelled' => 'Annulée',
+    ],
+
+    'sku' => [
+        'pilot' => 'Offre pilote',
+        'core_prevente' => 'Prévente',
+        'extra_copy' => 'Exemplaire supplémentaire',
+        'phone_option' => 'Enregistrement par téléphone',
+    ],
+
+    'phone_option_entry' => [
+        'checkout' => 'Achetée à la commande',
+        'rescue' => 'Proposée en rattrapage',
+    ],
+
+    'phone_option_status' => [
+        'requested' => 'Demandée',
+        'active' => 'Active',
+        'cancelled' => 'Annulée',
+        'refunded' => 'Remboursée',
+    ],
+
+    'post_mortem_wish' => [
+        'transfer_to_family' => 'Transmettre à ma famille',
+        'freeze' => 'Geler, sans rien transmettre',
+        'delete' => 'Tout supprimer',
+    ],
+
+    'refusal_reason' => [
+        'not_the_right_time' => 'Ce n’est pas le bon moment',
+        'prefer_not_to' => 'Je préfère ne pas',
+        'other' => 'Autre',
+    ],
+
     'support_ticket_kind' => [
         'mic_denied_twice' => 'Micro refusé deux fois',
         'phone_option_requested' => 'Option téléphone demandée',
         'transcription_failed' => 'Transcription échouée',
+        'withdrawal_requested' => 'Rétractation demandée',
+        'refund_offer' => 'Remboursement à proposer',
     ],
 
     'support_ticket_status' => [
@@ -150,6 +195,8 @@ return [
         'photo_rights' => 'Droits sur les photos déposées',
         'post_mortem_directives' => 'Directives à appliquer après le décès',
         'mandate_delegation' => 'Délégation de la validation à un proche',
+        'early_service_start' => 'Démarrage immédiat du service numérique',
+        'marketing_email' => 'Réception de nos nouvelles par courriel',
     ],
 
     'consent_status' => [

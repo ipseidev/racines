@@ -54,6 +54,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read User $owner
+ * @property-read Narrator|null $primaryNarrator Un projet tout juste créé n'en a pas encore.
  */
 final class Project extends Model
 {
@@ -126,6 +127,16 @@ final class Project extends Model
     public function isPaused(): bool
     {
         return $this->paused_until !== null && $this->paused_until->isFuture();
+    }
+
+    /**
+     * Le message audio du cadeau, quand l'acheteur en a enregistré un.
+     *
+     * @return BelongsTo<Recording, $this>
+     */
+    public function giftAudio(): BelongsTo
+    {
+        return $this->belongsTo(Recording::class, 'gift_audio_recording_id');
     }
 
     /** @return HasMany<FamilyMember, $this> */

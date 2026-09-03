@@ -35,4 +35,10 @@ enum ClientEventName: string
     case UploadFailed = 'upload_failed';
     case StorageQuotaLow = 'storage_quota_low';
     case WrittenAnswerChosen = 'written_answer_chosen';
+    /*
+     * Bloc 10 : quelqu'un voulait raconter **sa** propre histoire. Au pilote
+     * on accompagne un proche, mais l'intérêt est une information de marché
+     * qu'on aurait tort de jeter.
+     */
+    case SelfNarrationInterest = 'self_narration_interest';
 }

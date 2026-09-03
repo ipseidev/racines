@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
@@ -26,6 +27,7 @@ use Illuminate\Notifications\Notification;
  * @property string $id
  * @property string $project_id
  * @property-read Project $project
+ * @property-read PostMortemDirective|null $postMortemDirective
  * @property string $first_name
  * @property string|null $last_name
  * @property string $display_name
@@ -37,6 +39,7 @@ use Illuminate\Notifications\Notification;
  * @property CarbonImmutable|null $opted_in_at
  * @property CarbonImmutable|null $opted_out_at
  * @property CarbonImmutable|null $contact_deletion_due_at
+ * @property CarbonImmutable|null $contact_deleted_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
@@ -67,6 +70,21 @@ final class Narrator extends Model
     public function stories(): HasMany
     {
         return $this->hasMany(Story::class);
+    }
+
+    /**
+     * Les souhaits pour plus tard : au plus un, le dernier exprimé.
+     *
+     * Un index unique sur `narrator_id` le garantit en base. On ne garde pas
+     * l'historique des volontés : savoir que quelqu'un a d'abord voulu tout
+     * supprimer puis changé d'avis n'aide personne, et pourrait servir contre
+     * lui.
+     *
+     * @return HasOne<PostMortemDirective, $this>
+     */
+    public function postMortemDirective(): HasOne
+    {
+        return $this->hasOne(PostMortemDirective::class);
     }
 
     /** @return MorphMany<Consent, $this> */
@@ -114,6 +132,7 @@ final class Narrator extends Model
             'opted_in_at' => 'immutable_datetime',
             'opted_out_at' => 'immutable_datetime',
             'contact_deletion_due_at' => 'immutable_datetime',
+            'contact_deleted_at' => 'immutable_datetime',
         ];
     }
 }

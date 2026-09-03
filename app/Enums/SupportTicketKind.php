@@ -21,4 +21,12 @@ enum SupportTicketKind: string
     case MicDeniedTwice = 'mic_denied_twice';
     case PhoneOptionRequested = 'phone_option_requested';
     case TranscriptionFailed = 'transcription_failed';
+    /*
+     * Bloc 10 : une rétractation demandée, et l'offre de remboursement quand
+     * le narrateur décline l'invitation. Toutes deux se traitent à la main —
+     * il y a une personne au bout, et un virement automatique ne dit pas
+     * qu'on a compris.
+     */
+    case WithdrawalRequested = 'withdrawal_requested';
+    case RefundOffer = 'refund_offer';
 }

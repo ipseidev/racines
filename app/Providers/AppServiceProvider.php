@@ -16,6 +16,9 @@ use App\Services\Llm\ClaudeStoryRenderer;
 use App\Services\Llm\FakeStoryRenderer;
 use App\Services\Llm\SdkAnthropicMessages;
 use App\Services\Llm\StoryRenderer;
+use App\Services\Payments\CheckoutSessions;
+use App\Services\Payments\FakeCheckoutSessions;
+use App\Services\Payments\StripeCheckoutSessions;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
@@ -81,6 +84,7 @@ final class AppServiceProvider extends ServiceProvider
          *  - RevokeRecordTokensOnValidation      ← Spatie StateChanged
          *  - SendNewLinkRequestedAlerts          ← App\Events\NewLinkRequested
          *  - ApplyShareDecisionOnTranscriptionReady ← App\Events\TranscriptionReady
+         *  - FulfillOrderOnStripeWebhook         ← Cashier WebhookReceived
          */
 
         // Les drapeaux de `app/Features` sont découverts par leur classe :
@@ -94,6 +98,22 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureTranscription();
         $this->configureStoryRenderer();
         $this->configureAnalytics();
+        $this->configurePayments();
+    }
+
+    /**
+     * Le paiement passe par un port : le SDK de Stripe a son propre transport,
+     * que `Http::preventStrayRequests()` n'atteint pas, et aucun test ne doit
+     * pouvoir appeler le réseau (T-105).
+     */
+    private function configurePayments(): void
+    {
+        $this->app->singleton(CheckoutSessions::class, fn (): CheckoutSessions => match (
+            (string) config('services.stripe.driver')
+        ) {
+            'fake' => new FakeCheckoutSessions,
+            default => new StripeCheckoutSessions,
+        });
     }
 
     /**

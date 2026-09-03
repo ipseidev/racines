@@ -115,11 +115,22 @@ return [
     ],
 
     // Pilote et option téléphone (R-12 D-9)
+    /*
+     * Repli des réglages du pilote : la base (`PilotSettings`) devient la
+     * source de vérité dès le premier enregistrement dans l'administration.
+     * Les prix sont en **centimes entiers** — un prix en flottant finit par
+     * produire 48,99 € au lieu de 49 €, et on ne s'en aperçoit qu'à la
+     * première facture.
+     */
     'pilot' => [
         'phone_option_cap' => 10,
         'phone_option_price_cents' => 2_500,
         'pilot_price_cents' => 4_900,
         'prevente_prices_cents' => [9_900, 12_900],
+        // `[À CONFIRMER devis 0A]` : tant que l'imprimeur est inconnu, ce
+        // prix est un placeholder, et aucune promesse de délai ne l'accompagne.
+        'extra_copy_price_cents' => 4_500,
+        'gift_send_hour' => 9,
         'target_stories' => [10, 15],
     ],
 

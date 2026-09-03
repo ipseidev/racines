@@ -48,6 +48,23 @@ return [
     |
     */
 
+    /*
+     * Stripe. Les identifiants de prix vivent ici et non en dur dans le
+     * tunnel : ils diffèrent entre le mode test et le mode live, et une
+     * constante oubliée ferait facturer le mauvais montant.
+     */
+    'stripe' => [
+        // `stripe` ou `fake` ; jamais déduit de l'environnement (leçon T-61).
+        'driver' => env('STRIPE_DRIVER', 'stripe'),
+        'prices' => [
+            'pilot' => env('STRIPE_PRICE_PILOT'),
+            'prevente_99' => env('STRIPE_PRICE_PREVENTE_99'),
+            'prevente_129' => env('STRIPE_PRICE_PREVENTE_129'),
+            'extra_copy' => env('STRIPE_PRICE_EXTRA_COPY'),
+            'phone_option' => env('STRIPE_PRICE_PHONE_OPTION'),
+        ],
+    ],
+
     'asr' => [
         'provider' => env('ASR_PROVIDER', 'fake'),
         'gladia_key' => env('GLADIA_API_KEY'),
