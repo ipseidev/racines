@@ -132,6 +132,14 @@ final class DemoLinks extends Command
                         'url' => self::record('variant-a'),
                     ],
                     [
+                        'quoi' => 'Variante A, second lien — enregistrer, puis choisir « Décider plus tard ». La notification de relecture doit arriver après la transcription (journal ou Mailpit), et son lien mener à la page de relecture.',
+                        'url' => self::record('variant-a-later'),
+                    ],
+                    [
+                        'quoi' => '↳ le même projet vu par la famille : rien avant la décision, l’histoire après le partage.',
+                        'url' => self::link(TokenType::ListenProject, 'variant-a-later-famille'),
+                    ],
+                    [
                         'quoi' => 'Variante B — le texte est déjà prêt. Corriger un mot, puis partager. Le mot corrigé doit rester après rechargement.',
                         'url' => self::record('variant-b').'/review',
                     ],

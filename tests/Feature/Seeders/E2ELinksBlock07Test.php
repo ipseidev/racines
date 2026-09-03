@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Enums\TokenType;
+use App\Enums\ValidationVariant;
 use App\Models\AccessToken;
 use App\Services\Tokens\TokenService;
+use App\States\Story\Proposed;
 use Database\Seeders\E2ELinksSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -41,7 +43,7 @@ it('apparie un lien d’écoute à chaque scénario de validation et de retrait'
     $token = pairedFamilyToken($scenario);
 
     expect($token->type)->toBe(TokenType::ListenProject);
-})->with(['variant-b', 'variant-b-share', 'withdraw']);
+})->with(['variant-a-later', 'variant-b', 'variant-b-share', 'withdraw']);
 
 it('sert le lien apparié sur le projet du scénario, et pas sur un autre', function (): void {
     $story = AccessToken::query()
@@ -61,6 +63,19 @@ it('montre le récit partagé du scénario de retrait, pour qu’on puisse le vo
             ->component('family/Home')
             ->has('stories', 1)
             ->where('stories.0.title', 'L’odeur du pain'));
+});
+
+it('ouvre un second lien en variante A, pour le chemin « décider plus tard »', function (): void {
+    // Un lien par scénario, sur sa propre histoire : la variante A a **deux**
+    // chemins — décider tout de suite, ou remettre à la relecture — et le
+    // second n'était jouable qu'après avoir consommé le premier.
+    $story = AccessToken::query()
+        ->where('token_hash', TokenService::hash(E2ELinksSeeder::token('variant-a-later')))
+        ->firstOrFail()
+        ->subject;
+
+    expect($story->project->validation_variant)->toBe(ValidationVariant::Immediate)
+        ->and($story->state::class)->toBe(Proposed::class);
 });
 
 it('ne montre rien sur le scénario « garder pour moi », qui n’a pas encore décidé', function (): void {

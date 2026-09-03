@@ -118,6 +118,44 @@ En cas d'ambiguïté sur « garder pour moi », l'histoire reste privée et hors
 
 _Date, exécutant, résultat, écarts :_
 
+**2026-09-03 — Nicolas Serra (humain) — checkpoint §7 joué en local, quatre points sur cinq validés.**
+
+Joué en local, sur le décor de `demo:liens --bloc=07`, dans Chrome sur macOS.
+`ASR_PROVIDER=fake` (le mot à mot est du remplissage), `LLM_PROVIDER=claude`
+(le rendu Fluide est réel), SMS dans le journal, courriels dans Mailpit.
+
+| §7 | Résultat |
+|---|---|
+| 1. Variante A, « Partager » | **ok** — les trois choix apparaissent sans présélection et sans minuteur |
+| 2. Variante A, « Décider plus tard » | **non joué** — le décor n'avait qu'un lien de variante A, consommé par le point 1. Le scénario `variant-a-later` est ajouté pour cela |
+| 3. Variante B, les trois choix | **ok** — correction d'un mot conservée après rechargement, partage effectif |
+| 4. Espace narrateur : masquer, corbeille, restaurer, supprimer | **ok** — le masquage retire l'histoire côté famille aussitôt ; la suppression exige `SUPPRIMER` en entier |
+| 5. `stories:purge-trashed` à J-31 | **ok** — l'histoire passe en `deleted`, les deux objets du stockage et les transcriptions ont disparu |
+
+**Deux observations qui ne sont pas des défauts.** Le lecteur audio démarre mais
+ne joue aucun son : le fichier semé est un vrai MP3, silencieux par
+construction (`silentMp3()`, quarante trames vides). Ce que le point vérifie
+est que l'URL présignée résout au lieu de tomber en 404, et c'est le cas. Et
+l'interface est **volontairement basique** sur tout le projet : la reprise
+UX/UI est une phase à part, après le fonctionnel (décision du fondateur,
+3 septembre 2026).
+
+**Un écart trouvé en préparant le checkpoint, et corrigé.** La vérification qui
+compte le plus du bloc — « elle masque, la famille ne voit plus rien » —
+n'était jouable avec aucun lien du décor. Chaque scénario du bloc 07 vit dans
+son propre projet, parce que la variante de validation est un réglage de
+projet ; les liens d'écoute du bloc 08 vivent eux aussi chacun dans le leur.
+Le §7.4 renvoyait au bloc 08 pour cette vérification, et le bloc 08 ne pouvait
+pas la rendre. Quatre liens d'écoute sont désormais appariés aux scénarios du
+bloc, sur **leur** projet, de sorte que le même mécanisme s'observe avec quatre
+issues : elle partage → l'histoire apparaît ; elle garde pour soi → rien
+n'apparaît jamais ; elle remet à plus tard → rien avant la décision ; elle
+masque → une histoire avant, aucune après.
+
+**Ce qui reste avant le tag.** Le point 2 ci-dessus, désormais jouable.
+
+---
+
 **2026-09-02 — Claude (agent) — code livré, checkpoint §7 joué en simulé.**
 
 ### Ce qui est démontré

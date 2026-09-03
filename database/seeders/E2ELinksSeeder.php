@@ -75,6 +75,10 @@ final class E2ELinksSeeder extends Seeder
         'revoked' => 'Qu’aimeriez-vous que l’on retienne de vous ?',
         // Bloc 07 : un scénario par variante de validation, plus un retrait.
         'variant-a' => 'Quel jeu aimiez-vous enfant ?',
+        // La variante A a deux chemins : décider tout de suite, ou remettre à
+        // la relecture. Deux liens, donc, sur deux histoires — le second
+        // n'était jouable qu'après avoir consommé le premier.
+        'variant-a-later' => 'Quel était votre jouet préféré ?',
         // Trois liens pour la variante B, et non un seul : la suite tourne en
         // parallèle, et un test qui corrige le texte ne doit pas travailler
         // sur l'histoire qu'un autre vient de partager (leçon de T-59).
@@ -95,6 +99,10 @@ final class E2ELinksSeeder extends Seeder
         // s'affichent après la confirmation. Le lien reste `proposed` pour
         // que la suite puisse enregistrer pour de vrai.
         'variant-a' => ['variant' => 'immediate'],
+        // Apparié à la famille : « décider plus tard » se juge au bout de la
+        // chaîne — la notification arrive, la relecture permet de corriger,
+        // et alors seulement l'histoire apparaît côté famille.
+        'variant-a-later' => ['variant' => 'immediate', 'family' => true],
         // Variante B : le texte est prêt, la relecture attend.
         //
         // `family` apparie un lien d'écoute **sur le projet du scénario**. Sans
