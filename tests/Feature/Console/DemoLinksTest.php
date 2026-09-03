@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Settings\BrandSettings;
 use Database\Seeders\E2ELinksSeeder;
 
 /**
@@ -36,11 +37,33 @@ it('imprime les comptes du back-office et de l’espace Initiateur·rice', funct
         ->assertSuccessful();
 });
 
-it('n’imprime que des adresses du domaine des liens local', function (): void {
+it('imprime les liens sur le domaine court, pas sur celui de l’application', function (): void {
+    // Les deux réglages sont posés ensemble, parce que c'est leur **rapport**
+    // qui décide de la forme du lien (`Links::base()`). Un test qui n'en pose
+    // qu'un lit celui de la machine : celui-ci passait en local et échouait en
+    // intégration continue, où `LINKS_DOMAIN` vaut `127.0.0.1`.
     config()->set('app.url', 'http://localhost:8001');
+
+    $brand = app(BrandSettings::class);
+    $brand->links_domain = 'localhost';
+    $brand->save();
 
     $this->artisan('demo:liens')
         ->expectsOutputToContain('http://localhost:8001/r/')
+        ->assertSuccessful();
+});
+
+it('suit le domaine court quand il diffère de celui de l’application', function (): void {
+    // Le cas du tunnel : `laradev --tunnel` pose un domaine court distinct, et
+    // la feuille doit imprimer des adresses ouvrables depuis un téléphone.
+    config()->set('app.url', 'http://localhost:8001');
+
+    $brand = app(BrandSettings::class);
+    $brand->links_domain = 'exemple-tunnel.trycloudflare.com';
+    $brand->save();
+
+    $this->artisan('demo:liens')
+        ->expectsOutputToContain('https://exemple-tunnel.trycloudflare.com/r/')
         ->assertSuccessful();
 });
 
