@@ -39,7 +39,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-07-done` |
 | 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-08-done` |
 | 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-09-done` |
-| 10 | [Tunnel d'achat, Stripe, cadeau, opt-in narrateur](blocs/B10_tunnel_achat_optin.md) | 09 | ☐ non commencé | `bloc-10-done` |
+| 10 | [Tunnel d'achat, Stripe, cadeau, opt-in narrateur](blocs/B10_tunnel_achat_optin.md) | 09 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) un compte Stripe | `bloc-10-done` |
 | 11 | [Back-office support et journal d'audit](blocs/B11_backoffice_audit.md) | 10 | ☐ non commencé | `bloc-11-done` |
 | 12 | [Photos, réponse écrite, contributeurs](blocs/B12_photos_contributeurs.md) | 11 | ☐ non commencé | `bloc-12-done` |
 | 13 | [Livre : book-ready, BAT, PDF, QR, impression](blocs/B13_livre.md) | 12 | ☐ non commencé | `bloc-13-done` |
@@ -102,4 +102,7 @@ docs/roadmap/
     ├── A_corpus_questions_v1.md ← 60 questions FR séquencées
     ├── B_modele_donnees.md      ← tables, colonnes, index, contraintes
     └── C_regles_moteur.md       ← les 11 règles du moteur, paramètres et événements
+
+docs/runbooks/
+└── stripe.md                    ← brancher le compte, puis diagnostiquer un paiement (bloc 10)
 ```

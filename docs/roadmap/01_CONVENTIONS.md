@@ -141,11 +141,13 @@ Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc
 | `sail npm run types:check` | `tsc --noEmit` |
 | `sail npm run test` | Vitest, une passe |
 | `sail npm run test:watch` | Vitest en continu |
-| `sail npx playwright test` | Tests bout en bout, depuis le conteneur |
+| `E2E_BASE_URL=http://localhost:8001 npx playwright test` | Tests bout en bout, **depuis le Mac** (voir la note ci-dessous) |
 | `sail npm run build` | Compile les assets |
 | `sail artisan migrate:fresh --seed` | Base locale propre avec le corpus et un projet de démonstration |
 
-L'application locale répond sur `http://localhost:8001`, Mailpit sur `http://localhost:8027`, la console MinIO sur `http://localhost:8901` (ports décalés, décision T-34). Depuis le Mac, Playwright a besoin de `E2E_BASE_URL=http://localhost:8001` ; dans le conteneur, la valeur par défaut suffit.
+L'application locale répond sur `http://localhost:8001`, Mailpit sur `http://localhost:8027`, la console MinIO sur `http://localhost:8901` (ports décalés, décision T-34).
+
+**Playwright tourne depuis le Mac, pas depuis le conteneur** (`E2E_BASE_URL=http://localhost:8001 npx playwright test`). La raison est dans `R2_PUBLIC_ENDPOINT` : les URLs présignées d'envoi sont signées pour l'adresse **vue par le navigateur**, soit `http://localhost:9001` — le port que Docker publie sur l'hôte. Un navigateur lancé dans le conteneur y trouve une connexion refusée, et les trois tests qui enregistrent pour de vrai échouent sur un délai dépassé sans dire pourquoi (écart T-110). La CI, elle, sert l'application avec `php artisan serve` sur le runner : même situation qu'un Mac.
 
 ## 6bis. Versions des dépendances
 
@@ -192,6 +194,7 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `ASR_CALLBACK_SECRET` | Secret HMAC ajouté aux URLs de callback ASR | généré |
 | `LLM_PROVIDER` | `claude` ou `fake` | `fake` |
 | `ANTHROPIC_API_KEY`, `LLM_MODEL`, `LLM_EFFORT`, `LLM_MAX_TOKENS` | Rendu Fluide | —, `claude-opus-5`, `medium`, `8000` |
+| `STRIPE_DRIVER` | `stripe` ou `fake` ; jamais déduit de l'environnement (T-61). Le SDK de Stripe a son propre transport, que `Http::preventStrayRequests()` n'atteint pas (T-105) | `stripe` (tests : `fake`) |
 | `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` | Cashier | clés de test |
 | `STRIPE_PRICE_PILOT`, `STRIPE_PRICE_PREVENTE_99`, `STRIPE_PRICE_PREVENTE_129`, `STRIPE_PRICE_EXTRA_COPY`, `STRIPE_PRICE_PHONE_OPTION` | Identifiants `price_…` créés dans Stripe | — |
 | `POSTHOG_KEY`, `POSTHOG_HOST` | Analytics ; hôte UE obligatoire | —, `https://eu.i.posthog.com` |
@@ -202,6 +205,8 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `FFMPEG_BINARIES`, `FFPROBE_BINARIES` | Chemins ffmpeg | `/usr/bin/ffmpeg`, `/usr/bin/ffprobe` |
 | `THROTTLE_TOKENS_PER_TOKEN` | Requêtes par minute et par jeton ; protège du balayage, identique partout | `20` |
 | `THROTTLE_TOKENS_PER_IP` | Requêtes par minute et par IP ; desserrée d'office hors production (T-79) | `60` |
+| `INERTIA_SSR_ENABLED` | Rendu serveur des pages publiques. **Éteint par défaut** : c'est un service séparé, et l'allumer ferait tenter une connexion à 127.0.0.1:13714 depuis chaque test (T-107) | `false` |
+| `INERTIA_SSR_URL` | Adresse du service de rendu serveur | `http://127.0.0.1:13714` |
 | `BROWSERSHOT_NODE_BINARY`, `BROWSERSHOT_CHROME_PATH` | Génération PDF (bloc 13) | — |
 
 ## 9. Sécurité, règles permanentes
@@ -261,9 +266,11 @@ Tous déclarés dans `app/Features/`, portée par projet sauf indication.
 | `validation-variant` | projet | `immediate` (A) / `deferred` (B) | 07 |
 | `mandate-delegation` | projet | bool | 07 |
 | `reaction-notification-timing` | projet | `immediate` / `next-morning` | 08 |
-| `prevente-price` | visiteur anonyme (cookie) | `99` / `129` | 10 |
+| `prevente-price` | visiteur anonyme (cookie `pv`, 90 jours) | `9900` / `12900` centimes | 10 |
 | `gift-experience` | projet | `ecard` / `printed-card` / `audio-message` | 10 |
-| `phone-option-offer` | global | bool, désactivé quand le plafond est atteint | 17 |
+| `phone-option-offer` | global | bool, désactivé quand le plafond est atteint | 10 (posé) / 17 (ouvert) |
+
+`gift-experience` rend `ecard` pour tout le monde au bloc 10, et les deux autres variantes ne sont pas livrées : le PDF A6 attend la chaîne d'impression du bloc 13, et le message vocal de l'acheteur attend un enregistreur hors page narrateur. Les valeurs restent dans le drapeau et dans la validation parce que le modèle de données doit être prêt à les mesurer — pas parce que le parcours existe (décision T-108).
 
 ## 16. Erreurs
 

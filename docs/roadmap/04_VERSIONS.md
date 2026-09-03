@@ -46,7 +46,8 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | twilio/sdk | v8.12.0 | 05 |
 | svix/svix | v2.2.0 | 05 |
 | anthropic-ai/sdk | v0.46.0 | 06 |
-| laravel/cashier | _à installer_ | 10 |
+| laravel/cashier | v16.8.0 | 10 |
+| stripe/stripe-php | v21.3.1 | 10 (transitif de cashier) |
 | spatie/laravel-medialibrary | _à installer_ | 12 |
 | sunspikes/clamav-validator | _à installer_ | 12 |
 | spatie/browsershot | _à installer_ | 13 |
@@ -58,6 +59,8 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 Telescope n'est pas installé : `laravel/pail` couvre le suivi des journaux en local. À réévaluer au bloc 11 si le besoin d'inspection des requêtes se confirme. S'il l'est, `ignore_paths` doit reprendre les sept préfixes de `TokenType::urlPrefixes()` (décision T-48).
 
 Le bloc 03 n'installe **aucun** paquet : `random_bytes`, `hash`, Monolog et Laravel suffisent.
+
+Le bloc 10 n'installe que `laravel/cashier`. Les pages légales sont rendues avec `league/commonmark` 2.10.0, **déjà** présent comme dépendance du framework : ajouter un convertisseur markdown pour trois fichiers aurait été une dépendance de plus à suivre. Le rendu serveur d'Inertia ne demande aucun paquet non plus — `@inertiajs/react/server` est fourni par le paquet npm déjà installé (décision T-107).
 
 `pbmedia/laravel-ffmpeg` était prévu au bloc 06 et n'a **pas** été retenu : le transcodage tient en un appel `ffmpeg` et une lecture `ffprobe`, que `Process::fake()` éprouve directement (décision T-69). `ffmpeg` reste requis sur la machine ; les chemins des binaires viennent de `FFMPEG_BINARIES` / `FFPROBE_BINARIES`.
 

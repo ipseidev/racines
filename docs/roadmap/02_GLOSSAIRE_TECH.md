@@ -102,7 +102,11 @@ En cas de doute, l'action est sensible : c'est la règle de décision par défau
 
 ## 5. Consentements (`consents.kind`, doc 04 §2)
 
-`voice_recording` (a), `transcription` (b), `ai_rendering` (c), `family_sharing` (d), `sensitive_categories`, `phone_call_recording` (D-9), `photo_rights` (déposant), `post_mortem_directives`.
+`voice_recording` (a), `transcription` (b), `ai_rendering` (c), `family_sharing` (d), `sensitive_categories`, `phone_call_recording` (D-9), `photo_rights` (déposant), `post_mortem_directives`, `mandate_delegation` (bloc 07), `early_service_start` et `marketing_email` (bloc 10, l'acheteur).
+
+Les cinq premiers sont ceux de l'opt-in : cinq cases, cinq lignes datées avec la version du texte lu. Pas un « j'accepte tout » — le dossier les veut distincts et révocables, et une case unique rendrait la révocation d'un seul impossible.
+
+Les deux du bloc 10 appartiennent à l'**acheteur**, pas au narrateur, et sont séparés de l'acceptation des CGV : `early_service_start` fait perdre une partie du droit de rétractation, et une case à cocher qui mêlerait les deux ne vaudrait pas consentement. `marketing_email` est décoché par défaut et n'est jamais requis pour payer (critère de sortie du bloc 10).
 
 Colonnes : `subject_type/subject_id` (narrateur, proche ou utilisateur), `project_id`, `kind`, `status ∈ {granted, revoked}`, `channel ∈ {web, phone, admin}`, `text_version` (référence `consent_texts.version`), `ip_hash`, `user_agent`, `granted_at`, `revoked_at`, `recorded_by` (utilisateur admin si `channel = phone`).
 
@@ -140,7 +144,9 @@ Les cinq premiers sont les maillons de la chaîne H2, mesurés **séparément** 
 | `/a/{token}` | Action 1-tap Initiateur·rice | `action` |
 | `/x/{token}` | Téléchargement d'export | `export` |
 
-Tout le reste (`/`, `/essai`, `/acheter`, `/espace`, `/admin`, `/webhooks/*`) vit sur l'hôte de `APP_URL`.
+Tout le reste vit sur l'hôte de `APP_URL` : `/` (accueil), `/essai` (démonstration), `/acheter` (tunnel, six étapes), `/acheter/merci`, `/cgv`, `/confidentialite`, `/mentions-legales`, `/consentements`, `/espace` (Initiateur·rice : `/questions`, `/proches`, `/reglages`, `/commandes`), `/admin`, `/stripe/webhook` et `/webhooks/*`.
+
+Deux exceptions au préfixe `/i/`, ajoutées au bloc 10 : `/i/{token}/bienvenue` porte le jeton d'invitation comme la page d'opt-in, mais `/i/farewell` **n'en porte aucun** — il s'affiche après un refus, quand le jeton vient d'être consommé, et exiger un jeton valide y renverrait une erreur à quelqu'un qui vient de dire non.
 
 Un jeton fait exactement 43 caractères de base64url (32 octets aléatoires) : `Route::pattern('token', '[A-Za-z0-9_-]{43}')` refuse tout le reste par un 404, **avant** la moindre requête. Chaque route de `narrator.php` et de `family.php` porte `resolve.token:<type>`, `throttle:tokens` et `no-store` ; un test parcourt la table de routage et échoue si l'une y échappe. Seule exception documentée : `POST /r/{token}/request-new-link`, qui agit justement parce que le lien est mort.
 

@@ -47,8 +47,10 @@ Index : `(owner_user_id)`, `(status, next_prompt_at)`. Contrainte `projects_prom
 ## project_members (bloc 02) — bigint
 `id`, `project_id` FK projects, `user_id` FK users, `role` check (`initiator`, `editor`), timestamps. Unique `(project_id, user_id)`.
 
-## narrators (bloc 02, complété bloc 05)
-`id`, `project_id` FK, `first_name`, `last_name` nullable, `display_name`, `email` nullable, `phone_e164` nullable, `preferred_channel` check (`sms`, `email`, `both` depuis le bloc 05), `is_primary` bool, `birth_year` smallint nullable, `opted_in_at`, `opted_out_at`, `contact_deletion_due_at` nullable, timestamps. Index unique partiel `narrators_one_primary (project_id) where is_primary`. Contrainte `narrators_reachable_check` : `email` ou `phone_e164` non nul. `preferred_channel` n'accepte que `sms` et `email` : le téléphone n'est jamais un canal d'envoi automatique (R-9).
+## narrators (bloc 02, complété blocs 05 et 10)
+`id`, `project_id` FK, `first_name`, `last_name` nullable, `display_name`, `email` nullable, `phone_e164` nullable, `preferred_channel` check (`sms`, `email`, `both` depuis le bloc 05), `is_primary` bool, `birth_year` smallint nullable, `opted_in_at`, `opted_out_at`, `contact_deletion_due_at` nullable, `contact_deleted_at` nullable (bloc 10), timestamps. Index unique partiel `narrators_one_primary (project_id) where is_primary`. `preferred_channel` n'accepte que `sms` et `email` : le téléphone n'est jamais un canal d'envoi automatique (R-9).
+
+Contrainte `narrators_reachable_check`, **révisée au bloc 10** : `contact_deleted_at` non nul **ou** `email` non nul **ou** `phone_e164` non nul. La version d'origine exigeait une coordonnée, et rendait donc impossible l'obligation du doc 04 §2 — effacer les coordonnées d'une personne qui n'a jamais dit oui, trente jours après la dernière relance. On ne retire pas la garde, on nomme l'exception, et sa date l'accompagne : « quand ces coordonnées ont-elles été effacées ? » est exactement ce qu'une demande RGPD demande (écart T-109, même forme que T-80 pour l'audio d'origine).
 
 ## family_members (bloc 02)
 `id`, `project_id` FK, `invited_by_user_id` FK users, `display_name`, `relationship` nullable, `email` nullable, `phone_e164` nullable, `can_contribute` bool défaut false, `invited_at` nullable, `first_seen_at` nullable, `removed_at` nullable, timestamps. Index `(project_id)`.
@@ -165,7 +167,9 @@ Table **interne** : elle sert à savoir où en est une demande, pas à conserver
 Contrainte `consents_phone_operator_check` : `channel <> 'phone' or recorded_by_user_id is not null`. Un accord oral recueilli par téléphone nomme toujours son opérateur (D-9) ; c'est aussi ce que vérifie la garde de `ValidateStory` avant d'accepter une validation `phone_operator`.
 
 ## invitations (bloc 10)
-`id`, `project_id`, `narrator_id`, `channel`, `attempt` smallint (1, 2, 3), `token_id` FK access_tokens, `sent_at`, `opened_at`, `accepted_at`, `refused_at` nullable, timestamps. Contrainte : au plus 3 lignes par narrateur.
+`id` uuid, `project_id`, `narrator_id`, `channel` check, `attempt` smallint check (`1`, `2`, `3`), `token_id` FK access_tokens nullable, `sent_at`, `opened_at`, `accepted_at`, `refused_at` nullable, timestamps. Unique `(narrator_id, attempt)`, index `(project_id, sent_at)`.
+
+Deux contraintes plutôt qu'une règle applicative : le check sur `attempt` borne à trois envois — deux invitations et une relance, doc 04 §2 —, et l'unique empêche qu'un tick du moteur rejoué envoie deux fois la même relance. `opened_at` sépare « jamais reçu » de « reçu et pas répondu », et c'est toute la différence entre relancer et respecter un silence.
 
 ## access_tokens (bloc 03)
 | Colonne | Type | Notes |
@@ -247,11 +251,21 @@ Les tickets que le produit ouvre **de lui-même**. Une personne de 82 ans qui n'
 Rien à la table : les jetons `action` utilisent le périmètre existant, sous la forme `["action", "<nom>"]`. La liste des noms est **fermée** (`OneTapRegistry`) et un périmètre inconnu rend 404 — du point de vue du visiteur, un lien bricolé est un lien qui n'existe pas.
 
 ## orders, order_items (bloc 10)
-orders : `id`, `user_id`, `project_id` nullable, `stripe_checkout_session_id` unique, `stripe_payment_intent_id` nullable, `status` check (`pending`, `paid`, `refunded`, `partially_refunded`, `cancelled`), `currency` `eur`, `subtotal_cents`, `total_cents`, `refunded_cents`, `price_variant` check nullable (`99`, `129`), `paid_at`, `withdrawal_deadline_at`, `service_started_at` nullable, timestamps.
-order_items (bigint) : `order_id`, `sku` check (`pilot`, `core_prevente`, `extra_copy`, `phone_option`), `quantity`, `unit_cents`, `stripe_price_id`, `metadata` jsonb.
+orders : `id` uuid, `user_id` FK users, `project_id` nullable (`nullOnDelete`), `stripe_checkout_session_id` **unique** — c'est la clé d'idempotence du webhook —, `stripe_payment_intent_id` nullable, `stripe_invoice_url` nullable, `status` check (`pending`, `paid`, `refunded`, `partially_refunded`, `cancelled`), `currency` `eur`, `subtotal_cents`, `total_cents`, `refunded_cents` défaut 0, `price_variant` smallint check nullable (`9900`, `12900`, **en centimes**), `paid_at`, `withdrawal_deadline_at`, `service_started_at` nullable, timestamps. Index `(user_id, status)` et `withdrawal_deadline_at`.
+
+`withdrawal_deadline_at` est **stocké**, pas recalculé : le délai légal se compte à partir d'un fait daté, et une règle qui change ne doit pas rétroagir sur une commande déjà passée. `service_started_at` n'est posé que si l'acheteur a demandé le démarrage immédiat — c'est ce qui justifie de retenir une part en cas de rétractation.
+
+order_items (bigint) : `order_id`, `sku` check (`pilot`, `core_prevente`, `extra_copy`, `phone_option`), `quantity` smallint, `unit_cents`, `stripe_price_id` nullable, `metadata` jsonb nullable, timestamps. Index `(order_id, sku)`. `unit_cents` est **copié** à la commande, jamais relu dans les réglages : le prix d'une commande passée ne change pas quand celui du produit change.
+
+## checkout_drafts (bloc 10)
+`id` uuid, `user_id` nullable (`nullOnDelete`) — le brouillon naît anonyme et se rattache au compte créé à la quatrième étape —, `step` smallint, `payload` jsonb, `price_variant` smallint nullable (en centimes, même unité que `orders`), `expires_at`, timestamps. Index `expires_at`.
+
+Sept jours de vie. Le tunnel a six étapes et la quatrième crée un compte : quelqu'un qui abandonne à la cinquième ne doit pas tout ressaisir. Le brouillon est retrouvé par le compte s'il existe, sinon par un cookie `checkout_draft`.
 
 ## phone_options (bloc 10, opéré bloc 17)
-`id`, `project_id`, `order_item_id` nullable, `entry` check (`checkout`, `rescue`), `status` check (`requested`, `active`, `cancelled`, `refunded`), `operator_user_id` nullable, `call_day` smallint nullable, `call_slot` check nullable, `notes` text nullable, timestamps.
+`id` uuid, `project_id`, `order_item_id` bigint nullable (`nullOnDelete`), `entry` check (`checkout`, `rescue`), `status` check (`requested`, `active`, `cancelled`, `refunded`) défaut `requested`, `operator_user_id` nullable, `call_day` smallint nullable, `call_slot` check nullable (créneaux de prompt), `notes` text nullable, timestamps. Index `(status, entry)` et `project_id`.
+
+Le plafond du pilote ne vit pas ici mais dans `PilotSettings::phone_option_cap`, et il est appliqué **côté serveur** au moment du paiement puis revérifié à l'ouverture de la session : entre l'étape 5 et le clic sur « payer », une autre famille a pu prendre le dernier créneau.
 
 ## books, book_chapters (bloc 13)
 books : `id`, `project_id` unique, `template` check (`classic`), `format` check (`book`, `booklet`, `founding_chapter`), `status` check (`draft`, `proofing`, `approved`, `ordered`, `printed`, `delivered`, `reprint`), `page_count_estimate` int, `book_ready_at` nullable, `proof_pdf_path` nullable, `proof_approved_at` nullable, `proof_approved_by_user_id` nullable, `proof_acknowledged_final_print` bool, `print_order_ref` nullable, `ordered_at`, `delivered_at` nullable, timestamps.
@@ -261,7 +275,9 @@ book_chapters (bigint) : `book_id`, `story_id`, `position`, `qr_token_id` FK acc
 `id`, `project_id`, `kind` check (`full`, `offline_pack`, `gdpr_access`), `status` check (`queued`, `building`, `ready`, `expired`, `failed`), `path` nullable, `bytes` bigint nullable, `manifest` jsonb nullable, `requested_by_type/id`, `token_id` nullable, `ready_at`, `expires_at` nullable, `created_at`.
 
 ## post_mortem_directives (bloc 10)
-`id`, `project_id`, `narrator_id`, `wishes` check (`transfer_to_family`, `freeze`, `delete`), `referent_name` nullable, `referent_contact_masked` nullable, `referent_contact_hash` nullable, `consent_id` FK, `recorded_at`.
+`id` uuid, `project_id`, `narrator_id` **unique**, `wishes` check (`transfer_to_family`, `freeze`, `delete`), `referent_name` nullable, `referent_contact_masked` nullable, `referent_contact_hash` char(64) nullable, `consent_id` FK consents (`restrictOnDelete`, **non nullable**), `recorded_at`, timestamps.
+
+Une directive courante par narrateur, la dernière exprimée : on ne garde pas l'historique des volontés — savoir que quelqu'un a d'abord voulu tout supprimer puis changé d'avis n'aide personne, et pourrait servir contre lui. Le référent est stocké masqué **et** haché, jamais en clair : on doit pouvoir vérifier qu'une personne qui se présente est bien celle désignée, sans conserver le carnet d'adresses d'une famille en deuil. `consent_id` n'est pas nullable — une directive sans consentement journalisé n'a aucune valeur.
 
 ## cohorts (bloc 17)
 `id`, `name`, `phase` check (`0A`, `0B`, `launch`), `started_at`, `notes`, timestamps.
@@ -270,4 +286,6 @@ book_chapters (bigint) : `book_id`, `story_id`, `position`, `qr_token_id` FK acc
 `occurred_at`, `actor_user_id` nullable, `actor_role`, `actor_context` check (`web`, `filament`, `cli`, `phone_operator`, `system`), `action` varchar, `subject_type`, `subject_id`, `project_id` nullable, `ip_hash` nullable, `payload` jsonb (diff avant/après, données personnelles masquées), `previous_hash` char(64), `hash` char(64). Trigger `audit_logs_append_only` : `BEFORE UPDATE OR DELETE … RAISE EXCEPTION`. `hash = sha256(previous_hash || occurred_at || action || subject_type || subject_id || payload::text)`.
 
 ## Tables de packages
-`settings` (spatie/laravel-settings, bloc 01), `permissions`/`roles`/`model_has_*` (spatie/laravel-permission, bloc 02), `features` (Pennant, bloc 02), `media` (spatie/laravel-medialibrary, bloc 12), `customers`/`subscriptions` (Cashier, bloc 10, tables de souscription inutilisées mais créées), `jobs`, `failed_jobs`, `job_batches`, `cache`, `sessions`, `telescope_*` (local).
+`settings` (spatie/laravel-settings, bloc 01), `permissions`/`roles`/`model_has_*` (spatie/laravel-permission, bloc 02), `features` (Pennant, bloc 02), `media` (spatie/laravel-medialibrary, bloc 12), `jobs`, `failed_jobs`, `job_batches`, `cache`, `sessions`, `telescope_*` (local).
+
+**Cashier n'apporte aucune table** (décision T-104). Ses migrations d'abonnement — `subscriptions` et `subscription_items` — ont été retirées : le pilote ne vend qu'un paiement unique, et deux tables vides invitent à croire qu'un abonnement existe. Seules les colonnes client sont ajoutées à `users` par une migration maison : `stripe_id` (indexé), `pm_type`, `pm_last_four`, `trial_ends_at`.
