@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Schema;
 /**
  * La table de `spatie/laravel-medialibrary`, publiée puis reprise.
  *
- * Trois écarts par rapport au gabarit du paquet, et chacun a sa raison.
+ * Quatre écarts par rapport au gabarit du paquet, et chacun a sa raison.
+ *
+ * `uuidMorphs` plutôt que `morphs` : le gabarit suppose des clés entières, et
+ * tous les modèles de domaine de ce produit ont des UUID.
  *
  * `timestampsTz` plutôt que `nullableTimestamps` : tout le schéma de ce
  * produit porte le fuseau (convention §13), et une table qui l'oublie
@@ -29,7 +32,11 @@ return new class extends Migration
         Schema::create('media', function (Blueprint $table): void {
             $table->id();
 
-            $table->morphs('model');
+            // `uuidMorphs` et non `morphs` : le gabarit du paquet suppose des
+            // clés entières, et tous les modèles de domaine de ce produit ont
+            // des UUID. Avec `morphs`, la première photo jointe échoue sur un
+            // « invalid input syntax for type bigint » à l'insertion.
+            $table->uuidMorphs('model');
             $table->uuid()->nullable()->unique();
             $table->string('collection_name');
             $table->string('name');

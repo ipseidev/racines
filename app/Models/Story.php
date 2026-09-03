@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\ModelStates\HasStates;
 
 /**
@@ -63,10 +66,13 @@ use Spatie\ModelStates\HasStates;
  * @property-read Narrator $narrator
  * @property-read Question|null $question
  */
-final class Story extends Model
+final class Story extends Model implements HasMedia
 {
     /** @use HasFactory<StoryFactory> */
-    use HasFactory, HasStates, HasUuids, StoresDatesWithOffset;
+    use HasFactory, HasStates, HasUuids, InteractsWithMedia, StoresDatesWithOffset;
+
+    /** La collection des photos jointes à l'histoire (bloc 12). */
+    public const PHOTOS = 'photos';
 
     /** @var array<string, mixed> */
     protected $attributes = [
@@ -80,6 +86,50 @@ final class Story extends Model
         'share_decision', 'share_decided_at', 'visibility', 'answer_type',
         'written_answer', 'title',
     ];
+
+    /**
+     * Les photos jointes.
+     *
+     * Sur le disque **privé** : une photo de famille ne se sert pas par une
+     * URL devinable, et les URL passent par `temporaryUrl`, régénérées à
+     * chaque chargement.
+     *
+     * `singleFile()` n'est pas employé : une histoire peut porter plusieurs
+     * photos, et c'est même le cas fréquent — on raconte un mariage avec
+     * trois photos.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::PHOTOS)
+            ->useDisk((string) config('media-library.disk_name'))
+            // Le JPEG seul, parce que `Sanitizer` convertit tout avant
+            // d'arriver ici : accepter d'autres types à ce niveau
+            // laisserait passer un fichier non assaini par une autre porte.
+            ->acceptsMimeTypes(['image/jpeg']);
+    }
+
+    /**
+     * Deux conversions, et l'original **conservé**.
+     *
+     * `thumb` pour la galerie, `web` pour l'affichage plein écran. L'original
+     * reste : c'est lui qui partira à l'imprimeur, et une conversion ne
+     * remonte jamais en qualité. Même principe que pour l'audio source
+     * (bloc 04) — ce que la personne a donné n'est jamais remplacé.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        // `performOnCollections()` **avant** la taille : les méthodes de
+        // dimension délèguent au pilote d'image et n'en rendent plus la
+        // conversion, donc tout ce qui suit s'applique au mauvais objet.
+        $this->addMediaConversion('thumb')
+            ->performOnCollections(self::PHOTOS)
+            ->nonQueued()
+            ->width(400);
+
+        $this->addMediaConversion('web')
+            ->performOnCollections(self::PHOTOS)
+            ->width(1600);
+    }
 
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo
