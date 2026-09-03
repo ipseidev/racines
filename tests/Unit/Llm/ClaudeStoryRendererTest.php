@@ -162,7 +162,7 @@ it('consigne le modèle, la consommation et la durée', function (): void {
         ->render(Transcript::factory()->create(), renderingContext());
 
     expect($result->metadata['model'])->toBe('claude-opus-5')
-        ->and($result->metadata['prompt_version'])->toBe('fluide-v1')
+        ->and($result->metadata['prompt_version'])->toBe('fluide-v2')
         ->and($result->metadata['usage']['input_tokens'])->toBe(1200)
         ->and($result->metadata['usage']['output_tokens'])->toBe(640)
         // La lecture du cache est ce qui dit si le prompt est bien réutilisé.
@@ -215,7 +215,12 @@ it('versionne le prompt système dans un fichier, et rien d’autre', function (
         ->and($prompt)->toContain('tu conserves ses mots')
         ->and($prompt)->toContain("Tu n'ajoutes aucun fait")
         ->and($prompt)->toContain('Tu ne corriges pas les souvenirs')
-        ->and(ClaudeStoryRenderer::PROMPT_VERSION)->toBe('fluide-v1');
+        // Deux règles nées de la lecture du corpus : le modèle rétablissait la
+        // négation complète une fois sur trois, et signalait un conflit
+        // familial là où le récit était seulement triste.
+        ->and($prompt)->toContain('Tu ne rétablis pas la négation complète')
+        ->and($prompt)->toContain('pas quand il est seulement triste')
+        ->and(ClaudeStoryRenderer::PROMPT_VERSION)->toBe('fluide-v2');
 });
 
 it('n’accepte dans le schéma que les thèmes du référentiel', function (): void {

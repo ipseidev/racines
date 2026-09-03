@@ -113,9 +113,26 @@ tests/bench/asr/corpus/
 
 Aucun test ne peut dire si le texte mis au propre reste **la parole de la personne**. C'est une lecture, pas une assertion.
 
-- **Quoi** : lire le Fluide de 5 histoires réelles à côté de leur mot à mot.
-- **Ce qu'on cherche** : des mots ajoutés qui n'ont pas été dits, un niveau de langue rehaussé, un souvenir « corrigé », un ton qui n'est pas le sien.
-- **Si ça ne va pas** : on ne retouche pas le prompt en place. On écrit `resources/prompts/fluide-v2.txt` et on met le snapshot à jour — c'est ce qui rend un rendu réexplicable des mois plus tard.
+**Fait à moitié, le 3 septembre 2026.** Cinq mots à mot **écrits** ont été lus ensemble
+(`docs/corpus/`, commande `sail artisan fluide:try`), chacun visant une trahison
+différente. Rien d'inventé dans aucun des cinq, mais deux défauts trouvés — une négation
+orale rétablie une fois sur trois, et un « conflit familial » signalé dans un souvenir
+qui n'en contenait aucun. `fluide-v2` corrige les deux (T-126), et la relecture des cinq
+textes le confirme sans régression.
+
+**Ce qui reste dû.** Un mot à mot écrit est propre ; un mot à mot réel sort d'une
+transcription automatique, avec ses mots mal entendus, ses phrases coupées et ses noms
+propres massacrés. C'est là que le rendu peut encore trahir, et aucun texte écrit à la
+main ne le simule.
+
+- **Quoi** : lire le Fluide de 5 histoires réelles à côté de leur mot à mot. Le corpus de
+  voix du §1.4 fournit la matière : les deux tâches se font dans la même séance.
+- **Ce qu'on cherche** : des mots ajoutés qui n'ont pas été dits, un niveau de langue
+  rehaussé, un souvenir « corrigé », un ton qui n'est pas le sien — et, propre au mot à
+  mot réel, un mot mal entendu que le rendu « répare » en inventant du sens.
+- **Si ça ne va pas** : on ne retouche pas le prompt en place. On écrit
+  `resources/prompts/fluide-v3.txt` et on met le snapshot à jour — c'est ce qui rend un
+  rendu réexplicable des mois plus tard.
 
 ### 1.6 Deux téléphones réels et un accès HTTPS — débloque le bloc 04
 

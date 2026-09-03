@@ -30,13 +30,59 @@ sail artisan fluide:try --file=docs/corpus/essai-01-pain.txt \
 4. **La longueur** : au plus 20 % plus court. En dessous, il a résumé.
 5. **Le titre** : court, tiré de ses mots, sans lyrisme.
 
-## Observations de la première lecture (3 septembre 2026)
+## Première lecture, `fluide-v1` (3 septembre 2026)
 
-- `essai-01` : rien d'inventé, tournures orales conservées, les deux graphies
-  du village proposées au lexique sans qu'aucune ne soit imposée. −3 % de
-  longueur. **Bon.**
-- `essai-04` : n'a rien rallongé (13 mots → 13 mots). Mais **« je sais pas »
-  est devenu « je ne sais pas »** — une correction de niveau de langue, alors
-  que `essai-01` avait conservé « je sais plus ». Le rendu est donc
-  inconstant sur ce point précis, et c'est celui qui compte le plus pour
-  « c'est encore sa voix ». À reprendre dans le prompt.
+Le critère éliminatoire est tenu : **rien d'inventé dans aucun des cinq**. Les
+dates impossibles d'`essai-05` ne sont pas corrigées, `essai-04` n'est pas
+rallongé, « sa femme y était pour beaucoup » d'`essai-03` n'est pas adouci, et
+l'opération d'`essai-02` n'est pas expliquée à sa place. Deux défauts, tous
+deux dans le prompt et non dans le code.
+
+**1. La négation rétablie, une fois sur trois.** « je sais pas » devient « je
+ne sais pas » (`essai-04`), « j'ai jamais bien compris » devient « je n'ai
+jamais bien compris » (`essai-02`, deux fois) — mais « je voulais pas » et
+« on s'est pas parlé » (`essai-03`), « il disait rien » (`essai-05`) et « je
+sais plus » (`essai-01`) restent intacts. Trois corrections sur une dizaine
+d'occasions, sans règle : c'est le pire résultat possible, parce que personne
+ne peut raisonner dessus. Et c'est le point qui compte le plus pour « c'est
+encore sa voix » : sur un récit de trois cents mots, dix « ne » réinsérés font
+que la personne parle mieux dans le livre que dans la vie.
+
+**2. Un « conflit familial » signalé là où il n'y en a pas.** `essai-05` — un
+grand-père qui a fait la première guerre, qui criait la nuit, qui taillait des
+sifflets — ressort avec le drapeau `conflict`. Or `conflict` veut dire brouille
+entre des personnes de la famille, et il n'y en a aucune ici. La conséquence
+n'est pas cosmétique : un drapeau sensible non arbitré **bloque le livre**
+(`ComputeBookReadiness::isSensitiveUndecided`), et il annonce à la famille un
+conflit imaginaire dans un souvenir tendre. Quelques fausses alertes de ce
+genre et plus personne ne lit les vraies.
+
+## Seconde lecture, `fluide-v2` (3 septembre 2026)
+
+`fluide-v2` ajoute la règle de négation avec ses exemples, et définit chaque
+drapeau sensible par **qui pourrait être exposé** au lieu de le nommer par son
+sujet. Les cinq textes relus :
+
+| | Négation | Drapeaux | Longueur | Verdict |
+|---|---|---|---|---|
+| `essai-01` | conservée | — | −7 % | bon ; avec un lexique, « à Saint-Aubin, enfin Saint-Aubin-du-Cormier » se replie sur la graphie retenue |
+| `essai-02` | **corrigé** : les deux « ne » ont disparu | `health` tenu | −1 % | bon |
+| `essai-03` | conservée | `conflict, money` tenus | +0 % | bon ; le reproche à la belle-sœur reste mot pour mot |
+| `essai-04` | **corrigé** : « je sais pas » | — | +0 % | bon |
+| `essai-05` | conservée | **corrigé** : plus aucun drapeau | +0 % | bon ; dates impossibles intactes |
+
+Deux effets de bord, tous deux du côté sûr :
+
+- `essai-04` garde maintenant le « Ben… » d'ouverture, que `v1` retirait comme
+  tic de langage. La règle de négation a tiré l'ensemble vers plus de
+  littéralité. On garde : un mot de trop se supprime en deux secondes à la
+  relecture familiale, un détail inventé ne se rattrape pas.
+- Les titres se rapprochent des mots exacts de la personne (`essai-05` passe de
+  « Il me faisait des sifflets avec du noisetier » à « Il en parlait jamais »,
+  `essai-01` de « L'odeur du pain de ma grand-mère » à « Vous voilà mes
+  petits »). C'est ce que le prompt demande.
+
+Ce qu'aucune de ces deux lectures ne prouve : que le rendu tient sur de **vraies
+voix**. Ces cinq textes sont écrits, donc propres — un mot à mot réel sort d'une
+transcription automatique, avec ses mots mal entendus et ses phrases coupées. La
+lecture sur dix voix réelles reste ouverte (`05_A_FAIRE_HUMAIN.md`).

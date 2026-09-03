@@ -17,11 +17,12 @@ use RuntimeException;
  * Trois choix méritent d'être dits :
  *
  *  1. **Le prompt système est un fichier versionné**
- *     (`resources/prompts/fluide-v1.txt`), pas une chaîne dans le code. Il est
+ *     (`resources/prompts/fluide-v2.txt`), pas une chaîne dans le code. Il est
  *     mis en cache côté API : identique d'un appel à l'autre, il ne coûte
- *     qu'une fois. Le modifier veut dire créer `fluide-v2.txt` et mettre à
+ *     qu'une fois. Le modifier veut dire créer la version suivante et mettre à
  *     jour l'instantané de test — le texte qui met en forme les souvenirs de
- *     quelqu'un ne change pas discrètement.
+ *     quelqu'un ne change pas discrètement, et deux récits rendus par deux
+ *     prompts différents ne portent jamais la même étiquette.
  *  2. **La sortie est contrainte par un schéma JSON.** Le modèle ne rend pas
  *     de la prose libre qu'on parserait à la main : il rend un objet dont on
  *     connaît la forme.
@@ -32,7 +33,7 @@ use RuntimeException;
  */
 final readonly class ClaudeStoryRenderer implements StoryRenderer
 {
-    public const PROMPT_VERSION = 'fluide-v1';
+    public const PROMPT_VERSION = 'fluide-v2';
 
     /** @var list<string> */
     private const SENSITIVE_FLAGS = ['health', 'religion', 'conflict', 'intimacy', 'money', 'other'];
