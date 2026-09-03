@@ -54,7 +54,15 @@ final class SecurityHeaders
 
     private function policy(Request $request, string $nonce): string
     {
-        $media = implode(' ', self::mediaHosts());
+        // Le serveur de développement sert aussi des images et des polices :
+        // son origine HTTP rejoint donc les hôtes de médias. Son websocket,
+        // lui, n'a de sens que dans `connect-src` — un `ws://` dans `img-src`
+        // serait du bruit, et le bruit est ce qui cache les erreurs dans un
+        // en-tête de sécurité.
+        [$devOrigin, $devSocket] = self::viteDevOrigins();
+
+        $media = trim(implode(' ', array_filter([...self::mediaHosts(), $devOrigin])));
+        $connect = trim(implode(' ', array_filter([...self::mediaHosts(), $devOrigin, $devSocket])));
 
         if ($this->isBackOffice($request)) {
             return implode('; ', [
@@ -64,7 +72,7 @@ final class SecurityHeaders
                 "font-src 'self' data:",
                 trim("img-src 'self' data: blob: {$media}"),
                 trim("media-src 'self' blob: {$media}"),
-                trim("connect-src 'self' {$media}"),
+                trim("connect-src 'self' {$connect}"),
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",
@@ -84,7 +92,7 @@ final class SecurityHeaders
             "font-src 'self' data:",
             trim("img-src 'self' data: blob: {$media}"),
             trim("media-src 'self' blob: {$media}"),
-            trim("connect-src 'self' {$media}"),
+            trim("connect-src 'self' {$connect}"),
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
@@ -110,6 +118,50 @@ final class SecurityHeaders
     private function isBackOffice(Request $request): bool
     {
         return str_starts_with((string) $request->route()?->getName(), 'filament.');
+    }
+
+    /**
+     * Le serveur de développement de Vite, quand il tourne, et jamais en
+     * production.
+     *
+     * Sans lui, `connect-src` refusait `ws://localhost:5176` et le websocket
+     * de rechargement à chaud ne se connectait pas. Vite retombait alors sur
+     * une invalidation de module, qui réimportait `app.tsx` avec un `?t=` :
+     * **deux instances du module, deux appels à `createRoot` sur le même
+     * conteneur**. Une racine React mettait l'URL à jour, l'autre gardait
+     * l'écran, et plus aucune navigation côté client ne fonctionnait en local
+     * (T-129). Invisible en intégration continue, qui construit les assets et
+     * ne lance donc jamais le serveur de développement.
+     *
+     * Deux gardes plutôt qu'une : le fichier `hot` doit exister **et**
+     * l'application ne pas être en production. Un `hot` oublié dans une image
+     * livrée n'ouvre ainsi aucune origine.
+     *
+     * @return array{0: string|null, 1: string|null} l'origine HTTP, puis celle du websocket
+     */
+    private static function viteDevOrigins(): array
+    {
+        if (app()->isProduction()) {
+            return [null, null];
+        }
+
+        $hot = public_path('hot');
+
+        if (! is_file($hot)) {
+            return [null, null];
+        }
+
+        $parts = parse_url(trim((string) file_get_contents($hot)));
+
+        if (! is_array($parts) || ! isset($parts['host'])) {
+            return [null, null];
+        }
+
+        $scheme = is_string($parts['scheme'] ?? null) ? $parts['scheme'] : 'http';
+        $authority = $parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
+        $socket = $scheme === 'https' ? 'wss' : 'ws';
+
+        return ["{$scheme}://{$authority}", "{$socket}://{$authority}"];
     }
 
     /**

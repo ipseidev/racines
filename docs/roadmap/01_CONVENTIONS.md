@@ -151,6 +151,21 @@ L'application locale répond sur `http://localhost:8001`, Mailpit sur `http://lo
 
 **Playwright tourne depuis le Mac, pas depuis le conteneur** (`E2E_BASE_URL=http://localhost:8001 npx playwright test`). La raison est dans `R2_PUBLIC_ENDPOINT` : les URLs présignées d'envoi sont signées pour l'adresse **vue par le navigateur**, soit `http://localhost:9001` — le port que Docker publie sur l'hôte. Un navigateur lancé dans le conteneur y trouve une connexion refusée, et les trois tests qui enregistrent pour de vrai échouent sur un délai dépassé sans dire pourquoi (écart T-110). La CI, elle, sert l'application avec `php artisan serve` sur le runner : même situation qu'un Mac.
 
+**Aucun test n'éprouve le serveur de développement de Vite.** L'intégration
+continue exécute `npm run build` puis Playwright : elle teste les assets
+**construits**. Le mode que l'on utilise toute la journée — `laradev`, Vite en
+écoute sur 5176 — n'est jamais couvert. Ce n'est pas un oubli qu'on peut
+combler à peu de frais : lancer un serveur de développement en intégration
+continue doublerait la durée des tests bout en bout pour éprouver un mode qui
+ne part jamais en production. Mais la conséquence doit être dite, parce
+qu'elle a déjà coûté : un double montage de React propre au mode
+développement a cassé **toute** la navigation côté client sans qu'aucun test
+échoue (écart T-129), et c'est un humain devant un navigateur qui l'a trouvé.
+Concrètement : quand un checkpoint humain se comporte étrangement en local,
+vérifier le comportement avec les assets construits (`npm run build` puis
+retirer `public/hot`) fait partie du diagnostic, et sépare en une minute un
+défaut du produit d'un défaut de l'outillage.
+
 ## 6bis. Versions des dépendances
 
 - **On installe toujours la dernière version stable.** `composer require <paquet>` et `npm i <paquet>` sans contrainte de version ; on laisse le gestionnaire résoudre. Les numéros écrits dans les blocs de la roadmap sont indicatifs et datent de sa rédaction : quand ils divergent de ce qui est publié, la dernière version gagne et l'écart est noté dans `03_DECISIONS.md`.

@@ -124,3 +124,71 @@ it('laisse la page à jeton imposer son propre référent', function (): void {
     expect($this->get('/')->headers->get('Referrer-Policy'))
         ->toBe('strict-origin-when-cross-origin');
 });
+
+/**
+ * Le serveur de développement de Vite, et lui seul, et jamais en production.
+ *
+ * Défaut trouvé en test humain : la politique refusait
+ * `ws://localhost:5176`, donc le websocket de rechargement à chaud ne se
+ * connectait pas. Vite retombait alors sur une invalidation de module, qui
+ * réimportait `app.tsx` avec un `?t=` — **deux instances du module, deux
+ * appels à `createRoot` sur le même conteneur**. Une racine React mettait
+ * l'URL à jour, l'autre gardait l'écran : plus aucune navigation côté client
+ * ne fonctionnait en local. Invisible en intégration continue, qui construit
+ * les assets et ne lance donc jamais le serveur de développement.
+ */
+it('autorise le serveur de développement de Vite quand il tourne, et lui seul', function (): void {
+    $hot = public_path('hot');
+    $existing = is_file($hot) ? (string) file_get_contents($hot) : null;
+    file_put_contents($hot, 'http://localhost:5176');
+
+    try {
+        $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+        expect($csp)->toContain('http://localhost:5176')
+            ->and($csp)->toContain('ws://localhost:5176')
+            // L'assouplissement ne touche que `connect-src` : les scripts
+            // restent tenus par leur nonce.
+            ->and($csp)->toMatch("/connect-src[^;]*ws:\/\/localhost:5176/")
+            ->and($csp)->not->toMatch('/script-src[^;]*localhost:5176/')
+            // Le websocket n'apparaît que là où il sert.
+            ->and($csp)->not->toMatch('/img-src[^;]*ws:/')
+            ->and($csp)->not->toMatch('/media-src[^;]*ws:/');
+    } finally {
+        $existing === null ? @unlink($hot) : file_put_contents($hot, $existing);
+    }
+});
+
+it('n’autorise aucune origine de développement quand Vite ne tourne pas', function (): void {
+    $hot = public_path('hot');
+    $existing = is_file($hot) ? (string) file_get_contents($hot) : null;
+    @unlink($hot);
+
+    try {
+        $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+        expect($csp)->not->toContain('ws://')
+            ->and($csp)->not->toContain(':5176');
+    } finally {
+        if ($existing !== null) {
+            file_put_contents($hot, $existing);
+        }
+    }
+});
+
+it('refuse d’assouplir la politique en production, même avec un fichier hot', function (): void {
+    // Un `hot` oublié dans une image de production ne doit pas ouvrir une
+    // origine de développement dans la politique de sécurité.
+    $hot = public_path('hot');
+    $existing = is_file($hot) ? (string) file_get_contents($hot) : null;
+    file_put_contents($hot, 'http://localhost:5176');
+    app()->detectEnvironment(fn (): string => 'production');
+
+    try {
+        $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+        expect($csp)->not->toContain(':5176');
+    } finally {
+        $existing === null ? @unlink($hot) : file_put_contents($hot, $existing);
+    }
+});
