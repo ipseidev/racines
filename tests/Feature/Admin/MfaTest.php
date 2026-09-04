@@ -29,6 +29,21 @@ it('envoie un membre du personnel configurer sa double authentification', functi
     'support en lecture' => UserRole::SupportReadonly,
 ]);
 
+it('ouvre la page de configuration à un membre du personnel qui n’a pas encore son second facteur', function (): void {
+    $user = User::factory()->create(['role' => UserRole::Admin]);
+
+    // La page où l'on configure le second facteur ne peut pas exiger qu'il
+    // soit déjà configuré : en production, le premier compte tournait en
+    // boucle entre elle et elle-même (T-146). On n'emploie pas
+    // `followingRedirects()` : un renvoi vers soi-même ne finit jamais, et le
+    // test avec.
+    $setUp = $this->actingAs($user)->get('/admin')->headers->get('Location');
+
+    expect($setUp)->toContain('/admin/multi-factor-authentication/set-up');
+
+    $this->actingAs($user)->get((string) $setUp)->assertOk();
+});
+
 it('ouvre le panneau une fois la double authentification configurée', function (): void {
     $user = User::factory()->admin()->withAppAuthentication()->create();
 

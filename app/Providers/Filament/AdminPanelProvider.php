@@ -7,7 +7,6 @@ namespace App\Providers\Filament;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\Brand;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
-use Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -45,12 +44,16 @@ final class AdminPanelProvider extends PanelProvider
              * n'en est pas un — et ce produit sait déjà que le smishing est le
              * risque n°1 de son public.
              *
-             * Tant qu'elle n'est pas configurée, aucune page ne s'ouvre : le
-             * `authMiddleware` ci-dessous s'en charge, après `Authenticate` et
-             * après le contrôle de permission de `canAccessPanel()`. L'ordre
-             * compte — on ne demande pas à un client de configurer une
-             * application d'authentification pour un panneau qu'il n'ouvrira
-             * jamais.
+             * Tant qu'elle n'est pas configurée, aucune page ne s'ouvre :
+             * Filament pose lui-même ce contrôle sur chaque page du panneau
+             * quand `isRequired` est vrai, après `Authenticate` et donc après
+             * le contrôle de permission de `canAccessPanel()`, et il en exempte
+             * la page de configuration. On ne demande pas à un client de
+             * configurer une application d'authentification pour un panneau
+             * qu'il n'ouvrira jamais. Ne pas redoubler ce contrôle dans
+             * `authMiddleware` : appliqué à toutes les routes authentifiées, il
+             * renvoyait la page de configuration vers elle-même, sans fin, et
+             * le premier compte de production n'entrait pas (T-146).
              */
             ->multiFactorAuthentication(
                 // Pas de `brandName()` : le fournisseur retombe sur celui du
@@ -90,7 +93,6 @@ final class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                EnsureMultiFactorAuthenticationIsEnabled::class,
             ]);
     }
 }
