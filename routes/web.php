@@ -47,7 +47,10 @@ Route::post('/acheter/payer', [CheckoutController::class, 'pay'])
 Route::get('/acheter/merci', [CheckoutController::class, 'thanks'])->name('checkout.thanks');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    // Le tableau de bord de l'Initiateur·rice est l'espace, pas la page
+    // gabarit du kit. Le nom de route reste : les composants d'authentification
+    // du kit le référencent encore.
+    Route::redirect('dashboard', '/espace')->name('dashboard');
 });
 
 require __DIR__.'/initiator.php';

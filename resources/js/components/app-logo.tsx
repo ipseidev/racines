@@ -1,20 +1,14 @@
-import { usePage } from '@inertiajs/react';
+import { BrandLogo } from '@/brand/BrandProvider';
 
-import AppLogoIcon from '@/components/app-logo-icon';
-
+/**
+ * Le logo de l'espace authentifié du kit — barre latérale et en-tête.
+ *
+ * C'est la marque, lue dans les réglages, et jamais un pictogramme livré avec
+ * le kit de démarrage : le nom n'est pas arrêté, et le jour où il le sera, il
+ * changera ici comme partout, depuis l'administration (BrandAgnosticTest).
+ */
 export default function AppLogo() {
-    const { name } = usePage().props;
-
     return (
-        <>
-            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
-                <AppLogoIcon className="size-5 fill-current text-white dark:text-black" />
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">
-                    {name}
-                </span>
-            </div>
-        </>
+        <BrandLogo className="font-display text-brand text-xl leading-none font-semibold" />
     );
 }

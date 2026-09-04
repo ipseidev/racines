@@ -18,6 +18,11 @@ const LINKS = [
  * Une barre de navigation à cinq entrées, et rien de plus : c'est un espace
  * d'organisation, consulté une fois par semaine depuis un téléphone, pas un
  * tableau de bord d'administration.
+ *
+ * Même maison que les autres espaces — crème, lin, cartes blanches, Fraunces en
+ * couleur de marque — et un texte un cran plus petit qu'en face des narrateurs :
+ * la personne qui organise a la quarantaine ou la soixantaine, et lit sur un
+ * téléphone tenu normalement.
  */
 export default function InitiatorLayout({ children }: PropsWithChildren) {
     const t = useT();
@@ -27,38 +32,38 @@ export default function InitiatorLayout({ children }: PropsWithChildren) {
         null;
 
     return (
-        <div className="bg-brand-surface text-brand-text min-h-screen">
-            <header className="border-brand-sand border-b px-6 py-6">
-                <BrandLogo className="text-brand-muted text-base font-medium" />
+        <div className="bg-brand-background text-brand-text min-h-screen">
+            <header className="border-brand-sand border-b">
+                <div className="mx-auto w-full max-w-2xl px-6 py-5">
+                    <BrandLogo className="font-display text-brand text-[1.375rem] font-semibold" />
 
-                <nav className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-base">
-                    {LINKS.map((link) => {
-                        const current = page.url.split('?')[0] === link.href;
+                    <nav className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-base">
+                        {LINKS.map((link) => {
+                            const current =
+                                page.url.split('?')[0] === link.href;
 
-                        return (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                aria-current={current ? 'page' : undefined}
-                                className={
-                                    current
-                                        ? 'font-medium underline'
-                                        : 'text-brand-muted'
-                                }
-                            >
-                                {t(`initiator.nav.${link.key}`)}
-                            </Link>
-                        );
-                    })}
-                </nav>
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    aria-current={current ? 'page' : undefined}
+                                    className={
+                                        current
+                                            ? 'text-brand decoration-brand-gold font-semibold underline decoration-2 underline-offset-[6px]'
+                                            : 'text-brand-muted hover:text-brand'
+                                    }
+                                >
+                                    {t(`initiator.nav.${link.key}`)}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </div>
             </header>
 
             <main className="mx-auto w-full max-w-2xl px-6 py-8 text-[1.0625rem] leading-relaxed">
                 {status !== null && (
-                    <p
-                        role="status"
-                        className="border-brand-sand mb-6 rounded-md border px-4 py-3"
-                    >
+                    <p role="status" className="panel mb-6">
                         {status}
                     </p>
                 )}

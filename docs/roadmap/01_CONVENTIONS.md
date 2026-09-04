@@ -95,6 +95,7 @@ Ces conventions s'appliquent à tout le code, tous les tests et tous les documen
 - shadcn/ui pour les primitives (Button, Dialog, Input…). Les tokens de couleur passent par les variables CSS de marque (bloc 01). Aucune couleur en dur dans les composants métier.
 - Toute logique non triviale (machine à états du recorder, calculs d'affichage, formatage) vit dans `resources/js/lib/` ou `resources/js/recorder/` en fonctions pures testées par Vitest.
 - Les pages narrateur et famille n'importent aucune dépendance lourde : budget 150 Ko gzip de JavaScript par page, vérifié par `npm run build -- --report` et un test Playwright qui mesure la taille des ressources.
+- **Une seule couleur d'action par page.** La terracotta est réservée au bouton qui fait l'action de l'écran ; tout le reste — commandes, secondaires, panneaux — reste dans la couleur de marque, le lin ou le sable. Un bouton se voit par son isolement, pas par sa teinte (analyse colorimétrique du 3 septembre 2026, `docs/design/README.md`). Le thème est clair, seul ; Fraunces est la police variable auto-hébergée des titres, Inter celle du texte, et il n'y en a pas d'autre.
 
 ## 5. Protocole TDD
 

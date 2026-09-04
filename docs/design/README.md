@@ -107,9 +107,11 @@ appels à l'action à la **première personne** (« J'offre ce livre »,
   **49 €** (`PilotSettings`), et c'est ce chiffre que porte la maquette.
 - **Le délai de rétractation** affiché — quatorze jours — est celui du droit de
   la consommation ; le texte exact attend la relecture juridique du bloc 10.
-- **La propagation.** Rien n'est encore porté dans l'application. Ce sera fait
-  famille de pages par famille de pages, en commençant par celles que voient
-  les narrateurs, et en tenant le budget de 150 Ko.
+- **La propagation** est faite (4 septembre 2026, T-132 et T-133) : fondations,
+  puis narrateur, famille, public, Initiateur·rice, dans cet ordre. Chaque
+  famille a été relue à l'écran à 390 px et passée par ses tests bout en bout
+  sur les assets construits. Reste hors du dessin : les pages
+  d'authentification du kit, en anglais et en dur.
 
 ## Ce que la propagation devra tenir
 
@@ -117,3 +119,23 @@ Budget **150 Ko** de JavaScript sur les pages narrateur et famille · polices
 **libres et auto-hébergées** · cibles tactiles **44 px** · **zéro** violation
 axe sérieuse · nom de marque **jamais en dur** (`BrandAgnosticTest`) · thème
 clair seul.
+
+## Les règles de propagation, pour les pages à venir
+
+Trois règles suffisent à habiller une nouvelle page, et une relecture à l'écran
+les corrige là où un script ne peut pas savoir ce que la page veut faire faire.
+
+1. **L'action de la page, et elle seule, est en terracotta** — classe
+   `bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep`,
+   ou `.btn-primary`. Deux boutons terracotta sur un écran sont acceptables
+   quand ce sont deux formes d'un même geste (« J'ai aimé » / « Merci »),
+   jamais deux gestes différents.
+2. **Une commande n'est pas une action** : l'onglet actif, le bouton de
+   lecture, le dépôt d'une photo restent en couleur de marque (`bg-brand`).
+   Un secondaire prend un contour dans la couleur de marque
+   (`border-brand text-brand border-2`, ou `.btn-secondary`) — jamais un filet
+   sable, qui ne se voit plus sur le crème.
+3. **Le fond est le crème de la page.** Les panneaux de mise en avant sont sur
+   lin (`.panel`), les cartes sont blanches à filet sable (`.card`), les
+   champs sont blancs (`.input`). Les titres portent Fraunces et la couleur
+   de marque par la règle de base sur `.font-display`.

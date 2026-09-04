@@ -25,7 +25,7 @@ export default function NoProject() {
 
             <Link
                 href="/"
-                className="border-brand-sand mt-8 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
+                className="border-brand text-brand mt-8 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
             >
                 {t('initiator.no_project.cta')}
             </Link>

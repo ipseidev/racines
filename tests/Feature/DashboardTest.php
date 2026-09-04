@@ -18,12 +18,17 @@ final class DashboardTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_visit_the_dashboard()
+    /**
+     * La page gabarit du kit n'existe plus : « dashboard » mène à l'espace de
+     * l'Initiateur·rice, qui est le vrai tableau de bord. Une personne qui se
+     * connecte ne doit jamais atterrir sur des rectangles hachurés.
+     */
+    public function test_the_dashboard_leads_to_the_initiator_space()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $response = $this->get(route('dashboard'));
-        $response->assertOk();
+        $response->assertRedirect('/espace');
     }
 }

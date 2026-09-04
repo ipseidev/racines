@@ -54,7 +54,7 @@ export default function OneTapConfirm({
                     </p>
 
                     {link == null ? null : (
-                        <p className="border-brand-sand mt-6 rounded-md border px-4 py-3 break-all">
+                        <p className="border-brand-sand bg-brand-surface mt-6 rounded-md border px-4 py-3 break-all">
                             {link}
                         </p>
                     )}
@@ -62,7 +62,7 @@ export default function OneTapConfirm({
                     {whatsapp == null ? null : (
                         <a
                             href={whatsapp}
-                            className="bg-brand text-brand-foreground mt-6 inline-block min-h-[2.75rem] rounded-md px-6 py-3 text-lg font-medium"
+                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 inline-block min-h-[2.75rem] rounded-md px-6 py-3 text-lg font-semibold"
                         >
                             WhatsApp
                         </a>
@@ -86,7 +86,7 @@ export default function OneTapConfirm({
                             { onFinish: () => setSending(false) },
                         );
                     }}
-                    className="bg-brand text-brand-foreground mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium disabled:opacity-60"
+                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
                 >
                     {button}
                 </button>

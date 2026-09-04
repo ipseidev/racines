@@ -157,7 +157,7 @@ export default function Settings({
                     <button
                         type="submit"
                         disabled={rhythm.processing}
-                        className="bg-brand text-brand-foreground min-h-[2.75rem] self-start rounded-md px-6 py-3 font-medium disabled:opacity-60"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] self-start rounded-md px-6 py-3 font-semibold disabled:opacity-60"
                     >
                         {t('initiator.settings.submit')}
                     </button>
@@ -182,7 +182,7 @@ export default function Settings({
                         {lexicon.map((item) => (
                             <li
                                 key={item.id}
-                                className="border-brand-sand flex items-baseline justify-between gap-4 rounded-md border px-4 py-3"
+                                className="border-brand-sand bg-brand-surface flex items-baseline justify-between gap-4 rounded-md border px-4 py-3"
                             >
                                 <span>
                                     {item.term}
@@ -253,7 +253,7 @@ export default function Settings({
                     <button
                         type="submit"
                         disabled={entry.processing}
-                        className="border-brand-sand min-h-[2.75rem] self-start rounded-md border px-6 py-3 disabled:opacity-60"
+                        className="border-brand text-brand min-h-[2.75rem] self-start rounded-md border-2 px-6 py-3 font-semibold disabled:opacity-60"
                     >
                         {t('initiator.settings.lexicon.submit')}
                     </button>
@@ -300,7 +300,7 @@ export default function Settings({
                     <button
                         type="submit"
                         disabled={pause.processing}
-                        className="border-brand-sand min-h-[2.75rem] self-start rounded-md border px-6 py-3 disabled:opacity-60"
+                        className="border-brand text-brand min-h-[2.75rem] self-start rounded-md border-2 px-6 py-3 font-semibold disabled:opacity-60"
                     >
                         {t('initiator.settings.pause.submit')}
                     </button>
