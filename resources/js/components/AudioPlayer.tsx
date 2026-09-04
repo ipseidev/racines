@@ -6,6 +6,8 @@ type Props = {
     src: string;
     onProgress?: (seconds: number) => void;
     reportEverySeconds?: number;
+    /** Sans les pastilles de saut et de vitesse : le bouton et la frise. */
+    compact?: boolean;
 };
 
 function formatTime(seconds: number): string {
@@ -55,6 +57,7 @@ export default function AudioPlayer({
     src,
     onProgress,
     reportEverySeconds = 10,
+    compact = false,
 }: Props) {
     const t = useT();
     const audio = useRef<HTMLAudioElement>(null);
@@ -180,7 +183,10 @@ export default function AudioPlayer({
         'chip press min-h-[2.75rem] cursor-pointer text-[0.95rem] before:hidden hover:border-brand';
 
     return (
-        <section aria-label={t('common.player.progress')} className="card p-5">
+        <section
+            aria-label={t('common.player.progress')}
+            className={`card ${compact ? 'p-3' : 'p-5'}`}
+        >
             {/* eslint-disable-next-line jsx-a11y/media-has-caption -- la transcription de l'histoire est affichée juste dessous */}
             <audio ref={audio} src={src} preload="metadata" />
 
@@ -240,34 +246,36 @@ export default function AudioPlayer({
                 </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                    type="button"
-                    onClick={() => seek(-15)}
-                    className={pill}
-                    aria-label={t('common.player.back15')}
-                >
-                    −15 s
-                </button>
-                <button
-                    type="button"
-                    onClick={() => seek(15)}
-                    className={pill}
-                    aria-label={t('common.player.forward15')}
-                >
-                    +15 s
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setSpeed(slower ? 1 : 0.9)}
-                    aria-pressed={slower}
-                    className={`${pill} ${slower ? 'border-brand bg-brand/5' : ''}`}
-                >
-                    {slower
-                        ? t('common.player.normal')
-                        : t('common.player.slower')}
-                </button>
-            </div>
+            {compact ? null : (
+                <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        onClick={() => seek(-15)}
+                        className={pill}
+                        aria-label={t('common.player.back15')}
+                    >
+                        −15 s
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => seek(15)}
+                        className={pill}
+                        aria-label={t('common.player.forward15')}
+                    >
+                        +15 s
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setSpeed(slower ? 1 : 0.9)}
+                        aria-pressed={slower}
+                        className={`${pill} ${slower ? 'border-brand bg-brand/5' : ''}`}
+                    >
+                        {slower
+                            ? t('common.player.normal')
+                            : t('common.player.slower')}
+                    </button>
+                </div>
+            )}
         </section>
     );
 }

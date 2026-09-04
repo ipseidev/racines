@@ -341,7 +341,73 @@
         isolation: isolate;
         /* Le halo déborde du bouton d'un tiers : on lui laisse cette place,
            sinon il passe sur la question au-dessus et sur l'aide en dessous. */
-        margin-block: 3rem;
+        margin-block: 2.25rem;
+    }
+
+    /*
+     * La page d'enregistrement tient dans la hauteur de l'écran, sans
+     * défilement (T-139) : une grand-mère ne doit jamais avoir à chercher le
+     * bouton sous le bord. Les tailles sont celles d'un téléphone courant ;
+     * sur un écran court (iPhone SE et semblables), tout se resserre d'un cran.
+     */
+    .record-greeting {
+        font-size: 1.55rem;
+    }
+
+    .record-question {
+        font-size: clamp(1.2rem, 5.5vw, 1.5rem);
+    }
+
+    .record-dial {
+        width: 10.5rem;
+        height: 10.5rem;
+    }
+
+    .record-dial-small {
+        width: 7.5rem;
+        height: 7.5rem;
+    }
+
+    @media (max-height: 740px) {
+        .record-greeting {
+            font-size: 1.3rem;
+        }
+
+        .record-question {
+            font-size: clamp(1.05rem, 5vw, 1.25rem);
+        }
+
+        .record-card {
+            padding-block: 0.875rem;
+        }
+
+        .record-dial {
+            width: 7.5rem;
+            height: 7.5rem;
+        }
+
+        .record-dial-small {
+            width: 5rem;
+            height: 5rem;
+        }
+
+        .record-halo {
+            margin-block: 0.75rem;
+        }
+
+        .record-action {
+            min-height: 2.75rem;
+            padding-block: 0.625rem;
+            font-size: 1.125rem;
+        }
+
+        .record-stack {
+            gap: 0.75rem;
+        }
+
+        .record-optional {
+            display: none;
+        }
     }
 
     .record-halo::before,

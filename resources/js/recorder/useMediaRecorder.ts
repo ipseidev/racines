@@ -124,6 +124,10 @@ export function useMediaRecorder(
 
     const pause = useCallback(() => {
         if (recorder.current?.state === 'recording') {
+            // Le morceau en cours part tout de suite vers le brouillon : c'est
+            // ce qui permet de se réécouter pendant la pause (T-139), au lieu
+            // d'attendre la prochaine tranche.
+            recorder.current.requestData();
             recorder.current.pause();
         }
     }, []);

@@ -153,6 +153,7 @@ export default function Record({
     const [progress, setProgress] = useState(0);
     const [addingPhoto, setAddingPhoto] = useState(false);
     const [reviewUrl, setReviewUrl] = useState<string | null>(null);
+    const [pausedUrl, setPausedUrl] = useState<string | null>(null);
     const [writing, setWriting] = useState(false);
     const [roomWarning, setRoomWarning] = useState(false);
     const [decided, setDecided] = useState<string | null>(shareDecision);
@@ -287,6 +288,7 @@ export default function Record({
     };
 
     const finish = async () => {
+        clearPausedPlayback();
         send({ type: 'STOP' });
         await recorder.stop();
         wakeLock.current?.release();
@@ -302,6 +304,30 @@ export default function Record({
         setReviewUrl(blob === null ? null : URL.createObjectURL(blob));
 
         send({ type: 'STOPPED' });
+    };
+
+    /*
+     * Se réécouter pendant la pause (T-139) : le dernier morceau vient d'être
+     * demandé au recorder, on lui laisse le temps d'arriver dans le brouillon,
+     * puis on assemble ce qui a été dit jusqu'ici. Sur un navigateur qui ne
+     * sait pas lire un enregistrement inachevé, le lecteur reste muet ; rien
+     * n'est perdu, la réécoute complète vient après « Terminer ».
+     */
+    const preparePausedPlayback = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        const blob = await blobForSegment(
+            storyRef,
+            Math.max(1, snapshot.context.segments),
+        );
+        setPausedUrl(blob === null ? null : URL.createObjectURL(blob));
+    };
+
+    const clearPausedPlayback = () => {
+        if (pausedUrl !== null) {
+            URL.revokeObjectURL(pausedUrl);
+        }
+
+        setPausedUrl(null);
     };
 
     const upload = async () => {
@@ -387,24 +413,42 @@ export default function Record({
 
     const { state, context } = snapshot;
     const capturing = state === 'recording' || state === 'paused';
-    const primary = 'btn-primary press min-h-[2.75rem] w-full py-4 text-xl';
-    const secondary = 'btn-secondary press min-h-[2.75rem] w-full py-4 text-xl';
+    const primary =
+        'btn-primary press record-action min-h-[2.75rem] w-full py-4 text-xl';
+    const secondary =
+        'btn-secondary press record-action min-h-[2.75rem] w-full py-4 text-xl';
+
+    // La question reste sous les yeux tant qu'on répond ; après, elle laisse
+    // la place à la réécoute, à l'envoi et au merci.
+    const showQuestion =
+        question !== null &&
+        [
+            'draft_found',
+            'explaining',
+            'requesting_permission',
+            'ready',
+            'recording',
+            'paused',
+            'interrupted',
+        ].includes(state);
 
     return (
-        <>
+        <div className="flex flex-1 flex-col">
             <Head title={greeting} />
 
-            <h1 className="font-display text-[1.75rem] leading-tight font-medium">
-                {greeting}
-            </h1>
+            {state !== 'confirmed' ? (
+                <h1 className="font-display record-greeting leading-tight font-medium">
+                    {greeting}
+                </h1>
+            ) : null}
 
-            {question !== null && state !== 'confirmed' ? (
-                <div className="card mt-5 px-6 py-6">
+            {showQuestion ? (
+                <div className="card record-card mt-4 px-5 py-5">
                     <span
                         aria-hidden="true"
-                        className="bg-brand-gold mb-4 block h-px w-10"
+                        className="bg-brand-gold mb-3 block h-px w-10"
                     />
-                    <p className="font-display text-brand text-[1.6rem] leading-snug font-medium">
+                    <p className="font-display text-brand record-question leading-snug font-medium">
                         {question}
                     </p>
                 </div>
@@ -460,7 +504,7 @@ export default function Record({
 
             {/* Écran 1 : on explique, puis on demande ============================ */}
             {state === 'explaining' ? (
-                <section className="enter mt-8 flex flex-col gap-6">
+                <section className="enter mt-5 flex flex-1 flex-col justify-center gap-5">
                     <div className="panel flex flex-col gap-3">
                         <p>
                             {t(
@@ -495,12 +539,12 @@ export default function Record({
 
             {/* Écran 2 : le grand bouton rond ==================================== */}
             {state === 'ready' ? (
-                <section className="enter mt-4 flex flex-col items-center gap-5 text-center">
+                <section className="enter flex flex-1 flex-col items-center justify-center gap-4 text-center">
                     <div className="record-halo">
                         <button
                             type="button"
                             onClick={() => void startRecording()}
-                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press flex size-44 flex-col items-center justify-center gap-2 rounded-full shadow-[0_18px_40px_rgba(176,67,42,0.35)] transition-colors"
+                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press record-dial flex flex-col items-center justify-center gap-2 rounded-full shadow-[0_18px_40px_rgba(176,67,42,0.35)] transition-colors"
                         >
                             <MicIcon />
                             <span className="text-2xl font-semibold">
@@ -520,16 +564,20 @@ export default function Record({
 
             {/* Écran 3 : ça tourne =============================================== */}
             {capturing ? (
-                <section className="enter mt-4 flex flex-col items-center gap-5 text-center">
-                    <div className={state === 'recording' ? 'record-halo' : ''}>
+                <section className="enter record-stack flex flex-1 flex-col items-center justify-center gap-4 text-center">
+                    <div
+                        className={
+                            state === 'recording' ? 'record-halo' : 'my-2'
+                        }
+                    >
                         <div
-                            className={`flex size-44 flex-col items-center justify-center gap-1 rounded-full transition-colors duration-500 ${
+                            className={`flex flex-col items-center justify-center gap-1 rounded-full transition-[colors,width,height] duration-500 ${
                                 state === 'recording'
-                                    ? 'bg-brand-accent text-brand-accent-foreground'
-                                    : 'bg-brand-linen text-brand'
+                                    ? 'bg-brand-accent text-brand-accent-foreground record-dial'
+                                    : 'bg-brand-linen text-brand record-dial-small'
                             }`}
                         >
-                            <span className="text-[2.75rem] leading-none font-semibold tabular-nums">
+                            <span className="text-[2.5rem] leading-none font-semibold tabular-nums">
                                 {formatDuration(context.elapsedSeconds)}
                             </span>
                             <span className="sr-only">
@@ -561,13 +609,19 @@ export default function Record({
 
                     {state === 'recording' ? <Wave /> : null}
 
+                    {state === 'paused' && pausedUrl !== null ? (
+                        <div className="enter w-full">
+                            <AudioPlayer src={pausedUrl} compact />
+                        </div>
+                    ) : null}
+
                     {context.warningShown ? (
                         <p className="text-brand-muted text-base">
                             {t('narrator.record.soft_warning')}
                         </p>
                     ) : null}
 
-                    <div className="flex w-full flex-col gap-3">
+                    <div className="mt-auto flex w-full flex-col gap-3">
                         <button
                             type="button"
                             onClick={() => {
@@ -575,10 +629,12 @@ export default function Record({
                                     recorder.pause();
                                     reportClientEvent('recording_paused');
                                     send({ type: 'PAUSE' });
+                                    void preparePausedPlayback();
                                 } else {
                                     recorder.resume();
                                     reportClientEvent('recording_resumed');
                                     send({ type: 'RESUME' });
+                                    clearPausedPlayback();
                                 }
                             }}
                             className={secondary}
@@ -636,7 +692,7 @@ export default function Record({
 
             {/* Écran 4 : se réécouter, puis envoyer ============================== */}
             {state === 'reviewing' ? (
-                <section className="enter mt-8 flex flex-col gap-5">
+                <section className="enter mt-4 flex flex-1 flex-col justify-center gap-5">
                     <div>
                         <h2 className="font-display text-brand text-2xl leading-tight font-medium">
                             {t('narrator.record.review_title')}
@@ -732,28 +788,30 @@ export default function Record({
 
             {/* Écran 6 : c'est enregistré ======================================== */}
             {state === 'confirmed' ? (
-                <section className="enter mt-8">
+                <section className="enter mt-2">
                     <div className="flex flex-col items-center text-center">
                         <span
                             aria-hidden="true"
-                            className="bg-brand text-brand-foreground animate-pop-in flex size-16 items-center justify-center rounded-full"
+                            className="bg-brand text-brand-foreground animate-pop-in flex size-12 items-center justify-center rounded-full"
                         >
                             <Check />
                         </span>
-                        <h2
+                        <h1
                             role="status"
-                            className="font-display text-brand mt-5 text-[1.75rem] leading-tight font-medium"
+                            className="font-display text-brand mt-3 text-[1.5rem] leading-tight font-medium"
                         >
                             {t('narrator.record.confirmed_title')}
-                        </h2>
-                        <p className="mt-3 text-lg">
+                        </h1>
+                        <p className="mt-1.5 text-lg">
                             {t('narrator.record.confirmed_body', {
                                 name: firstName,
                             })}
                         </p>
-                        <p className="text-brand-muted mt-2 text-base">
-                            {t('narrator.record.confirmed_next')}
-                        </p>
+                        {validationVariant === 'immediate' ? null : (
+                            <p className="text-brand-muted mt-2 text-base">
+                                {t('narrator.record.confirmed_next')}
+                            </p>
+                        )}
                     </div>
 
                     {/*
@@ -791,7 +849,7 @@ export default function Record({
                         <button
                             type="button"
                             onClick={() => setAddingPhoto(true)}
-                            className="btn-secondary press mt-8 w-full"
+                            className="text-brand-muted hover:text-brand record-optional mt-4 min-h-[2.75rem] w-full text-base underline underline-offset-4"
                         >
                             {t('common.photos.add')}
                         </button>
@@ -806,13 +864,13 @@ export default function Record({
                     onClick={chooseWriting}
                     className={
                         needsHelp
-                            ? `${secondary} mt-6`
-                            : 'text-brand-muted hover:text-brand mt-10 min-h-[2.75rem] w-full text-base underline underline-offset-4'
+                            ? `${secondary} mt-4`
+                            : 'text-brand-muted hover:text-brand mt-4 min-h-[2.75rem] w-full text-base underline underline-offset-4'
                     }
                 >
                     {t('narrator.record.written_link')}
                 </button>
             ) : null}
-        </>
+        </div>
     );
 }
