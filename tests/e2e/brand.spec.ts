@@ -5,7 +5,7 @@ import { freshTotp } from './support/totp';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@example.test';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'password';
 
-const NOM_INITIAL = 'Racines';
+const NOM_INITIAL = 'Narrae';
 const PRIMAIRE_INITIALE = '#2F4A3F';
 const TEXTE_INITIAL = '#26211C';
 const FOND_INITIAL = '#FBF6EE';

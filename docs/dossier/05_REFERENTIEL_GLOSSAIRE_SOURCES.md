@@ -1,5 +1,5 @@
-# RACINES — Référentiel canonique, Glossaire & Registre des sources
-**v2.3 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
+# NARRAE — Référentiel canonique, Glossaire & Registre des sources
+**v2.4 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
 
 ## R-1. Rôles (terminologie produit/juridique)
 - **Initiateur·rice** : achète, organise, prépare le BAT ; ne peut jamais outrepasser le veto du narrateur. *(« Claire », persona féminine = hypothèse marketing, pas le nom du rôle.)*
@@ -61,7 +61,7 @@ Lien d'enregistrement navigateur envoyé par **SMS/email** (1 lien par question,
 *Statut de la preuve : le canal est en partie dé-risqué par Remento (demande et acceptabilité démontrées aux US). Non prouvé et à tester : la répétition sur 10 semaines chez des seniors français, le popup micro sur leurs appareils réels, la disposition à payer en France, et notre moteur de complétion.*
 
 ## R-10. Engagements de pérennité (formulation juridique canonique)
-1. **Droits** : « Racines n'acquiert aucun droit de propriété sur les contenus. Les droits restent détenus par leurs titulaires respectifs, qui accordent à Racines une licence limitée aux opérations nécessaires à la fourniture du service. »
+1. **Droits** : « Narrae n'acquiert aucun droit de propriété sur les contenus. Les droits restent détenus par leurs titulaires respectifs, qui accordent à Narrae une licence limitée aux opérations nécessaires à la fourniture du service. »
 2. **Portabilité** : export gratuit et complet **pendant toute la durée d'hébergement**, plus **remise proactive d'un export complet à la finalisation du livre et avant toute fin d'hébergement**.
 3. **Hébergement** : durée incluse explicite et publiée ; après expiration, lecture + export restent ouverts pendant la durée d'hébergement.
 4. **QR** : durée d'engagement publiée [DÉCISION D-8 — proposition : 10 ans renouvelables] + pack hors-ligne (les audios en fichiers) remis à la famille ; modalité du pack (téléchargement confirmé vs clé USB, COGS +6-9 €) = décision testée en 0B, pas implicite.
@@ -80,11 +80,11 @@ Lien d'enregistrement navigateur envoyé par **SMS/email** (1 lien par question,
 ---
 
 ## Glossaire
-**AIPD** : analyse d'impact relative à la protection des données (RGPD). **ASR** : reconnaissance vocale automatique. **BAT** : bon à tirer (validation avant impression). **BSP** : Business Solution Provider (intermédiaire WhatsApp/Meta). **CAC** : coût d'acquisition client. **COGS** : coûts directs de délivrance du service. **Contribution** : marge brute − CAC. **DPA** : accord de traitement des données (sous-traitants). **Fair use** : plafond d'usage raisonnable publié. **ITT** : intention de traiter (mesure incluant les non-activés). **LIA** : analyse de mise en balance de l'intérêt légitime. **LTV** : valeur vie client. **OTP** : code à usage unique. **RPO/RTO** : perte de données maximale / délai de reprise après incident. **SLO** : objectif de niveau de service mesurable. **TAM/SAM/SOM** : marché total / adressable / atteignable. **Taux d'attache** : part des acheteurs qui prennent une option payante. **Test de demande** : option proposée à petite échelle et livrable manuellement, pour mesurer une demande avant d'industrialiser (D-9). **WER** : taux d'erreur de transcription.
+**AIPD** : analyse d'impact relative à la protection des données (RGPD). **ASR** : reconnaissance vocale automatique. **BAT** : bon à tirer (validation avant impression). **BSP** : Business Solution Provider (intermédiaire WhatsApp/Meta). **CAC** : coût d'acquisition client. **COGS** : coûts directs de délivrance du service. **Contribution** : marge brute − CAC. **DPA** : accord de traitement des données (sous-traitants). **Fair use** : plafond d'usage raisonnable publié. **ITT** : intention de traiter (mesure incluant les non-activés). **LIA** : analyse de mise en balance de l'intérêt légitime. **LTV** : valeur vie client. **Narrae** : nom définitif du produit, arrêté le 4 septembre 2026 (domaine narrae.fr, expéditeur SMS « NARRAE ») ; « Racines » était le nom de code et reste le nom technique du dépôt. **OTP** : code à usage unique. **RPO/RTO** : perte de données maximale / délai de reprise après incident. **SLO** : objectif de niveau de service mesurable. **TAM/SAM/SOM** : marché total / adressable / atteignable. **Taux d'attache** : part des acheteurs qui prennent une option payante. **Test de demande** : option proposée à petite échelle et livrable manuellement, pour mesurer une demande avant d'industrialiser (D-9). **WER** : taux d'erreur de transcription.
 
 ## Registre des sources (statut : URLs consultées août-sept. 2026 ; captures datées à archiver en 0A)
 - **[S01]** Fact.MR, marché histoire familiale ~7,4 Md$ 2026 — *cité via blog StoryWorth* (welcome.storyworth.com/blog/best-memoir-creation-services-families). Statut : source relayée par un concurrent — **ne porte aucune décision**, contexte uniquement.
-- **[S02]** Global Growth Insights, Genealogy Products & Services Market (globalgrowthinsights.com/market-reports/genealogy-products-and-services-market-101977). Contexte macro uniquement (périmètre plus large que Racines).
+- **[S02]** Global Growth Insights, Genealogy Products & Services Market (globalgrowthinsights.com/market-reports/genealogy-products-and-services-market-101977). Contexte macro uniquement (périmètre plus large que Narrae).
 - **[S03]** AARP 2026 tech trends (équipement 50+) — *cité via blog StoryWorth*. **À re-sourcer directement** ; équivalents FR à collecter : [S13] INSEE, [S14] CREDOC.
 - **[S04]** Remento — pricing officiel : help.remento.co/en/articles/8365892-remento-s-pricing-guide ; site remento.co. Grille US ; le site vu depuis la France affiche 85 € au 2026-09-02, cf. [S16].
 - **[S05]** StoryWorth — pricing officiel : welcome.storyworth.com/storyworth-pricing.

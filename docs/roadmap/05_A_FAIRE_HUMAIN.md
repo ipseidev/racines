@@ -35,16 +35,16 @@ migrate:fresh --seed` (qui **efface** la base locale).
 
 ## §0. Ce qui dépend du nom et du domaine — et ce qui n'en dépend pas
 
-Le nom de marque et le domaine ne sont pas arrêtés. C'est une décision de Phase 0, elle t'appartient (§5), et **elle ne bloque que deux lignes** de tout ce document :
+Le nom de marque et le domaine sont arrêtés depuis le 4 septembre 2026 : **Narrae**, sur **narrae.fr** (T-143). Ils ne bloquaient que deux lignes de ce document, qui peuvent démarrer :
 
-| Ligne | Pourquoi elle attend le nom et le domaine |
+| Ligne | Ce que le nom et le domaine permettent maintenant |
 |---|---|
-| **Resend** | Il faut un **domaine d'envoi vérifié** — SPF, DKIM, DMARC posés chez le registrar. Sans domaine, pas de clé utile. |
-| **Twilio** | L'**expéditeur alphanumérique** (que le SMS arrive au nom de la marque) demande un enregistrement préalable en France, au nom de la marque. |
+| **Resend** | Vérifier **narrae.fr** comme domaine d'envoi : SPF, DKIM, DMARC posés chez le registrar. Cela se fait en heures. |
+| **Twilio** | Enregistrer l'expéditeur alphanumérique **NARRAE** en France, pour que le SMS arrive au nom de la marque. L'enregistrement préalable prend des jours ouvrés. |
 
 Tout le reste est indépendant du nom, et une bonne partie est déjà branchée :
 
-- **Le nom lui-même n'est nulle part dans le code** (bloc 01, `BrandSettings`) : le jour où tu le choisis, un formulaire dans l'administration suffit. Un test échoue si quelqu'un l'écrit en dur.
+- **Le nom lui-même n'est nulle part dans le code** (bloc 01, `BrandSettings`) : la migration de réglages du 4 septembre l'a posé en base, et l'administration permet de le retoucher. Un test échoue si quelqu'un l'écrit en dur.
 - **En local, tu n'as besoin ni de Resend ni de Twilio.** Les courriels partent dans Mailpit (`http://localhost:8027`) et les SMS dans le journal (`SMS_PROVIDER=log`). **Toute la boucle hebdomadaire est jouable comme ça** — c'est ainsi que les checkpoints des blocs 05, 07, 08 et 09 sont prévus.
 - **Anthropic ne demande rien d'autre que sa clé.** C'est un appel synchrone : pas de rappel, pas de tunnel, pas de domaine. Le rendu « Fluide » est donc éprouvable **tout de suite** — et c'est le plus gros risque produit après l'enregistreur, parce que c'est là que se joue « l'IA range, elle n'invente pas ».
 - **Gladia demande une URL joignable** pour son rappel, mais pas un domaine : `cloudflared tunnel --url http://localhost:8001` suffit (§1.6).
@@ -54,7 +54,7 @@ Tout le reste est indépendant du nom, et une bonne partie est déjà branchée 
 
 ## §1. Ce qui débloque du travail déjà écrit
 
-Quatre blocs sont codés, testés et poussés, mais ne peuvent pas être tagués sans ça : **04** (téléphones réels), **05** (Twilio, Resend — les deux seules lignes qui attendent le nom), **06** (clés, corpus de voix) et **10** (Stripe). Le **11** n'attend que vingt minutes de ton temps pour ses quatre premiers points.
+Quatre blocs sont codés, testés et poussés, mais ne peuvent pas être tagués sans ça : **04** (téléphones réels), **05** (Twilio, Resend : le nom est arrêté, restent le domaine d'envoi à vérifier et l'expéditeur à enregistrer), **06** (clés, corpus de voix) et **10** (Stripe). Le **11** n'attend que vingt minutes de ton temps pour ses quatre premiers points.
 
 ### 1.1 Clé Anthropic — débloque le bloc 06
 
@@ -183,9 +183,9 @@ LINKS_DOMAIN=ton-tunnel.trycloudflare.com
 
 puis `sail artisan config:clear`. **Dis-le moi quand tu en es là** : le tunnel change l'origine, donc la politique de contenu et les règles CORS de MinIO doivent la connaître, et c'est deux lignes que je préfère poser moi-même.
 
-### 1.7 Twilio et Resend — débloque le bloc 05, **et attend le nom**
+### 1.7 Twilio et Resend — débloque le bloc 05, **le nom est arrêté**
 
-Les questions hebdomadaires partent par SMS et par courriel. Ce sont les **deux seules lignes** de ce document qui dépendent du nom de marque et du domaine : Resend veut un domaine d'envoi vérifié, Twilio veut un expéditeur alphanumérique enregistré au nom de la marque. Tant que le nom n'est pas arrêté, garde-les de côté — la boucle complète se joue en local avec Mailpit et le journal SMS, et c'est ainsi que les checkpoints sont prévus.
+Les questions hebdomadaires partent par SMS et par courriel. Ce sont les **deux seules lignes** de ce document qui dépendaient du nom de marque et du domaine, arrêtés le 4 septembre 2026 (Narrae, narrae.fr, T-143) : Resend veut le domaine d'envoi narrae.fr vérifié, Twilio veut l'expéditeur alphanumérique « NARRAE » enregistré au nom de la marque. Les deux démarches peuvent commencer. En attendant, la boucle complète se joue en local avec Mailpit et le journal SMS, et c'est ainsi que les checkpoints sont prévus.
 
 **Twilio** ([console.twilio.com](https://console.twilio.com)) :
 
@@ -197,7 +197,7 @@ Les questions hebdomadaires partent par SMS et par courriel. Ce sont les **deux 
 
 - `RESEND_API_KEY` : dans le tableau de bord.
 - **Un domaine d'envoi vérifié** : SPF, DKIM et DMARC à poser chez ton registrar. Sans ça les courriels partent en indésirables, et un courriel de relance en indésirable est une relance qui n'existe pas.
-- `RESEND_WEBHOOK_SECRET` : en créant le webhook, avec l'URL `https://ton-domaine/webhooks/resend`. C'est lui qui fait passer un message en `delivered` — donc qui permet au moteur de complétion (bloc 09) de distinguer « lien non ouvert » de « courriel jamais reçu ». La différence entre relancer un narrateur et lui adresser un reproche injuste.
+- `RESEND_WEBHOOK_SECRET` : en créant le webhook, avec l'URL `https://narrae.fr/webhooks/resend` (ou l'URL du tunnel en local). C'est lui qui fait passer un message en `delivered` — donc qui permet au moteur de complétion (bloc 09) de distinguer « lien non ouvert » de « courriel jamais reçu ». La différence entre relancer un narrateur et lui adresser un reproche injuste.
 - **Vérifier** : `MAIL_MAILER=resend`, puis déclencher un envoi et regarder le tableau de bord Resend.
 
 ### 1.8 Stripe — débloque le bloc 10
@@ -291,7 +291,7 @@ Les textes de consentement semés aujourd'hui portent tous la mention `[À VALID
 
 Ni le code ni moi ne pouvons les prendre.
 
-0. **Le nom de marque et le domaine.** Ils ne bloquent que Resend et Twilio (§0), mais ils les bloquent pour de bon : un domaine d'envoi se vérifie en heures, un expéditeur SMS alphanumérique en jours ouvrés en France. Le nom n'est écrit nulle part dans le code — un formulaire dans l'administration suffira le jour où tu trancheras — mais plus il tarde, plus le bloc 05 attend.
+0. **Le nom de marque et le domaine.** ☑ Tranché le 4 septembre 2026 : Narrae, narrae.fr (T-143). Restent à lancer les deux démarches qu'ils débloquent (§1.7) : la vérification du domaine d'envoi se fait en heures, l'enregistrement de l'expéditeur SMS en jours ouvrés en France.
 1. **La variante de validation** (Phase 0A, bloc 07). Deux façons de demander au narrateur ce qu'il veut faire de son histoire : les trois choix en fin d'enregistrement (A), ou la relecture du texte d'abord (B). Le drapeau est par projet et **mémorisé** — une famille ne change pas de variante en cours de route, sinon la comparaison ne veut rien dire. C'est le test le plus important de la Phase 0A, et il se tranche en regardant de vraies familles, pas en discutant.
 2. **Le moment de la notification de réaction** (bloc 08). Tout de suite, ou en résumé le lendemain matin. Un SMS à 23 h chez une personne de 85 ans n'est pas une bonne nouvelle ; reste à savoir si l'élan survit à la nuit.
 3. **Le fournisseur de transcription**, si l'écart de WER dépasse 2 points. En dessous, la règle est déjà écrite et Gladia gagne (hébergement UE). Au-dessus, c'est un arbitrage qualité contre juridiction, et il te revient.
@@ -314,8 +314,8 @@ Le seul endroit à tenir à jour.
 | 6 | Lecture humaine du Fluide sur 5 histoires | bloc 06 | **à moitié** — 5 mots à mot **écrits** lus le 2026-09-03, deux défauts corrigés (`fluide-v2`, T-126) ; reste 5 histoires **réelles**, dans la même séance que le corpus de voix |
 | 7 | iPhone réel + Android réel *(5 idéalement, dont Samsung Internet)* | bloc 04 | ☐ |
 | 8 | Accès HTTPS (tunnel ou préproduction) | bloc 04 | ☐ |
-| 9 | Twilio : SID, token, numéro vérifié | bloc 05 — **attend le nom** | ☐ |
-| 10 | Resend : clé, domaine vérifié, secret de webhook | bloc 05 — **attend le nom** | ☐ |
+| 9 | Twilio : SID, token, numéro vérifié, expéditeur « NARRAE » enregistré | bloc 05 — **le nom est arrêté** | ☐ |
+| 10 | Resend : clé, domaine narrae.fr vérifié, secret de webhook | bloc 05 — **le nom est arrêté** | ☐ |
 | 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☑ **fait le 2026-09-03** — cinq points sur cinq, quatre écarts trouvés et corrigés (T-127 à T-129), bloc tagué |
 | 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | **en cours** — points 1 et 2 validés le 2026-09-03, deux écarts déjà corrigés (T-130, T-131) |
 | 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☐ |
@@ -336,6 +336,6 @@ Le seul endroit à tenir à jour.
 
 **Le chemin le plus court vers trois tags** : lignes 11, 12 et 12bis (une heure et demie de ton temps, rien à acheter), puis 1 + 2 + 3 + 5 pour le bloc 06.
 
-**Ce qui ne dépend pas du nom, par ordre d'utilité** : la ligne 6 (une heure de lecture du Fluide, la clé Anthropic est déjà dans ton `.env`), la ligne 14 (Stripe, vingt minutes), puis les lignes 11 à 12octies (les checkpoints, deux heures de ton temps).
+**Ce qui ne dépend ni de Resend ni de Twilio, par ordre d'utilité** : la ligne 6 (une heure de lecture du Fluide, la clé Anthropic est déjà dans ton `.env`), la ligne 14 (Stripe, vingt minutes), puis les lignes 11 à 12octies (les checkpoints, deux heures de ton temps).
 
 **Le moins cher en argent, le plus utile en information** : la ligne 14. Un compte Stripe en mode test est gratuit et prend vingt minutes ; il débloque le bloc 10 en entier, donc le premier parcours d'achat complet — et c'est ce parcours qui dira si la promesse tient devant quelqu'un qui n'est pas nous.

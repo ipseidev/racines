@@ -1,5 +1,5 @@
-# RACINES — PRD du MVP
-**v2.3 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
+# NARRAE — PRD du MVP
+**v2.4 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
 
 ## 1. Objectif du MVP
 Industrialiser ce que la Phase 0 aura prouvé : un narrateur senior clique, autorise le micro, s'enregistre, **valide explicitement** et recommence (H1) ; les proches écoutent et cette attention est associée à la production (H2) ; l'économie tient après acquisition (H3). Le MVP industrialise **le moteur de complétion** — pas un catalogue de fonctionnalités.

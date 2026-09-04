@@ -38,7 +38,7 @@ function twilioDouble(array &$captured, ?TwilioException $throws = null): Client
 
 beforeEach(function (): void {
     $brand = app(BrandSettings::class);
-    $brand->sms_sender_id = 'RACINESX';
+    $brand->sms_sender_id = 'NARRAEX';
     $brand->save();
 
     config()->set('services.twilio.from', '+33600000000');
@@ -62,7 +62,7 @@ it('signe du nom de la marque là où l’opérateur l’accepte', function (str
     $captured = [];
     $sender = new TwilioSmsSender(twilioDouble($captured));
 
-    expect($sender->senderFor($number))->toBe('RACINESX');
+    expect($sender->senderFor($number))->toBe('NARRAEX');
 })->with([
     'France' => '+33612345678',
     'Belgique' => '+32470123456',

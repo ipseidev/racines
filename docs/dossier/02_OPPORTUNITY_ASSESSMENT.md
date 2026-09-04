@@ -1,11 +1,11 @@
-# RACINES — Opportunity Assessment
-**v2.3 — Septembre 2026 — Sources : registre [Sxx] du doc 05 ; en cas de divergence chiffrée, le Référentiel (doc 05) fait foi.**
+# NARRAE — Opportunity Assessment
+**v2.4 — Septembre 2026 — Sources : registre [Sxx] du doc 05 ; en cas de divergence chiffrée, le Référentiel (doc 05) fait foi.**
 
 ## Taxonomie des affirmations
 **[FAIT SOURCÉ Sxx]** (référence au registre), **[DÉCLARATIF]** (chiffre d'une entreprise sur elle-même), **[OBSERVATION]** (constat qualitatif récurrent), **[ESTIMATION]** (calcul de notre fait), **[HYPOTHÈSE]** (à tester en Phase 0). Une source relayée par un concurrent ne porte jamais seule une décision de marché. Captures d'écran datées des prix : premier lot archivé les 1er et 2 sept. 2026 (site Remento EU, 24 captures, dossier `docs/reference/remento-screenshot/`) [S16] ; à compléter en 0A pour les autres acteurs. Ces captures contiennent des données de test personnelles : à anonymiser avant tout partage externe.
 
 ## 1. Contexte macro (cadrage, pas preuve)
-Marché mondial histoire familiale/généalogie ~7,4 Md$ en 2026 [S01, relayé par un concurrent] ; croissance ~10-11 %/an sur le périmètre généalogie [S02]. **Ces périmètres incluent ADN, arbres et archives — hors périmètre Racines : contexte de dynamique uniquement.** Équipement des seniors : données US [S03] à remplacer par INSEE/CREDOC [S13][S14] en 0A avant tout arbitrage.
+Marché mondial histoire familiale/généalogie ~7,4 Md$ en 2026 [S01, relayé par un concurrent] ; croissance ~10-11 %/an sur le périmètre généalogie [S02]. **Ces périmètres incluent ADN, arbres et archives — hors périmètre Narrae : contexte de dynamique uniquement.** Équipement des seniors : données US [S03] à remplacer par INSEE/CREDOC [S13][S14] en 0A avant tout arbitrage.
 
 ## 2. Marché France [v2.2 — stock et flux distingués]
 
@@ -17,7 +17,7 @@ Formule : foyers acheteurs plausibles × entrée annuelle en considération de l
 - Déclencheurs à instrumenter (0A/0B) : Noël et fêtes familiales ; anniversaire rond (70/75/80) ; départ en retraite ; naissance d'un petit-enfant ; événement de santé ; démarche de transmission (notaire, succession).
 - Paramètres [HYPOTHÈSES] : considération annuelle 1-3 % (catégorie jeune en France, notoriété quasi nulle) ; conversion des considérants 20-40 %.
 - **Fourchette de travail : ~5 000 à 40 000 projets payants/an pour toute la catégorie en France** [ESTIMATION grossière]. Le test d'acquisition de 0B (landing + préventes) fournit les premiers paramètres réels.
-- **Objectif Racines année 3 : 2 000-5 000 projets ≈ 240-650 k€** au panier moyen 120 € (R-3) [OBJECTIF à recalibrer post-0B].
+- **Objectif Narrae année 3 : 2 000-5 000 projets ≈ 240-650 k€** au panier moyen 120 € (R-3) [OBJECTIF à recalibrer post-0B].
 
 ## 3. Concurrents directs
 ### StoryWorth (US, 2013) — l'incumbent de l'écrit
@@ -34,13 +34,13 @@ Formule : foyers acheteurs plausibles × entrée annuelle en considération de l
 Keepsake (attaque « propriété des données » — l'axe fonctionne) [S07] · Memoirji (WhatsApp vocal freemium) [S08] · Memory Murals (archive continue sans livre) [S09] · Tell Mel/StoriedLife/Afterlife (interview IA, immature) · Storii (B2B2C care US) · Meminto (Europe adressable, multilingue) [S10].
 
 ## 5. Substituts — le vrai paysage
-| Substitut | Prix | Faille exploitée par Racines |
+| Substitut | Prix | Faille exploitée par Narrae |
 |---|---|---|
 | Ne rien faire | 0 € | Culpabilité latente ; déclencheurs |
 | Livres à questions DIY (« Raconte-moi… », Famileo/Marabout ~20 €) [S12] | 15-30 € | Complétion très faible, pas de voix, écriture requise |
 | Album photo (CEWE, Photobox…) | 20-60 € | Pas de récit ni de voix — **mais acteurs puissants du print à auditer en 0A (extension possible vers le récit)** |
 | Vocaux WhatsApp non structurés | 0 € | Dispersés, non transcrits, non transmissibles |
-| Biographe privé / écrivain public | 2 000-8 000 € | Prix — Racines : accompagnement à prix cadeau |
+| Biographe privé / écrivain public | 2 000-8 000 € | Prix — Narrae : accompagnement à prix cadeau |
 | **Famileo** [S12] | Gazette + livres | **Menace adjacente n°1 OU partenaire potentiel** : marque de confiance FR, distribution EHPAD, print industrialisé — analyse dédiée en 0A (build/partner/ignore) |
 
 ## 6. Audit concurrentiel français (obligatoire en 0A — le « terrain peu disputé » est une hypothèse, pas un fait)

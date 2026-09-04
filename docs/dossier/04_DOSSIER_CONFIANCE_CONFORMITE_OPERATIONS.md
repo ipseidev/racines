@@ -1,11 +1,11 @@
-# RACINES — Dossier Confiance, Conformité, Sécurité & Opérations
-**v2.3 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
+# NARRAE — Dossier Confiance, Conformité, Sécurité & Opérations
+**v2.4 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
 
 ## 1. Principes fondateurs
 1. **Le narrateur est souverain** : consentement préalable, **validation explicite — jamais tacite —**, veto par histoire, retrait à tout moment. L'Initiateur·rice organise et paie ; il/elle n'outrepasse jamais.
 2. **L'IA est toujours annoncée** ; au MVP il n'existe aucune interaction conversationnelle avec une IA (questions écrites uniquement) ; tout interviewer IA futur sera explicitement signalé à chaque interaction.
 3. **Pas de clonage vocal** : aucune génération de propos nouveaux avec la voix d'une personne, vivante ou décédée.
-4. **Droits (formulation canonique R-10.1)** : Racines n'acquiert aucun droit de propriété sur les contenus ; les droits restent détenus par leurs titulaires respectifs, qui accordent une licence limitée aux opérations nécessaires à la fourniture du service.
+4. **Droits (formulation canonique R-10.1)** : Narrae n'acquiert aucun droit de propriété sur les contenus ; les droits restent détenus par leurs titulaires respectifs, qui accordent une licence limitée aux opérations nécessaires à la fourniture du service.
 5. Aucune exploitation publicitaire, aucun entraînement de modèles sur les contenus des familles.
 
 ## 2. Invitation & consentements
@@ -36,7 +36,7 @@ Le pilote payant traite déjà voix, données sensibles et tiers cités. Avant l
 | Tiers cités | Charte ; signalement possible ; masquage par défaut en cas de doute ; playbook support. |
 | Photos | Le déposant garantit ses droits ; licence limitée à l'affichage privé et au livre ; pas d'usage marketing sans consentement séparé. |
 | Mineurs | Contributeurs via compte parental uniquement ; pas de narrateur mineur au MVP. |
-| Conflits familiaux | Neutralité, application mécanique des règles, escalade support senior ; jamais d'arbitrage éditorial par Racines. |
+| Conflits familiaux | Neutralité, application mécanique des règles, escalade support senior ; jamais d'arbitrage éditorial par Narrae. |
 
 ## 4. Données sensibles & AIPD
 Récits = données sensibles par nature (santé, religion, opinions, intimité) + tiers. AIPD proportionnée avant pilote, complète avant MVP ; registre des traitements ; consentement explicite catégories sensibles à l'opt-in ; minimisation ; pas de profilage ; droits RGPD outillés (accès, rectification, effacement ≤ 30 j, portabilité) ; DPO ; personnes vulnérables : parcours relus « consentement libre et éclairé », gel + contact Initiateur·rice en cas de doute sérieux sur le discernement (playbook).
@@ -59,7 +59,7 @@ Directives post-mortem optionnelles recueillies à l'onboarding (devenir des his
 Cartographie publique (SMS/email, ASR/LLM, hébergement UE, imprimeur, paiement, téléphonie si D-9 conduit à l'automatisation) ; DPA partout ; pas d'entraînement fournisseur sur nos données ; abstraction des fournisseurs critiques + stratégie de sortie documentée.
 
 ## 9. Anti-phishing (les seniors sont la cible n°1 du smishing)
-Invitation préalable obligatoire — aucun lien à froid · premier contact porté par un message personnel de l'Initiateur·rice · expéditeur SMS constant (« RACINES ») + fiche contact VCF à l'opt-in · **un seul domaine court, stable, annoncé dès l'invitation** ; HTTPS ; jamais de raccourcisseur tiers · la page ne demande jamais mot de passe, paiement ou code — dit dès l'invitation · option : l'Initiateur·rice transfère chaque lien via son propre WhatsApp · cadence annoncée et prévisible · **appels (option D-9)** : jamais d'appel non annoncé, créneau choisi par le narrateur, numéro d'appel constant publié dans l'invitation, l'appelant ne demande jamais mot de passe, paiement, code ni coordonnées — uniquement l'histoire —, et le narrateur peut rappeler le numéro publié pour vérifier.
+Invitation préalable obligatoire — aucun lien à froid · premier contact porté par un message personnel de l'Initiateur·rice · expéditeur SMS constant (« NARRAE ») + fiche contact VCF à l'opt-in · **un seul domaine court, stable, annoncé dès l'invitation** (narrae.fr) ; HTTPS ; jamais de raccourcisseur tiers · la page ne demande jamais mot de passe, paiement ou code — dit dès l'invitation · option : l'Initiateur·rice transfère chaque lien via son propre WhatsApp · cadence annoncée et prévisible · **appels (option D-9)** : jamais d'appel non annoncé, créneau choisi par le narrateur, numéro d'appel constant publié dans l'invitation, l'appelant ne demande jamais mot de passe, paiement, code ni coordonnées — uniquement l'histoire —, et le narrateur peut rappeler le numéro publié pour vérifier.
 
 ## 10. Opérations print, SAV & pics
 BAT interactif obligatoire (lexique noms propres + relecture) ; mention « l'imprimé est définitif » ; défaut print/transport → réimpression gratuite ; erreur visible au BAT → geste encadré ; taux de défaut suivi ; pic de Noël 2027 : soft launch préalable, capacité de réimpression réservée, date limite de commande publiée, imprimeur de secours manuel ; playbooks émotionnels (décès, conflit, regret) + formation ; réponse < 24 h ouvrées ; coût support dans les COGS. Suisse hors périmètre (FR/BE d'abord).

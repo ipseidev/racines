@@ -33,4 +33,4 @@ Deux membres d’une même famille nous demandent des choses contraires. Un proc
 
 ## Qui décide
 
-Le support applique les règles. Tout ce qui n’est pas dans les règles remonte à l’administration. Racines n’arbitre jamais un différend familial.
+Le support applique les règles. Tout ce qui n’est pas dans les règles remonte à l’administration. Le service n’arbitre jamais un différend familial.

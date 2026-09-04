@@ -104,8 +104,9 @@ appels à l'action à la **première personne** (« J'offre ce livre »,
 
 ## Ce que la maquette ne règle pas
 
-- **Le nom.** « Racines » est un nom de code ; la maquette le dit en toutes
-  lettres. Le vrai passera par `BrandSettings`, jamais en dur.
+- **Le nom.** Arrêté le 4 septembre 2026 : Narrae, sur narrae.fr (T-143). La
+  maquette le porte depuis ce jour ; « Racines » n'était qu'un nom de code. Dans
+  l'application il vient de `BrandSettings`, jamais en dur.
 - **Les photos.** De banque, donc provisoires. Crédits dans
   `landing/img/credits.json` — licence Unsplash, attribution non requise mais
   due.

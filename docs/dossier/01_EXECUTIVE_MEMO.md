@@ -1,6 +1,6 @@
-# RACINES — Executive Memo
-**v2.3 — Septembre 2026 — Statut : demande de Go Phase 0A + Go conditionnel Phase 0B**
-*Les valeurs chiffrées, seuils, états et durées font foi dans le Référentiel (doc 05). Changements v2.3 (2 sept. 2026) : concurrence réactualisée sur observation directe du site Remento EU [S16] ; la non-captivité est reclassée en standard de catégorie (l'honnêteté contractuelle R-10 reste un actif de confiance, plus un argument de conversion) ; le segment sans smartphone n'est plus exclu par principe : option payante « Enregistrement par téléphone » en test de demande (D-9) ; registre des décisions ouvertes R-12. Rappel v2.2 : marché corrigé (stock ≠ flux), Phase 0 scindée 0A/0B, H0 ajoutée, H3 opérationnalisée, offre pilote contractualisée.*
+# NARRAE — Executive Memo
+**v2.4 — Septembre 2026 — Statut : demande de Go Phase 0A + Go conditionnel Phase 0B**
+*Les valeurs chiffrées, seuils, états et durées font foi dans le Référentiel (doc 05). Changements v2.4 (4 sept. 2026) : le produit a son nom définitif, Narrae, et son domaine, narrae.fr ; « Racines » n'était qu'un nom de code et reste le nom technique du dépôt ; expéditeur SMS « NARRAE » (doc 04 §9) ; aucune valeur chiffrée, seuil, état ou durée ne change. Changements v2.3 (2 sept. 2026) : concurrence réactualisée sur observation directe du site Remento EU [S16] ; la non-captivité est reclassée en standard de catégorie (l'honnêteté contractuelle R-10 reste un actif de confiance, plus un argument de conversion) ; le segment sans smartphone n'est plus exclu par principe : option payante « Enregistrement par téléphone » en test de demande (D-9) ; registre des décisions ouvertes R-12. Rappel v2.2 : marché corrigé (stock ≠ flux), Phase 0 scindée 0A/0B, H0 ajoutée, H3 opérationnalisée, offre pilote contractualisée.*
 
 ## 1. Le problème
 Quand un parent disparaît, sa voix et sa façon de raconter disparaissent avec lui. Les familles le savent et n'agissent pas : les livres à questions restent vides, les projets s'arrêtent au deuxième souvenir. Le problème n'est pas la capture, c'est **la complétion** — faire durer la démarche assez longtemps pour produire un résultat transmissible. [OBSERVATION — plainte n°1 documentée de la catégorie, y compris chez Remento malgré son canal sans friction]
@@ -33,7 +33,7 @@ La promesse porte sur un **résultat adaptable à la matière recueillie** (livr
 À 99 €, la marge brute est de 33-56 % selon scénario **une fois inclus** support, provisions, et coûts de durée de vie (hébergement, QR, exports, fin de service) — et **avant CAC**. C'est pourquoi H3 porte sur la **contribution après CAC**, mesurée par un test d'acquisition séparé du pilote d'usage. L'offre 149 € est modélisée à part (une session humaine de 45-60 min peut absorber la marge — décision D-7 ouverte).
 
 ## 8. Pérennité : engagements R-10
-Droits (licence limitée, aucune propriété acquise par Racines) · portabilité (export gratuit pendant l'hébergement + remise proactive à la finalisation du livre et avant toute fin d'hébergement) · hébergement à durée explicite · QR à durée d'engagement publiée + pack hors-ligne. Vocabulaire interdit : R-11.
+Droits (licence limitée, aucune propriété acquise par Narrae) · portabilité (export gratuit pendant l'hébergement + remise proactive à la finalisation du livre et avant toute fin d'hébergement) · hébergement à durée explicite · QR à durée d'engagement publiée + pack hors-ligne. Vocabulaire interdit : R-11.
 
 ## 9. Risques principaux
 1. **H0/H1 invalidées** → c'est le rôle des gates ; kill assumé.
