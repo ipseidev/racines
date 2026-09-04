@@ -331,6 +331,76 @@
     }
 
     /*
+     * Le grand bouton rond de l'enregistrement, et son halo qui respire.
+     * Le halo est le seul mouvement de la page d'enregistrement : il dit
+     * « ça tourne » à quelqu'un qui ne lit pas un compteur. Il s'arrête pour
+     * qui l'a demandé, et le point qui bat fait alors office.
+     */
+    .record-halo {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .record-halo::before,
+    .record-halo::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: 9999px;
+        background: color-mix(
+            in oklab,
+            var(--color-brand-accent) 22%,
+            transparent
+        );
+        animation: breathe 2.4s var(--ease-soft) infinite;
+    }
+
+    .record-halo::after {
+        animation-delay: 1.2s;
+    }
+
+    @keyframes breathe {
+        0% {
+            transform: scale(1);
+            opacity: 0.9;
+        }
+        100% {
+            transform: scale(1.55);
+            opacity: 0;
+        }
+    }
+
+    /*
+     * La frise du lecteur : un curseur natif, habillé. Le fond est peint par
+     * le composant (la part écoutée en couleur de marque), le pouce est rond
+     * et assez gros pour un doigt.
+     */
+    .audio-range {
+        appearance: none;
+        height: 0.5rem;
+        border-radius: 9999px;
+        cursor: pointer;
+    }
+
+    .audio-range::-webkit-slider-thumb {
+        appearance: none;
+        @apply bg-brand-surface border-brand size-6 rounded-full border-[3px] shadow-sm;
+    }
+
+    .audio-range::-moz-range-thumb {
+        @apply bg-brand-surface border-brand size-6 rounded-full border-[3px] shadow-sm;
+    }
+
+    .progress-bar {
+        @apply bg-brand-sand h-2 w-full overflow-hidden rounded-full;
+    }
+
+    .progress-bar > span {
+        @apply bg-brand ease-soft block h-full rounded-full transition-[width] duration-500;
+    }
+
+    /*
      * Les boutons des espaces à jeton. Deux rôles, et pas de troisième :
      *  - primaire : l'action de la page, en terracotta. Une seule par écran,
      *    parce qu'un bouton se voit par son isolement (docs/design/README.md) ;
@@ -403,8 +473,15 @@
         .wave-bar,
         .enter,
         .animate-rise-in,
-        .animate-pop-in {
+        .animate-pop-in,
+        .record-halo::before,
+        .record-halo::after {
             animation: none;
+        }
+
+        .record-halo::before,
+        .record-halo::after {
+            display: none;
         }
 
         .press {

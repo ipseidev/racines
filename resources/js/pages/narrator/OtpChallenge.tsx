@@ -13,12 +13,11 @@ type Props = {
 const DIGITS = 6;
 
 /**
- * Saisie du code à usage unique.
+ * Le code à six chiffres, une case par chiffre.
  *
- * Six cases en gros caractères plutôt qu'un champ unique : sur un téléphone
- * tenu par une personne de 85 ans, on voit combien de chiffres il reste. Pas
- * de compte à rebours visible (convention §11) — seulement la mention que le
- * code expire, dans le message reçu.
+ * Six grandes cases plutôt qu'un champ : on voit ce qu'on a tapé, le doigt
+ * passe seul à la suivante, et le retour arrière revient. Le premier champ
+ * accepte le code que le téléphone propose de lui-même.
  */
 export default function OtpChallenge({ sentToMasked, locked }: Props) {
     const t = useT();
@@ -28,7 +27,6 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
 
     const [digits, setDigits] = useState<string[]>(Array(DIGITS).fill(''));
     const inputs = useRef<Array<HTMLInputElement | null>>([]);
-
     const form = useForm({ code: '' });
     const send = useForm({});
 
@@ -64,38 +62,34 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
         <>
             <Head title={t('narrator.otp.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[2rem] leading-tight font-medium">
                 {t('narrator.otp.title')}
             </h1>
 
-            <p className="mt-6">
+            <p className="mt-5">
                 {sentToMasked === null
                     ? t('narrator.otp.intro_no_code')
                     : t('narrator.otp.intro', { destination: sentToMasked })}
             </p>
 
             {status !== null ? (
-                <p
-                    role="status"
-                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
-                >
+                <p role="status" className="panel enter mt-6">
                     {status}
                 </p>
             ) : null}
 
             {sentToMasked !== null && !locked ? (
                 <form
-                    className="mt-8"
+                    className="card mt-8 flex flex-col gap-5 p-5"
                     onSubmit={(event) => {
                         event.preventDefault();
                         form.post(window.location.pathname + '/verify');
                     }}
                 >
                     <fieldset>
-                        <legend className="text-brand-muted text-base">
+                        <legend className="font-medium">
                             {t('narrator.otp.code_label')}
                         </legend>
-
                         <div className="mt-3 flex gap-2">
                             {digits.map((digit, index) => (
                                 <input
@@ -111,14 +105,14 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                                         index === 0 ? 'one-time-code' : 'off'
                                     }
                                     aria-label={`${t('narrator.otp.code_label')} ${index + 1}`}
-                                    className="border-brand-sand h-14 w-full min-w-[2.75rem] rounded-md border text-center text-2xl"
+                                    className="input h-16 min-w-0 flex-1 px-0 text-center text-[1.75rem] font-medium tabular-nums"
                                 />
                             ))}
                         </div>
                     </fieldset>
 
                     {form.errors.code !== undefined ? (
-                        <p role="alert" className="mt-4 text-base font-medium">
+                        <p role="alert" className="field-error enter">
                             {form.errors.code}
                         </p>
                     ) : null}
@@ -126,7 +120,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                     <button
                         type="submit"
                         disabled={form.processing}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
+                        className="btn-primary press min-h-[2.75rem] w-full py-4 text-xl disabled:opacity-60"
                     >
                         {t('narrator.otp.submit')}
                     </button>
@@ -137,7 +131,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                 type="button"
                 onClick={() => send.post(window.location.pathname)}
                 disabled={send.processing}
-                className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold disabled:opacity-60"
+                className="btn-secondary press mt-4 w-full disabled:opacity-60"
             >
                 {sentToMasked === null
                     ? t('narrator.otp.send')

@@ -4,9 +4,7 @@ import { useT } from '@/hooks/useT';
 
 type Props = {
     src: string;
-    /** Appelé avec les secondes écoutées depuis le dernier envoi. */
     onProgress?: (seconds: number) => void;
-    /** Cadence d'envoi, en secondes. Dix par défaut (bloc 08 §6.3). */
     reportEverySeconds?: number;
 };
 
@@ -21,21 +19,37 @@ function formatTime(seconds: number): string {
     return `${minutes}:${String(rest).padStart(2, '0')}`;
 }
 
+function PlayIcon({ playing }: { playing: boolean }) {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            className="size-7"
+        >
+            {playing ? (
+                <>
+                    <rect x="6" y="5" width="4" height="14" rx="1" />
+                    <rect x="14" y="5" width="4" height="14" rx="1" />
+                </>
+            ) : (
+                <path d="M8 5.5v13a1 1 0 0 0 1.53.85l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5Z" />
+            )}
+        </svg>
+    );
+}
+
 /**
- * Le lecteur audio de l'espace famille.
+ * Le lecteur d'une histoire, le même pour la narratrice qui se réécoute et
+ * pour la famille qui écoute (T-138).
  *
- * Un `<audio>` natif, mais **jamais** ses contrôles par défaut : ils font
- * 20 px de haut sur un téléphone, et le public de ce produit est celui qui a
- * le plus de mal à les toucher. D'où des boutons larges, avec un libellé
- * texte à côté de l'icône — un pictogramme seul se devine, il ne se lit pas.
+ * Un seul grand bouton, une frise qu'on peut saisir, le temps écoulé et ce
+ * qui reste, deux sauts de quinze secondes et la vitesse en pastille. Pas de
+ * boutons de tailles différentes : les réglages sont des pastilles, l'écoute
+ * est le bouton.
  *
- * Le ×0,9 n'est pas un gadget : une voix âgée qui articule mal se comprend
- * beaucoup mieux un peu ralentie, et c'est exactement le corpus de ce
- * produit.
- *
- * Ce qui est rapporté au serveur, ce sont les secondes **jouées**, mesurées
- * par le temps de lecture réel : déplacer le curseur ne compte pas pour de
- * l'écoute.
+ * Il mesure ce qui est **écouté**, pas ce qui est sauté : un bond du curseur
+ * ne compte pas, et ce qui reste à déclarer part avec la page.
  */
 export default function AudioPlayer({
     src,
@@ -44,7 +58,6 @@ export default function AudioPlayer({
 }: Props) {
     const t = useT();
     const audio = useRef<HTMLAudioElement>(null);
-
     const [playing, setPlaying] = useState(false);
     const [position, setPosition] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -110,7 +123,6 @@ export default function AudioPlayer({
     // vingt-neuvième seconde ne doit pas perdre la mesure.
     useEffect(() => {
         const flush = () => report();
-
         window.addEventListener('pagehide', flush);
 
         return () => {
@@ -162,78 +174,100 @@ export default function AudioPlayer({
     };
 
     const remaining = Math.max(0, duration - position);
+    const percent = duration > 0 ? (position / duration) * 100 : 0;
+
+    const pill =
+        'chip press min-h-[2.75rem] cursor-pointer text-[0.95rem] before:hidden hover:border-brand';
 
     return (
-        <section aria-label={t('family.player.progress')}>
+        <section aria-label={t('common.player.progress')} className="card p-5">
             {/* eslint-disable-next-line jsx-a11y/media-has-caption -- la transcription de l'histoire est affichée juste dessous */}
             <audio ref={audio} src={src} preload="metadata" />
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-4">
                 <button
                     type="button"
                     onClick={toggle}
                     aria-pressed={playing}
-                    className="bg-brand text-brand-foreground min-h-[3.5rem] min-w-[3.5rem] rounded-md px-6 py-3 text-lg font-medium"
+                    aria-label={
+                        playing
+                            ? t('common.player.pause')
+                            : t('common.player.play')
+                    }
+                    className="bg-brand text-brand-foreground press hover:bg-brand-deep flex size-16 min-h-[3.5rem] flex-none items-center justify-center rounded-full shadow-[0_8px_20px_rgba(47,74,63,0.25)] transition-colors"
                 >
-                    {playing
-                        ? t('family.player.pause')
-                        : t('family.player.play')}
+                    <PlayIcon playing={playing} />
                 </button>
 
+                <div className="min-w-0 flex-1">
+                    <label htmlFor="audio-progress" className="sr-only">
+                        {t('common.player.progress')}
+                    </label>
+                    <input
+                        id="audio-progress"
+                        type="range"
+                        min={0}
+                        max={Math.max(1, Math.floor(duration))}
+                        value={Math.floor(position)}
+                        onChange={(event) => {
+                            const element = audio.current;
+                            const next = Number(event.target.value);
+
+                            if (element !== null) {
+                                element.currentTime = next;
+                                lastPosition.current = next;
+                            }
+
+                            setPosition(next);
+                        }}
+                        className="audio-range w-full"
+                        style={{
+                            background: `linear-gradient(to right, var(--color-brand) ${percent}%, var(--color-brand-sand) ${percent}%)`,
+                        }}
+                    />
+                    <div className="text-brand-muted mt-1.5 flex justify-between text-[0.95rem] tabular-nums">
+                        <span>
+                            {t('common.player.elapsed', {
+                                time: formatTime(position),
+                            })}
+                        </span>
+                        <span aria-live="polite">
+                            {t('common.player.remaining', {
+                                time: formatTime(remaining),
+                            })}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
                 <button
                     type="button"
                     onClick={() => seek(-15)}
-                    className="border-brand-sand bg-brand-surface min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
+                    className={pill}
+                    aria-label={t('common.player.back15')}
                 >
-                    {t('family.player.back15')}
+                    −15 s
                 </button>
-
                 <button
                     type="button"
                     onClick={() => seek(15)}
-                    className="border-brand-sand bg-brand-surface min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
+                    className={pill}
+                    aria-label={t('common.player.forward15')}
                 >
-                    {t('family.player.forward15')}
+                    +15 s
                 </button>
-
                 <button
                     type="button"
                     onClick={() => setSpeed(slower ? 1 : 0.9)}
                     aria-pressed={slower}
-                    className="border-brand-sand bg-brand-surface min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
+                    className={`${pill} ${slower ? 'border-brand bg-brand/5' : ''}`}
                 >
                     {slower
-                        ? t('family.player.normal')
-                        : t('family.player.slower')}
+                        ? t('common.player.normal')
+                        : t('common.player.slower')}
                 </button>
             </div>
-
-            <label htmlFor="audio-progress" className="sr-only">
-                {t('family.player.progress')}
-            </label>
-            <input
-                id="audio-progress"
-                type="range"
-                min={0}
-                max={Math.max(1, Math.floor(duration))}
-                value={Math.floor(position)}
-                onChange={(event) => {
-                    const element = audio.current;
-                    const next = Number(event.target.value);
-
-                    if (element !== null) {
-                        element.currentTime = next;
-                        lastPosition.current = next;
-                    }
-
-                    setPosition(next);
-                }}
-                className="mt-4 h-6 w-full"
-            />
-
-            <p aria-live="polite" className="text-brand-muted mt-2 text-base">
-                {t('family.player.remaining', { time: formatTime(remaining) })}
-            </p>
         </section>
     );
 }

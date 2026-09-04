@@ -151,6 +151,14 @@ s'éteint sous `prefers-reduced-motion`. Un seul geste appuyé : le livre qui
 s'ouvre sur la page de merci (`.book-*`). Les cases et radios cochés prennent la
 couleur de marque, jamais celle de l'action : cocher n'est pas envoyer.
 
+**Les pages de la narratrice (T-138)** ajoutent trois pièces : le grand bouton
+rond d'enregistrement et son halo qui respire (`.record-halo`, éteint sous
+`prefers-reduced-motion`), la barre de progression (`.progress-bar`) et le
+lecteur audio partagé (`AudioPlayer`, libellés dans `common.player`). Règle
+d'écran : une seule chose à la fois, la question en carte blanche sous un filet
+d'or, puis un seul geste. Une confirmation est une coche qui apparaît
+(`animate-pop-in`) et une phrase qui dit ce qui vient.
+
 ## Les règles de propagation, pour les pages à venir
 
 Trois règles suffisent à habiller une nouvelle page, et une relecture à l'écran

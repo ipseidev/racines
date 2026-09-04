@@ -8,25 +8,17 @@ type Props = {
     question: string | null;
     recordedAt: string | null;
     answerType: string | null;
-    /** Vrai si l'histoire peut encore être masquée depuis ce lien. */
     canHide?: boolean;
-    /**
-     * Vrai si l'histoire peut encore être racontée de nouveau. Faux dès
-     * qu'elle est validée : des proches ont pu l'entendre, et remplacer
-     * l'audio derrière un lien qu'ils gardent leur ferait écouter autre chose
-     * que ce qu'on leur avait annoncé.
-     */
     canRestart?: boolean;
-    /** L'adresse du geste, donnée par le serveur comme pour les autres actes. */
     restartAction: string;
 };
 
 /**
- * L'histoire a déjà été racontée.
+ * Le lien d'une question à laquelle on a déjà répondu.
  *
- * Ce n'est pas un cul-de-sac : le narrateur peut recommencer, et son premier
- * enregistrement reste conservé. « L'audio source est sacré » vaut aussi
- * contre lui-même — on n'efface pas, on ajoute.
+ * On le dit sans reproche, avec la date, et on propose ce qui reste
+ * possible : recommencer tant que rien n'est validé, masquer depuis ce lien
+ * qui porte précisément cette histoire (bloc 07 §6.5).
  */
 export default function AlreadyRecorded({
     question,
@@ -38,8 +30,8 @@ export default function AlreadyRecorded({
     const t = useT();
     const [confirmingHide, setConfirmingHide] = useState(false);
 
-    // Le message d'une action qui vient d'aboutir — l'envoi d'une réponse
-    // écrite, par exemple. Sans lui, la personne atterrit sur « vous avez
+    // Le message d'une action qui vient d'aboutir, l'envoi d'une réponse
+    // écrite par exemple. Sans lui, la personne atterrit sur « vous avez
     // déjà répondu » sans savoir que c'est elle qui vient de le faire.
     const status =
         (usePage().props.flash as { status?: string | null } | undefined)
@@ -56,87 +48,81 @@ export default function AlreadyRecorded({
         <>
             <Head title={t('narrator.already_recorded.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[2rem] leading-tight font-medium">
                 {date === null
                     ? t('narrator.already_recorded.title')
                     : t('narrator.already_recorded.title_with_date', { date })}
             </h1>
 
             {question !== null ? (
-                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]">
+                <p className="panel mt-6 text-[1.25rem] leading-snug">
                     {question}
                 </p>
             ) : null}
 
             {status !== null ? (
-                <p
-                    role="status"
-                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
-                >
+                <p role="status" className="panel enter mt-6">
                     {status}
                 </p>
             ) : null}
 
             {canRestart ? (
-                <p className="mt-6">{t('narrator.already_recorded.body')}</p>
+                <p className="text-brand-muted mt-6">
+                    {t('narrator.already_recorded.body')}
+                </p>
             ) : null}
 
-            {canRestart ? (
-                <button
-                    type="button"
-                    onClick={() => router.post(restartAction)}
-                    className="border-brand text-brand mt-8 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
-                >
-                    {t('narrator.already_recorded.restart')}
-                </button>
-            ) : null}
+            <div className="mt-8 flex flex-col gap-3">
+                {canRestart ? (
+                    <button
+                        type="button"
+                        onClick={() => router.post(restartAction)}
+                        className="btn-secondary press w-full"
+                    >
+                        {t('narrator.already_recorded.restart')}
+                    </button>
+                ) : null}
 
-            {/*
-             * Masquer sa propre histoire, sans code : le lien porte
-             * précisément cette histoire, et redemander une preuve
-             * d'identité à quelqu'un qui regrette ce qu'il vient de raconter
-             * le ferait renoncer (glossaire §4). Un écran de confirmation,
-             * puis une seule requête.
-             */}
-            {canHide ? (
-                confirmingHide ? (
-                    <div className="border-brand-sand mt-8 rounded-md border px-4 py-4">
-                        <p>{t('narrator.withdrawals.hide_confirm')}</p>
+                {canHide ? (
+                    confirmingHide ? (
+                        <div className="panel enter flex flex-col gap-4">
+                            <p>{t('narrator.withdrawals.hide_confirm')}</p>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.post(
+                                        `${window.location.pathname}/hide`,
+                                        {},
+                                        {
+                                            preserveScroll: true,
+                                            onFinish: () =>
+                                                setConfirmingHide(false),
+                                        },
+                                    )
+                                }
+                                className="btn-primary press w-full"
+                            >
+                                {t('narrator.withdrawals.hide')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setConfirmingHide(false)}
+                                className="text-brand-muted hover:text-brand min-h-[2.75rem] w-full text-base underline underline-offset-4"
+                            >
+                                {t('common.actions.cancel')}
+                            </button>
+                        </div>
+                    ) : (
                         <button
                             type="button"
-                            onClick={() =>
-                                router.post(
-                                    `${window.location.pathname}/hide`,
-                                    {},
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () =>
-                                            setConfirmingHide(false),
-                                    },
-                                )
-                            }
-                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-4 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold"
+                            onClick={() => setConfirmingHide(true)}
+                            className="btn-secondary press w-full"
                         >
                             {t('narrator.withdrawals.hide')}
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => setConfirmingHide(false)}
-                            className="text-brand-muted mt-3 min-h-[2.75rem] w-full text-base underline"
-                        >
-                            {t('common.actions.cancel')}
-                        </button>
-                    </div>
-                ) : (
-                    <button
-                        type="button"
-                        onClick={() => setConfirmingHide(true)}
-                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
-                    >
-                        {t('narrator.withdrawals.hide')}
-                    </button>
-                )
-            ) : null}
+                    )
+                ) : null}
+            </div>
         </>
     );
 }

@@ -16,15 +16,15 @@ type Props = {
 };
 
 /**
- * Le lien du narrateur ne fonctionne pas.
+ * Un lien qui ne mène plus nulle part, dit avec calme.
  *
- * Jamais de code d'erreur seul : un titre qui dit ce qui se passe, une phrase
- * qui dit pourquoi, et une action de reprise quand elle existe (convention
- * §16). Le bouton fait 44 px de haut au minimum et porte un libellé texte.
+ * Le pourquoi en une phrase, ce qu'on peut faire en un bouton, et à qui
+ * écrire si rien ne marche.
  */
 export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
     const t = useT();
     const brand = useBrand();
+
     // Le serveur envoie `null` quand rien n'a été flashé : on ramène les deux
     // absences possibles à une seule.
     const status =
@@ -43,19 +43,16 @@ export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
         <>
             <Head title={t(`narrator.link_unavailable.${reason}.title`)} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[2rem] leading-tight font-medium">
                 {t(`narrator.link_unavailable.${reason}.title`)}
             </h1>
 
-            <p className="mt-6">
+            <p className="mt-5">
                 {t(`narrator.link_unavailable.${reason}.body`)}
             </p>
 
             {status !== null ? (
-                <p
-                    role="status"
-                    className="bg-brand-linen text-brand-text mt-8 rounded-md px-4 py-3"
-                >
+                <p role="status" className="panel enter mt-6">
                     {status}
                 </p>
             ) : null}
@@ -65,7 +62,7 @@ export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
                     type="button"
                     onClick={requestNewLink}
                     disabled={processing}
-                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
+                    className="btn-primary press mt-8 min-h-[2.75rem] w-full py-4 text-xl disabled:opacity-60"
                 >
                     {t('narrator.link_unavailable.request_new_link')}
                 </button>

@@ -12,26 +12,17 @@ export type Photo = {
 
 type Props = {
     photos: Photo[];
-    /** Rendu seulement si la personne a le droit de retirer. */
     onRemove?: (id: Photo['id']) => void;
 };
 
 /**
- * La galerie des photos d'une histoire.
- *
- * Trois contraintes du dossier, et aucune n'est cosmétique. Les miniatures
- * font au moins 88 px : c'est la cible tactile d'un doigt imprécis, et une
- * grille de vignettes de 44 px se touche de travers. Le plein écran s'ouvre
- * **au clavier** autant qu'au doigt, parce qu'un lecteur d'écran navigue au
- * clavier. Et le texte alternatif vaut la légende, ou « Photo jointe par
- * {prénom} » — un lecteur d'écran qui annonce dix fois « Photo » ne dit rien.
+ * Les photos d'une histoire : une rangée de vignettes, un plein écran au
+ * toucher, et Échap pour en sortir.
  */
 export default function PhotoGallery({ photos, onRemove }: Props) {
     const t = useT();
     const [opened, setOpened] = useState<Photo | null>(null);
 
-    // Échap ferme le plein écran : c'est le réflexe, et sans lui la seule
-    // sortie serait un bouton qu'il faut trouver.
     useEffect(() => {
         if (opened === null) {
             return;
@@ -53,18 +44,18 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
     }
 
     return (
-        <section aria-labelledby="photos-title" className="mt-8">
-            <h2 id="photos-title" className="text-xl font-medium">
+        <section aria-labelledby="photos-title" className="mt-6">
+            <h2 id="photos-title" className="text-lg font-semibold">
                 {t('common.photos.title')}
             </h2>
 
-            <ul className="mt-4 flex flex-wrap gap-3">
+            <ul className="mt-3 flex flex-wrap gap-3">
                 {photos.map((photo) => (
-                    <li key={photo.id}>
+                    <li key={photo.id} className="w-[88px]">
                         <button
                             type="button"
                             onClick={() => setOpened(photo)}
-                            className="border-brand-sand block size-[88px] overflow-hidden rounded-md border"
+                            className="press border-brand-sand hover:border-brand block size-[88px] overflow-hidden rounded-lg border transition-colors"
                         >
                             <img
                                 src={photo.thumbUrl}
@@ -72,9 +63,8 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                                 className="size-full object-cover"
                             />
                         </button>
-
                         {photo.caption !== null && (
-                            <p className="text-brand-muted mt-1 max-w-[88px] text-sm">
+                            <p className="text-brand-muted mt-1 text-sm leading-snug">
                                 {photo.caption}
                             </p>
                         )}
@@ -87,27 +77,26 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                     role="dialog"
                     aria-modal="true"
                     aria-label={opened.alt}
-                    className="bg-brand-surface fixed inset-0 z-50 flex flex-col p-4"
+                    className="enter bg-brand-text/95 fixed inset-0 z-50 flex flex-col p-4"
                 >
                     <img
                         src={opened.url}
                         alt={opened.alt}
-                        className="min-h-0 flex-1 object-contain"
+                        className="min-h-0 flex-1 rounded-lg object-contain"
                     />
-
                     {opened.caption !== null && (
-                        <p className="mt-3 text-center">{opened.caption}</p>
+                        <p className="mt-3 text-center text-[#F7F1E6]">
+                            {opened.caption}
+                        </p>
                     )}
-
-                    <div className="mt-4 flex flex-wrap justify-center gap-4">
+                    <div className="mt-4 flex flex-wrap justify-center gap-3">
                         <button
                             type="button"
                             onClick={() => setOpened(null)}
-                            className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
+                            className="press border-brand-sand min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold text-[#F7F1E6]"
                         >
                             {t('common.actions.close')}
                         </button>
-
                         {onRemove !== undefined && (
                             <button
                                 type="button"
@@ -115,7 +104,7 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                                     onRemove(opened.id);
                                     setOpened(null);
                                 }}
-                                className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
+                                className="press text-brand-sand min-h-[2.75rem] px-4 py-3 text-base underline underline-offset-4 hover:text-[#F7F1E6]"
                             >
                                 {t('common.photos.remove')}
                             </button>

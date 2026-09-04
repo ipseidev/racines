@@ -1,5 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 
+import { SubmitButton } from '@/components/form/SubmitButton';
+import { TextAreaField } from '@/components/form/TextAreaField';
 import { useT } from '@/hooks/useT';
 
 type Props = {
@@ -10,11 +12,10 @@ type Props = {
 };
 
 /**
- * Répondre par écrit (P0-5).
+ * Répondre par écrit, quand le micro ne veut pas ou qu'on préfère.
  *
- * Ce n'est pas un lot de consolation : la réponse écrite emprunte la même
- * machine d'états qu'une réponse orale, sera relue et validée pareil, et
- * entrera dans le livre. Le texte est en 20 px, comme le reste.
+ * La question reste affichée au-dessus : on écrit en la relisant, comme on
+ * aurait parlé en l'écoutant.
  */
 export default function WrittenAnswer({
     question,
@@ -29,72 +30,58 @@ export default function WrittenAnswer({
         <>
             <Head title={t('narrator.written_answer.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[2rem] leading-tight font-medium">
                 {t('narrator.written_answer.title')}
             </h1>
 
             {question !== null ? (
-                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]">
+                <p className="panel mt-6 text-[1.25rem] leading-snug">
                     {question}
                 </p>
             ) : null}
 
-            <p className="mt-6">{t('narrator.written_answer.body')}</p>
+            <p className="text-brand-muted mt-6">
+                {t('narrator.written_answer.body')}
+            </p>
 
             <form
-                className="mt-8"
+                className="mt-6 flex flex-col gap-5"
                 onSubmit={(event) => {
                     event.preventDefault();
                     form.post(action);
                 }}
             >
-                <label
-                    htmlFor="written-answer"
-                    className="text-brand-muted block text-base"
-                >
-                    {t('narrator.written_answer.label')}
-                </label>
-
-                <textarea
+                <TextAreaField
                     id="written-answer"
+                    label={t('narrator.written_answer.label')}
+                    error={form.errors.written_answer}
+                    counter={t('narrator.written_answer.counter', {
+                        count: String(form.data.written_answer.length),
+                        max: String(maxChars),
+                    })}
                     value={form.data.written_answer}
                     onChange={(event) =>
                         form.setData('written_answer', event.target.value)
                     }
                     maxLength={maxChars}
                     rows={10}
-                    className="border-brand-sand mt-2 w-full rounded-md border p-3 text-[1.25rem] leading-relaxed"
+                    className="text-[1.25rem]"
                 />
 
-                <p className="text-brand-muted mt-2 text-base">
-                    {t('narrator.written_answer.counter', {
-                        count: form.data.written_answer.length,
-                        max: maxChars,
-                    })}
-                </p>
-
-                {form.errors.written_answer !== undefined ? (
-                    <p role="alert" className="mt-4 text-base font-medium">
-                        {form.errors.written_answer}
-                    </p>
-                ) : null}
-
-                <button
-                    type="submit"
-                    disabled={
-                        form.processing ||
-                        form.data.written_answer.trim().length === 0
-                    }
-                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
+                <SubmitButton
+                    processing={form.processing}
+                    disabled={form.data.written_answer.trim().length === 0}
+                    waitingLabel={t('common.actions.sending')}
+                    className="min-h-[2.75rem] w-full py-4 text-xl"
                 >
                     {t('narrator.written_answer.send')}
-                </button>
+                </SubmitButton>
 
                 {onCancel !== undefined ? (
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
+                        className="btn-secondary press w-full"
                     >
                         {t('common.actions.back')}
                     </button>

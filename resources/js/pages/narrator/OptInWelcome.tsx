@@ -1,6 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { ChoiceCard } from '@/components/form/ChoiceCard';
+import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
 
 type Option = { value: string; label: string };
@@ -29,16 +31,12 @@ function formatWhen(iso: string | null, fallback: string): string {
 }
 
 /**
- * L'écran de bienvenue, juste après l'acceptation.
+ * Juste après le oui : quand arrive la première question, comment nous
+ * reconnaître, et un mot sur plus tard.
  *
- * Deux choses, dans cet ordre : la fiche contact, puis les souhaits pour plus
- * tard. La fiche contact d'abord parce qu'elle protège — un message qui
- * n'arrive pas de ce contact est un faux, et les seniors sont la cible n°1 du
- * hameçonnage par SMS (doc 04 §9).
- *
- * Les souhaits ensuite, replié·s, avec « Plus tard » toujours proposé. On ne
- * demande pas à quelqu'un qui vient d'accepter de raconter sa vie de penser
- * d'abord à sa mort.
+ * Les souhaits pour après sont proposés, jamais imposés : « Plus tard » a
+ * la même taille que « maintenant », et la personne pourra y revenir depuis
+ * son espace.
  */
 export default function OptInWelcome({
     firstName,
@@ -52,7 +50,6 @@ export default function OptInWelcome({
     const status =
         (usePage().props.flash as { status?: string | null } | undefined)
             ?.status ?? null;
-
     const [asking, setAsking] = useState(false);
     const [deferred, setDeferred] = useState(false);
 
@@ -62,6 +59,9 @@ export default function OptInWelcome({
         referent_contact: '',
     });
 
+    const pair =
+        'btn-secondary press min-h-[2.75rem] flex-1 py-3 disabled:opacity-60';
+
     return (
         <>
             <Head
@@ -70,54 +70,66 @@ export default function OptInWelcome({
                 })}
             />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
-                {t('narrator.optin_welcome.title', { name: firstName ?? '' })}
-            </h1>
+            <div className="flex flex-col items-center text-center">
+                <span
+                    aria-hidden="true"
+                    className="bg-brand text-brand-foreground animate-pop-in flex size-16 items-center justify-center rounded-full"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        className="size-8"
+                    >
+                        <path d="m6 12 4 4 8-9" />
+                    </svg>
+                </span>
 
-            {status !== null && (
-                <p role="status" className="mt-4">
-                    {status}
+                <h1 className="font-display mt-6 text-[2rem] leading-tight font-medium">
+                    {t('narrator.optin_welcome.title', {
+                        name: firstName ?? '',
+                    })}
+                </h1>
+
+                {status !== null && (
+                    <p role="status" className="text-brand-muted mt-3">
+                        {status}
+                    </p>
+                )}
+
+                <p className="mt-4 text-[1.25rem] leading-snug">
+                    {t('narrator.optin_welcome.body', {
+                        when: formatWhen(
+                            nextPromptAt,
+                            t('narrator.optin_welcome.when_unknown'),
+                        ),
+                    })}
                 </p>
-            )}
+            </div>
 
-            <p className="mt-4">
-                {t('narrator.optin_welcome.body', {
-                    when: formatWhen(
-                        nextPromptAt,
-                        t('narrator.optin_welcome.when_unknown'),
-                    ),
-                })}
-            </p>
-
-            <section
-                aria-labelledby="vcard"
-                className="border-brand-sand mt-10 rounded-md border px-5 py-4"
-            >
-                <h2 id="vcard" className="text-xl font-medium">
+            <section aria-labelledby="vcard" className="card mt-10 p-5">
+                <h2 id="vcard" className="text-xl font-semibold">
                     {t('narrator.optin_welcome.vcard.title')}
                 </h2>
-
-                <p className="mt-2">{t('narrator.optin_welcome.vcard.body')}</p>
-
-                <a
-                    href={vcardUrl}
-                    className="border-brand text-brand mt-4 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
-                >
+                <p className="text-brand-muted mt-2 text-base">
+                    {t('narrator.optin_welcome.vcard.body')}
+                </p>
+                <a href={vcardUrl} className="btn-secondary press mt-4 w-full">
                     {t('narrator.optin_welcome.vcard.button')}
                 </a>
             </section>
 
             <section aria-labelledby="wishes" className="mt-10">
-                <h2 id="wishes" className="text-xl font-medium">
+                <h2 id="wishes" className="text-xl font-semibold">
                     {t('narrator.optin_welcome.wishes.title')}
                 </h2>
-
-                <p className="mt-2">
+                <p className="text-brand-muted mt-2 text-base">
                     {t('narrator.optin_welcome.wishes.body')}
                 </p>
 
                 {directivesRecorded ? (
-                    <p role="status" className="mt-4">
+                    <p role="status" className="panel mt-4">
                         {t('narrator.optin_welcome.wishes.saved')}
                     </p>
                 ) : asking ? (
@@ -126,115 +138,86 @@ export default function OptInWelcome({
                             event.preventDefault();
                             form.post(directivesAction);
                         }}
-                        className="mt-6 flex flex-col gap-5"
+                        className="enter mt-6 flex flex-col gap-5"
                     >
-                        <fieldset>
-                            <legend className="font-medium">
+                        <fieldset className="flex flex-col gap-3">
+                            <legend className="sr-only">
                                 {t('narrator.optin_welcome.wishes.title')}
                             </legend>
-
                             {wishes.map((wish) => (
-                                <label
+                                <ChoiceCard
                                     key={wish.value}
-                                    className="mt-3 flex items-center gap-3"
-                                >
-                                    <input
-                                        type="radio"
-                                        name="wishes"
-                                        value={wish.value}
-                                        checked={
-                                            form.data.wishes === wish.value
-                                        }
-                                        onChange={() =>
-                                            form.setData('wishes', wish.value)
-                                        }
-                                        className="size-5"
-                                    />
-                                    {wish.label}
-                                </label>
+                                    name="wishes"
+                                    value={wish.value}
+                                    checked={form.data.wishes === wish.value}
+                                    onChange={(value) =>
+                                        form.setData('wishes', value)
+                                    }
+                                    title={wish.label}
+                                />
                             ))}
                         </fieldset>
 
-                        <label className="flex flex-col gap-1">
-                            <span className="font-medium">
-                                {t('narrator.optin_welcome.wishes.referent')}
-                            </span>
-                            <input
-                                type="text"
-                                value={form.data.referent_name}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'referent_name',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                autoComplete="off"
-                            />
-                        </label>
+                        <TextField
+                            label={t('narrator.optin_welcome.wishes.referent')}
+                            type="text"
+                            value={form.data.referent_name}
+                            onChange={(event) =>
+                                form.setData(
+                                    'referent_name',
+                                    event.target.value,
+                                )
+                            }
+                            autoComplete="off"
+                        />
 
-                        <label className="flex flex-col gap-1">
-                            <span className="font-medium">
-                                {t('narrator.optin_welcome.wishes.note')}
-                            </span>
-                            <input
-                                type="text"
-                                value={form.data.referent_contact}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'referent_contact',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                autoComplete="off"
-                            />
-                        </label>
+                        <TextField
+                            label={t('narrator.optin_welcome.wishes.note')}
+                            type="text"
+                            value={form.data.referent_contact}
+                            onChange={(event) =>
+                                form.setData(
+                                    'referent_contact',
+                                    event.target.value,
+                                )
+                            }
+                            autoComplete="off"
+                        />
 
-                        <div className="flex flex-col gap-4 sm:flex-row">
+                        <div className="flex flex-col gap-3 sm:flex-row">
                             <button
                                 type="submit"
                                 disabled={form.processing}
-                                className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold disabled:opacity-60"
+                                className={pair}
                             >
                                 {t('narrator.optin_welcome.wishes.save')}
                             </button>
-
                             <button
                                 type="button"
                                 onClick={() => setAsking(false)}
-                                className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold"
+                                className={pair}
                             >
                                 {t('narrator.optin_welcome.wishes.later')}
                             </button>
                         </div>
                     </form>
                 ) : deferred ? (
-                    <p role="status" className="mt-4">
+                    <p role="status" className="panel enter mt-4">
                         {t('narrator.optin_welcome.wishes.deferred')}
                     </p>
                 ) : (
-                    /*
-                     * Deux boutons de même poids, et « Plus tard » ne poste
-                     * rien : il replie la section, et c'est tout. Le proposer
-                     * aussi visiblement que l'autre est le point de cette
-                     * page — on ne demande pas à quelqu'un qui vient
-                     * d'accepter de raconter sa vie de penser d'abord à sa
-                     * mort.
-                     */
-                    <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                         <button
                             type="button"
                             onClick={() => setAsking(true)}
-                            className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold"
+                            className={pair}
                         >
                             {t('narrator.optin_welcome.wishes.start')}
                         </button>
-
                         <button
                             type="button"
                             onClick={() => setDeferred(true)}
-                            className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold"
+                            className={pair}
                         >
                             {t('narrator.optin_welcome.wishes.later')}
                         </button>

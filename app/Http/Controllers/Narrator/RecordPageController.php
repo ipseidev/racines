@@ -61,6 +61,9 @@ final class RecordPageController
             'validationVariant' => Feature::for($project)->value(ValidationVariant::class),
             'shareDecisionAction' => route('narrator.share_decision.store', ['token' => $request->route('token')], false),
             'shareDecision' => $story->share_decision?->value,
+            // Déclarée par l'acheteur (T-136) : la page dose son aide d'après
+            // elle. Nulle pour les projets antérieurs.
+            'techComfort' => $narrator->tech_comfort?->value,
         ];
 
         if ($story->state instanceof Recorded || ! $story->state instanceof Proposed) {

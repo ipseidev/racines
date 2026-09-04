@@ -71,6 +71,8 @@ return [
 
         // Écran 3 — enregistrement.
         'start' => 'Commencer',
+        'tap_hint' => 'Appuyez, puis parlez comme au téléphone. Prenez tout votre temps.',
+        'tap_hint_tu' => 'Appuie, puis parle comme au téléphone. Prends tout ton temps.',
         'pause' => 'Pause',
         'resume' => 'Reprendre',
         'finish' => 'Terminer',
@@ -85,6 +87,7 @@ return [
 
         // Écran 4 — vérification.
         'review_title' => 'Voulez-vous vous réécouter ?',
+        'review_body' => 'Si ça vous convient, envoyez. Sinon, vous pouvez recommencer.',
         'listen' => 'Réécouter',
         'send' => 'Envoyer',
         'restart' => 'Recommencer',
@@ -100,6 +103,7 @@ return [
         // Écran 6 — confirmation.
         'confirmed_title' => 'Votre histoire est enregistrée',
         'confirmed_body' => 'Merci :name.',
+        'confirmed_next' => 'Nous la mettons au propre. Vous la relirez avant que quiconque l’entende.',
 
         // Brouillon retrouvé au chargement.
         'draft_title' => 'Vous avez un enregistrement en cours',
@@ -109,6 +113,7 @@ return [
         'storage_low' => 'Il reste peu de place sur votre téléphone. L’enregistrement fonctionne, mais évitez les très longues réponses.',
 
         'written_link' => 'Répondre par écrit',
+        'question_label' => 'Votre question',
     ],
 
     'mic_help' => [
@@ -168,6 +173,13 @@ return [
     'review' => [
         'title' => 'Votre histoire est prête',
         'body' => 'Relisez-la, corrigez-la si vous voulez, puis dites-nous ce que vous souhaitez en faire.',
+        // Trois temps, numérotés à l'écran : on écoute, on relit, on décide.
+        'steps' => [
+            'listen' => 'Écoutez',
+            'read' => 'Relisez',
+            'decide' => 'Décidez',
+        ],
+        'decide_body' => 'C’est votre récit. Vous décidez, et vous pourrez changer d’avis depuis vos histoires.',
         'listen' => 'Écouter votre enregistrement',
         'tab_fluide' => 'Texte mis au propre',
         'tab_verbatim' => 'Mot à mot',
@@ -187,6 +199,7 @@ return [
             'book_only_hint' => 'Elle sera imprimée, mais personne ne l’écoutera en ligne.',
         ],
         'keep_for_book' => 'Garder cette histoire pour le livre',
+        'keep_for_book_hint' => 'Elle sera imprimée, sans que personne ne l’écoute en ligne.',
         /*
      * Opt-in (bloc 10). Le moment H0. Deux principes de rédaction : on
      * explique avant de demander, et on n'attend rien. « Non merci » est un
@@ -257,6 +270,12 @@ return [
     'space' => [
         'title' => 'Vos histoires',
         'empty' => 'Vous n’avez pas encore d’histoire enregistrée.',
+        'empty_hint' => 'Elles apparaîtront ici au fil des semaines, après chaque question.',
+        'actions' => 'Ce que vous pouvez faire de cette histoire',
+        'pause_title' => 'Besoin d’une pause ?',
+        'pause_body' => 'Aucune question ne partira pendant ce temps. Vous reprendrez quand vous voudrez.',
+        'pause_fewer' => 'Une semaine de moins',
+        'pause_more' => 'Une semaine de plus',
         'request' => [
             'title' => 'Accéder à vos histoires',
             'body' => 'Indiquez le numéro de téléphone ou l’adresse e-mail sur lesquels vous recevez vos questions. Nous vous enverrons un code.',
@@ -363,7 +382,7 @@ return [
             'title' => 'Comment nous vous joignons',
             'channel' => 'Par quel moyen ?',
             'phone' => 'Votre numéro de téléphone',
-            'phone_hint' => 'Au format international, par exemple +33 6 12 34 56 78.',
+            'phone_hint' => 'Comme vous le tapez, par exemple 06 12 34 56 78.',
             'phone_confirm' => 'Nous vous écrirons à ce numéro : est-il correct ?',
             'cadence' => 'À quelle fréquence ?',
             'day' => 'Quel jour ?',

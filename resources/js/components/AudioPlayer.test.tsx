@@ -5,8 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AudioPlayer from './AudioPlayer';
 
 const catalogue = {
-    common: {},
-    family: {
+    common: {
         player: {
             play: 'Écouter',
             pause: 'Mettre en pause',
@@ -15,6 +14,7 @@ const catalogue = {
             slower: 'Ralentir un peu',
             normal: 'Vitesse normale',
             remaining: 'Il reste :time',
+            elapsed: ':time',
             progress: 'Progression de l’écoute',
         },
     },

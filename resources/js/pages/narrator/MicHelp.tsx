@@ -7,19 +7,16 @@ import type { Platform } from '@/recorder/platform';
 
 type Props = {
     platform: Platform;
-    /** Faux quand le navigateur ne sait pas enregistrer du tout. */
     canRetry: boolean;
     onRetry?: () => void;
     onWrite?: () => void;
 };
 
 /**
- * Le micro a été refusé.
+ * Quand le micro est refusé, ou que le navigateur ne sait pas enregistrer.
  *
- * Le dossier prévient : le refus du micro par des seniors est un risque
- * identifié. On ne renvoie donc pas vers une page d'aide générique — on montre
- * le chemin exact sur *son* téléphone, on propose un seul nouvel essai, et on
- * offre toujours l'écrit comme porte de sortie.
+ * Le chemin propre au téléphone est écrit en toutes lettres, et l'écrit
+ * est toujours là comme issue : personne ne reste bloqué devant un réglage.
  */
 export default function MicHelp({
     platform,
@@ -35,42 +32,52 @@ export default function MicHelp({
         <>
             <Head title={t('narrator.mic_help.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[2rem] leading-tight font-medium">
                 {t('narrator.mic_help.title')}
             </h1>
 
-            <p className="mt-6">
+            <p className="mt-5">
                 {canRetry
                     ? t('narrator.mic_help.body')
                     : t('narrator.mic_help.unsupported')}
             </p>
 
             {canRetry ? (
-                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4">
-                    {t(`narrator.mic_help.${platform}`)}
-                </p>
+                <ol className="panel mt-6 list-none">
+                    <li className="flex items-start gap-3">
+                        <span
+                            aria-hidden="true"
+                            className="bg-brand text-brand-foreground mt-0.5 flex size-7 flex-none items-center justify-center rounded-full text-[0.9rem] font-semibold"
+                        >
+                            1
+                        </span>
+                        <span>{t(`narrator.mic_help.${platform}`)}</span>
+                    </li>
+                </ol>
             ) : null}
 
-            {canRetry && !retried ? (
+            <div className="mt-8 flex flex-col gap-3">
+                {canRetry && !retried ? (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setRetried(true);
+                            onRetry?.();
+                        }}
+                        className="btn-primary press min-h-[2.75rem] w-full py-4 text-xl"
+                    >
+                        {t('narrator.mic_help.retry')}
+                    </button>
+                ) : null}
+
                 <button
                     type="button"
-                    onClick={() => {
-                        setRetried(true);
-                        onRetry?.();
-                    }}
-                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold"
+                    onClick={() => onWrite?.()}
+                    className="btn-secondary press w-full"
                 >
-                    {t('narrator.mic_help.retry')}
+                    {t('narrator.record.written_link')}
                 </button>
-            ) : null}
-
-            <button
-                type="button"
-                onClick={() => onWrite?.()}
-                className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
-            >
-                {t('narrator.record.written_link')}
-            </button>
+            </div>
 
             <p className="text-brand-muted mt-10 text-base">
                 {t('narrator.link_unavailable.help', {

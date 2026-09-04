@@ -6,18 +6,13 @@ import { useT } from '@/hooks/useT';
 type Decision = 'share' | 'keep_private' | 'decide_later';
 
 type Props = {
-    /** Où poster la décision : la page d'enregistrement connaît son jeton. */
     action: string;
     onDecided?: (decision: Decision) => void;
 };
 
 /*
- * Toujours dans cet ordre, jamais présélectionnés, sans minuteur.
- *
- * Le dossier est formel : l'absence de réaction ne vaut jamais accord. Le
- * troisième choix existe pour que le narrateur puisse ne pas choisir sans
- * que son silence soit interprété — le retirer transformerait une hésitation
- * en consentement.
+ * Toujours dans cet ordre, jamais présélectionnés, sans minuteur : le
+ * dossier est formel, l'absence de réaction ne vaut jamais accord.
  */
 const DECISIONS: readonly Decision[] = [
     'share',
@@ -26,7 +21,10 @@ const DECISIONS: readonly Decision[] = [
 ];
 
 /**
- * Les trois choix de fin d'enregistrement (variante A).
+ * Les trois choix de fin d'enregistrement (bloc 07), en trois cartes.
+ *
+ * Trois boutons de même taille et de même couleur : aucun n'est « le bon ».
+ * Chacun dit sa conséquence en une phrase, au présent.
  */
 export default function ShareDecision({ action, onDecided }: Props) {
     const t = useT();
@@ -34,7 +32,6 @@ export default function ShareDecision({ action, onDecided }: Props) {
 
     const decide = (decision: Decision) => {
         setProcessing(true);
-
         router.post(
             action,
             { decision },
@@ -47,34 +44,57 @@ export default function ShareDecision({ action, onDecided }: Props) {
     };
 
     return (
-        <section aria-labelledby="share-decision-title" className="mt-8">
+        <section aria-labelledby="share-decision-title" className="mt-10">
             <h2
                 id="share-decision-title"
-                className="font-display text-2xl leading-tight font-semibold"
+                className="font-display text-2xl leading-tight font-medium"
             >
                 {t('narrator.share_decision.title')}
             </h2>
+            <p className="text-brand-muted mt-3">
+                {t('narrator.share_decision.body')}
+            </p>
 
-            <p className="mt-4">{t('narrator.share_decision.body')}</p>
-
-            <div className="mt-8 flex flex-col gap-4">
+            <div className="mt-6 flex flex-col gap-3">
                 {DECISIONS.map((decision) => (
-                    <button
+                    <DecisionButton
                         key={decision}
-                        type="button"
+                        label={t(`narrator.share_decision.${decision}.label`)}
+                        hint={t(`narrator.share_decision.${decision}.hint`)}
                         disabled={processing}
                         onClick={() => decide(decision)}
-                        className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-4 text-left disabled:opacity-60"
-                    >
-                        <span className="block text-lg font-medium">
-                            {t(`narrator.share_decision.${decision}.label`)}
-                        </span>
-                        <span className="text-brand-muted mt-1 block text-base">
-                            {t(`narrator.share_decision.${decision}.hint`)}
-                        </span>
-                    </button>
+                    />
                 ))}
             </div>
         </section>
+    );
+}
+
+/** Une carte-bouton : le geste en gros, sa conséquence en dessous. */
+export function DecisionButton({
+    label,
+    hint,
+    disabled,
+    onClick,
+}: {
+    label: string;
+    hint: string;
+    disabled?: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            type="button"
+            disabled={disabled}
+            onClick={onClick}
+            className="card press hover:border-brand min-h-[2.75rem] w-full px-5 py-4 text-left transition-[border-color,box-shadow] duration-200 disabled:opacity-60"
+        >
+            <span className="text-brand block text-lg font-semibold">
+                {label}
+            </span>
+            <span className="text-brand-muted mt-1 block text-base">
+                {hint}
+            </span>
+        </button>
     );
 }

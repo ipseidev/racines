@@ -88,6 +88,7 @@ const props = {
     validationVariant: 'deferred' as const,
     shareDecisionAction: '/r/jeton/share-decision',
     shareDecision: null,
+    techComfort: null,
 };
 
 const getUserMedia = vi.fn();

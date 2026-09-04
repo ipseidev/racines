@@ -10,6 +10,7 @@ return [
         'continue' => 'Continuer',
         'retry' => 'Réessayer',
         'save' => 'Enregistrer',
+        'sending' => 'Envoi…',
     ],
 
     /*
@@ -29,6 +30,23 @@ return [
     | de refuser — c'est peut-être la seule image qui existe de quelqu'un.
     |
     */
+
+    /*
+     * Le lecteur audio, le même pour la narratrice qui se réécoute et pour la
+     * famille qui écoute (T-138). Ici et non dans `family` : les pages
+     * narratrice n'emportent que `common` et leur propre fichier.
+     */
+    'player' => [
+        'play' => 'Écouter',
+        'pause' => 'Mettre en pause',
+        'back15' => 'Reculer de 15 secondes',
+        'forward15' => 'Avancer de 15 secondes',
+        'slower' => 'Ralentir un peu',
+        'normal' => 'Vitesse normale',
+        'remaining' => 'Il reste :time',
+        'elapsed' => ':time',
+        'progress' => 'Progression de l’écoute',
+    ],
 
     'photos' => [
         'title' => 'Les photos',

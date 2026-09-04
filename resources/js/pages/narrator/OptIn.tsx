@@ -2,6 +2,11 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { useBrand } from '@/brand/BrandProvider';
+import AudioPlayer from '@/components/AudioPlayer';
+import { CheckField } from '@/components/form/CheckField';
+import { ChoiceCard } from '@/components/form/ChoiceCard';
+import { SelectField } from '@/components/form/SelectField';
+import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
 
 type Option = { value: string; label: string };
@@ -32,7 +37,6 @@ type Props = {
     addressForms: Option[];
     refusalReasons: Option[];
     answered: boolean;
-    /** Où poster : le serveur connaît ses routes, la page non. */
     acceptAction: string;
     refuseAction: string;
 };
@@ -40,17 +44,12 @@ type Props = {
 const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 /**
- * La page d'opt-in : le moment H0.
+ * L'opt-in : le moment H0.
  *
- * Ce qu'elle **ne fait pas** compte autant que ce qu'elle fait. Aucun micro,
- * aucune question, aucun aperçu d'enregistrement avant l'acceptation :
- * quelqu'un qui découvre le service par un cadeau doit pouvoir comprendre de
- * quoi il s'agit sans être déjà en train de faire quelque chose.
- *
- * Les deux boutons sont de **même taille**, côte à côte, sans couleur
- * d'insistance sur l'un des deux. Rendre le refus discret ne produit pas des
- * oui : ça produit des gens qui ne répondent pas — et un non franc vaut mieux
- * qu'un silence, pour eux comme pour la mesure.
+ * La page qui décide de tout. Elle explique avant de demander, ne propose
+ * aucun enregistrement, et ses deux boutons sont de même taille et de même
+ * couleur : un non franc vaut mieux qu'un silence. Le mot de la personne qui
+ * offre est mis en avant comme une lettre, parce que c'est lui qui décide.
  */
 export default function OptIn({
     inviterName,
@@ -75,7 +74,6 @@ export default function OptIn({
 }: Props) {
     const t = useT();
     const brand = useBrand();
-
     const [opened, setOpened] = useState<string | null>(null);
     const [refusing, setRefusing] = useState(false);
 
@@ -95,14 +93,17 @@ export default function OptIn({
 
     const refusal = useForm<{ reason: string }>({ reason: '' });
 
+    // Les deux boutons du oui et du non : les mêmes classes, le même parent.
+    const pair =
+        'btn-secondary press min-h-[3.5rem] flex-1 py-4 text-lg disabled:opacity-60';
+
     if (answered) {
         return (
             <>
                 <Head
                     title={t('narrator.optin.title', { inviter: inviterName })}
                 />
-
-                <p role="status">
+                <p role="status" className="panel">
                     {t('narrator.optin.already_answered', {
                         email: brand.support_email,
                     })}
@@ -121,7 +122,7 @@ export default function OptIn({
                 </p>
             )}
 
-            <h1 className="font-display mt-2 text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display mt-1 text-[2rem] leading-tight font-medium">
                 {t('narrator.optin.title', { inviter: inviterName })}
             </h1>
 
@@ -130,102 +131,95 @@ export default function OptIn({
                     aria-label={t('narrator.optin.from', {
                         inviter: inviterName,
                     })}
-                    className="border-brand-sand mt-8 rounded-md border px-5 py-4"
+                    className="card mt-8 p-5"
                 >
-                    <p className="text-brand-muted text-base">
+                    <p className="eyebrow">
                         {t('narrator.optin.from', { inviter: inviterName })}
                     </p>
-
                     {personalMessage !== null && (
-                        <p className="mt-2">{personalMessage}</p>
+                        <p className="font-display text-brand mt-3 text-[1.35rem] leading-snug">
+                            {personalMessage}
+                        </p>
                     )}
-
                     {giftAudioUrl !== null && (
-                        <>
-                            <p className="mt-4 text-base">
+                        <div className="mt-4">
+                            <p className="text-brand-muted mb-2 text-base">
                                 {t('narrator.optin.listen_message')}
                             </p>
-                            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                            <audio
-                                src={giftAudioUrl}
-                                controls
-                                className="mt-2 w-full"
-                                aria-label={t('narrator.optin.listen_message')}
-                            />
-                        </>
+                            <AudioPlayer src={giftAudioUrl} />
+                        </div>
                     )}
                 </section>
             )}
 
             <section aria-labelledby="means" className="mt-10">
-                <h2 id="means" className="text-xl font-medium">
+                <h2 id="means" className="text-xl font-semibold">
                     {t('narrator.optin.means.title')}
                 </h2>
-
-                <ul className="mt-4 flex flex-col gap-3">
-                    {(['one', 'two', 'three'] as const).map((sentence) => (
-                        <li key={sentence}>
-                            {t(`narrator.optin.means.${sentence}`)}
-                        </li>
-                    ))}
-                </ul>
+                <ol className="mt-4 flex flex-col gap-4">
+                    {(['one', 'two', 'three'] as const).map(
+                        (sentence, index) => (
+                            <li
+                                key={sentence}
+                                className="flex items-start gap-3"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className="bg-brand text-brand-foreground mt-0.5 flex size-8 flex-none items-center justify-center rounded-full text-[0.95rem] font-semibold tabular-nums"
+                                >
+                                    {index + 1}
+                                </span>
+                                <span>
+                                    {t(`narrator.optin.means.${sentence}`)}
+                                </span>
+                            </li>
+                        ),
+                    )}
+                </ol>
             </section>
 
             {refusing ? (
-                <section aria-labelledby="refusal" className="mt-10">
-                    <h2 id="refusal" className="text-xl font-medium">
+                <section aria-labelledby="refusal" className="enter mt-10">
+                    <h2 id="refusal" className="text-xl font-semibold">
                         {t('narrator.optin.refusal.title')}
                     </h2>
-
-                    <p className="mt-4">{t('narrator.optin.refusal.body')}</p>
+                    <p className="mt-3">{t('narrator.optin.refusal.body')}</p>
 
                     <div className="mt-6 flex flex-col gap-3">
-                        <label className="flex items-center gap-3">
-                            <input
-                                type="radio"
-                                name="reason"
-                                value=""
-                                checked={refusal.data.reason === ''}
-                                onChange={() => refusal.setData('reason', '')}
-                            />
-                            {t('narrator.optin.refusal.no_reason')}
-                        </label>
-
+                        <ChoiceCard
+                            name="reason"
+                            value=""
+                            checked={refusal.data.reason === ''}
+                            onChange={() => refusal.setData('reason', '')}
+                            title={t('narrator.optin.refusal.no_reason')}
+                        />
                         {refusalReasons.map((reason) => (
-                            <label
+                            <ChoiceCard
                                 key={reason.value}
-                                className="flex items-center gap-3"
-                            >
-                                <input
-                                    type="radio"
-                                    name="reason"
-                                    value={reason.value}
-                                    checked={
-                                        refusal.data.reason === reason.value
-                                    }
-                                    onChange={() =>
-                                        refusal.setData('reason', reason.value)
-                                    }
-                                />
-                                {reason.label}
-                            </label>
+                                name="reason"
+                                value={reason.value}
+                                checked={refusal.data.reason === reason.value}
+                                onChange={(value) =>
+                                    refusal.setData('reason', value)
+                                }
+                                title={reason.label}
+                            />
                         ))}
                     </div>
 
-                    <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                         <button
                             type="button"
                             onClick={() => setRefusing(false)}
-                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold"
+                            className={pair}
                         >
                             {t('narrator.optin.refusal.back')}
                         </button>
-
                         <button
                             type="button"
                             disabled={refusal.processing}
                             onClick={() => refusal.post(refuseAction)}
-                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold disabled:opacity-60"
+                            className={pair}
                         >
                             {t('narrator.optin.refusal.confirm')}
                         </button>
@@ -240,46 +234,31 @@ export default function OptIn({
                     className="mt-10"
                 >
                     <section aria-labelledby="consents">
-                        <h2 id="consents" className="text-xl font-medium">
+                        <h2 id="consents" className="text-xl font-semibold">
                             {t('narrator.optin.consents.title')}
                         </h2>
-
                         <p className="text-brand-muted mt-2 text-base">
                             {t('narrator.optin.consents.intro')}
                         </p>
 
-                        <div className="mt-6 flex flex-col gap-5">
+                        <div className="card divide-brand-sand mt-5 flex flex-col divide-y">
                             {consents.map((consent) => {
                                 const field = `consent_${consent.kind}`;
                                 const isOpen = opened === consent.kind;
 
                                 return (
-                                    <div key={consent.kind}>
-                                        <label className="flex items-start gap-3">
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    form.data[field] === true
-                                                }
-                                                onChange={(event) =>
-                                                    form.setData(
-                                                        field,
-                                                        event.target.checked,
-                                                    )
-                                                }
-                                                className="mt-1.5 size-5"
-                                            />
-                                            <span>{consent.label}</span>
-                                        </label>
-
-                                        {form.errors[field] !== undefined && (
-                                            <p
-                                                role="alert"
-                                                className="mt-1 text-base"
-                                            >
-                                                {form.errors[field]}
-                                            </p>
-                                        )}
+                                    <div
+                                        key={consent.kind}
+                                        className="flex flex-col gap-2 px-5 py-4"
+                                    >
+                                        <CheckField
+                                            checked={form.data[field] === true}
+                                            onChange={(checked) =>
+                                                form.setData(field, checked)
+                                            }
+                                            label={consent.label}
+                                            error={form.errors[field]}
+                                        />
 
                                         {consent.body !== null && (
                                             <>
@@ -293,7 +272,7 @@ export default function OptIn({
                                                                 : consent.kind,
                                                         )
                                                     }
-                                                    className="text-brand-muted mt-1 ml-8 text-base underline"
+                                                    className="text-brand-muted hover:text-brand ml-9 min-h-[2.75rem] self-start text-base underline underline-offset-4"
                                                 >
                                                     {isOpen
                                                         ? t(
@@ -303,9 +282,8 @@ export default function OptIn({
                                                               'narrator.optin.consents.read',
                                                           )}
                                                 </button>
-
                                                 {isOpen && (
-                                                    <div className="border-brand-sand mt-2 ml-8 rounded-md border px-4 py-3 text-base">
+                                                    <div className="panel enter ml-9 text-base">
                                                         <p>{consent.body}</p>
                                                         {consent.version !==
                                                             null && (
@@ -330,12 +308,12 @@ export default function OptIn({
                     </section>
 
                     <section aria-labelledby="settings" className="mt-10">
-                        <h2 id="settings" className="text-xl font-medium">
+                        <h2 id="settings" className="text-xl font-semibold">
                             {t('narrator.optin.settings.title')}
                         </h2>
 
-                        <div className="mt-6 flex flex-col gap-5">
-                            <Choice
+                        <div className="mt-5 flex flex-col gap-5">
+                            <SelectField
                                 label={t('narrator.optin.settings.channel')}
                                 options={channels}
                                 value={String(form.data.preferred_channel)}
@@ -345,97 +323,91 @@ export default function OptIn({
                                 error={form.errors.preferred_channel}
                             />
 
-                            <label className="flex flex-col gap-1">
-                                <span className="font-medium">
-                                    {t('narrator.optin.settings.phone')}
-                                </span>
-                                <input
-                                    type="tel"
-                                    value={String(form.data.narrator_phone)}
-                                    onChange={(event) =>
+                            <TextField
+                                label={t('narrator.optin.settings.phone')}
+                                hint={t('narrator.optin.settings.phone_hint')}
+                                error={form.errors.narrator_phone}
+                                type="tel"
+                                inputMode="tel"
+                                value={String(form.data.narrator_phone)}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'narrator_phone',
+                                        event.target.value,
+                                    )
+                                }
+                                autoComplete="tel"
+                            />
+
+                            <div className="grid gap-5 sm:grid-cols-2 sm:items-end">
+                                <SelectField
+                                    label={t('narrator.optin.settings.cadence')}
+                                    options={cadences}
+                                    value={String(form.data.cadence)}
+                                    onChange={(value) =>
+                                        form.setData('cadence', value)
+                                    }
+                                    error={form.errors.cadence}
+                                />
+
+                                <SelectField
+                                    label={t('narrator.optin.settings.day')}
+                                    options={DAYS.map((day) => ({
+                                        value: String(day),
+                                        label: t(`narrator.optin.days.${day}`),
+                                    }))}
+                                    value={String(form.data.prompt_day)}
+                                    onChange={(value) =>
                                         form.setData(
-                                            'narrator_phone',
-                                            event.target.value,
+                                            'prompt_day',
+                                            Number(value),
                                         )
                                     }
-                                    className="input"
-                                    autoComplete="tel"
+                                    error={form.errors.prompt_day}
                                 />
-                                <span className="text-brand-muted text-base">
-                                    {t('narrator.optin.settings.phone_hint')}
-                                </span>
-                                {form.errors.narrator_phone !== undefined && (
-                                    <span role="alert" className="text-base">
-                                        {form.errors.narrator_phone}
-                                    </span>
-                                )}
-                            </label>
 
-                            <Choice
-                                label={t('narrator.optin.settings.cadence')}
-                                options={cadences}
-                                value={String(form.data.cadence)}
-                                onChange={(value) =>
-                                    form.setData('cadence', value)
-                                }
-                                error={form.errors.cadence}
-                            />
+                                <SelectField
+                                    label={t('narrator.optin.settings.slot')}
+                                    options={slots}
+                                    value={String(form.data.prompt_slot)}
+                                    onChange={(value) =>
+                                        form.setData('prompt_slot', value)
+                                    }
+                                    error={form.errors.prompt_slot}
+                                />
 
-                            <Choice
-                                label={t('narrator.optin.settings.day')}
-                                options={DAYS.map((day) => ({
-                                    value: String(day),
-                                    label: t(`narrator.optin.days.${day}`),
-                                }))}
-                                value={String(form.data.prompt_day)}
-                                onChange={(value) =>
-                                    form.setData('prompt_day', Number(value))
-                                }
-                                error={form.errors.prompt_day}
-                            />
-
-                            <Choice
-                                label={t('narrator.optin.settings.slot')}
-                                options={slots}
-                                value={String(form.data.prompt_slot)}
-                                onChange={(value) =>
-                                    form.setData('prompt_slot', value)
-                                }
-                                error={form.errors.prompt_slot}
-                            />
-
-                            <Choice
-                                label={t(
-                                    'narrator.optin.settings.address_form',
-                                )}
-                                options={addressForms}
-                                value={String(form.data.address_form)}
-                                onChange={(value) =>
-                                    form.setData('address_form', value)
-                                }
-                                error={form.errors.address_form}
-                            />
+                                <SelectField
+                                    label={t(
+                                        'narrator.optin.settings.address_form',
+                                    )}
+                                    options={addressForms}
+                                    value={String(form.data.address_form)}
+                                    onChange={(value) =>
+                                        form.setData('address_form', value)
+                                    }
+                                    error={form.errors.address_form}
+                                />
+                            </div>
                         </div>
                     </section>
 
                     {/*
-                     * Deux boutons, même taille, même poids visuel. Voir le
-                     * commentaire en tête de fichier : ce n'est pas une
-                     * question d'esthétique.
+                     * Le oui et le non, côte à côte, de même taille et de même
+                     * couleur. Rendre le refus discret ne produit pas des oui,
+                     * ça produit des gens qui ne répondent pas.
                      */}
-                    <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                    <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                         <button
                             type="submit"
                             disabled={form.processing}
-                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold disabled:opacity-60"
+                            className={pair}
                         >
                             {t('narrator.optin.accept')}
                         </button>
-
                         <button
                             type="button"
                             onClick={() => setRefusing(true)}
-                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold"
+                            className={pair}
                         >
                             {t('narrator.optin.refuse')}
                         </button>
@@ -447,41 +419,5 @@ export default function OptIn({
                 {t('narrator.optin.no_password')}
             </p>
         </>
-    );
-}
-
-function Choice({
-    label,
-    options,
-    value,
-    onChange,
-    error,
-}: {
-    label: string;
-    options: { value: string; label: string }[];
-    value: string;
-    onChange: (value: string) => void;
-    error?: string;
-}) {
-    return (
-        <label className="flex flex-col gap-1">
-            <span className="font-medium">{label}</span>
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className="input"
-            >
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
-            {error !== undefined && (
-                <span role="alert" className="text-base">
-                    {error}
-                </span>
-            )}
-        </label>
     );
 }

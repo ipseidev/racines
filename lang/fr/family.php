@@ -91,15 +91,7 @@ return [
         'sent_generic' => 'C’est envoyé.',
     ],
 
-    'player' => [
-        'play' => 'Écouter',
-        'pause' => 'Mettre en pause',
-        'back15' => 'Reculer de 15 secondes',
-        'forward15' => 'Avancer de 15 secondes',
-        'slower' => 'Ralentir un peu',
-        'normal' => 'Vitesse normale',
-        'remaining' => 'Il reste :time',
-        'progress' => 'Progression de l’écoute',
-    ],
+    // Le lecteur audio vit dans `common.player` depuis T-138 : il sert aussi
+    // à la narratrice qui se réécoute.
 
 ];

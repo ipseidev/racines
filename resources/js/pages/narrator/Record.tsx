@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import AudioPlayer from '@/components/AudioPlayer';
+import PhotoUploader from '@/components/PhotoUploader';
 import { useT } from '@/hooks/useT';
 import { createUploaderPorts } from '@/recorder/api';
 import { reportClientEvent } from '@/recorder/clientEvents';
@@ -22,8 +24,6 @@ import {
 import { uploadDraft } from '@/recorder/uploader';
 import { useMediaRecorder } from '@/recorder/useMediaRecorder';
 import { requestWakeLock } from '@/recorder/wakeLock';
-
-import PhotoUploader from '@/components/PhotoUploader';
 
 import MicHelp from './MicHelp';
 import ShareDecision from './ShareDecision';
@@ -53,13 +53,68 @@ type Props = {
     validationVariant: 'immediate' | 'deferred';
     shareDecisionAction: string;
     shareDecision: string | null;
+    /** L'aisance avec un téléphone, déclarée à l'achat (TechComfort), ou rien. */
+    techComfort: string | null;
 };
+
+/** Les niveaux d'aisance qui appellent plus d'aide à l'écran. */
+const NEEDS_HELP = ['rarely', 'no_smartphone'];
 
 function formatDuration(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
     const rest = seconds % 60;
 
     return `${minutes}:${String(rest).padStart(2, '0')}`;
+}
+
+function MicIcon() {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            aria-hidden="true"
+            className="size-10"
+        >
+            <rect x="9" y="3" width="6" height="11" rx="3" />
+            <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" />
+        </svg>
+    );
+}
+
+function Check() {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            aria-hidden="true"
+            className="size-8"
+        >
+            <path d="m6 12 4 4 8-9" />
+        </svg>
+    );
+}
+
+/** L'onde d'une voix, décorative : elle dit « ça tourne » sans mesurer. */
+function Wave() {
+    return (
+        <div
+            className="flex h-8 items-center justify-center gap-[3px]"
+            aria-hidden="true"
+        >
+            {Array.from({ length: 18 }, (_, i) => (
+                <i
+                    key={i}
+                    className="wave-bar"
+                    style={{ animationDelay: `${(i % 5) * -0.3}s` }}
+                />
+            ))}
+        </div>
+    );
 }
 
 /**
@@ -72,6 +127,11 @@ function formatDuration(seconds: number): string {
  * Rien n'est jamais annoncé comme enregistré avant que le serveur l'ait
  * confirmé : `uploadDraft` ne rend `confirmed` que si le stockage a témoigné
  * détenir l'objet (doc 04 §11).
+ *
+ * Une seule chose par écran (T-138) : la question, puis un seul grand bouton.
+ * Le halo qui respire pendant l'enregistrement est le seul mouvement, et il
+ * s'arrête pour qui l'a demandé. Quand l'acheteur a dit que la personne est
+ * peu à l'aise, l'aide vient avant la question, et l'écrit est un bouton.
  */
 export default function Record({
     firstName,
@@ -83,6 +143,7 @@ export default function Record({
     validationVariant,
     shareDecisionAction,
     shareDecision,
+    techComfort,
 }: Props) {
     const t = useT();
     const basePath = window.location.pathname;
@@ -108,6 +169,7 @@ export default function Record({
     );
 
     const tu = addressForm === 'tu';
+    const needsHelp = NEEDS_HELP.includes(techComfort ?? '');
 
     // Au chargement : brouillon retrouvé ? navigateur capable ?
     useEffect(() => {
@@ -293,6 +355,11 @@ export default function Record({
         [firstName, t, tu],
     );
 
+    const chooseWriting = () => {
+        reportClientEvent('written_answer_chosen');
+        setWriting(true);
+    };
+
     if (writing) {
         return (
             <WrittenAnswer
@@ -313,40 +380,49 @@ export default function Record({
                 platform={detectPlatform()}
                 canRetry={snapshot.state === 'permission_denied'}
                 onRetry={() => void askPermission()}
-                onWrite={() => {
-                    reportClientEvent('written_answer_chosen');
-                    setWriting(true);
-                }}
+                onWrite={chooseWriting}
             />
         );
     }
+
+    const { state, context } = snapshot;
+    const capturing = state === 'recording' || state === 'paused';
+    const primary = 'btn-primary press min-h-[2.75rem] w-full py-4 text-xl';
+    const secondary = 'btn-secondary press min-h-[2.75rem] w-full py-4 text-xl';
 
     return (
         <>
             <Head title={greeting} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[1.75rem] leading-tight font-medium">
                 {greeting}
             </h1>
 
-            {question !== null ? (
-                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-5 text-[1.5rem] leading-snug">
-                    {question}
-                </p>
+            {question !== null && state !== 'confirmed' ? (
+                <div className="card mt-5 px-6 py-6">
+                    <span
+                        aria-hidden="true"
+                        className="bg-brand-gold mb-4 block h-px w-10"
+                    />
+                    <p className="font-display text-brand text-[1.6rem] leading-snug font-medium">
+                        {question}
+                    </p>
+                </div>
             ) : null}
 
             {roomWarning ? (
-                <p role="status" className="mt-6 text-base">
+                <p role="status" className="text-brand-muted mt-5 text-base">
                     {t('narrator.record.storage_low')}
                 </p>
             ) : null}
 
-            {snapshot.state === 'draft_found' ? (
-                <section className="mt-8">
+            {/* Un brouillon retrouvé ============================================ */}
+            {state === 'draft_found' ? (
+                <section className="panel enter mt-8 flex flex-col gap-4">
                     <h2 className="text-xl font-semibold">
                         {t('narrator.record.draft_title')}
                     </h2>
-                    <p className="mt-3">{t('narrator.record.draft_body')}</p>
+                    <p>{t('narrator.record.draft_body')}</p>
 
                     <button
                         type="button"
@@ -362,7 +438,7 @@ export default function Record({
                                 send({ type: 'RESUME_DRAFT' });
                             })();
                         }}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold"
+                        className={primary}
                     >
                         {t('narrator.record.draft_resume')}
                     </button>
@@ -375,103 +451,156 @@ export default function Record({
                                 send({ type: 'DISCARD_DRAFT' }),
                             );
                         }}
-                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
+                        className={secondary}
                     >
                         {t('narrator.record.draft_discard')}
                     </button>
                 </section>
             ) : null}
 
-            {snapshot.state === 'explaining' ? (
-                <section className="mt-8">
-                    <p className="bg-brand-surface border-brand-sand rounded-md border px-4 py-4">
-                        {t(
-                            tu
-                                ? 'narrator.record.mic_notice_tu'
-                                : 'narrator.record.mic_notice',
-                        )}
-                    </p>
+            {/* Écran 1 : on explique, puis on demande ============================ */}
+            {state === 'explaining' ? (
+                <section className="enter mt-8 flex flex-col gap-6">
+                    <div className="panel flex flex-col gap-3">
+                        <p>
+                            {t(
+                                tu
+                                    ? 'narrator.record.mic_notice_tu'
+                                    : 'narrator.record.mic_notice',
+                            )}
+                        </p>
+                        {needsHelp ? (
+                            <p className="text-brand-muted text-base">
+                                {t(`narrator.mic_help.${detectPlatform()}`)}
+                            </p>
+                        ) : null}
+                    </div>
 
                     <button
                         type="button"
                         onClick={() => void askPermission()}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
+                        className={primary}
                     >
                         {t('narrator.record.ready')}
                     </button>
                 </section>
             ) : null}
 
-            {snapshot.state === 'requesting_permission' ? (
-                <p role="status" className="mt-8">
+            {state === 'requesting_permission' ? (
+                <p role="status" className="enter mt-8 flex items-center gap-3">
+                    <span className="spinner text-brand" aria-hidden="true" />
                     {t('narrator.record.requesting')}
                 </p>
             ) : null}
 
-            {snapshot.state === 'ready' ? (
-                <button
-                    type="button"
-                    onClick={() => void startRecording()}
-                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[5.5rem] w-full rounded-full px-6 py-6 text-2xl font-semibold"
-                >
-                    {t('narrator.record.start')}
-                </button>
+            {/* Écran 2 : le grand bouton rond ==================================== */}
+            {state === 'ready' ? (
+                <section className="enter mt-10 flex flex-col items-center gap-6 text-center">
+                    <div className="record-halo">
+                        <button
+                            type="button"
+                            onClick={() => void startRecording()}
+                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press flex size-44 flex-col items-center justify-center gap-2 rounded-full shadow-[0_18px_40px_rgba(176,67,42,0.35)] transition-colors"
+                        >
+                            <MicIcon />
+                            <span className="text-2xl font-semibold">
+                                {t('narrator.record.start')}
+                            </span>
+                        </button>
+                    </div>
+                    <p className="text-brand-muted max-w-xs text-base">
+                        {t(
+                            tu
+                                ? 'narrator.record.tap_hint_tu'
+                                : 'narrator.record.tap_hint',
+                        )}
+                    </p>
+                </section>
             ) : null}
 
-            {snapshot.state === 'recording' || snapshot.state === 'paused' ? (
-                <section className="mt-8">
-                    <p role="status" className="text-lg">
-                        {snapshot.state === 'recording'
+            {/* Écran 3 : ça tourne =============================================== */}
+            {capturing ? (
+                <section className="enter mt-10 flex flex-col items-center gap-6 text-center">
+                    <div className={state === 'recording' ? 'record-halo' : ''}>
+                        <div
+                            className={`flex size-44 flex-col items-center justify-center gap-1 rounded-full transition-colors duration-500 ${
+                                state === 'recording'
+                                    ? 'bg-brand-accent text-brand-accent-foreground'
+                                    : 'bg-brand-linen text-brand'
+                            }`}
+                        >
+                            <span className="text-[2.75rem] leading-none font-semibold tabular-nums">
+                                {formatDuration(context.elapsedSeconds)}
+                            </span>
+                            <span className="sr-only">
+                                {t('narrator.record.elapsed', {
+                                    time: formatDuration(
+                                        context.elapsedSeconds,
+                                    ),
+                                })}
+                            </span>
+                        </div>
+                    </div>
+
+                    <p
+                        role="status"
+                        className="flex items-center gap-2.5 text-lg font-medium"
+                    >
+                        <span
+                            aria-hidden="true"
+                            className={`size-3 flex-none rounded-full ${
+                                state === 'recording'
+                                    ? 'bg-brand-accent'
+                                    : 'bg-brand-sand'
+                            }`}
+                        />
+                        {state === 'recording'
                             ? t('narrator.record.recording')
                             : t('narrator.record.paused')}
                     </p>
 
-                    <p className="mt-2 text-2xl tabular-nums">
-                        {t('narrator.record.elapsed', {
-                            time: formatDuration(
-                                snapshot.context.elapsedSeconds,
-                            ),
-                        })}
-                    </p>
+                    {state === 'recording' ? <Wave /> : null}
 
-                    {snapshot.context.warningShown ? (
-                        <p className="mt-4 text-base">
+                    {context.warningShown ? (
+                        <p className="text-brand-muted text-base">
                             {t('narrator.record.soft_warning')}
                         </p>
                     ) : null}
 
-                    <button
-                        type="button"
-                        onClick={() => {
-                            if (snapshot.state === 'recording') {
-                                recorder.pause();
-                                reportClientEvent('recording_paused');
-                                send({ type: 'PAUSE' });
-                            } else {
-                                recorder.resume();
-                                reportClientEvent('recording_resumed');
-                                send({ type: 'RESUME' });
-                            }
-                        }}
-                        className="border-brand text-brand mt-8 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-4 text-xl font-semibold"
-                    >
-                        {snapshot.state === 'recording'
-                            ? t('narrator.record.pause')
-                            : t('narrator.record.resume')}
-                    </button>
+                    <div className="flex w-full flex-col gap-3">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (state === 'recording') {
+                                    recorder.pause();
+                                    reportClientEvent('recording_paused');
+                                    send({ type: 'PAUSE' });
+                                } else {
+                                    recorder.resume();
+                                    reportClientEvent('recording_resumed');
+                                    send({ type: 'RESUME' });
+                                }
+                            }}
+                            className={secondary}
+                        >
+                            {state === 'recording'
+                                ? t('narrator.record.pause')
+                                : t('narrator.record.resume')}
+                        </button>
 
-                    <button
-                        type="button"
-                        onClick={() => void finish()}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-4 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
-                    >
-                        {t('narrator.record.finish')}
-                    </button>
+                        <button
+                            type="button"
+                            onClick={() => void finish()}
+                            className={primary}
+                        >
+                            {t('narrator.record.finish')}
+                        </button>
+                    </div>
                 </section>
             ) : null}
 
-            {snapshot.state === 'interrupted' ? (
-                <section className="mt-8">
+            {state === 'interrupted' ? (
+                <section className="panel enter mt-8 flex flex-col gap-4">
                     <p role="status">{t('narrator.record.interrupted')}</p>
 
                     <button
@@ -481,7 +610,7 @@ export default function Record({
                                 send({ type: 'RESUME_AFTER_INTERRUPTION' });
                             });
                         }}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
+                        className={primary}
                     >
                         {t('narrator.record.interrupted_resume')}
                     </button>
@@ -489,40 +618,42 @@ export default function Record({
                     <button
                         type="button"
                         onClick={() => void finish()}
-                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-4 text-xl font-semibold"
+                        className={secondary}
                     >
                         {t('narrator.record.finish')}
                     </button>
                 </section>
             ) : null}
 
-            {snapshot.state === 'stopping' ? (
-                <p role="status" className="mt-8">
-                    {snapshot.context.hardStopReached
+            {state === 'stopping' ? (
+                <p role="status" className="enter mt-8 flex items-center gap-3">
+                    <span className="spinner text-brand" aria-hidden="true" />
+                    {context.hardStopReached
                         ? t('narrator.record.hard_stop')
                         : t('narrator.record.uploading')}
                 </p>
             ) : null}
 
-            {snapshot.state === 'reviewing' ? (
-                <section className="mt-8">
-                    <h2 className="text-xl font-semibold">
-                        {t('narrator.record.review_title')}
-                    </h2>
+            {/* Écran 4 : se réécouter, puis envoyer ============================== */}
+            {state === 'reviewing' ? (
+                <section className="enter mt-8 flex flex-col gap-5">
+                    <div>
+                        <h2 className="font-display text-brand text-2xl leading-tight font-medium">
+                            {t('narrator.record.review_title')}
+                        </h2>
+                        <p className="text-brand-muted mt-2 text-base">
+                            {t('narrator.record.review_body')}
+                        </p>
+                    </div>
 
                     {reviewUrl !== null ? (
-                        <audio
-                            controls
-                            src={reviewUrl}
-                            className="mt-4 w-full"
-                            aria-label={t('narrator.record.listen')}
-                        />
+                        <AudioPlayer src={reviewUrl} />
                     ) : null}
 
                     <button
                         type="button"
                         onClick={() => void upload()}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
+                        className={primary}
                     >
                         {t('narrator.record.send')}
                     </button>
@@ -540,40 +671,50 @@ export default function Record({
                                 );
                             }
                         }}
-                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
+                        className={secondary}
                     >
                         {t('narrator.record.restart')}
                     </button>
                 </section>
             ) : null}
 
-            {snapshot.state === 'uploading' ? (
-                <section className="mt-8">
-                    <p role="status" className="text-lg">
+            {/* Écran 5 : l'envoi ================================================= */}
+            {state === 'uploading' ? (
+                <section className="enter mt-8 flex flex-col gap-4">
+                    <p
+                        role="status"
+                        className="flex items-center gap-3 text-lg font-medium"
+                    >
+                        <span
+                            className="spinner text-brand"
+                            aria-hidden="true"
+                        />
                         {t('narrator.record.uploading')}
                     </p>
 
-                    <progress
-                        value={progress}
-                        max={1}
-                        className="mt-4 w-full"
+                    <div
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(progress * 100)}
                         aria-label={t('narrator.record.uploading')}
-                    />
+                        className="progress-bar"
+                    >
+                        <span style={{ width: `${progress * 100}%` }} />
+                    </div>
 
-                    <p className="mt-4 text-base">
+                    <p className="text-brand-muted text-base">
                         {t('narrator.record.uploading_notice')}
                     </p>
                 </section>
             ) : null}
 
-            {snapshot.state === 'upload_failed' ? (
-                <section className="mt-8">
+            {state === 'upload_failed' ? (
+                <section className="panel enter mt-8 flex flex-col gap-4">
                     <h2 className="text-xl font-semibold">
                         {t('narrator.record.upload_failed_title')}
                     </h2>
-                    <p className="mt-3">
-                        {t('narrator.record.upload_failed_body')}
-                    </p>
+                    <p>{t('narrator.record.upload_failed_body')}</p>
 
                     <button
                         type="button"
@@ -582,28 +723,43 @@ export default function Record({
                             send({ type: 'RETRY_UPLOAD' });
                             void upload();
                         }}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
+                        className={primary}
                     >
                         {t('narrator.record.retry')}
                     </button>
                 </section>
             ) : null}
 
-            {snapshot.state === 'confirmed' ? (
-                <section className="mt-8">
-                    <h2 role="status" className="text-2xl font-semibold">
-                        {t('narrator.record.confirmed_title')}
-                    </h2>
-                    <p className="mt-3 text-lg">
-                        {t('narrator.record.confirmed_body', {
-                            name: firstName,
-                        })}
-                    </p>
+            {/* Écran 6 : c'est enregistré ======================================== */}
+            {state === 'confirmed' ? (
+                <section className="enter mt-8">
+                    <div className="flex flex-col items-center text-center">
+                        <span
+                            aria-hidden="true"
+                            className="bg-brand text-brand-foreground animate-pop-in flex size-16 items-center justify-center rounded-full"
+                        >
+                            <Check />
+                        </span>
+                        <h2
+                            role="status"
+                            className="font-display text-brand mt-5 text-[1.75rem] leading-tight font-medium"
+                        >
+                            {t('narrator.record.confirmed_title')}
+                        </h2>
+                        <p className="mt-3 text-lg">
+                            {t('narrator.record.confirmed_body', {
+                                name: firstName,
+                            })}
+                        </p>
+                        <p className="text-brand-muted mt-2 text-base">
+                            {t('narrator.record.confirmed_next')}
+                        </p>
+                    </div>
 
                     {/*
                      * Variante A : la question se pose maintenant, pendant que
                      * le narrateur est encore là. C'est tout l'objet du test
-                     * de Phase 0A — la validation comme récompense d'un tap.
+                     * de Phase 0A : la validation comme récompense d'un tap.
                      */}
                     {validationVariant === 'immediate' ? (
                         decided === null ? (
@@ -612,10 +768,7 @@ export default function Record({
                                 onDecided={setDecided}
                             />
                         ) : (
-                            <p
-                                role="status"
-                                className="bg-brand-linen text-brand-text mt-8 rounded-md px-4 py-3"
-                            >
+                            <p role="status" className="panel enter mt-8">
                                 {t(
                                     `narrator.share_decision.recorded.${decided}`,
                                 )}
@@ -627,10 +780,7 @@ export default function Record({
                      * L'ajout d'une photo, **après** la confirmation et
                      * jamais avant : l'enregistrement est ce qui compte, et
                      * proposer une photo au milieu ferait abandonner le
-                     * récit à mi-chemin.
-                     *
-                     * Facultatif de bout en bout : replié derrière un lien,
-                     * et sans conséquence si on l'ignore.
+                     * récit à mi-chemin. Facultatif de bout en bout.
                      */}
                     {addingPhoto ? (
                         <PhotoUploader
@@ -641,7 +791,7 @@ export default function Record({
                         <button
                             type="button"
                             onClick={() => setAddingPhoto(true)}
-                            className="border-brand text-brand mt-8 min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
+                            className="btn-secondary press mt-8 w-full"
                         >
                             {t('common.photos.add')}
                         </button>
@@ -649,14 +799,16 @@ export default function Record({
                 </section>
             ) : null}
 
-            {snapshot.state === 'explaining' || snapshot.state === 'ready' ? (
+            {/* L'écrit, toujours possible ======================================== */}
+            {state === 'explaining' || state === 'ready' ? (
                 <button
                     type="button"
-                    onClick={() => {
-                        reportClientEvent('written_answer_chosen');
-                        setWriting(true);
-                    }}
-                    className="text-brand-muted mt-10 min-h-[2.75rem] w-full text-base underline"
+                    onClick={chooseWriting}
+                    className={
+                        needsHelp
+                            ? `${secondary} mt-6`
+                            : 'text-brand-muted hover:text-brand mt-10 min-h-[2.75rem] w-full text-base underline underline-offset-4'
+                    }
                 >
                     {t('narrator.record.written_link')}
                 </button>

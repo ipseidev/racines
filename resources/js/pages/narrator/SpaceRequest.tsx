@@ -1,6 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { SubmitButton } from '@/components/form/SubmitButton';
+import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
 
 type Props = {
@@ -8,26 +10,17 @@ type Props = {
 };
 
 /**
- * L'entrée de l'espace : une coordonnée, puis un code. Jamais un mot de passe.
+ * L'entrée de l'espace personnel, par le chemin réel : une coordonnée, un
+ * code.
  *
- * Les deux étapes vivent sur la même page et partagent **un seul** formulaire.
- * Deux formulaires obligeaient à recopier la coordonnée du premier dans le
- * second, et une recopie qui échoue produit une erreur muette : le champ
- * `identifier` part vide, le serveur refuse, et l'écran ne montre rien.
+ * La même phrase après l'envoi, que la coordonnée soit connue ou non : une
+ * réponse différente ferait de cette page un annuaire. Le champ du code
+ * n'apparaît qu'ensuite, ou quand on dit déjà l'avoir.
  */
 export default function SpaceRequest({ codeLength }: Props) {
     const t = useT();
-
     const form = useForm({ identifier: '', code: '' });
-
-    /*
-     * Un état à nous, et non `recentlySuccessful` : celui d'Inertia retombe à
-     * faux au bout de deux secondes. Le champ du code disparaîtrait sous les
-     * yeux de quelqu'un qui met trente secondes à lire son SMS — et c'est le
-     * temps normal, sur un téléphone posé à côté.
-     */
     const [sent, setSent] = useState(false);
-
     const status =
         (usePage().props.flash as { status?: string | null } | undefined)
             ?.status ?? null;
@@ -36,23 +29,20 @@ export default function SpaceRequest({ codeLength }: Props) {
         <>
             <Head title={t('narrator.space.request.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[2rem] leading-tight font-medium">
                 {t('narrator.space.request.title')}
             </h1>
 
-            <p className="mt-6">{t('narrator.space.request.body')}</p>
+            <p className="mt-5">{t('narrator.space.request.body')}</p>
 
             {status !== null ? (
-                <p
-                    role="status"
-                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
-                >
+                <p role="status" className="panel enter mt-6">
                     {status}
                 </p>
             ) : null}
 
             <form
-                className="mt-8"
+                className="card mt-8 flex flex-col gap-5 p-5"
                 onSubmit={(event) => {
                     event.preventDefault();
                     form.post(sent ? '/n/verify' : '/n/request', {
@@ -61,40 +51,26 @@ export default function SpaceRequest({ codeLength }: Props) {
                     });
                 }}
             >
-                <label
-                    htmlFor="identifier"
-                    className="block text-lg font-medium"
-                >
-                    {t('narrator.space.request.label')}
-                </label>
-                <input
+                <TextField
                     id="identifier"
                     name="identifier"
+                    label={t('narrator.space.request.label')}
+                    error={form.errors.identifier}
                     autoComplete="tel email"
                     value={form.data.identifier}
                     onChange={(event) =>
                         form.setData('identifier', event.target.value)
                     }
-                    className="border-brand-sand mt-3 min-h-[2.75rem] w-full rounded-md border px-4 py-3 text-[1.125rem]"
+                    className="text-[1.125rem]"
                 />
 
-                {form.errors.identifier !== undefined ? (
-                    <p role="alert" className="mt-3 text-base">
-                        {form.errors.identifier}
-                    </p>
-                ) : null}
-
                 {sent ? (
-                    <>
-                        <label
-                            htmlFor="code"
-                            className="mt-6 block text-lg font-medium"
-                        >
-                            {t('narrator.space.request.code_label')}
-                        </label>
-                        <input
+                    <div className="enter">
+                        <TextField
                             id="code"
                             name="code"
+                            label={t('narrator.space.request.code_label')}
+                            error={form.errors.code}
                             inputMode="numeric"
                             autoComplete="one-time-code"
                             maxLength={codeLength}
@@ -102,38 +78,26 @@ export default function SpaceRequest({ codeLength }: Props) {
                             onChange={(event) =>
                                 form.setData('code', event.target.value)
                             }
-                            className="border-brand-sand mt-3 min-h-[2.75rem] w-full rounded-md border px-4 py-3 text-[1.5rem] tracking-[0.3em]"
+                            className="text-center text-[1.75rem] tracking-[0.35em]"
                         />
-
-                        {form.errors.code !== undefined ? (
-                            <p role="alert" className="mt-3 text-base">
-                                {form.errors.code}
-                            </p>
-                        ) : null}
-                    </>
+                    </div>
                 ) : null}
 
-                <button
-                    type="submit"
-                    disabled={form.processing}
-                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
+                <SubmitButton
+                    processing={form.processing}
+                    waitingLabel={t('common.actions.sending')}
+                    className="min-h-[2.75rem] w-full py-4 text-xl"
                 >
                     {sent
                         ? t('narrator.space.request.verify')
                         : t('narrator.space.request.send')}
-                </button>
+                </SubmitButton>
 
-                {/*
-                 * Quelqu'un qui a fermé l'onglet, ou dont le code est arrivé
-                 * pendant qu'il cherchait ses lunettes, a déjà un code
-                 * valable. Le forcer à en demander un autre invaliderait le
-                 * premier et l'enfermerait dans la limite horaire.
-                 */}
                 {sent ? null : (
                     <button
                         type="button"
                         onClick={() => setSent(true)}
-                        className="text-brand-muted mt-6 min-h-[2.75rem] w-full text-base underline"
+                        className="text-brand-muted hover:text-brand min-h-[2.75rem] w-full text-base underline underline-offset-4"
                     >
                         {t('narrator.space.request.have_code')}
                     </button>

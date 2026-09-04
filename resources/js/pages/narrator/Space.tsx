@@ -1,6 +1,8 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { Counter } from '@/components/form/Counter';
+import { TextField } from '@/components/form/TextField';
 import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
 import PhotoUploader from '@/components/PhotoUploader';
 import { useT } from '@/hooks/useT';
@@ -31,12 +33,12 @@ const longDate = (iso: string) =>
     );
 
 /**
- * « Vos histoires » : une carte par histoire, et les gestes qui vont avec.
+ * L'espace de la narratrice : ses histoires, et ce qu'elle peut en faire.
  *
- * Chaque retrait demande une confirmation à l'écran avant de partir, et la
- * suppression demande en plus le mot SUPPRIMER. Le but n'est pas de dissuader
- * mais d'éviter le geste involontaire : sur un téléphone tenu à bout de bras,
- * un bouton se touche sans le vouloir.
+ * Chaque histoire est une carte : son titre en Fraunces, où elle en est de
+ * son point de vue (jamais un état technique), la date, ses photos, puis les
+ * gestes possibles, du plus doux au définitif. Les confirmations s'ouvrent
+ * dans la carte, en lin : on ne quitte pas l'histoire pour décider d'elle.
  */
 export default function Space({
     stories,
@@ -51,6 +53,7 @@ export default function Space({
     const [confirming, setConfirming] = useState<string | null>(null);
     const [deleting, setDeleting] = useState<string | null>(null);
     const [word, setWord] = useState('');
+    const [weeks, setWeeks] = useState(4);
 
     const act = (
         story: Story,
@@ -71,25 +74,27 @@ export default function Space({
         );
     };
 
+    const quiet =
+        'btn-secondary press min-h-[2.75rem] px-4 py-2.5 text-base font-medium';
+    const dangerLink =
+        'text-brand-muted hover:text-brand min-h-[2.75rem] px-2 text-base underline underline-offset-4 transition-colors';
+
     return (
         <>
             <Head title={t('narrator.space.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
+            <h1 className="font-display text-[2rem] leading-tight font-medium">
                 {t('narrator.space.title')}
             </h1>
 
             {status !== null ? (
-                <p
-                    role="status"
-                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
-                >
+                <p role="status" className="panel enter mt-6">
                     {status}
                 </p>
             ) : null}
 
             {pausedUntil !== null ? (
-                <p className="border-brand-sand mt-6 rounded-md border px-4 py-3">
+                <p className="chip mt-6">
                     {t('narrator.space.paused_until', {
                         date: longDate(pausedUntil),
                     })}
@@ -97,27 +102,32 @@ export default function Space({
             ) : null}
 
             {stories.length === 0 ? (
-                <p className="mt-8">{t('narrator.space.empty')}</p>
+                <div className="card mt-8 px-6 py-8 text-center">
+                    <p className="font-display text-brand text-2xl">
+                        {t('narrator.space.empty')}
+                    </p>
+                    <p className="text-brand-muted mt-2 text-base">
+                        {t('narrator.space.empty_hint')}
+                    </p>
+                </div>
             ) : (
-                <ul className="mt-8 flex flex-col gap-6">
+                <ul className="mt-8 flex flex-col gap-5">
                     {stories.map((story) => (
-                        <li
-                            key={story.id}
-                            className="border-brand-sand rounded-md border px-4 py-4"
-                        >
-                            <h2 className="text-lg font-medium">
+                        <li key={story.id} className="card p-5">
+                            <h2 className="font-display text-brand text-2xl leading-tight font-medium">
                                 {story.title ?? story.question}
                             </h2>
-
-                            <p className="text-brand-muted mt-1 text-base">
-                                {story.label}
-                                {story.recordedAt === null
-                                    ? ''
-                                    : ` · ${longDate(story.recordedAt)}`}
+                            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-base">
+                                <span className="chip">{story.label}</span>
+                                {story.recordedAt === null ? null : (
+                                    <span className="text-brand-muted">
+                                        {longDate(story.recordedAt)}
+                                    </span>
+                                )}
                             </p>
 
                             {story.restorableUntil !== null ? (
-                                <p className="mt-2 text-base">
+                                <p className="text-brand-muted mt-3 text-base">
                                     {t('narrator.space.restorable_until', {
                                         date: longDate(story.restorableUntil),
                                     })}
@@ -125,136 +135,11 @@ export default function Space({
                             ) : null}
 
                             {story.printedInBook ? (
-                                <p className="border-brand-sand mt-3 rounded-md border px-3 py-2 text-base">
+                                <p className="panel mt-4 text-base">
                                     {printedCopiesWarning}
                                 </p>
                             ) : null}
 
-                            <div className="mt-4 flex flex-col gap-3">
-                                {story.state === 'hidden' ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => act(story, 'unhide')}
-                                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
-                                    >
-                                        {t('narrator.withdrawals.unhide')}
-                                    </button>
-                                ) : null}
-
-                                {story.state === 'trashed' ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => act(story, 'restore')}
-                                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
-                                    >
-                                        {t('narrator.withdrawals.restore')}
-                                    </button>
-                                ) : null}
-
-                                {story.state !== 'hidden' &&
-                                story.state !== 'trashed' &&
-                                story.state !== 'deleted' ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => act(story, 'hide')}
-                                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
-                                    >
-                                        {t('narrator.withdrawals.hide')}
-                                    </button>
-                                ) : null}
-
-                                {story.state !== 'trashed' &&
-                                story.state !== 'deleted' ? (
-                                    confirming === story.id ? (
-                                        <div className="border-brand-sand rounded-md border px-3 py-3">
-                                            <p className="text-base">
-                                                {t(
-                                                    'narrator.withdrawals.trash_confirm',
-                                                )}
-                                            </p>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    act(story, 'trash')
-                                                }
-                                                className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-3 min-h-[2.75rem] w-full rounded-md px-4 py-3 text-lg"
-                                            >
-                                                {t(
-                                                    'narrator.withdrawals.trash',
-                                                )}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setConfirming(story.id)
-                                            }
-                                            className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
-                                        >
-                                            {t('narrator.withdrawals.trash')}
-                                        </button>
-                                    )
-                                ) : null}
-
-                                {story.state === 'trashed' ? (
-                                    deleting === story.id ? (
-                                        <div className="border-brand-sand rounded-md border px-3 py-3">
-                                            <p className="text-base">
-                                                {t(
-                                                    'narrator.withdrawals.delete_confirm',
-                                                )}
-                                            </p>
-                                            <label
-                                                htmlFor={`word-${story.id}`}
-                                                className="mt-3 block text-base font-medium"
-                                            >
-                                                {t(
-                                                    'narrator.withdrawals.delete_word_label',
-                                                )}
-                                            </label>
-                                            <input
-                                                id={`word-${story.id}`}
-                                                value={word}
-                                                onChange={(event) =>
-                                                    setWord(event.target.value)
-                                                }
-                                                className="border-brand-sand mt-2 min-h-[2.75rem] w-full rounded-md border px-3 py-2 text-lg"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    act(story, 'delete', {
-                                                        confirmation: word,
-                                                    })
-                                                }
-                                                className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-3 min-h-[2.75rem] w-full rounded-md px-4 py-3 text-lg"
-                                            >
-                                                {t(
-                                                    'narrator.withdrawals.delete',
-                                                )}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setDeleting(story.id)
-                                            }
-                                            className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
-                                        >
-                                            {t('narrator.withdrawals.delete')}
-                                        </button>
-                                    )
-                                ) : null}
-                            </div>
-
-                            {/*
-                             * Les photos de l'histoire, sous les gestes de
-                             * retrait. Le narrateur retire n'importe laquelle
-                             * — y compris ce qu'un proche a joint à son
-                             * récit : c'est le sien.
-                             */}
                             <PhotoGallery
                                 photos={story.photos}
                                 onRemove={(id) =>
@@ -265,41 +150,198 @@ export default function Space({
                                 }
                             />
 
-                            <PhotoUploader
-                                action={`${window.location.pathname}/stories/${story.id}/photos`}
-                            />
+                            {story.state !== 'trashed' &&
+                            story.state !== 'deleted' ? (
+                                <PhotoUploader
+                                    action={`${window.location.pathname}/stories/${story.id}/photos`}
+                                />
+                            ) : null}
+
+                            <div className="border-brand-sand mt-6 flex flex-col gap-3 border-t pt-5">
+                                <p className="text-brand-muted text-base">
+                                    {t('narrator.space.actions')}
+                                </p>
+
+                                <div className="flex flex-wrap items-center gap-3">
+                                    {story.state === 'hidden' ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => act(story, 'unhide')}
+                                            className={quiet}
+                                        >
+                                            {t('narrator.withdrawals.unhide')}
+                                        </button>
+                                    ) : null}
+
+                                    {story.state === 'trashed' ? (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                act(story, 'restore')
+                                            }
+                                            className={quiet}
+                                        >
+                                            {t('narrator.withdrawals.restore')}
+                                        </button>
+                                    ) : null}
+
+                                    {story.state !== 'hidden' &&
+                                    story.state !== 'trashed' &&
+                                    story.state !== 'deleted' ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => act(story, 'hide')}
+                                            className={quiet}
+                                        >
+                                            {t('narrator.withdrawals.hide')}
+                                        </button>
+                                    ) : null}
+
+                                    {story.state !== 'trashed' &&
+                                    story.state !== 'deleted' &&
+                                    confirming !== story.id ? (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setConfirming(story.id)
+                                            }
+                                            className={dangerLink}
+                                        >
+                                            {t('narrator.withdrawals.trash')}
+                                        </button>
+                                    ) : null}
+
+                                    {story.state === 'trashed' &&
+                                    deleting !== story.id ? (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setDeleting(story.id)
+                                            }
+                                            className={dangerLink}
+                                        >
+                                            {t('narrator.withdrawals.delete')}
+                                        </button>
+                                    ) : null}
+                                </div>
+
+                                {confirming === story.id ? (
+                                    <div className="panel enter flex flex-col gap-3">
+                                        <p className="text-base">
+                                            {t(
+                                                'narrator.withdrawals.trash_confirm',
+                                            )}
+                                        </p>
+                                        <div className="flex flex-wrap gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    act(story, 'trash')
+                                                }
+                                                className="btn-primary press min-h-[2.75rem] py-2.5 text-base"
+                                            >
+                                                {t(
+                                                    'narrator.withdrawals.trash',
+                                                )}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setConfirming(null)
+                                                }
+                                                className={dangerLink}
+                                            >
+                                                {t('common.actions.cancel')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : null}
+
+                                {deleting === story.id ? (
+                                    <div className="panel enter flex flex-col gap-4">
+                                        <p className="text-base">
+                                            {t(
+                                                'narrator.withdrawals.delete_confirm',
+                                            )}
+                                        </p>
+                                        <TextField
+                                            id={`word-${story.id}`}
+                                            label={t(
+                                                'narrator.withdrawals.delete_word_label',
+                                            )}
+                                            type="text"
+                                            value={word}
+                                            onChange={(event) =>
+                                                setWord(event.target.value)
+                                            }
+                                            autoComplete="off"
+                                            autoCapitalize="characters"
+                                            className="text-lg tracking-wide"
+                                        />
+                                        <div className="flex flex-wrap gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    act(story, 'delete', {
+                                                        confirmation: word,
+                                                    })
+                                                }
+                                                className="btn-primary press min-h-[2.75rem] py-2.5 text-base"
+                                            >
+                                                {t(
+                                                    'narrator.withdrawals.delete',
+                                                )}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setDeleting(null)
+                                                }
+                                                className={dangerLink}
+                                            >
+                                                {t('common.actions.cancel')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </div>
                         </li>
                     ))}
                 </ul>
             )}
 
+            {/* La pause ========================================================= */}
             <form
-                className="mt-12"
+                className="card mt-10 flex flex-col gap-4 p-5"
                 onSubmit={(event) => {
                     event.preventDefault();
-                    const weeks = new FormData(event.currentTarget).get(
-                        'weeks',
-                    );
                     router.post(`${window.location.pathname}/pause`, {
-                        weeks: Number(weeks),
+                        weeks,
                     });
                 }}
             >
-                <label htmlFor="weeks" className="block text-lg font-medium">
-                    {t('narrator.space.pause_weeks')}
-                </label>
-                <input
+                <h2 className="font-display text-brand text-2xl leading-tight font-medium">
+                    {t('narrator.space.pause_title')}
+                </h2>
+                <p className="text-brand-muted text-base">
+                    {t('narrator.space.pause_body')}
+                </p>
+
+                <Counter
                     id="weeks"
                     name="weeks"
-                    type="number"
+                    label={t('narrator.space.pause_weeks')}
+                    value={weeks}
                     min={1}
                     max={26}
-                    defaultValue={4}
-                    className="border-brand-sand mt-3 min-h-[2.75rem] w-24 rounded-md border px-3 py-2 text-lg"
+                    onChange={setWeeks}
+                    decrementLabel={t('narrator.space.pause_fewer')}
+                    incrementLabel={t('narrator.space.pause_more')}
                 />
+
                 <button
                     type="submit"
-                    className="border-brand text-brand mt-4 block min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
+                    className="btn-secondary press self-start"
                 >
                     {t('narrator.space.pause')}
                 </button>

@@ -18,6 +18,7 @@ use App\Models\Invitation;
 use App\Models\Project;
 use App\Services\Storage\MediaStorage;
 use App\Support\Options;
+use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
@@ -86,6 +87,8 @@ final readonly class OptInController
     {
         $project = self::projectFor($request);
 
+        $request->merge(['narrator_phone' => Phone::e164($request->input('narrator_phone'))]);
+
         $validated = $request->validate([
             // Cinq cases, cinq acceptations. Pas un « j'accepte tout » : le
             // dossier veut les consentements distincts et révocables, et une
@@ -96,6 +99,8 @@ final readonly class OptInController
             'consent_family_sharing' => ['accepted'],
             'consent_sensitive_categories' => ['accepted'],
             'preferred_channel' => ['required', new Enum(Channel::class)],
+            // Tapé comme on le tape, ramené au format international avant
+            // la règle (T-136) : la contrainte est la nôtre, pas la sienne.
             'narrator_phone' => ['nullable', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
             'cadence' => ['required', new Enum(Cadence::class)],
             'prompt_day' => ['required', 'integer', 'min:1', 'max:7'],

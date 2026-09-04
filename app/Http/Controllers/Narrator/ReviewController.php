@@ -47,6 +47,7 @@ final readonly class ReviewController
         return inertia('narrator/Review', [
             'firstName' => $story->narrator->first_name,
             'addressForm' => $story->project->address_form->value,
+            'techComfort' => $story->narrator->tech_comfort?->value,
             'question' => $story->questionText(),
             'title' => $story->title,
             'fluide' => self::textOf($story, TranscriptKind::Fluide),
