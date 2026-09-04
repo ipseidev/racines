@@ -81,7 +81,13 @@ maquette seule passe par Google Fonts, pour rester un fichier autonome.
 (deux colonnes, un pas à la fois, un serif par titre d'étape) ; l'idée d'une
 section chaude pour montrer la page du livre avec son code ; le mockup
 livre-plus-téléphone comme seul objet visuel répété ; le rappel des inclusions
-sous le prix.
+sous le prix. Depuis le 4 septembre (T-134), **la structure entière de la page
+d'accueil** : le bandeau d'offre en une ligne au-dessus de la barre, l'ordre des
+sections, la répétition de l'appel à l'action à chaque palier, le secondaire
+« Comment ça marche » dans le héros. Décision du fondateur : « ce sont les
+leaders, alors copions-les ». Ce qui n'existe pas chez nous (presse, avis,
+vidéos de clients) n'a pas d'emplacement vide ; il viendra avec les familles
+pilotes.
 
 **Laissé** : le vert acide ; les quatre mentions de Shark Tank et les cinq de
 Trustpilot ; les citations de célébrités ; la popup de réduction et la
@@ -103,10 +109,12 @@ appels à l'action à la **première personne** (« J'offre ce livre »,
 - **Les photos.** De banque, donc provisoires. Crédits dans
   `landing/img/credits.json` — licence Unsplash, attribution non requise mais
   due.
-- **Le prix.** L'analyse colorimétrique évoque 89 € ; le pilote est configuré à
-  **49 €** (`PilotSettings`), et c'est ce chiffre que porte la maquette.
-- **Le délai de rétractation** affiché — quatorze jours — est celui du droit de
-  la consommation ; le texte exact attend la relecture juridique du bloc 10.
+- **Le prix.** 89 € depuis le 4 septembre (T-134), par migration de réglages ;
+  la maquette du 3 portait encore les 49 € du réglage pilote.
+- **La garantie.** « Satisfait ou remboursé pendant trente jours », sans
+  justification, remplace les quatorze jours de rétractation du droit de la
+  consommation (T-134). C'est un engagement commercial qui dépasse la loi ; il
+  est dans la relecture juridique du bloc 10 (05 §6, ligne 12quinquies).
 - **La propagation** est faite (4 septembre 2026, T-132 et T-133) : fondations,
   puis narrateur, famille, public, Initiateur·rice, dans cet ordre. Chaque
   famille a été relue à l'écran à 390 px et passée par ses tests bout en bout
@@ -139,3 +147,9 @@ les corrige là où un script ne peut pas savoir ce que la page veut faire faire
    lin (`.panel`), les cartes sont blanches à filet sable (`.card`), les
    champs sont blancs (`.input`). Les titres portent Fraunces et la couleur
    de marque par la règle de base sur `.font-display`.
+4. **Les mots suivent les mêmes règles que les couleurs.** Aucun tiret long
+   dans un texte visible : une virgule, un point ou deux points (décision du
+   fondateur, T-134 : « ça fait trop IA »). Les appels à l'action sont à la
+   première personne (« J'offre ce livre », « Je commence son livre »), et une
+   ligne de réassurance les accompagne. Rien de ce que R-11 interdit, même
+   traduit du leader : « pour toujours » n'est pas une promesse qu'on tient.

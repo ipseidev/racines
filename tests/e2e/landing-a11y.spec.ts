@@ -55,31 +55,33 @@ test('la page d’accueil annonce ses sections dans l’ordre du dossier', async
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    // L'ordre n'est pas négociable (doc 01 §4) : on explique avant de
-    // demander, et le prix arrive après les engagements. On le lit sur les
-    // identifiants des titres de section, pas sur leur libellé : depuis la
-    // direction artistique du 3 septembre 2026, le titre canonique vit dans
-    // l'œillet et le h2 porte une phrase — l'ordre, lui, n'a pas bougé.
+    // L'ordre est celui de Remento, adapté à notre univers (décision du
+    // fondateur, 4 septembre 2026, T-134). On le lit sur les identifiants des
+    // titres de section, pas sur leur libellé.
     const order = await page
         .getByRole('heading', { level: 2 })
         .evaluateAll((nodes) => nodes.map((node) => node.id));
 
     expect(order).toEqual([
+        'promises',
+        'what',
         'how',
-        'try',
+        'story',
+        'product',
+        'forever',
+        'guarantee',
+        'tested',
         'book',
-        'commitments',
-        'price',
+        'review',
+        'gift',
         'faq',
     ]);
 
-    // Et les mots du dossier restent visibles, chacun à sa place.
+    // Et les titres canoniques restent visibles, chacun à sa place.
     for (const label of [
         'Comment ça marche',
-        'Essayez en 60 secondes',
+        'Notre histoire',
         'Le livre',
-        'Nos engagements',
-        'Le prix',
         'Questions fréquentes',
     ]) {
         await expect(

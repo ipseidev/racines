@@ -40,6 +40,7 @@ final class LandingController
             'mode' => $settings->mode,
             'price' => $settings->isPrevente() ? $variant : $settings->pilot_price_cents,
             'phoneOptionPrice' => $settings->phone_option_price_cents,
+            'extraCopyPrice' => $settings->extra_copy_price_cents,
             'legalValidated' => $settings->legalValidated(),
         ]);
     }

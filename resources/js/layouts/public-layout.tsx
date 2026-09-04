@@ -2,11 +2,22 @@ import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
+import { formatPrice, usePilot } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
-import { usePilot } from '@/hooks/usePilot';
+
+const NAV = [
+    { href: '/#comment', key: 'how' },
+    { href: '/#livre', key: 'book' },
+    { href: '/#histoire', key: 'story' },
+    { href: '/#questions', key: 'faq' },
+] as const;
 
 /**
  * Mise en page des pages publiques.
+ *
+ * Structure empruntée à Remento (décision du fondateur, 4 septembre 2026) : un
+ * bandeau d'offre en une ligne au-dessus de tout, puis une barre avec la
+ * marque, quatre entrées, la connexion et l'action.
  *
  * Le pied de page porte les liens légaux sur **toutes** les pages, y compris
  * le tunnel d'achat : quelqu'un qui s'apprête à payer doit pouvoir lire les
@@ -18,7 +29,7 @@ import { usePilot } from '@/hooks/usePilot';
  *
  * Le contenu n'est pas contraint en largeur ici : la page d'accueil compose
  * des sections pleine largeur, et les autres pages posent elles-mêmes leur
- * colonne de lecture. En-tête et pied partagent la même largeur de conteneur.
+ * colonne de lecture.
  */
 export default function PublicLayout({ children }: PropsWithChildren) {
     const t = useT();
@@ -27,27 +38,59 @@ export default function PublicLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="bg-brand-background text-brand-text flex min-h-screen flex-col">
+            <p className="bg-brand-deep px-6 py-2.5 text-center text-[0.95rem] text-[#F7F1E6]">
+                {t('public.landing.bar', {
+                    price: formatPrice(pilot.pilotPriceCents),
+                })}
+            </p>
+
             {!pilot.legalValidated && (
                 <p
                     role="status"
-                    className="bg-brand-linen text-brand-muted px-6 py-3 text-center text-base"
+                    className="bg-brand-linen text-brand-muted px-6 py-2.5 text-center text-[0.95rem]"
                 >
                     {t('public.legal.draft_banner')}
                 </p>
             )}
 
             <header className="border-brand-sand border-b">
-                <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-5">
-                    <Link href="/" aria-label={brand.name}>
-                        <BrandLogo className="font-display text-brand text-[1.65rem] font-semibold" />
-                    </Link>
+                <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-4">
+                    <div className="flex items-center gap-8">
+                        <Link href="/" aria-label={brand.name}>
+                            <BrandLogo className="font-display text-brand text-[1.65rem] font-semibold" />
+                        </Link>
 
-                    <Link
-                        href="/acheter"
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep inline-flex min-h-[2.875rem] items-center justify-center rounded-md px-5 text-base font-semibold"
-                    >
-                        {t('public.landing.cta')}
-                    </Link>
+                        <nav
+                            aria-label="Sections"
+                            className="hidden items-center gap-6 text-base lg:flex"
+                        >
+                            {NAV.map((item) => (
+                                <a
+                                    key={item.key}
+                                    href={item.href}
+                                    className="hover:text-brand"
+                                >
+                                    {t(`public.landing.nav.${item.key}`)}
+                                </a>
+                            ))}
+                        </nav>
+                    </div>
+
+                    <div className="flex items-center gap-5">
+                        <Link
+                            href="/login"
+                            className="hover:text-brand hidden text-base font-medium sm:inline"
+                        >
+                            {t('public.landing.nav.login')}
+                        </Link>
+
+                        <Link
+                            href="/acheter"
+                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep inline-flex min-h-[2.875rem] items-center justify-center rounded-md px-5 text-base font-semibold"
+                        >
+                            {t('public.landing.cta')}
+                        </Link>
+                    </div>
                 </div>
             </header>
 

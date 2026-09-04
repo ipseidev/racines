@@ -16,7 +16,7 @@ declare(strict_types=1);
 return [
     'product_name' => env('BRAND_PRODUCT_NAME', 'Product'),
     'short_name' => env('BRAND_SHORT_NAME', 'Product'),
-    'tagline' => 'Le livre de souvenirs de vos parents qui va réellement au bout.',
+    'tagline' => 'Le livre de leurs souvenirs, avec leur voix à chaque page.',
     'links_domain' => env('LINKS_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
     'support_email' => env('BRAND_SUPPORT_EMAIL', 'support@example.test'),
     'support_phone' => env('BRAND_SUPPORT_PHONE'),

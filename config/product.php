@@ -125,7 +125,7 @@ return [
     'pilot' => [
         'phone_option_cap' => 10,
         'phone_option_price_cents' => 2_500,
-        'pilot_price_cents' => 4_900,
+        'pilot_price_cents' => 8_900,
         'prevente_prices_cents' => [9_900, 12_900],
         // `[À CONFIRMER devis 0A]` : tant que l'imprimeur est inconnu, ce
         // prix est un placeholder, et aucune promesse de délai ne l'accompagne.

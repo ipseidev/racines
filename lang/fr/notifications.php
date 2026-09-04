@@ -218,7 +218,7 @@ return [
         'line' => ':inviter aimerait recueillir vos souvenirs et en faire un livre, avec :brand. Vous répondez en parlant, quand vous voulez, et vous décidez de tout.',
         'button' => 'Découvrir, sans engagement',
         'no_obligation' => 'Rien ne commence avant que vous ayez dit oui. Et vous pouvez dire non : c’est prévu, et c’est respecté.',
-        'sms' => ':name, :inviter vous offre un livre de vos souvenirs avec :brand. Pour découvrir : :link — ce lien ne demandera jamais de mot de passe ni de paiement.',
+        'sms' => ':name, :inviter vous offre un livre de vos souvenirs avec :brand. Pour découvrir : :link. Ce lien ne demandera jamais de mot de passe ni de paiement.',
     ],
 
     'checkout' => [
@@ -242,7 +242,7 @@ return [
             // On respecte à voix haute, et on ne suggère aucune relance.
             'respect' => 'C’est son choix, et nous le respectons. Cela arrive, et ce n’est pas un échec : proposer était déjà une attention.',
             'button' => 'Voir ma commande',
-            'refund' => 'Vous êtes remboursé·e intégralement si vous le souhaitez — il suffit de nous le dire depuis votre espace, sans justification.',
+            'refund' => 'Vous êtes remboursé·e intégralement si vous le souhaitez. Il suffit de nous le dire depuis votre espace, sans justification.',
         ],
     ],
 
@@ -276,7 +276,7 @@ return [
      * que quiconque s'en aperçoive.
      */
     'transcription_failed' => [
-        'subject' => 'Transcription en échec — reprise manuelle nécessaire',
+        'subject' => 'Transcription en échec, reprise manuelle nécessaire',
         'line' => 'L’enregistrement :recording n’a pas pu être transcrit après plusieurs tentatives. L’audio d’origine est intact.',
         'action' => 'Relancer la transcription depuis l’administration, ou basculer le fournisseur de secours. Prévenir la famille si l’attente dépasse quarante-huit heures.',
     ],

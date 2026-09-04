@@ -42,7 +42,7 @@ Aucun.
 
 ### 6.1 Offre pilote
 - [ ] `PilotSettings` : `mode = pilot`, `pilot_weeks 12`, `pilot_target_stories_min 10`, `pilot_target_stories_max 15`, `support_hourly_cost_cents` (pour le coût support), `legal_validated_at`, `rehearsal_required_projects 3`.
-- [ ] Récapitulatif contractuel affiché à l'étape 6 du tunnel et repris dans l'email de confirmation : 12 semaines, 49 €, 10 à 15 histoires visées, export complet, mini-livre « premier chapitre » imprimé, statut expérimental, remboursable, sort des données au choix en fin de pilote. Texte dans `lang/fr/public.php` `pilot.contract.*`, `[À VALIDER PAR CONSEIL]` tant que `legal_validated_at` est nul.
+- [ ] Récapitulatif contractuel affiché à l'étape 6 du tunnel et repris dans l'email de confirmation : 12 semaines, 89 €, 10 à 15 histoires visées, export complet, mini-livre « premier chapitre » imprimé, statut expérimental, remboursable, sort des données au choix en fin de pilote. Texte dans `lang/fr/public.php` `pilot.contract.*`, `[À VALIDER PAR CONSEIL]` tant que `legal_validated_at` est nul.
 - [ ] Cohorte `0B-2026-11` créée (`CohortResource`), `PilotSettings::cohort_id` posé.
 
 ### 6.2 Option téléphone (D-9)

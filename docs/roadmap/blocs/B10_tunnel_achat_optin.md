@@ -109,7 +109,7 @@ Inertia SSR : `sail npm run build` doit produire `bootstrap/ssr/ssr.js` (`vite.c
 
 ## 7. Checkpoint démontrable
 
-1. Parcourir `/` → `/essai` (enregistrer 20 s, réécouter, rien n'est envoyé) → `/acheter` en mode `pilot` : commande 49 € + option téléphone 25 € avec la carte de test Stripe.
+1. Parcourir `/` → `/essai` (enregistrer 20 s, réécouter, rien n'est envoyé) → `/acheter` en mode `pilot` : commande 89 € + option téléphone 25 € avec la carte de test Stripe.
 2. Webhook reçu (Stripe CLI `stripe listen --forward-to localhost/stripe/webhook`) : commande, projet, narrateur, option téléphone créés ; email de confirmation dans Mailpit.
 3. Forcer `gift_send_at` à maintenant, lancer le scheduler : l'invitation arrive (log SMS ou Mailpit). Ouvrir `/i/…` : accepter avec les quatre cases → projet actif, premier prompt planifié le lendemain 09:00, fiche contact proposée.
 4. Refaire avec « Non merci » : l'Initiateur·rice reçoit le message avec tact, `contact_deletion_due_at` posé.

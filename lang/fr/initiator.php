@@ -225,7 +225,7 @@ return [
         'submit' => 'Enregistrer',
         'lexicon' => [
             'title' => 'Le lexique',
-            'intro' => 'Les noms propres de votre famille : le village, les surnoms, l’orthographe exacte. C’est vous qui les connaissez, pas :name — et pas nous.',
+            'intro' => 'Les noms propres de votre famille : le village, les surnoms, l’orthographe exacte. C’est vous qui les connaissez, pas :name, et pas nous.',
             'term' => 'Ce qui est entendu',
             'replacement' => 'Ce qu’il faut écrire',
             'notes' => 'Une précision (facultatif)',

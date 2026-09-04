@@ -216,7 +216,7 @@ return [
             'refuse' => 'Non merci',
             'accepted' => 'C’est noté. Bienvenue.',
             'refuse_title' => 'Vous préférez ne pas',
-            'refuse_intro' => 'C’est votre choix, et il est respecté. Vous pouvez nous dire pourquoi, si vous voulez — ce n’est pas obligatoire.',
+            'refuse_intro' => 'C’est votre choix, et il est respecté. Vous pouvez nous dire pourquoi, si vous voulez. Ce n’est pas obligatoire.',
             'refuse_confirm' => 'Confirmer mon refus',
             'welcome' => [
                 'title' => 'Bienvenue, :first_name',
