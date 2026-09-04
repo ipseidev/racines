@@ -427,7 +427,7 @@ return [
         // Les options, présentées comme chez le leader : une carte, une image,
         // un prix, « Ajouter ». Puis les trois accords, chacun sa case.
         'options' => [
-            'intro' => 'Deux options, si vous le souhaitez. Puis trois accords, chacun sa case.',
+            'intro' => 'Trois options, si vous le souhaitez. Puis trois accords, chacun sa case.',
             'add' => 'Ajouter',
             'remove' => 'Retirer',
             'added' => 'Ajouté',
@@ -441,6 +441,12 @@ return [
                 'fewer' => 'Un exemplaire de moins',
                 'more' => 'Un exemplaire de plus',
                 'alt' => 'Le livre relié, ouvert sur une double page',
+            ],
+            'instead' => 'au lieu de :amount',
+            'ebook' => [
+                'title' => 'Le livre numérique',
+                'body' => 'Toutes les histoires, le texte et la voix, à lire et à écouter sur téléphone, tablette ou ordinateur. Pour la famille éloignée, et pour attendre le livre relié.',
+                'alt' => 'Une histoire lue sur un téléphone',
             ],
             'phone' => [
                 'title' => 'Enregistrement par téléphone',
@@ -462,6 +468,7 @@ return [
             'copies_one' => 'Un exemplaire supplémentaire',
             'copies_many' => ':count exemplaires supplémentaires',
             'phone' => 'L’option téléphone',
+            'ebook' => 'Le livre numérique',
             'total' => 'Total à payer',
             'notice' => 'Le paiement se fait sur la page sécurisée de notre prestataire. Nous ne voyons jamais votre numéro de carte.',
         ],
@@ -475,6 +482,7 @@ return [
             'copies_one' => 'Un exemplaire supplémentaire',
             'copies_many' => ':count exemplaires supplémentaires',
             'phone' => 'L’option téléphone',
+            'ebook' => 'Le livre numérique',
             'total' => 'Total',
             'one_payment' => 'Un seul paiement, pas d’abonnement.',
             'secure' => 'Paiement sécurisé sur la page de notre prestataire.',

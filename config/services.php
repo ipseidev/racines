@@ -74,6 +74,7 @@ return [
             'prevente_129' => env('STRIPE_PRICE_PREVENTE_129'),
             'extra_copy' => env('STRIPE_PRICE_EXTRA_COPY'),
             'phone_option' => env('STRIPE_PRICE_PHONE_OPTION'),
+            'ebook' => env('STRIPE_PRICE_EBOOK'),
         ],
     ],
 

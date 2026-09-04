@@ -60,18 +60,18 @@ it('suit la variante portée par le cookie', function (): void {
         ->toBe((new PreventePrice)->resolve('visiteur-stable'));
 });
 
-it('garde l’option téléphone fermée par défaut', function (): void {
-    // Une promesse humaine ne s'ouvre pas par défaut : c'est une capacité de
-    // l'équipe, pas une caractéristique du produit.
-    expect(PhoneOptionOffer::isOpen())->toBeFalse()
-        ->and(PhoneOptionOffer::cap())->toBe(10);
+it('ouvre l’option téléphone par défaut, sous le plafond', function (): void {
+    // Ouverte par défaut depuis T-137 : le plafond calculé protège la
+    // promesse humaine ; le drapeau ne sert plus qu'à fermer d'un geste.
+    expect(PhoneOptionOffer::isOpen())->toBeTrue()
+        ->and(PhoneOptionOffer::cap())->toBe(10)
+        ->and(PhoneOptionOffer::remaining())->toBe(10);
 });
 
-it('ouvre l’option téléphone quand le drapeau l’est', function (): void {
-    Feature::activate(PhoneOptionOffer::class);
+it('referme l’option téléphone quand le drapeau est baissé', function (): void {
+    Feature::deactivate(PhoneOptionOffer::class);
 
-    expect(PhoneOptionOffer::isOpen())->toBeTrue()
-        ->and(PhoneOptionOffer::remaining())->toBe(10);
+    expect(PhoneOptionOffer::isOpen())->toBeFalse();
 });
 
 it('referme l’option quand le plafond est atteint', function (): void {

@@ -8,6 +8,7 @@ use App\Engine\Rules\NarratorSilence21d;
 use App\Enums\EngineRuleId;
 use App\Enums\ProjectStatus;
 use App\Enums\TokenType;
+use App\Features\PhoneOptionOffer;
 use App\Models\AccessToken;
 use App\Models\EngineEvent;
 use App\Models\Narrator;
@@ -16,6 +17,7 @@ use App\Models\Story;
 use App\Notifications\EngineNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Notification;
+use Laravel\Pennant\Feature;
 
 /**
  * Un projet accepté, dont la dernière histoire date de `$daysAgo` jours.
@@ -152,20 +154,31 @@ describe('vingt-et-un jours de silence', function (): void {
         expect(EngineEvent::query()->count())->toBe(0);
     });
 
-    it('alerte l’Initiateur·rice avec trois gestes possibles', function (): void {
+    it('alerte l’Initiateur·rice avec quatre gestes possibles, téléphone compris', function (): void {
         $project = silentProject(21);
 
         runAlertRule();
 
         $event = EngineEvent::query()->sole();
 
-        // Le quatrième geste — l'option téléphone — n'est proposé que s'il
-        // peut être tenu : le drapeau est fermé par défaut.
+        // Le quatrième geste, l'option téléphone, n'est proposé que s'il
+        // peut être tenu : l'offre est ouverte par défaut (T-137) et sous
+        // son plafond.
         expect($event->action_taken['told'])->toBe('initiator')
             ->and($event->action_taken['offered'])
-            ->toBe(['resend_whatsapp', 'switch_biweekly', 'ack_call_parent']);
+            ->toBe(['resend_whatsapp', 'switch_biweekly', 'ack_call_parent', 'offer_phone_option']);
 
         Notification::assertSentTo($project->owner, EngineNotification::class);
+    });
+
+    it('ne propose pas le téléphone quand l’offre est fermée', function (): void {
+        $project = silentProject(21);
+        Feature::for($project)->deactivate(PhoneOptionOffer::class);
+
+        runAlertRule();
+
+        expect(EngineEvent::query()->sole()->action_taken['offered'])
+            ->toBe(['resend_whatsapp', 'switch_biweekly', 'ack_call_parent']);
     });
 
     it('émet un jeton d’action par geste proposé', function (): void {
@@ -175,9 +188,9 @@ describe('vingt-et-un jours de silence', function (): void {
 
         $tokens = AccessToken::query()->where('type', TokenType::Action->value)->get();
 
-        expect($tokens)->toHaveCount(3)
+        expect($tokens)->toHaveCount(4)
             ->and($tokens->pluck('scope')->map(fn (array $s): string => $s[1])->sort()->values()->all())
-            ->toBe(['ack_call_parent', 'resend_whatsapp', 'switch_biweekly']);
+            ->toBe(['ack_call_parent', 'offer_phone_option', 'resend_whatsapp', 'switch_biweekly']);
     });
 
     it('n’alerte qu’une fois par mois', function (): void {

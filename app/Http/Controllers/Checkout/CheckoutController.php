@@ -72,6 +72,8 @@ final readonly class CheckoutController
                     : $settings->pilot_price_cents,
                 'extraCopy' => $settings->extra_copy_price_cents,
                 'phoneOption' => $settings->phone_option_price_cents,
+                'ebook' => $settings->ebook_price_cents,
+                'ebookRegular' => $settings->ebook_regular_price_cents,
             ],
             'phoneOption' => [
                 'open' => PhoneOptionOffer::isOpen(),

@@ -151,6 +151,7 @@ return [
         'core_prevente' => 'Prévente',
         'extra_copy' => 'Exemplaire supplémentaire',
         'phone_option' => 'Enregistrement par téléphone',
+        'ebook' => 'Livre numérique',
     ],
 
     'phone_option_entry' => [

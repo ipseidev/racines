@@ -92,6 +92,12 @@ final readonly class StartStripeCheckout
             $items[] = ['price' => $phonePrice, 'quantity' => 1];
         }
 
+        $ebookPrice = Sku::Ebook->stripePriceId();
+
+        if ($draft->value('ebook') === true && $ebookPrice !== null) {
+            $items[] = ['price' => $ebookPrice, 'quantity' => 1];
+        }
+
         return $items;
     }
 }

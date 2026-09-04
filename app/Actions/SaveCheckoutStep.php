@@ -72,6 +72,7 @@ final class SaveCheckoutStep
             5 => [
                 'extra_copies' => ['required', 'integer', 'min:0', 'max:5'],
                 'phone_option' => ['sometimes', 'boolean'],
+                'ebook' => ['sometimes', 'boolean'],
                 // Obligatoire, et séparée des deux autres : mêler les CGV au
                 // marketing dans une seule case ne vaut pas consentement.
                 'accepts_terms' => ['accepted'],

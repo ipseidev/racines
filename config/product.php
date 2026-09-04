@@ -130,6 +130,9 @@ return [
         // `[À CONFIRMER devis 0A]` : tant que l'imprimeur est inconnu, ce
         // prix est un placeholder, et aucune promesse de délai ne l'accompagne.
         'extra_copy_price_cents' => 4_500,
+        // Le livre numérique : prix, et prix barré affiché à côté (T-137).
+        'ebook_price_cents' => 2_500,
+        'ebook_regular_price_cents' => 4_500,
         'gift_send_hour' => 9,
         'target_stories' => [10, 15],
     ],

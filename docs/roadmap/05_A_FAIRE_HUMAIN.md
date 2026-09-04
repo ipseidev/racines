@@ -210,10 +210,11 @@ Le tunnel d'achat est écrit, testé et poussé. Ce qui manque, c'est un compte 
 
 | Produit | Prix | Variable `.env` |
 |---|---|---|
-| Offre pilote | 49,00 € | `STRIPE_PRICE_PILOT` |
+| Le livre relié et l'année de questions | 89,00 € | `STRIPE_PRICE_PILOT` (le nom de la variable reste, T-136) |
 | Prévente — variante A | 99,00 € | `STRIPE_PRICE_PREVENTE_99` |
 | Prévente — variante B | 129,00 € | `STRIPE_PRICE_PREVENTE_129` |
 | Exemplaire supplémentaire | 45,00 € `[à confirmer avec le devis d'imprimeur]` | `STRIPE_PRICE_EXTRA_COPY` |
+| Livre numérique | 25,00 € (affiché à côté d'un prix barré de 45,00 €) | `STRIPE_PRICE_EBOOK` |
 | Enregistrement par téléphone | 25,00 € | `STRIPE_PRICE_PHONE_OPTION` |
 
 ⚠️ Copier l'identifiant du **prix** (`price_…`), pas celui du produit (`prod_…`). C'est l'erreur la plus fréquente, et elle se voit seulement au moment du paiement.

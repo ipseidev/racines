@@ -25,11 +25,13 @@ final class PhoneOptionOffer
 
     /**
      * Drapeau global, sans portée : c'est une capacité de l'équipe, pas une
-     * caractéristique d'un projet.
+     * caractéristique d'un projet. Ouvert par défaut depuis T-137 : le
+     * plafond, calculé, suffit à protéger la promesse ; le drapeau reste là
+     * pour fermer l'option d'un geste si l'équipe ne peut plus rappeler.
      */
     public function resolve(mixed $scope): bool
     {
-        return false;
+        return true;
     }
 
     /**

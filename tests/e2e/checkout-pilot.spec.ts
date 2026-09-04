@@ -87,6 +87,12 @@ test('remplit le tunnel jusqu’au récapitulatif', async ({ page }) => {
         .getByRole('button', { name: /Ajouter : Exemplaires supplémentaires/ })
         .click();
     await expect(page.getByLabel('Nombre d’exemplaires')).toHaveValue('1');
+    await page
+        .getByRole('button', { name: /Ajouter : Le livre numérique/ })
+        .click();
+    await expect(
+        page.getByRole('button', { name: /Retirer : Le livre numérique/ }),
+    ).toBeVisible();
     // La recommandation de l'option téléphone n'apparaît que si l'option est
     // ouverte, ce que le décor local ne garantit pas : on ne l'affirme pas ici.
     await page.getByRole('button', { name: 'Continuer' }).click();

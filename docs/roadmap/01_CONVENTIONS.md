@@ -308,7 +308,7 @@ Tous déclarés dans `app/Features/`, portée par projet sauf indication.
 | `reaction-notification-timing` | projet | `immediate` / `next-morning` | 08 |
 | `prevente-price` | visiteur anonyme (cookie `pv`, 90 jours) | `9900` / `12900` centimes | 10 |
 | `gift-experience` | projet | `ecard` / `printed-card` / `audio-message` | 10 |
-| `phone-option-offer` | global | bool, désactivé quand le plafond est atteint | 10 (posé) / 17 (ouvert) |
+| `phone-option-offer` | global | bool, **ouvert par défaut** depuis T-137, fermé quand le plafond est atteint | 10 (posé) / 17 (fermeture manuelle si besoin) |
 
 `gift-experience` rend `ecard` pour tout le monde au bloc 10, et les deux autres variantes ne sont pas livrées : le PDF A6 attend la chaîne d'impression du bloc 13, et le message vocal de l'acheteur attend un enregistreur hors page narrateur. Les valeurs restent dans le drapeau et dans la validation parce que le modèle de données doit être prêt à les mesurer — pas parce que le parcours existe (décision T-108).
 

@@ -20,7 +20,13 @@ type Props = {
     step: number;
     draft: Record<string, unknown>;
     mode: string;
-    prices: { main: number; extraCopy: number; phoneOption: number };
+    prices: {
+        main: number;
+        extraCopy: number;
+        phoneOption: number;
+        ebook: number;
+        ebookRegular: number;
+    };
     phoneOption: { open: boolean; remaining: number; cap: number };
     giftVariant: string;
     channels: Option[];
@@ -161,6 +167,7 @@ export default function Checkout({
         gift_variant: text(draft, 'gift_variant') || giftVariant,
         extra_copies: Number(draft.extra_copies ?? 0),
         phone_option: bool(draft, 'phone_option'),
+        ebook: bool(draft, 'ebook'),
         accepts_terms: bool(draft, 'accepts_terms'),
         early_service_start: bool(draft, 'early_service_start'),
         marketing_email: bool(draft, 'marketing_email'),
@@ -184,10 +191,12 @@ export default function Checkout({
 
     const copies = Number(form.data.extra_copies);
     const phone = form.data.phone_option === true && phoneOption.open;
+    const ebook = form.data.ebook === true;
     const total =
         prices.main +
         copies * prices.extraCopy +
-        (phone ? prices.phoneOption : 0);
+        (phone ? prices.phoneOption : 0) +
+        (ebook ? prices.ebook : 0);
 
     const firstName = String(form.data.narrator_first_name).trim();
     const email =
@@ -207,6 +216,7 @@ export default function Checkout({
                     count: String(copies),
                 })
               : null,
+        ebook ? t('public.checkout.summary.ebook') : null,
         phone ? t('public.checkout.summary.phone') : null,
     ].filter((line): line is string => line !== null);
 
@@ -673,6 +683,50 @@ export default function Checkout({
                                         </OptionCard>
 
                                         <OptionCard
+                                            image="/img/landing/relecture.png"
+                                            imageFit="contain"
+                                            imageAlt={t(
+                                                'public.checkout.options.ebook.alt',
+                                            )}
+                                            title={t(
+                                                'public.checkout.options.ebook.title',
+                                            )}
+                                            price={formatPrice(prices.ebook)}
+                                            regularPrice={
+                                                prices.ebookRegular >
+                                                prices.ebook
+                                                    ? t(
+                                                          'public.checkout.options.instead',
+                                                          {
+                                                              amount: formatPrice(
+                                                                  prices.ebookRegular,
+                                                              ),
+                                                          },
+                                                      )
+                                                    : undefined
+                                            }
+                                            body={t(
+                                                'public.checkout.options.ebook.body',
+                                            )}
+                                            added={ebook}
+                                            onAdd={() =>
+                                                form.setData('ebook', true)
+                                            }
+                                            onRemove={() =>
+                                                form.setData('ebook', false)
+                                            }
+                                            addLabel={t(
+                                                'public.checkout.options.add',
+                                            )}
+                                            removeLabel={t(
+                                                'public.checkout.options.remove',
+                                            )}
+                                            addedLabel={t(
+                                                'public.checkout.options.added',
+                                            )}
+                                        />
+
+                                        <OptionCard
                                             image="/img/landing/hero.jpg"
                                             imageAlt={t(
                                                 'public.checkout.options.phone.alt',
@@ -943,6 +997,8 @@ export default function Checkout({
                     copiesPrice={prices.extraCopy}
                     phone={phone}
                     phonePrice={prices.phoneOption}
+                    ebook={ebook}
+                    ebookPrice={prices.ebook}
                     total={total}
                 />
             </div>
@@ -1035,6 +1091,8 @@ function OrderSummary({
     copiesPrice,
     phone,
     phonePrice,
+    ebook,
+    ebookPrice,
     total,
 }: {
     firstName: string;
@@ -1044,6 +1102,8 @@ function OrderSummary({
     copiesPrice: number;
     phone: boolean;
     phonePrice: number;
+    ebook: boolean;
+    ebookPrice: number;
     total: number;
 }) {
     const t = useT();
@@ -1080,6 +1140,14 @@ function OrderSummary({
                         </span>
                         <span className="tabular-nums">
                             {formatPrice(copies * copiesPrice)}
+                        </span>
+                    </li>
+                )}
+                {ebook && (
+                    <li className="enter flex items-baseline justify-between gap-4">
+                        <span>{t('public.checkout.aside.ebook')}</span>
+                        <span className="tabular-nums">
+                            {formatPrice(ebookPrice)}
                         </span>
                     </li>
                 )}

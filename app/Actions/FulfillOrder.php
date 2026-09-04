@@ -216,6 +216,10 @@ final readonly class FulfillOrder
             $this->addItem($order, Sku::ExtraCopy, $settings->extra_copy_price_cents, $extra);
         }
 
+        if ($draft->value('ebook') === true) {
+            $this->addItem($order, Sku::Ebook, $settings->ebook_price_cents);
+        }
+
         if ($draft->value('phone_option') !== true) {
             return;
         }

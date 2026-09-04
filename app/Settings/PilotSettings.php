@@ -40,6 +40,11 @@ final class PilotSettings extends Settings
 
     public int $phone_option_price_cents;
 
+    /** Le livre numérique, et le prix barré qu'on affiche à côté (T-137). */
+    public int $ebook_price_cents;
+
+    public int $ebook_regular_price_cents;
+
     /** Heure d'envoi des cadeaux, fuseau du projet (décision T-28). */
     public int $gift_send_hour;
 

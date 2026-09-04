@@ -85,6 +85,15 @@ final class ManagePilot extends SettingsPage
                     TextInput::make('phone_option_price_cents')
                         ->label(__('admin.pilot.phone_option_price'))
                         ->numeric()->required()->minValue(0),
+                    TextInput::make('ebook_price_cents')
+                        ->label(__('admin.pilot.ebook_price'))
+                        ->numeric()
+                        ->required(),
+                    TextInput::make('ebook_regular_price_cents')
+                        ->label(__('admin.pilot.ebook_regular_price'))
+                        ->helperText(__('admin.pilot.ebook_regular_price_help'))
+                        ->numeric()
+                        ->required(),
                     TextInput::make('phone_option_cap')
                         ->label(__('admin.pilot.phone_option_cap'))
                         ->helperText(__('admin.pilot.phone_option_cap_help'))

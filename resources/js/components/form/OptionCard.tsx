@@ -6,6 +6,10 @@ type Props = {
     title: string;
     /** Le prix, déjà mis en forme : « 45 € l’exemplaire ». */
     price: string;
+    /** Un prix barré à côté du prix : « au lieu de 45 € ». */
+    regularPrice?: string;
+    /** `contain` pour une capture d'écran qu'il ne faut pas rogner. */
+    imageFit?: 'cover' | 'contain';
     body: string;
     added: boolean;
     onAdd: () => void;
@@ -50,6 +54,8 @@ export function OptionCard({
     imageAlt,
     title,
     price,
+    regularPrice,
+    imageFit = 'cover',
     body,
     added,
     onAdd,
@@ -76,7 +82,11 @@ export function OptionCard({
                 width="600"
                 height="600"
                 loading="lazy"
-                className="aspect-square w-full flex-none rounded-lg object-cover sm:w-32"
+                className={`aspect-square w-full flex-none rounded-lg sm:w-32 ${
+                    imageFit === 'contain'
+                        ? 'bg-brand-linen object-contain p-3'
+                        : 'object-cover'
+                }`}
             />
 
             <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -90,6 +100,11 @@ export function OptionCard({
                     </h3>
                     <p className="font-semibold tabular-nums sm:flex-none sm:text-right">
                         {price}
+                        {regularPrice !== undefined && (
+                            <span className="text-brand-muted block text-[0.9rem] font-normal">
+                                <s>{regularPrice}</s>
+                            </span>
+                        )}
                     </p>
                 </div>
 

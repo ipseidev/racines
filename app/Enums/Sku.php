@@ -9,7 +9,7 @@ use App\Concerns\HasTranslatedLabel;
 /**
  * Ce qui peut être acheté.
  *
- * Quatre articles, et pas un de plus au pilote. Chacun correspond à un prix
+ * Cinq articles. Chacun correspond à un prix
  * créé dans Stripe (`STRIPE_PRICE_*`) : la correspondance vit dans
  * `config/services.php`, pas en dur dans le tunnel.
  */
@@ -21,6 +21,7 @@ enum Sku: string
     case CorePrevente = 'core_prevente';
     case ExtraCopy = 'extra_copy';
     case PhoneOption = 'phone_option';
+    case Ebook = 'ebook';
 
     /**
      * L'identifiant de prix Stripe correspondant.
@@ -37,6 +38,7 @@ enum Sku: string
             self::CorePrevente => 'prevente_'.intdiv($variantCents ?? 9_900, 100),
             self::ExtraCopy => 'extra_copy',
             self::PhoneOption => 'phone_option',
+            self::Ebook => 'ebook',
         };
 
         $value = config("services.stripe.prices.{$key}");

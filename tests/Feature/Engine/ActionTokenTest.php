@@ -145,6 +145,9 @@ it('inscrit l’Initiateur·rice au cercle d’écoute si besoin', function (): 
 
 it('refuse l’option téléphone quand le drapeau est fermé', function (): void {
     [$token, $project] = oneTapLink(OfferPhoneOption::name());
+    // Ouvert par défaut depuis T-137 : on le ferme, pour ce projet, afin
+    // d'éprouver le refus.
+    Feature::for($project)->deactivate(OfferPhoneOption::FLAG);
 
     $this->post("/a/{$token}")
         ->assertOk()
