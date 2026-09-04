@@ -25,6 +25,12 @@ Copier l'identifiant de chaque prix — il commence par `price_`, **pas** `prod_
 
 Les deux prix de prévente sont deux produits distincts et non un produit à deux prix : le drapeau `prevente-price` affecte chaque visiteur à l'un des deux et l'y garde quatre-vingt-dix jours. Un prix qui change entre la découverte et le paiement fait fuir.
 
+### Le coupon de bienvenue (T-141)
+
+Un seul coupon, en pourcentage, 10 % de toute la commande, le même que le réglage « L'offre de bienvenue » du pilote dans l'administration. Pas de durée, pas de limite de rachats côté Stripe : ce sont nos codes (`leads.discount_code`, un par adresse, un an, à usage unique) qui portent ces règles, et le tunnel envoie le coupon par identifiant dans `discounts` seulement quand un code utilisable est posé sur le brouillon. Son identifiant va dans `STRIPE_COUPON_WELCOME`. Pour changer le pourcentage : créer un nouveau coupon, mettre à jour la variable **et** le réglage du pilote ; les codes déjà envoyés gardent le pourcentage copié au moment de la demande.
+
+Ne pas activer « Autoriser les codes promotionnels » sur la session : la vérification du code se fait chez nous, là où l'on sait à qui il appartient et s'il a servi.
+
 ## 2. Brancher le webhook en local
 
 ```bash

@@ -21,6 +21,7 @@ final class StripeCheckoutSessions implements CheckoutSessions
     /**
      * @param  list<array{price: string, quantity: int}>  $lineItems
      * @param  array<string, string>  $metadata
+     * @param  list<array{coupon: string}>  $discounts
      */
     public function create(
         string $customerEmail,
@@ -28,8 +29,9 @@ final class StripeCheckoutSessions implements CheckoutSessions
         array $metadata,
         string $successUrl,
         string $cancelUrl,
+        array $discounts = [],
     ): CheckoutSession {
-        $session = $this->client()->checkout->sessions->create([
+        $parameters = [
             'mode' => 'payment',
             'customer_email' => $customerEmail,
             'line_items' => $lineItems,
@@ -37,7 +39,16 @@ final class StripeCheckoutSessions implements CheckoutSessions
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
             'locale' => 'fr',
-        ]);
+        ];
+
+        // Un coupon posé par nous, et pas de champ « code promo » sur la page
+        // de Stripe : le code se saisit chez nous, où l'on sait à qui il
+        // appartient et s'il a déjà servi.
+        if ($discounts !== []) {
+            $parameters['discounts'] = $discounts;
+        }
+
+        $session = $this->client()->checkout->sessions->create($parameters);
 
         return new CheckoutSession(
             id: (string) $session->id,

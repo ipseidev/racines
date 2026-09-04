@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDuration } from './format';
+import { formatDuration, formatPercent } from './format';
 
 describe('formatDuration', () => {
     it('affiche les secondes seules sous une minute', () => {
@@ -19,5 +19,11 @@ describe('formatDuration', () => {
     it('arrondit à la seconde inférieure et refuse les valeurs négatives', () => {
         expect(formatDuration(65.9)).toBe('1 min 05 s');
         expect(formatDuration(-3)).toBe('0 s');
+    });
+});
+
+describe('formatPercent', () => {
+    it('colle une espace fine insécable avant le signe', () => {
+        expect(formatPercent(10)).toBe('10\u202F%');
     });
 });

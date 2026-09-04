@@ -234,6 +234,21 @@ return [
         ],
     ],
 
+    /*
+     * Le code de réduction de bienvenue (T-141). Il dit le code, sa valeur,
+     * sa date de fin et comment s'en servir : un courriel demandé pour un
+     * code donne le code, pas un argumentaire.
+     */
+    'welcome_offer' => [
+        'subject' => 'Vos :amount offerts sur le livre',
+        'greeting' => 'Bonjour,',
+        'code_line' => 'Voici votre code de réduction : :code',
+        'value_line' => 'Il vous fait :amount de réduction sur toute votre commande, jusqu’au :date.',
+        'how_line' => 'Entrez-le au récapitulatif de votre commande. Si vous commandez depuis l’appareil où vous l’avez demandé, il s’appliquera tout seul.',
+        'button' => 'Commencer son livre',
+        'news_line' => 'Vous avez aussi demandé nos nouvelles : elles seront rares, et un lien pour arrêter figure dans chaque message.',
+    ],
+
     'initiator' => [
         'invitation_refused' => [
             'subject' => 'Des nouvelles de votre cadeau',

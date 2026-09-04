@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Enums\Sku;
 use App\Features\PhoneOptionOffer;
 use App\Models\CheckoutDraft;
+use App\Models\Lead;
 use App\Models\User;
 use App\Services\Payments\CheckoutSession;
 use App\Services\Payments\CheckoutSessions;
@@ -37,6 +38,15 @@ final readonly class StartStripeCheckout
             throw new RuntimeException('Aucun article vendable : les prix Stripe ne sont pas configurés.');
         }
 
+        // Revérifié ici : entre le récapitulatif et le paiement, le même code
+        // a pu servir depuis un autre appareil. Un code devenu inutilisable
+        // est retiré, et l'acheteur paie le prix affiché sans lui.
+        $lead = ApplyDiscountCode::usableOn($draft);
+
+        if ($lead === null && $draft->value(ApplyDiscountCode::DRAFT_CODE) !== null) {
+            (new ApplyDiscountCode)->remove($draft);
+        }
+
         $session = $this->sessions->create(
             customerEmail: $buyer->email,
             lineItems: $items,
@@ -44,9 +54,11 @@ final readonly class StartStripeCheckout
                 'draft_id' => $draft->id,
                 'user_id' => (string) $buyer->id,
                 'price_variant' => (string) ($draft->price_variant ?? ''),
+                'discount_code' => $lead instanceof Lead ? $lead->discount_code : '',
             ],
             successUrl: route('checkout.thanks').'?session_id={CHECKOUT_SESSION_ID}',
             cancelUrl: route('checkout.show', ['step' => 6]),
+            discounts: self::discountsFor($lead),
         );
 
         $draft->merge(['stripe_checkout_session_id' => $session->id]);
@@ -55,9 +67,35 @@ final readonly class StartStripeCheckout
             'draft_id' => $draft->id,
             'session_id' => $session->id,
             'items' => count($items),
+            'discounted' => $lead !== null,
         ]);
 
         return $session;
+    }
+
+    /**
+     * Le coupon de bienvenue, si un code utilisable est posé (T-141).
+     *
+     * Le montant vient du coupon créé dans Stripe, jamais d'ici : un montant
+     * envoyé par nous serait un montant négociable. Un code sans coupon
+     * configuré lève, plutôt que d'encaisser plein tarif à qui on a promis une
+     * réduction.
+     *
+     * @return list<array{coupon: string}>
+     */
+    public static function discountsFor(?Lead $lead): array
+    {
+        if ($lead === null) {
+            return [];
+        }
+
+        $coupon = config('services.stripe.coupons.welcome');
+
+        if (! is_string($coupon) || $coupon === '') {
+            throw new RuntimeException('Un code de réduction est posé, mais le coupon Stripe de bienvenue n’est pas configuré (STRIPE_COUPON_WELCOME).');
+        }
+
+        return [['coupon' => $coupon]];
     }
 
     /**

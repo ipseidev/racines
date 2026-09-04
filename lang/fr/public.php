@@ -310,6 +310,37 @@ return [
         ],
     ],
 
+    /*
+     * La fenêtre de bienvenue (T-141) : une réduction contre une adresse,
+     * comme chez le leader, avec nos règles. L'adresse sert à envoyer le
+     * code ; les nouvelles sont une case à part, décochée, jamais requise.
+     * Le code part par courriel et jamais à l'écran : c'est ce qui fait
+     * qu'une adresse laissée est une adresse qui existe.
+     */
+    'welcome_offer' => [
+        'aria' => 'Une réduction de bienvenue',
+        'eyebrow' => 'Pour commencer',
+        'title' => ':amount offerts',
+        'subtitle' => 'sur le livre de ses souvenirs',
+        'teaser' => 'Laissez-nous votre adresse : nous vous envoyons un code de réduction de :amount, valable un an sur toute votre commande.',
+        'claim' => 'Je prends ma réduction',
+        'no_thanks' => 'Non merci',
+        'email_label' => 'Votre adresse de courriel',
+        'email_placeholder' => 'prenom@exemple.fr',
+        'news' => 'Je souhaite aussi recevoir vos nouvelles, de temps en temps.',
+        'send' => 'Recevoir mon code',
+        'waiting' => 'Un instant…',
+        'fine_print' => 'Votre adresse sert à vous envoyer le code, et à rien d’autre si vous ne cochez pas la case. Un lien pour arrêter figure dans chaque message.',
+        'sent_title' => 'C’est envoyé',
+        'sent_body' => 'Votre code part vers :email. S’il n’arrive pas, regardez dans les indésirables.',
+        'sent_auto' => 'Si vous commandez depuis cet appareil, la réduction s’appliquera toute seule au récapitulatif.',
+        'sent_cta' => 'Je commence son livre',
+        'errors' => [
+            'send_failed' => 'Nous n’avons pas réussi à envoyer le code. Réessayez dans un instant.',
+            'closed' => 'Cette offre n’est plus proposée.',
+        ],
+    ],
+
     'legal' => [
         'terms' => 'Conditions générales de vente',
         'privacy' => 'Politique de confidentialité',
@@ -482,6 +513,7 @@ return [
             'copies_one' => 'Un exemplaire supplémentaire',
             'copies_many' => ':count exemplaires supplémentaires',
             'phone' => 'L’option téléphone',
+            'discount' => 'Réduction de bienvenue, :percent',
             'ebook' => 'Le livre numérique',
             'total' => 'Total',
             'one_payment' => 'Un seul paiement, pas d’abonnement.',
@@ -495,6 +527,21 @@ return [
         'early_start_notice' => 'Dans ce cas, si vous vous rétractez, nous pourrons retenir une part correspondant à ce qui aura déjà été fourni.',
         'marketing' => 'Je souhaite recevoir des nouvelles.',
         'pay' => 'Payer :amount',
+
+        // Le code de réduction, posé au récapitulatif (T-141).
+        'discount' => [
+            'have_code' => 'J’ai un code de réduction',
+            'label' => 'Votre code',
+            'placeholder' => 'ABCD-EFGH',
+            'apply' => 'Appliquer',
+            'applied' => 'Réduction de :percent · :code',
+            'remove' => 'Retirer',
+            'errors' => [
+                'unknown' => 'Ce code ne correspond à rien. Vérifiez les lettres et les chiffres.',
+                'used' => 'Ce code a déjà servi.',
+                'expired' => 'Ce code n’est plus valable.',
+            ],
+        ],
 
         'thanks' => [
             'title' => 'Merci',

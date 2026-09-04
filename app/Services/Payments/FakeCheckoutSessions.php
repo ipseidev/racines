@@ -21,6 +21,7 @@ final class FakeCheckoutSessions implements CheckoutSessions
     /**
      * @param  list<array{price: string, quantity: int}>  $lineItems
      * @param  array<string, string>  $metadata
+     * @param  list<array{coupon: string}>  $discounts
      */
     public function create(
         string $customerEmail,
@@ -28,6 +29,7 @@ final class FakeCheckoutSessions implements CheckoutSessions
         array $metadata,
         string $successUrl,
         string $cancelUrl,
+        array $discounts = [],
     ): CheckoutSession {
         $id = 'cs_test_'.Str::random(24);
 
@@ -38,6 +40,7 @@ final class FakeCheckoutSessions implements CheckoutSessions
             'metadata' => $metadata,
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
+            'discounts' => $discounts,
         ];
 
         return new CheckoutSession(id: $id, url: 'https://checkout.stripe.test/'.$id);

@@ -48,6 +48,16 @@ final class PilotSettings extends Settings
     /** Heure d'envoi des cadeaux, fuseau du projet (décision T-28). */
     public int $gift_send_hour;
 
+    /**
+     * L'offre de bienvenue de la page d'accueil (T-141) : proposée ou non, et
+     * son pourcentage sur la commande. Il doit être celui du coupon Stripe
+     * `STRIPE_COUPON_WELCOME` : ici comme pour les prix, c'est Stripe qui
+     * fait foi, et ce réglage ne fait qu'annoncer.
+     */
+    public bool $welcome_offer_enabled;
+
+    public int $welcome_offer_discount_percent;
+
     public ?string $cohort_id;
 
     /**
@@ -74,5 +84,11 @@ final class PilotSettings extends Settings
     public function legalValidated(): bool
     {
         return $this->legal_validated_at !== null;
+    }
+
+    /** Une offre à zéro pour cent n'est pas une offre : on ne la propose pas. */
+    public function welcomeOfferActive(): bool
+    {
+        return $this->welcome_offer_enabled && $this->welcome_offer_discount_percent > 0;
     }
 }

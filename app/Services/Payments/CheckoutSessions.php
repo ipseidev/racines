@@ -17,6 +17,9 @@ interface CheckoutSessions
     /**
      * @param  list<array{price: string, quantity: int}>  $lineItems
      * @param  array<string, string>  $metadata
+     * @param  list<array{coupon: string}>  $discounts  Des identifiants de
+     *                                                  coupons Stripe, jamais
+     *                                                  des montants (T-141).
      */
     public function create(
         string $customerEmail,
@@ -24,5 +27,6 @@ interface CheckoutSessions
         array $metadata,
         string $successUrl,
         string $cancelUrl,
+        array $discounts = [],
     ): CheckoutSession;
 }

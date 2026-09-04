@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 
 import { useBrand } from '@/brand/BrandProvider';
+import WelcomeOffer from '@/components/WelcomeOffer';
 import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 
@@ -11,6 +12,8 @@ type Props = {
     price: number;
     phoneOptionPrice: number;
     extraCopyPrice: number;
+    /** La fenêtre de bienvenue (T-141) : proposée ou non, et son pourcentage. */
+    welcomeOffer: { enabled: boolean; discountPercent: number };
 };
 
 /*
@@ -232,6 +235,7 @@ export default function Landing({
     price,
     phoneOptionPrice,
     extraCopyPrice,
+    welcomeOffer,
 }: Props) {
     const t = useT();
     const brand = useBrand();
@@ -239,6 +243,12 @@ export default function Landing({
     return (
         <>
             <Head title={t('public.landing.promise')} />
+
+            {/* La réduction de bienvenue, après un délai (T-141) ============== */}
+            <WelcomeOffer
+                enabled={welcomeOffer.enabled}
+                discountPercent={welcomeOffer.discountPercent}
+            />
 
             {/* Héros ============================================================ */}
             <section className="mx-auto grid w-full max-w-6xl gap-10 px-6 pt-10 pb-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:pt-16 lg:pb-24">

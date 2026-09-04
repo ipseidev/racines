@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public;
 
 use App\Features\PreventePrice;
+use App\Http\Controllers\Public\WelcomeOfferController as WelcomeOffer;
 use App\Settings\PilotSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -42,6 +43,13 @@ final class LandingController
             'phoneOptionPrice' => $settings->phone_option_price_cents,
             'extraCopyPrice' => $settings->extra_copy_price_cents,
             'legalValidated' => $settings->legalValidated(),
+            // La fenêtre de bienvenue (T-141). Pas à qui a déjà son code :
+            // le cookie le dit, et proposer deux fois la même réduction à la
+            // même personne ressemble à une relance.
+            'welcomeOffer' => [
+                'enabled' => $settings->welcomeOfferActive() && ! $request->hasCookie(WelcomeOffer::COOKIE),
+                'discountPercent' => $settings->welcome_offer_discount_percent,
+            ],
         ]);
     }
 

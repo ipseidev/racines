@@ -15,3 +15,12 @@ export function formatDuration(seconds: number): string {
 
     return `${minutes} min ${rest} s`;
 }
+
+/**
+ * Un pourcentage écrit à la française : « 10 % », avec une espace fine
+ * insécable avant le signe, pour qu'il ne se retrouve jamais seul en début de
+ * ligne.
+ */
+export function formatPercent(percent: number): string {
+    return `${percent}\u202F%`;
+}

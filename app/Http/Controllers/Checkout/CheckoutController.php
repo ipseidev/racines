@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Checkout;
 
+use App\Actions\ApplyDiscountCode;
 use App\Actions\SaveCheckoutStep;
 use App\Actions\StartStripeCheckout;
 use App\Enums\AddressForm;
 use App\Enums\Channel;
 use App\Enums\TechComfort;
+use App\Exceptions\Domain\DiscountCodeUnavailable;
 use App\Features\GiftExperience;
 use App\Features\PhoneOptionOffer;
 use App\Features\PreventePrice;
+use App\Http\Controllers\Public\WelcomeOfferController;
 use App\Models\CheckoutDraft;
+use App\Models\Lead;
 use App\Settings\PilotSettings;
 use App\Support\Options;
 use App\Support\Phone;
@@ -41,12 +45,15 @@ final readonly class CheckoutController
     public function __construct(
         private SaveCheckoutStep $steps,
         private StartStripeCheckout $checkout,
+        private ApplyDiscountCode $discounts,
     ) {}
 
     public function show(Request $request): Response
     {
         $draft = self::draftFor($request);
         $settings = app(PilotSettings::class);
+
+        $this->applyWelcomeCookie($request, $draft);
 
         $requested = (int) $request->query('step', (string) $draft->step);
         $step = max(1, min(SaveCheckoutStep::LAST_STEP, $requested));
@@ -87,7 +94,47 @@ final readonly class CheckoutController
             'giftSendHour' => $settings->gift_send_hour,
             'missingSteps' => SaveCheckoutStep::missingSteps($draft),
             'isAuthenticated' => $request->user() !== null,
+            'discount' => self::discountFor($draft),
         ]);
+    }
+
+    /**
+     * Pose un code de réduction sur le brouillon, depuis le récapitulatif.
+     *
+     * L'erreur porte le motif : un code inconnu se relit, un code utilisé ne
+     * se relit pas, et le message doit dire lequel des deux.
+     */
+    public function applyCode(Request $request): RedirectResponse
+    {
+        $draft = self::draftFor($request);
+
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:20'],
+        ]);
+
+        try {
+            $this->discounts->handle($draft, (string) $validated['code']);
+        } catch (DiscountCodeUnavailable $exception) {
+            return redirect()
+                ->route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP])
+                ->withErrors(['code' => __('public.checkout.discount.errors.'.$exception->reason())])
+                ->withCookie(self::draftCookie($draft));
+        }
+
+        return redirect()
+            ->route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP])
+            ->withCookie(self::draftCookie($draft));
+    }
+
+    public function removeCode(Request $request): RedirectResponse
+    {
+        $draft = self::draftFor($request);
+
+        $this->discounts->remove($draft);
+
+        return redirect()
+            ->route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP])
+            ->withCookie(self::draftCookie($draft));
     }
 
     public function store(Request $request, int $step): RedirectResponse
@@ -155,6 +202,50 @@ final readonly class CheckoutController
                 ? $sendTime
                 : sprintf('%02d:00', app(PilotSettings::class)->gift_send_hour),
         ]);
+    }
+
+    /**
+     * Le code de bienvenue laissé en cookie par la page d'accueil (T-141)
+     * s'applique tout seul, une fois, si le brouillon n'en porte pas déjà un.
+     * Un code devenu inutilisable ne dit rien : la personne n'a rien demandé
+     * ici, il n'y a pas d'erreur à lui montrer.
+     */
+    private function applyWelcomeCookie(Request $request, CheckoutDraft $draft): void
+    {
+        $code = $request->cookie(WelcomeOfferController::COOKIE);
+
+        if (! is_string($code) || $code === '' || $draft->value(ApplyDiscountCode::DRAFT_CODE) !== null) {
+            return;
+        }
+
+        try {
+            $this->discounts->handle($draft, $code);
+        } catch (DiscountCodeUnavailable) {
+            // Rien : le code a servi ailleurs, ou n'a plus cours.
+        }
+    }
+
+    /**
+     * La réduction posée sur le brouillon, telle que la page l'affiche.
+     *
+     * Revérifiée à chaque affichage : un code qui a servi entre-temps depuis
+     * un autre appareil disparaît du récapitulatif au lieu d'y rester comme
+     * une promesse que le paiement ne tiendrait pas.
+     *
+     * @return array{code: string, percent: int}|null
+     */
+    private static function discountFor(CheckoutDraft $draft): ?array
+    {
+        $lead = ApplyDiscountCode::usableOn($draft);
+
+        if (! $lead instanceof Lead) {
+            return null;
+        }
+
+        return [
+            'code' => $lead->discount_code,
+            'percent' => (int) $draft->value(ApplyDiscountCode::DRAFT_PERCENT, $lead->discount_percent),
+        ];
     }
 
     /**

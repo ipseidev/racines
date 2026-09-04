@@ -762,3 +762,18 @@
         transform: scaleY(1);
     }
 }
+
+/*
+ * Les utilitaires `animate-rise-in` et `animate-pop-in` sont émis par Tailwind
+ * dans la couche `utilities`, qui l'emporte sur `components` : la règle de
+ * mouvement réduit écrite dans cette dernière ne les atteignait pas, et une
+ * coche continuait d'entrer en fondu chez qui a demandé qu'on ne bouge pas
+ * (trouvé par l'analyse d'accessibilité de la fenêtre de bienvenue, T-141).
+ * Celle-ci est hors couche, et l'emporte donc sur toutes.
+ */
+@media (prefers-reduced-motion: reduce) {
+    .animate-rise-in,
+    .animate-pop-in {
+        animation: none;
+    }
+}

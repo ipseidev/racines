@@ -262,6 +262,17 @@ order_items (bigint) : `order_id`, `sku` check (`pilot`, `core_prevente`, `extra
 
 Sept jours de vie. Le tunnel a six étapes et la quatrième crée un compte : quelqu'un qui abandonne à la cinquième ne doit pas tout ressaisir. Le brouillon est retrouvé par le compte s'il existe, sinon par un cookie `checkout_draft`.
 
+## leads (bloc 10, ajout T-141)
+`id` uuid, `email` text **chiffré** (cast `encrypted`), `email_hash` char(64) **unique**, `discount_code` string(16) **unique**, `discount_percent` smallint, `source` check (`landing_popup`), `news_opted_in_at` nullable, `consent_text_version` nullable, `ip_hash` char(64) nullable, `user_agent` nullable, `code_expires_at`, `code_used_at` nullable, `order_id` uuid FK orders nullable (`nullOnDelete`), timestamps. Index `code_used_at`.
+
+Les adresses laissées contre un code de réduction, depuis la fenêtre de bienvenue de la page d'accueil. **Une ligne par adresse, un code par ligne** : redemander renvoie le même code ; un code expiré est remplacé, un code qui a servi ne l'est jamais. L'adresse se retrouve par l'empreinte et ne se déchiffre qu'au moment d'écrire.
+
+`discount_percent` est **copié** à la demande, comme le prix d'une commande : changer le réglage du pilote ne change pas ce qu'on a promis à quelqu'un. La réduction réellement appliquée vient du coupon Stripe `STRIPE_COUPON_WELCOME`, un pourcentage sur toute la commande, envoyé par identifiant au moment du paiement.
+
+`news_opted_in_at` est une date et non une case : nulle tant que les nouvelles n'ont pas été demandées, datée sinon, avec la version du texte lu et l'empreinte de l'adresse IP, comme tout consentement (doc 04 §2). Elle n'entre pas dans `consents`, qui exige un projet : une personne qui laisse son adresse n'en a pas encore.
+
+`code_used_at` et `order_id` sont posés par `FulfillOrder`, à l'encaissement : poser un code sur un brouillon n'est pas acheter.
+
 ## phone_options (bloc 10, opéré bloc 17)
 `id` uuid, `project_id`, `order_item_id` bigint nullable (`nullOnDelete`), `entry` check (`checkout`, `rescue`), `status` check (`requested`, `active`, `cancelled`, `refunded`) défaut `requested`, `operator_user_id` nullable, `call_day` smallint nullable, `call_slot` check nullable (créneaux de prompt), `notes` text nullable, timestamps. Index `(status, entry)` et `project_id`.
 

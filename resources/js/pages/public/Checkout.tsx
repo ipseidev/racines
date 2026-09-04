@@ -1,5 +1,5 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 
 import { useBrand } from '@/brand/BrandProvider';
 import { CheckField } from '@/components/form/CheckField';
@@ -14,6 +14,7 @@ import { TextAreaField } from '@/components/form/TextAreaField';
 import { TextField } from '@/components/form/TextField';
 import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
+import { formatPercent } from '@/lib/format';
 import { nationalPhone } from '@/lib/french';
 
 type Props = {
@@ -35,7 +36,11 @@ type Props = {
     giftSendHour: number;
     missingSteps: number[];
     isAuthenticated: boolean;
+    /** Le code de réduction posé sur le brouillon, s'il est encore utilisable (T-141). */
+    discount: Discount | null;
 };
+
+type Discount = { code: string; percent: number };
 
 const LAST_STEP = 6;
 const ACCOUNT_STEP = 4;
@@ -141,6 +146,7 @@ export default function Checkout({
     techComforts,
     giftSendHour,
     isAuthenticated,
+    discount,
 }: Props) {
     const t = useT();
     const page = usePage();
@@ -192,11 +198,16 @@ export default function Checkout({
     const copies = Number(form.data.extra_copies);
     const phone = form.data.phone_option === true && phoneOption.open;
     const ebook = form.data.ebook === true;
-    const total =
+    const subtotal =
         prices.main +
         copies * prices.extraCopy +
         (phone ? prices.phoneOption : 0) +
         (ebook ? prices.ebook : 0);
+    // Le pourcentage porte sur toute la commande, comme le coupon Stripe qui
+    // l'applique ; l'arrondi au centime est celui que Stripe fera.
+    const discountCents =
+        discount === null ? 0 : Math.round((subtotal * discount.percent) / 100);
+    const total = Math.max(0, subtotal - discountCents);
 
     const firstName = String(form.data.narrator_first_name).trim();
     const email =
@@ -936,6 +947,39 @@ export default function Checkout({
                                                     'public.checkout.edit',
                                                 )}
                                             />
+                                            {discount !== null && (
+                                                <SummaryRow
+                                                    label={t(
+                                                        'public.checkout.discount.applied',
+                                                        {
+                                                            code: discount.code,
+                                                            percent:
+                                                                formatPercent(
+                                                                    discount.percent,
+                                                                ),
+                                                        },
+                                                    )}
+                                                    value={`−${formatPrice(discountCents)}`}
+                                                    action={
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                router.delete(
+                                                                    '/acheter/code',
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                    },
+                                                                )
+                                                            }
+                                                            className="text-brand hover:decoration-brand decoration-brand-sand flex-none text-base underline underline-offset-4 transition-colors"
+                                                        >
+                                                            {t(
+                                                                'public.checkout.discount.remove',
+                                                            )}
+                                                        </button>
+                                                    }
+                                                />
+                                            )}
                                             <SummaryRow
                                                 label={t(
                                                     'public.checkout.summary.total',
@@ -944,6 +988,10 @@ export default function Checkout({
                                                 strong
                                             />
                                         </dl>
+
+                                        {discount === null && (
+                                            <DiscountCodeField />
+                                        )}
 
                                         <p className="text-brand-muted text-base">
                                             {t(
@@ -999,6 +1047,8 @@ export default function Checkout({
                     phonePrice={prices.phoneOption}
                     ebook={ebook}
                     ebookPrice={prices.ebook}
+                    discount={discount}
+                    discountCents={discountCents}
                     total={total}
                 />
             </div>
@@ -1043,12 +1093,15 @@ function SummaryRow({
     value,
     editHref,
     editLabel,
+    action,
     strong = false,
 }: {
     label: string;
     value: string;
     editHref?: string;
     editLabel?: string;
+    /** À la place du lien « Modifier » : un bouton, pour ce qui n'est pas une étape. */
+    action?: ReactNode;
     strong?: boolean;
 }) {
     return (
@@ -1073,6 +1126,85 @@ function SummaryRow({
                     {editLabel}
                 </Link>
             )}
+            {action}
+        </div>
+    );
+}
+
+/**
+ * « J'ai un code de réduction » : une ligne discrète, puis un champ (T-141).
+ *
+ * Hors du formulaire de paiement dans les faits, bien qu'à l'intérieur dans
+ * le DOM : le bouton n'envoie pas le formulaire, et la touche Entrée dans le
+ * champ applique le code au lieu de payer. Un code tapé ne doit jamais
+ * déclencher un paiement.
+ */
+function DiscountCodeField() {
+    const t = useT();
+    const errors = (usePage().props.errors ?? {}) as Record<string, string>;
+    const [open, setOpen] = useState(errors.code !== undefined);
+    const [code, setCode] = useState('');
+    const [busy, setBusy] = useState(false);
+
+    const apply = () => {
+        if (code.trim() === '') {
+            return;
+        }
+
+        setBusy(true);
+        router.post(
+            '/acheter/code',
+            { code },
+            { preserveScroll: true, onFinish: () => setBusy(false) },
+        );
+    };
+
+    const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            apply();
+        }
+    };
+
+    if (!open) {
+        return (
+            <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="text-brand hover:decoration-brand decoration-brand-sand self-start text-base underline underline-offset-4 transition-colors"
+            >
+                {t('public.checkout.discount.have_code')}
+            </button>
+        );
+    }
+
+    return (
+        <div className="enter flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="flex-1">
+                <TextField
+                    label={t('public.checkout.discount.label')}
+                    name="discount_code"
+                    autoFocus
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    placeholder={t('public.checkout.discount.placeholder')}
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                    onKeyDown={onKeyDown}
+                    error={errors.code}
+                    className="tracking-[0.08em] uppercase"
+                />
+            </div>
+            <button
+                type="button"
+                onClick={apply}
+                disabled={busy}
+                aria-busy={busy || undefined}
+                className="btn-secondary press min-h-[2.75rem] disabled:opacity-70"
+            >
+                {t('public.checkout.discount.apply')}
+            </button>
         </div>
     );
 }
@@ -1093,6 +1225,8 @@ function OrderSummary({
     phonePrice,
     ebook,
     ebookPrice,
+    discount,
+    discountCents,
     total,
 }: {
     firstName: string;
@@ -1104,6 +1238,8 @@ function OrderSummary({
     phonePrice: number;
     ebook: boolean;
     ebookPrice: number;
+    discount: Discount | null;
+    discountCents: number;
     total: number;
 }) {
     const t = useT();
@@ -1156,6 +1292,18 @@ function OrderSummary({
                         <span>{t('public.checkout.aside.phone')}</span>
                         <span className="tabular-nums">
                             {formatPrice(phonePrice)}
+                        </span>
+                    </li>
+                )}
+                {discount !== null && (
+                    <li className="enter text-brand flex items-baseline justify-between gap-4">
+                        <span>
+                            {t('public.checkout.aside.discount', {
+                                percent: formatPercent(discount.percent),
+                            })}
+                        </span>
+                        <span className="tabular-nums">
+                            −{formatPrice(discountCents)}
                         </span>
                     </li>
                 )}

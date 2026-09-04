@@ -135,6 +135,10 @@ return [
         'ebook_regular_price_cents' => 4_500,
         'gift_send_hour' => 9,
         'target_stories' => [10, 15],
+        // La réduction de bienvenue de la page d'accueil (T-141), en pour
+        // cent de la commande. Le coupon Stripe `STRIPE_COUPON_WELCOME` porte
+        // le même pourcentage : c'est lui qui s'applique au paiement.
+        'welcome_offer_discount_percent' => 10,
     ],
 
     // Binaires média (bloc 04 pour la concaténation, bloc 06 pour la durée)

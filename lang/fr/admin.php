@@ -109,10 +109,36 @@ return [
         'phone_option_cap' => 'Plafond de l’option téléphone',
         'phone_option_cap_help' => 'Bloquant côté serveur. Une promesse humaine faite à plus de familles qu’on ne peut en rappeler vaut moins qu’une promesse jamais faite.',
         'gift_send_hour' => 'Heure d’envoi des cadeaux',
+        'welcome_offer' => 'L’offre de bienvenue',
+        'welcome_offer_help' => 'La fenêtre de la page d’accueil qui propose un code de réduction contre une adresse. Le code s’applique au paiement par un coupon Stripe (STRIPE_COUPON_WELCOME), dont le pourcentage doit être celui-ci.',
+        'welcome_offer_enabled' => 'Proposer la réduction de bienvenue',
+        'welcome_offer_discount' => 'Réduction, en pour cent de la commande',
+        'welcome_offer_discount_help' => 'Copié sur chaque code au moment de la demande : changer ce pourcentage ne change ni les codes déjà envoyés, ni le coupon Stripe.',
         'legal' => 'Validation juridique',
         'legal_help' => 'Tant que cette date est vide, les pages légales portent leur bandeau « à valider par conseil ».',
         'legal_validated_at' => 'Textes validés le',
         'legal_validated_at_help' => 'Poser cette date fait disparaître le bandeau de toutes les pages publiques. Ne la posez qu’après une relecture réelle par un conseil : sinon vous retirez un avertissement qui est vrai.',
+    ],
+
+    // Les adresses laissées contre un code de réduction (T-141).
+    'leads' => [
+        'title' => 'Les contacts',
+        'singular' => 'Contact',
+        'email' => 'Adresse',
+        'code' => 'Code',
+        'discount' => 'Réduction',
+        'news' => 'Nouvelles',
+        'claimed_at' => 'Demandé',
+        'used_at' => 'Utilisé',
+        'not_used' => 'Pas encore',
+        'filters' => [
+            'used' => 'Code utilisé',
+            'used_yes' => 'A servi',
+            'used_no' => 'N’a pas encore servi',
+            'news' => 'Nouvelles demandées',
+            'news_yes' => 'Les a demandées',
+            'news_no' => 'Ne les a pas demandées',
+        ],
     ],
 
     'projects' => [

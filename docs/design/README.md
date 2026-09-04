@@ -90,9 +90,10 @@ vidéos de clients) n'a pas d'emplacement vide ; il viendra avec les familles
 pilotes.
 
 **Laissé** : le vert acide ; les quatre mentions de Shark Tank et les cinq de
-Trustpilot ; les citations de célébrités ; la popup de réduction et la
-newsletter contre remise ; le guide comparatif contre les concurrents ; les
-vidéos de clients en carrousel ; l'abonnement.
+Trustpilot ; les citations de célébrités ; le guide comparatif contre les
+concurrents ; les vidéos de clients en carrousel ; l'abonnement. La popup de
+réduction, laissée le 3, a été **reprise le 4 au soir** (T-141), dans sa forme
+et pas dans ses conditions : voir « La fenêtre de bienvenue » plus bas.
 
 **Ajouté, parce que c'est le fond du produit** : la question de la semaine
 comme **objet du héros** — c'est le rituel qu'on vend ; le **mot à mot et le
@@ -158,6 +159,46 @@ lecteur audio partagé (`AudioPlayer`, libellés dans `common.player`). Règle
 d'écran : une seule chose à la fois, la question en carte blanche sous un filet
 d'or, puis un seul geste. Une confirmation est une coche qui apparaît
 (`animate-pop-in`) et une phrase qui dit ce qui vient.
+
+## La fenêtre de bienvenue (passe du 4 septembre au soir, T-141)
+
+Demande du fondateur, captures de Remento à l'appui : « donner une réduction
+en échange d'un email ». La **forme** est celle du leader, en deux temps : la
+promesse et un seul bouton (« 10 % offerts », « Je prends ma réduction »),
+puis le champ et « Recevoir mon code » ; texte à gauche sur crème, photo à
+droite, croix dans un disque blanc. Le **fond** suit nos règles :
+
+- **Elle attend six secondes**, jamais au chargement : on lit la promesse
+  avant qu'on propose autre chose. Elle entre comme tout le reste, dix pixels
+  en fondu (`enter`) : le pop-in et son rebond, essayés d'abord, étaient
+  « beaucoup trop violents » pour une fenêtre entière. Fermée, elle se tait trente jours ; le code
+  demandé, elle se tait pour de bon (mémoire du navigateur, et cookie côté
+  serveur).
+- **Une seule action terracotta** par écran, la croix et « Non merci » en
+  couleur de marque ou en texte souligné. Le titre porte Fraunces, l'œillet et
+  le filet d'or de la page.
+- **La case des nouvelles est à part, décochée, jamais requise** : l'adresse
+  sert à envoyer le code, et à rien d'autre sans la case. Le leader conditionne
+  le code à l'accord marketing ; nous non, par cohérence avec la case marketing
+  du tunnel (bloc 10 §6.3). La ligne de petits caractères le dit tel quel.
+- **La réduction est un pourcentage**, 10 % de toute la commande, décidé le
+  soir même à la place des 10 € du premier jet : c'est ce que le coupon Stripe
+  applique, et le récapitulatif l'écrit en euros.
+- **Le code part par courriel, jamais à l'écran** : c'est ce qui fait qu'une
+  adresse laissée existe. Il se pose au récapitulatif du tunnel (« J'ai un code
+  de réduction »), ou tout seul si la commande se fait depuis le même appareil.
+- **Un `<dialog>` natif**, pas une bibliothèque : le navigateur tient le piège
+  du focus, Échap et l'arrière-plan inerte, et il n'injecte aucune feuille de
+  style, que la politique de sécurité des pages publiques refuserait. Le focus
+  est posé sur l'action, pas sur la croix.
+- **Relue à 390 px** : la photo passe en bandeau au-dessus, tout tient sans
+  défilement sur un écran de 780 px de haut.
+
+Trouvé au passage par l'analyse d'accessibilité : les utilitaires
+`animate-rise-in` et `animate-pop-in` n'obéissaient pas à
+`prefers-reduced-motion`, parce que la règle qui les éteint vivait dans la
+couche `components` et que Tailwind les émet dans `utilities`, qui l'emporte.
+La règle est désormais hors couche, et vaut partout.
 
 ## Les règles de propagation, pour les pages à venir
 

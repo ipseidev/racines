@@ -32,6 +32,9 @@ const PAGES = [
 
 for (const [path, label] of PAGES) {
     test(`aucune violation grave sur ${label}`, async ({ page }) => {
+        // Sans mouvement : les pages entrent en fondu, et une couleur mesurée
+        // au milieu du fondu n'est pas celle qu'on lit. On juge l'état posé.
+        await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.goto(path);
 
         // Attendre le titre avant d'analyser, et ce n'est pas du zèle : ces

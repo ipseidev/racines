@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Checkout\CheckoutController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalController;
+use App\Http\Controllers\Public\WelcomeOfferController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +22,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', LandingController::class)->name('home');
 
 Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
+
+// La fenêtre de bienvenue : une adresse contre un code de réduction (T-141).
+// Bornée par adresse et par IP : une liste de contacts est une cible.
+Route::post('/offre-de-bienvenue', WelcomeOfferController::class)
+    ->middleware('throttle:welcome-offer')
+    ->name('welcome_offer.claim');
 
 // Pages légales, rendues depuis des fichiers markdown : elles sont relues par
 // un conseil, et un conseil relit un texte, pas un composant React.
@@ -39,6 +46,14 @@ Route::get('/acheter', [CheckoutController::class, 'show'])->name('checkout.show
 Route::post('/acheter/etape/{step}', [CheckoutController::class, 'store'])
     ->whereNumber('step')
     ->name('checkout.step');
+
+// Le code de réduction se pose et se retire au récapitulatif. Borné : un
+// code à huit signes se devine mal, et on ne laisse personne essayer.
+Route::post('/acheter/code', [CheckoutController::class, 'applyCode'])
+    ->middleware('throttle:discount-code')
+    ->name('checkout.code.apply');
+
+Route::delete('/acheter/code', [CheckoutController::class, 'removeCode'])->name('checkout.code.remove');
 
 Route::post('/acheter/payer', [CheckoutController::class, 'pay'])
     ->middleware('auth')

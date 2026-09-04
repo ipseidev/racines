@@ -17,6 +17,7 @@ use App\Enums\PromptSlot;
 use App\Enums\Sku;
 use App\Jobs\SendGiftInvitation;
 use App\Models\CheckoutDraft;
+use App\Models\Lead;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PhoneOption;
@@ -120,6 +121,7 @@ final readonly class FulfillOrder
 
         $this->createItems($order, $draft, $settings, $project);
         $this->recordBuyerConsents($draft, $buyer, $project);
+        self::consumeDiscountCode($draft, $order);
 
         // Programmée, jamais envoyée tout de suite : l'acheteur a choisi une
         // date, et un cadeau qui arrive avant l'heure n'est plus une surprise.
@@ -247,6 +249,32 @@ final readonly class FulfillOrder
         $item->save();
 
         return $item;
+    }
+
+    /**
+     * Le code de réduction a servi : il ne servira plus (T-141).
+     *
+     * Marqué à l'encaissement et pas au moment où il est posé : poser un code
+     * n'est pas acheter. La commande est rattachée, pour lire plus tard
+     * combien de codes envoyés sont devenus des livres.
+     */
+    private static function consumeDiscountCode(CheckoutDraft $draft, Order $order): void
+    {
+        $code = $draft->value(ApplyDiscountCode::DRAFT_CODE);
+
+        if (! is_string($code) || $code === '') {
+            return;
+        }
+
+        $lead = ApplyDiscountCode::find($code);
+
+        if (! $lead instanceof Lead || $lead->code_used_at !== null) {
+            return;
+        }
+
+        $lead->code_used_at = CarbonImmutable::now();
+        $lead->order()->associate($order);
+        $lead->save();
     }
 
     private function recordBuyerConsents(CheckoutDraft $draft, User $buyer, Project $project): void

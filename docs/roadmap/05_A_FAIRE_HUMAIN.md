@@ -219,6 +219,8 @@ Le tunnel d'achat est écrit, testé et poussé. Ce qui manque, c'est un compte 
 
 ⚠️ Copier l'identifiant du **prix** (`price_…`), pas celui du produit (`prod_…`). C'est l'erreur la plus fréquente, et elle se voit seulement au moment du paiement.
 
+**Un coupon**, pour la réduction de bienvenue de la page d'accueil (T-141) : Produits → Coupons → **pourcentage, 10 %** (le même que le réglage « Réduction, en pour cent de la commande » du pilote dans l'administration), sans durée côté Stripe, ce sont nos codes qui portent la fin de validité (un an), sans limite de rachats. Copier l'identifiant du coupon dans `STRIPE_COUPON_WELCOME`. Ne pas créer de « code promotionnel » Stripe : les codes sont les nôtres, un par adresse, et c'est nous qui les vérifions avant d'envoyer le coupon. Sans lui, un acheteur qui a posé un code voit son paiement refusé avec une erreur claire, plutôt qu'encaissé plein tarif.
+
 **Deux clés** (Développeurs → Clés d'API) : la publiable dans `STRIPE_KEY`, la secrète dans `STRIPE_SECRET`.
 
 **La CLI, pour le webhook en local** :

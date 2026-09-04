@@ -76,6 +76,11 @@ return [
             'phone_option' => env('STRIPE_PRICE_PHONE_OPTION'),
             'ebook' => env('STRIPE_PRICE_EBOOK'),
         ],
+        // Le coupon de l'offre de bienvenue (T-141) : un pourcentage sur la
+        // commande, créé dans Stripe, le même que le réglage du pilote.
+        'coupons' => [
+            'welcome' => env('STRIPE_COUPON_WELCOME'),
+        ],
     ],
 
     'asr' => [

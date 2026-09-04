@@ -247,6 +247,32 @@ final class AppServiceProvider extends ServiceProvider
             Limit::perMinute(240)->by('ip:'.$request->ip()),
             Limit::perMinute(120)->by('client-events:'.self::tokenFingerprint($request)),
         ]);
+
+        /*
+         * La fenêtre de bienvenue (T-141) : trois demandes par heure pour une
+         * même adresse, et une borne par IP desserrée hors production, comme
+         * pour les jetons. Une liste d'adresses est une cible, et un
+         * formulaire public sans borne est un service d'envoi gratuit.
+         */
+        RateLimiter::for('welcome-offer', fn (Request $request): array => [
+            Limit::perHour(3)->by('welcome-offer:'.self::emailFingerprint($request)),
+            Limit::perHour(app()->isProduction() ? 10 : 100)->by('welcome-offer-ip:'.$request->ip()),
+        ]);
+
+        // Un code à huit signes ne se devine pas à dix essais par minute.
+        RateLimiter::for('discount-code', fn (Request $request): Limit => Limit::perMinute(10)
+            ->by('discount-code:'.$request->ip()));
+    }
+
+    /**
+     * Empreinte de l'adresse saisie : on borne sur la personne demandée sans
+     * déposer une adresse dans un magasin de cache.
+     */
+    private static function emailFingerprint(Request $request): string
+    {
+        $email = $request->input('email');
+
+        return hash('sha256', is_string($email) ? mb_strtolower(trim($email)) : '');
     }
 
     /**

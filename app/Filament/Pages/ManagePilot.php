@@ -11,6 +11,7 @@ use BackedEnum;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -101,6 +102,18 @@ final class ManagePilot extends SettingsPage
                     TextInput::make('gift_send_hour')
                         ->label(__('admin.pilot.gift_send_hour'))
                         ->numeric()->required()->minValue(0)->maxValue(23),
+                ])
+                ->columns(2),
+
+            Section::make(__('admin.pilot.welcome_offer'))
+                ->description(__('admin.pilot.welcome_offer_help'))
+                ->schema([
+                    Toggle::make('welcome_offer_enabled')
+                        ->label(__('admin.pilot.welcome_offer_enabled')),
+                    TextInput::make('welcome_offer_discount_percent')
+                        ->label(__('admin.pilot.welcome_offer_discount'))
+                        ->helperText(__('admin.pilot.welcome_offer_discount_help'))
+                        ->numeric()->required()->minValue(0)->maxValue(100)->suffix('%'),
                 ])
                 ->columns(2),
 
