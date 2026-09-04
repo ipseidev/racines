@@ -125,7 +125,7 @@ export default function Checkout({
         (form.data.phone_option === true ? prices.phoneOption : 0);
 
     return (
-        <>
+        <div className="mx-auto w-full max-w-3xl px-6 py-8 text-[1.125rem] leading-relaxed">
             <Head title={t('public.checkout.title')} />
 
             <p className="text-brand-muted text-base">
@@ -381,13 +381,13 @@ export default function Checkout({
                             <div className="flex flex-wrap gap-4">
                                 <Link
                                     href="/register"
-                                    className="bg-brand text-brand-foreground min-h-[2.75rem] rounded-md px-6 py-3 font-medium"
+                                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] rounded-md px-6 py-3 font-semibold"
                                 >
                                     {t('public.checkout.account.register')}
                                 </Link>
                                 <Link
                                     href="/login"
-                                    className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3"
+                                    className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
                                 >
                                     {t('public.checkout.account.login')}
                                 </Link>
@@ -569,7 +569,7 @@ export default function Checkout({
                     {step > 1 && (
                         <Link
                             href={`/acheter?step=${step - 1}`}
-                            className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3"
+                            className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
                         >
                             {t('public.checkout.back')}
                         </Link>
@@ -578,7 +578,7 @@ export default function Checkout({
                     <button
                         type="submit"
                         disabled={form.processing}
-                        className="bg-brand text-brand-foreground min-h-[2.75rem] rounded-md px-6 py-3 font-medium disabled:opacity-60"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] rounded-md px-6 py-3 font-semibold disabled:opacity-60"
                     >
                         {step === LAST_STEP
                             ? t('public.checkout.pay')
@@ -586,7 +586,7 @@ export default function Checkout({
                     </button>
                 </div>
             </form>
-        </>
+        </div>
     );
 }
 

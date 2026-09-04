@@ -55,20 +55,37 @@ test('la page d’accueil annonce ses sections dans l’ordre du dossier', async
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    const headings = await page
-        .getByRole('heading', { level: 2 })
-        .allInnerTexts();
-
     // L'ordre n'est pas négociable (doc 01 §4) : on explique avant de
-    // demander, et le prix arrive après les engagements.
-    expect(headings).toEqual([
+    // demander, et le prix arrive après les engagements. On le lit sur les
+    // identifiants des titres de section, pas sur leur libellé : depuis la
+    // direction artistique du 3 septembre 2026, le titre canonique vit dans
+    // l'œillet et le h2 porte une phrase — l'ordre, lui, n'a pas bougé.
+    const order = await page
+        .getByRole('heading', { level: 2 })
+        .evaluateAll((nodes) => nodes.map((node) => node.id));
+
+    expect(order).toEqual([
+        'how',
+        'try',
+        'book',
+        'commitments',
+        'price',
+        'faq',
+    ]);
+
+    // Et les mots du dossier restent visibles, chacun à sa place.
+    for (const label of [
         'Comment ça marche',
         'Essayez en 60 secondes',
         'Le livre',
         'Nos engagements',
         'Le prix',
         'Questions fréquentes',
-    ]);
+    ]) {
+        await expect(
+            page.getByText(label, { exact: true }).first(),
+        ).toBeVisible();
+    }
 });
 
 test('les pages légales portent leur bandeau tant que le conseil n’a pas relu', async ({

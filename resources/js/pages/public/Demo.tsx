@@ -154,7 +154,7 @@ export default function Demo({ limits }: Props) {
     };
 
     return (
-        <>
+        <div className="mx-auto w-full max-w-3xl px-6 py-8 text-[1.125rem] leading-relaxed">
             <Head title={t('public.demo.title')} />
 
             <h1 className="font-display text-3xl leading-tight font-semibold">
@@ -183,7 +183,7 @@ export default function Demo({ limits }: Props) {
                 <button
                     type="button"
                     onClick={() => void start()}
-                    className="bg-brand text-brand-foreground mt-8 min-h-[3.5rem] rounded-md px-8 py-4 text-lg font-medium"
+                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[3.5rem] rounded-md px-8 py-4 text-lg font-semibold"
                 >
                     {t('public.demo.start')}
                 </button>
@@ -200,7 +200,7 @@ export default function Demo({ limits }: Props) {
                     <button
                         type="button"
                         onClick={stop}
-                        className="bg-brand text-brand-foreground mt-4 min-h-[3.5rem] rounded-md px-8 py-4 text-lg font-medium"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-4 min-h-[3.5rem] rounded-md px-8 py-4 text-lg font-semibold"
                     >
                         {t('public.demo.stop')}
                     </button>
@@ -222,7 +222,7 @@ export default function Demo({ limits }: Props) {
                     <button
                         type="button"
                         onClick={again}
-                        className="border-brand-sand mt-4 min-h-[2.75rem] rounded-md border px-6 py-3"
+                        className="border-brand text-brand mt-4 min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
                     >
                         {t('public.demo.again')}
                     </button>
@@ -231,10 +231,10 @@ export default function Demo({ limits }: Props) {
 
             <Link
                 href="/acheter"
-                className="bg-brand text-brand-foreground mt-12 inline-block min-h-[2.75rem] rounded-md px-6 py-3 font-medium"
+                className="border-brand text-brand hover:bg-brand/5 mt-12 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
             >
                 {t('public.demo.cta')}
             </Link>
-        </>
+        </div>
     );
 }

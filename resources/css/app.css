@@ -237,6 +237,52 @@
         @apply bg-brand-surface border-brand-sand rounded-xl border;
     }
 
+    /* L'œillet d'une section : une étiquette en capitales, précédée d'un filet d'or. */
+    .eyebrow {
+        @apply text-brand inline-flex items-center gap-3 text-[0.8rem] font-semibold tracking-[0.1em] uppercase;
+    }
+
+    .eyebrow::before {
+        content: '';
+        @apply bg-brand-gold h-0.5 w-7;
+    }
+
+    .chip {
+        @apply border-brand-sand bg-brand-surface text-brand inline-flex items-center gap-2 rounded-full border-[1.5px] px-3.5 py-2 text-[0.9rem] font-medium;
+    }
+
+    .chip::before {
+        content: '';
+        @apply bg-brand-sage size-2 rounded-full;
+    }
+
+    /*
+     * L'onde d'une voix, sur la carte « question de la semaine » de l'accueil.
+     * Le seul mouvement de la page, et il s'arrête pour qui l'a demandé.
+     */
+    .wave-bar {
+        @apply bg-brand-sage block h-[30%] w-1 rounded-sm;
+        animation: wave 1.6s ease-in-out infinite;
+    }
+
+    .wave-bar:nth-child(3n) {
+        @apply h-[70%];
+    }
+
+    .wave-bar:nth-child(3n + 1) {
+        @apply h-[45%];
+    }
+
+    .wave-bar:nth-child(5n) {
+        @apply h-[90%];
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .wave-bar {
+            animation: none;
+        }
+    }
+
     /*
      * Les pages légales : du markdown converti côté serveur, donc sans
      * classes. La mise en forme se fait ici, sur les balises.
@@ -284,5 +330,16 @@
     .legal-prose th,
     .legal-prose td {
         @apply border-brand-sand border px-3 py-2 text-left align-top;
+    }
+}
+
+@keyframes wave {
+    0%,
+    100% {
+        transform: scaleY(0.55);
+    }
+
+    50% {
+        transform: scaleY(1);
     }
 }

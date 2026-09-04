@@ -20,13 +20,13 @@ type Props = {
  */
 export default function Legal({ title, html }: Props) {
     return (
-        <>
+        <div className="mx-auto w-full max-w-3xl px-6 py-8 text-[1.125rem] leading-relaxed">
             <Head title={title} />
 
             <article
                 className="legal-prose"
                 dangerouslySetInnerHTML={{ __html: html }}
             />
-        </>
+        </div>
     );
 }

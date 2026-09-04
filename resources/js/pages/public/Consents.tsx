@@ -26,7 +26,7 @@ export default function Consents({ texts }: Props) {
     const t = useT();
 
     return (
-        <>
+        <div className="mx-auto w-full max-w-3xl px-6 py-8 text-[1.125rem] leading-relaxed">
             <Head title={t('public.legal.consents')} />
 
             <h1 className="font-display text-3xl leading-tight font-semibold">
@@ -47,6 +47,6 @@ export default function Consents({ texts }: Props) {
                     </div>
                 ))}
             </dl>
-        </>
+        </div>
     );
 }

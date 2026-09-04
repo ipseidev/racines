@@ -15,7 +15,7 @@ export default function CheckoutThanks() {
     const t = useT();
 
     return (
-        <>
+        <div className="mx-auto w-full max-w-3xl px-6 py-8 text-[1.125rem] leading-relaxed">
             <Head title={t('public.checkout.thanks.title')} />
 
             <h1 className="font-display text-3xl leading-tight font-semibold">
@@ -26,10 +26,10 @@ export default function CheckoutThanks() {
 
             <Link
                 href="/espace/commandes"
-                className="border-brand-sand mt-8 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
+                className="border-brand text-brand mt-8 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
             >
                 {t('public.checkout.thanks.orders')}
             </Link>
-        </>
+        </div>
     );
 }

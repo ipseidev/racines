@@ -27,26 +27,58 @@ return [
     'landing' => [
         'promise' => 'Le livre de souvenirs de vos parents qui va réellement au bout.',
         'subtitle' => 'Sans application, et sans leur demander d’écrire.',
-        'cta' => 'Offrir',
+        'cta' => 'J’offre ce livre',
         'cta_try' => 'Essayez en 60 secondes',
+        'cta_how' => 'Comment ça marche',
+
+        /*
+         * Le héros : la question de la semaine comme objet, parce que c'est le
+         * rituel qu'on vend — pas le livre. Les quatre points sont le fond du
+         * produit, dans les mots de l'acheteur.
+         */
+        'hero' => [
+            'lede' => 'Chaque semaine, une question. Elle répond en parlant, depuis son téléphone. À la fin de l’année, un livre imprimé de ses histoires — et sa voix à chaque page.',
+            'note' => 'Un seul paiement, pas d’abonnement. Ses souvenirs restent privés.',
+            'checks' => [
+                'no_app' => 'Aucune application, aucun mot de passe : un lien, elle parle.',
+                'kept_words' => 'Ses mots sont mis au propre, jamais réécrits — le mot à mot est conservé à côté.',
+                'she_decides' => 'C’est elle qui décide de ce que la famille entend.',
+                'book' => 'Un livre relié, avec un code à scanner pour l’entendre raconter.',
+            ],
+            'card' => [
+                'aria' => 'Exemple de question de la semaine',
+                'label' => 'Question de la semaine',
+                'name' => 'Odette',
+                'question' => 'Quelle odeur vous ramène à votre enfance ?',
+                'answers' => 'Elle répond en parlant.',
+                'duration' => '2 min 14',
+            ],
+            'photo_alt' => 'Une femme assise à la table de sa cuisine, le téléphone à la main, songeuse.',
+        ],
 
         'how' => [
             'title' => 'Comment ça marche',
+            'headline' => 'Une question par semaine. Le reste, on s’en occupe.',
+            'lede' => 'Rien à installer, rien à écrire. Une année de questions, à son rythme, et un livre au bout.',
             'one' => [
                 'title' => 'Votre proche reçoit un lien',
                 'body' => 'Une question par semaine, par SMS ou par courriel. Rien à installer, aucun mot de passe.',
+                'alt' => 'Une main tient deux photographies anciennes de famille.',
             ],
             'two' => [
                 'title' => 'Il ou elle parle',
                 'body' => 'Une réponse orale, depuis son téléphone, quand il ou elle veut. Deux minutes suffisent.',
+                'alt' => 'Une femme âgée sourit, en cardigan gris.',
             ],
             'three' => [
                 'title' => 'Le texte est relu et validé',
                 'body' => 'Nous mettons le récit au propre. Votre proche le relit, le corrige, et décide seul·e de le partager.',
+                'alt' => 'Un livre ouvert, photographié de près.',
             ],
             'four' => [
                 'title' => 'La famille écoute',
                 'body' => 'Les proches autorisés écoutent la voix et lisent le texte. À la fin, tout devient un livre.',
+                'alt' => 'Une famille réunie autour d’une table, sur une photographie ancienne.',
             ],
         ],
 
@@ -57,7 +89,14 @@ return [
 
         'book' => [
             'title' => 'Le livre',
+            'headline' => 'Sur chaque page, la photo, l’histoire — et sa voix.',
             'body' => 'Un livre imprimé, avec un QR par chapitre qui ramène à la voix. Le format s’adapte à la matière recueillie : un livre, un livret, ou un chapitre fondateur.',
+            'points' => [
+                'photos' => 'Un livre relié, avec les photos que la famille a ajoutées.',
+                'proof' => 'Vous relisez et validez chaque page avant l’impression.',
+                'lasting' => 'Les enregistrements restent écoutables des années après, code ou pas.',
+            ],
+            'photo_alt' => 'Un homme âgé regarde deux photographies anciennes qu’il tient dans ses mains.',
             'qr' => 'Les codes de votre livre mènent aux enregistrements aussi longtemps que le service existe. Si nous devions cesser notre activité, nous vous préviendrions et vous fournirions vos fichiers.',
         ],
 
@@ -68,6 +107,8 @@ return [
          */
         'commitments' => [
             'title' => 'Nos engagements',
+            'headline' => 'Ses souvenirs lui appartiennent.',
+            'lede' => 'Des phrases qu’on peut nous opposer : elles sont les mêmes ici, dans les conditions de vente et dans nos courriels.',
             'validation' => 'La validation est explicite, jamais tacite : rien n’est visible des proches sans l’accord de la personne qui a raconté.',
             'no_cloning' => 'Pas de clonage vocal : nous n’imitons jamais une voix, et nous n’en fabriquons pas.',
             'ai_arranges' => 'L’IA range, elle n’invente pas : elle enlève les hésitations et ajoute la ponctuation. Elle n’ajoute aucun fait.',
@@ -77,8 +118,36 @@ return [
             'withdrawal' => 'La personne qui raconte peut masquer, retirer ou supprimer une histoire à tout moment, sans se justifier.',
         ],
 
+        /*
+         * La preuve à côté de la promesse : le mot à mot d'un essai du corpus
+         * (docs/corpus/essai-01-pain.txt) et son rendu, tels qu'ils sortent.
+         */
+        'proof' => [
+            'aria' => 'Exemple : le mot à mot et le texte mis au propre, côte à côte',
+            'verbatim' => 'Mot à mot',
+            'fluide' => 'Texte mis au propre',
+            'sample_verbatim' => 'alors euh… ma grand-mère elle habitait à Saint-Aubin, enfin Saint-Aubin-du-Cormier, et euh chaque dimanche on y allait, on y allait en voiture avec mon père, ça faisait… je sais plus, une heure de route peut-être. Et elle faisait le pain elle-même, dans le four, le four à bois derrière la maison.',
+            'sample_fluide' => 'Ma grand-mère, elle habitait à Saint-Aubin-du-Cormier, et chaque dimanche on y allait en voiture avec mon père. Ça faisait… je sais plus, une heure de route peut-être. Et elle faisait le pain elle-même, dans le four à bois derrière la maison.',
+            'then' => 'Puis elle choisit :',
+            'share' => 'Partager',
+            'keep' => 'Garder pour moi',
+            'later' => 'Décider plus tard',
+        ],
+
         'price' => [
             'title' => 'Le prix',
+            'headline' => 'Un paiement. Une année. Un livre.',
+            'lede' => 'Pas d’abonnement à surveiller, pas de renouvellement discret. Vous offrez l’année, elle raconte à son rythme, et le livre arrive.',
+            'per' => 'une année de questions, et le livre imprimé',
+            'includes' => [
+                'questions' => 'Une question par semaine, pendant un an',
+                'text' => 'Ses histoires mises au propre, mot à mot conservé',
+                'family' => 'L’écoute pour toute la famille, et les réponses d’un mot',
+                'book' => 'Un livre relié, avec un code à scanner par chapitre',
+                'download' => 'Tous les enregistrements téléchargeables, à jamais',
+            ],
+            'cta_start' => 'Je commence son livre',
+            'reassurance' => 'Paiement sécurisé · Remboursable',
             'pilot' => 'Offre pilote',
             'pilot_body' => 'Douze semaines d’accompagnement, un livrable réduit, et un statut expérimental assumé. Remboursable.',
             'prevente' => 'Prévente',
