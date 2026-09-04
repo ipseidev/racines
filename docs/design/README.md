@@ -128,6 +128,28 @@ Budget **150 Ko** de JavaScript sur les pages narrateur et famille · polices
 axe sérieuse · nom de marque **jamais en dur** (`BrandAgnosticTest`) · thème
 clair seul.
 
+## Les composants produit et le mouvement (passe du 4 septembre, T-135)
+
+À partir du tunnel d'achat, les pages produit n'utilisent plus les contrôles
+natifs du navigateur. Les composants vivent dans `resources/js/components/form`
+et ne dépendent d'aucune bibliothèque (budget de 150 Ko des pages narratrice) :
+
+| Composant | Rôle |
+|---|---|
+| `Field`, `TextField`, `TextAreaField`, `PasswordField`, `SelectField` | libellé au-dessus, aide dessous, erreur en fondu à l'endroit du champ |
+| `ChoiceCard` | un vrai bouton radio, dessiné, dans une carte entièrement cliquable |
+| `CheckField` | une case dessinée et son texte d'un seul tenant |
+| `Counter` | un entier borné : moins, la valeur, plus ; le bouton qui ne mène nulle part se désactive |
+| `SubmitButton` | l'action de la page ; pendant l'envoi, une roue et « Un instant… » |
+| `Stepper` | la progression : « Étape 2 sur 6 » et une barre sur téléphone, les noms sur bureau |
+
+**Le mouvement** est en CSS pur, dans `app.css` : une courbe (`--ease-soft`),
+deux entrées (`rise-in` 0,45 s, `pop-in`), `.enter` pour ce qui arrive à
+l'écran, `.press` pour ce qu'on presse (2 % de moins sous le doigt). Tout
+s'éteint sous `prefers-reduced-motion`. Un seul geste appuyé : le livre qui
+s'ouvre sur la page de merci (`.book-*`). Les cases et radios cochés prennent la
+couleur de marque, jamais celle de l'action : cocher n'est pas envoyer.
+
 ## Les règles de propagation, pour les pages à venir
 
 Trois règles suffisent à habiller une nouvelle page, et une relecture à l'écran
