@@ -23,7 +23,7 @@ type Props = {
  * options, les questions.
  *
  * Ce qui n'existe pas chez nous n'y est pas : ni presse, ni avis, ni vidéo de
- * clients. Les emplacements viendront avec les familles pilotes. Les sept
+ * clients. Les emplacements viendront avec les premières familles. Les sept
  * engagements gardent leur formulation canonique.
  *
  * Direction artistique du 3 septembre (docs/design/README.md) : une seule
@@ -235,7 +235,6 @@ export default function Landing({
 }: Props) {
     const t = useT();
     const brand = useBrand();
-    const offer = mode === 'prevente' ? 'prevente' : 'pilot';
 
     return (
         <>
@@ -435,9 +434,6 @@ export default function Landing({
                 <BookMockup />
 
                 <div className="flex flex-col gap-6">
-                    <span className="chip w-fit">
-                        {t('public.landing.product.badge')}
-                    </span>
                     <h2 id="product" className={H2}>
                         {t('public.landing.product.title')}
                     </h2>
@@ -547,9 +543,13 @@ export default function Landing({
                                     <Lock />
                                     {t('public.landing.price.reassurance')}
                                 </p>
-                                <p className="text-brand-muted text-[0.95rem]">
-                                    {t(`public.landing.price.${offer}_body`)}
-                                </p>
+                                {mode === 'prevente' && (
+                                    <p className="text-brand-muted text-[0.95rem]">
+                                        {t(
+                                            'public.landing.price.prevente_body',
+                                        )}
+                                    </p>
+                                )}
                             </div>
                             <img
                                 src="/img/landing/livre.jpg"

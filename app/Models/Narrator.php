@@ -8,6 +8,7 @@ use App\Concerns\StoresDatesWithOffset;
 use App\Enums\Channel;
 use App\Enums\ConsentKind;
 use App\Enums\ConsentStatus;
+use App\Enums\TechComfort;
 use Carbon\CarbonImmutable;
 use Database\Factories\NarratorFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -33,6 +34,7 @@ use Illuminate\Notifications\Notification;
  * @property string $display_name
  * @property string|null $email
  * @property string|null $phone_e164
+ * @property TechComfort|null $tech_comfort
  * @property Channel $preferred_channel
  * @property bool $is_primary
  * @property int|null $birth_year
@@ -57,7 +59,7 @@ final class Narrator extends Model
     /** @var list<string> */
     protected $fillable = [
         'first_name', 'last_name', 'display_name', 'email', 'phone_e164',
-        'preferred_channel', 'birth_year', 'opted_in_at',
+        'preferred_channel', 'tech_comfort', 'birth_year', 'opted_in_at',
     ];
 
     /** @return BelongsTo<Project, $this> */
@@ -127,6 +129,7 @@ final class Narrator extends Model
     {
         return [
             'preferred_channel' => Channel::class,
+            'tech_comfort' => TechComfort::class,
             'is_primary' => 'boolean',
             'birth_year' => 'integer',
             'opted_in_at' => 'immutable_datetime',

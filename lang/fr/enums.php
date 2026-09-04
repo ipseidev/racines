@@ -48,6 +48,16 @@ return [
         'evening' => 'Soir',
     ],
 
+    // À quel point la personne qui racontera est à l'aise avec un téléphone.
+    // Posé à l'achat pour un proche, afin d'adapter ce qu'on lui propose
+    // (T-136) : l'option téléphone est recommandée aux deux derniers.
+    'tech_comfort' => [
+        'daily' => 'Très à l’aise : le téléphone fait partie de son quotidien',
+        'sometimes' => 'Ça dépend : les SMS oui, ouvrir un lien parfois moins',
+        'rarely' => 'Peu à l’aise : il faut souvent l’aider',
+        'no_smartphone' => 'Pas de smartphone',
+    ],
+
     'channel' => [
         'sms' => 'SMS',
         'email' => 'Courriel',

@@ -28,10 +28,13 @@ test('remplit le tunnel jusqu’au récapitulatif', async ({ page }) => {
     await page.getByLabel('Son prénom').fill('Odette');
     await page.getByLabel('Votre lien avec elle').fill('ma mère');
     await page.getByLabel('Son courriel').fill(`odette+${UNIQUE}@example.test`);
+    // À quel point elle est à l'aise avec un téléphone : la réponse change
+    // ce qu'on propose ensuite (T-136).
+    await page.getByRole('radio', { name: /Peu à l’aise/ }).check();
     await page.getByRole('button', { name: 'Continuer' }).click();
 
-    // Étape 3 — le cadeau. La date et le message sont préremplis : c'est le
-    // point du défaut, on ne doit rien avoir à saisir pour avancer.
+    // Étape 3 — le cadeau. La date, l'heure et le message sont préremplis :
+    // c'est le point du défaut, on ne doit rien avoir à saisir pour avancer.
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
         'cadeau',
     );
@@ -77,7 +80,15 @@ test('remplit le tunnel jusqu’au récapitulatif', async ({ page }) => {
     );
 
     await terms.check();
-    await page.getByLabel('Exemplaires supplémentaires du livre').fill('1');
+
+    // Les options sont des cartes qu'on ajoute. Un exemplaire de plus, et
+    // l'option téléphone est recommandée pour quelqu'un peu à l'aise.
+    await page
+        .getByRole('button', { name: /Ajouter : Exemplaires supplémentaires/ })
+        .click();
+    await expect(page.getByLabel('Nombre d’exemplaires')).toHaveValue('1');
+    // La recommandation de l'option téléphone n'apparaît que si l'option est
+    // ouverte, ce que le décor local ne garantit pas : on ne l'affirme pas ici.
     await page.getByRole('button', { name: 'Continuer' }).click();
 
     // Étape 6 — récapitulatif, avec le total.

@@ -142,6 +142,7 @@ et ne dépendent d'aucune bibliothèque (budget de 150 Ko des pages narratrice) 
 | `Counter` | un entier borné : moins, la valeur, plus ; le bouton qui ne mène nulle part se désactive |
 | `SubmitButton` | l'action de la page ; pendant l'envoi, une roue et « Un instant… » |
 | `Stepper` | la progression : « Étape 2 sur 6 » et une barre sur téléphone, les noms sur bureau |
+| `OptionCard` | une option à ajouter, comme chez le leader : image, titre, prix, « Ajouter », puis « Ajouté » et « Retirer » |
 
 **Le mouvement** est en CSS pur, dans `app.css` : une courbe (`--ease-soft`),
 deux entrées (`rise-in` 0,45 s, `pop-in`), `.enter` pour ce qui arrive à

@@ -5,6 +5,7 @@ import { useBrand } from '@/brand/BrandProvider';
 import { CheckField } from '@/components/form/CheckField';
 import { ChoiceCard } from '@/components/form/ChoiceCard';
 import { Counter } from '@/components/form/Counter';
+import { OptionCard } from '@/components/form/OptionCard';
 import { PasswordField } from '@/components/form/PasswordField';
 import { SelectField, type Option } from '@/components/form/SelectField';
 import { Stepper } from '@/components/form/Stepper';
@@ -13,6 +14,7 @@ import { TextAreaField } from '@/components/form/TextAreaField';
 import { TextField } from '@/components/form/TextField';
 import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
+import { nationalPhone } from '@/lib/french';
 
 type Props = {
     step: number;
@@ -23,6 +25,8 @@ type Props = {
     giftVariant: string;
     channels: Option[];
     addressForms: Option[];
+    techComforts: Option[];
+    giftSendHour: number;
     missingSteps: number[];
     isAuthenticated: boolean;
 };
@@ -30,6 +34,7 @@ type Props = {
 const LAST_STEP = 6;
 const ACCOUNT_STEP = 4;
 const MESSAGE_MAX = 600;
+const MAX_COPIES = 5;
 
 const TITLES = [
     'for',
@@ -40,16 +45,16 @@ const TITLES = [
     'summary',
 ] as const;
 
-/*
- * Les valeurs du drapeau `gift-experience`, écrites en clair. Les dériver de
- * la clé de traduction par un remplacement de caractère marcherait, et
- * casserait le jour où une variante s'appelle autrement.
- */
-const GIFT_VARIANTS = [
-    { value: 'ecard', key: 'ecard' },
-    { value: 'printed-card', key: 'printed_card' },
-    { value: 'audio-message', key: 'audio_message' },
-] as const;
+/** Les valeurs d'aisance qui rendent l'option téléphone recommandable (TechComfort). */
+const PHONE_SUGGESTED = ['rarely', 'no_smartphone'];
+
+/** Les heures d'envoi proposées : de huit heures à vingt heures, par demi-heure. */
+const TIMES = Array.from({ length: 25 }, (_, index) => {
+    const hour = 8 + Math.floor(index / 2);
+    const minute = index % 2 === 0 ? '00' : '30';
+
+    return `${String(hour).padStart(2, '0')}:${minute}`;
+});
 
 function text(draft: Record<string, unknown>, key: string): string {
     const value = draft[key];
@@ -86,6 +91,19 @@ export function formatDate(iso: string, locale = 'fr-FR'): string {
     }).format(new Date(Number(year), Number(month) - 1, Number(day)));
 }
 
+/** « 9 h », « 18 h 30 », à partir de « 09:00 » ou « 18:30 ». */
+export function formatTime(time: string): string {
+    const match = /^(\d{2}):(\d{2})$/.exec(time);
+
+    if (match === null) {
+        return time;
+    }
+
+    const hour = Number(match[1]);
+
+    return match[2] === '00' ? `${hour} h` : `${hour} h ${match[2]}`;
+}
+
 /**
  * Le tunnel d'achat, en six étapes.
  *
@@ -97,6 +115,10 @@ export function formatDate(iso: string, locale = 'fr-FR'): string {
  * Deux colonnes sur bureau, façon Remento (T-135) : le formulaire à gauche,
  * et à droite ce qu'on achète et ce qu'on promet, qui ne bouge pas. Chaque
  * étape entre en fondu ; le bouton dit quand il travaille.
+ *
+ * Le tunnel s'adapte à qui racontera (T-136) : « son prénom » quand on offre,
+ * « votre prénom » quand on raconte soi-même ; l'aisance avec un téléphone
+ * n'est demandée que pour un proche, et elle recommande l'option téléphone.
  *
  * Les trois accords de l'étape 5 sont **trois cases**. Les grouper ferait
  * gagner une ligne et perdrait la valeur du consentement : on ne pourrait plus
@@ -110,13 +132,12 @@ export default function Checkout({
     giftVariant,
     channels,
     addressForms,
+    techComforts,
+    giftSendHour,
     isAuthenticated,
 }: Props) {
     const t = useT();
     const page = usePage();
-    const [showSelfNotice, setShowSelfNotice] = useState(
-        text(draft, 'for') === 'self',
-    );
 
     const form = useForm<Record<string, string | number | boolean>>({
         for: text(draft, 'for') || 'relative',
@@ -124,12 +145,16 @@ export default function Checkout({
         narrator_last_name: text(draft, 'narrator_last_name'),
         relationship: text(draft, 'relationship'),
         narrator_email: text(draft, 'narrator_email'),
-        narrator_phone: text(draft, 'narrator_phone'),
+        narrator_phone: nationalPhone(text(draft, 'narrator_phone')),
         preferred_channel:
             text(draft, 'preferred_channel') || (channels[0]?.value ?? ''),
         address_form:
             text(draft, 'address_form') || (addressForms[0]?.value ?? ''),
+        narrator_tech_comfort: text(draft, 'narrator_tech_comfort'),
         gift_send_at: text(draft, 'gift_send_at').slice(0, 10) || isoDate(1),
+        gift_send_time:
+            text(draft, 'gift_send_time') ||
+            `${String(giftSendHour).padStart(2, '0')}:00`,
         gift_message:
             text(draft, 'gift_message') ||
             t('public.checkout.gift.message_default'),
@@ -151,6 +176,12 @@ export default function Checkout({
         form.post('/acheter/payer');
     };
 
+    const forSelf = form.data.for === 'self';
+
+    /** Le libellé « son » ou « votre », selon qui racontera. */
+    const who = (key: string) =>
+        t(`public.checkout.narrator.${key}${forSelf ? '_self' : ''}`);
+
     const copies = Number(form.data.extra_copies);
     const phone = form.data.phone_option === true && phoneOption.open;
     const total =
@@ -168,10 +199,6 @@ export default function Checkout({
         href: `/acheter?step=${index + 1}`,
     }));
 
-    const variantLabel =
-        GIFT_VARIANTS.find((v) => v.value === form.data.gift_variant)?.key ??
-        'ecard';
-
     const optionsSummary = [
         copies === 1
             ? t('public.checkout.summary.copies_one')
@@ -183,7 +210,16 @@ export default function Checkout({
         phone ? t('public.checkout.summary.phone') : null,
     ].filter((line): line is string => line !== null);
 
+    const phoneSuggested =
+        !forSelf &&
+        PHONE_SUGGESTED.includes(String(form.data.narrator_tech_comfort));
+
     const accountForms = step === ACCOUNT_STEP && !isAuthenticated;
+
+    const title =
+        step === 3 && forSelf
+            ? t('public.checkout.steps.gift_self')
+            : t(`public.checkout.steps.${TITLES[step - 1]}`);
 
     return (
         <div className="mx-auto w-full max-w-6xl px-6 py-8 lg:py-12">
@@ -210,7 +246,7 @@ export default function Checkout({
                      */}
                     <div key={step} className="enter">
                         <h1 className="font-display text-[2rem] leading-[1.15] font-medium sm:text-4xl">
-                            {t(`public.checkout.steps.${TITLES[step - 1]}`)}
+                            {title}
                         </h1>
 
                         {accountForms ? (
@@ -238,15 +274,12 @@ export default function Checkout({
                                                     checked={
                                                         form.data.for === choice
                                                     }
-                                                    onChange={(value) => {
+                                                    onChange={(value) =>
                                                         form.setData(
                                                             'for',
                                                             value,
-                                                        );
-                                                        setShowSelfNotice(
-                                                            value === 'self',
-                                                        );
-                                                    }}
+                                                        )
+                                                    }
                                                     title={t(
                                                         `public.checkout.for.${choice}`,
                                                     )}
@@ -256,39 +289,18 @@ export default function Checkout({
                                                 />
                                             ),
                                         )}
-
-                                        {/*
-                                         * Au pilote on accompagne un proche.
-                                         * On ne bloque pas : on explique, et on
-                                         * garde l'intérêt exprimé, qui est une
-                                         * information de marché.
-                                         */}
-                                        {showSelfNotice && (
-                                            <p
-                                                role="status"
-                                                className="panel enter"
-                                            >
-                                                {t(
-                                                    'public.checkout.for.self_notice',
-                                                )}
-                                            </p>
-                                        )}
                                     </fieldset>
                                 )}
 
                                 {step === 2 && (
                                     <>
                                         <p className="text-brand-muted">
-                                            {t(
-                                                'public.checkout.narrator.intro',
-                                            )}
+                                            {who('intro')}
                                         </p>
 
-                                        <div className="grid gap-6 sm:grid-cols-2">
+                                        <div className="grid gap-6 sm:grid-cols-2 sm:items-end">
                                             <TextField
-                                                label={t(
-                                                    'public.checkout.narrator.first_name',
-                                                )}
+                                                label={who('first_name')}
                                                 error={
                                                     form.errors
                                                         .narrator_first_name
@@ -309,9 +321,7 @@ export default function Checkout({
                                             />
 
                                             <TextField
-                                                label={t(
-                                                    'public.checkout.narrator.last_name',
-                                                )}
+                                                label={who('last_name')}
                                                 error={
                                                     form.errors
                                                         .narrator_last_name
@@ -331,203 +341,260 @@ export default function Checkout({
                                             />
                                         </div>
 
-                                        <TextField
-                                            label={t(
-                                                'public.checkout.narrator.relationship',
-                                            )}
-                                            hint={t(
-                                                'public.checkout.narrator.relationship_hint',
-                                            )}
-                                            error={form.errors.relationship}
-                                            type="text"
-                                            value={String(
-                                                form.data.relationship,
-                                            )}
-                                            onChange={(event) =>
-                                                form.setData(
-                                                    'relationship',
-                                                    event.target.value,
-                                                )
-                                            }
-                                            autoComplete="off"
-                                        />
+                                        {!forSelf && (
+                                            <TextField
+                                                label={t(
+                                                    'public.checkout.narrator.relationship',
+                                                )}
+                                                hint={t(
+                                                    'public.checkout.narrator.relationship_hint',
+                                                )}
+                                                error={form.errors.relationship}
+                                                type="text"
+                                                value={String(
+                                                    form.data.relationship,
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'relationship',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                autoComplete="off"
+                                            />
+                                        )}
 
                                         <div className="border-brand-sand flex flex-col gap-6 border-t pt-6">
                                             <p className="text-brand-muted text-base">
-                                                {t(
-                                                    'public.checkout.narrator.contact_hint',
-                                                )}
+                                                {who('contact_hint')}
                                             </p>
 
-                                            <TextField
-                                                label={t(
-                                                    'public.checkout.narrator.email',
-                                                )}
-                                                error={
-                                                    form.errors.narrator_email
-                                                }
-                                                type="email"
-                                                inputMode="email"
-                                                value={String(
-                                                    form.data.narrator_email,
-                                                )}
-                                                onChange={(event) =>
-                                                    form.setData(
-                                                        'narrator_email',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                autoComplete="off"
-                                            />
+                                            <div className="grid gap-6 sm:grid-cols-2 sm:items-end">
+                                                <TextField
+                                                    label={who('email')}
+                                                    error={
+                                                        form.errors
+                                                            .narrator_email
+                                                    }
+                                                    type="email"
+                                                    inputMode="email"
+                                                    value={String(
+                                                        form.data
+                                                            .narrator_email,
+                                                    )}
+                                                    onChange={(event) =>
+                                                        form.setData(
+                                                            'narrator_email',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    autoComplete="off"
+                                                />
 
-                                            <TextField
-                                                label={t(
-                                                    'public.checkout.narrator.phone',
-                                                )}
-                                                error={
-                                                    form.errors.narrator_phone
-                                                }
-                                                type="tel"
-                                                inputMode="tel"
-                                                value={String(
-                                                    form.data.narrator_phone,
-                                                )}
-                                                onChange={(event) =>
-                                                    form.setData(
-                                                        'narrator_phone',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                autoComplete="off"
-                                                placeholder="+33612345678"
-                                            />
+                                                <TextField
+                                                    label={who('phone')}
+                                                    error={
+                                                        form.errors
+                                                            .narrator_phone
+                                                    }
+                                                    type="tel"
+                                                    inputMode="tel"
+                                                    value={String(
+                                                        form.data
+                                                            .narrator_phone,
+                                                    )}
+                                                    onChange={(event) =>
+                                                        form.setData(
+                                                            'narrator_phone',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    autoComplete="off"
+                                                    placeholder="06 12 34 56 78"
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-6 sm:grid-cols-2 sm:items-end">
+                                                <SelectField
+                                                    label={who('channel')}
+                                                    options={channels}
+                                                    value={String(
+                                                        form.data
+                                                            .preferred_channel,
+                                                    )}
+                                                    onChange={(value) =>
+                                                        form.setData(
+                                                            'preferred_channel',
+                                                            value,
+                                                        )
+                                                    }
+                                                    error={
+                                                        form.errors
+                                                            .preferred_channel
+                                                    }
+                                                />
+
+                                                <SelectField
+                                                    label={who('address_form')}
+                                                    options={addressForms}
+                                                    value={String(
+                                                        form.data.address_form,
+                                                    )}
+                                                    onChange={(value) =>
+                                                        form.setData(
+                                                            'address_form',
+                                                            value,
+                                                        )
+                                                    }
+                                                    error={
+                                                        form.errors.address_form
+                                                    }
+                                                />
+                                            </div>
                                         </div>
 
-                                        <div className="grid gap-6 sm:grid-cols-2">
-                                            <SelectField
-                                                label={t(
-                                                    'public.checkout.narrator.channel',
+                                        {!forSelf && (
+                                            <fieldset className="border-brand-sand flex flex-col gap-3 border-t pt-6">
+                                                <legend className="float-left mb-1 font-medium">
+                                                    {t(
+                                                        'public.checkout.narrator.tech_comfort',
+                                                    )}
+                                                </legend>
+                                                <p className="text-brand-muted clear-left text-base">
+                                                    {t(
+                                                        'public.checkout.narrator.tech_comfort_hint',
+                                                    )}
+                                                </p>
+                                                {techComforts.map((option) => (
+                                                    <ChoiceCard
+                                                        key={option.value}
+                                                        name="narrator_tech_comfort"
+                                                        value={option.value}
+                                                        checked={
+                                                            form.data
+                                                                .narrator_tech_comfort ===
+                                                            option.value
+                                                        }
+                                                        onChange={(value) =>
+                                                            form.setData(
+                                                                'narrator_tech_comfort',
+                                                                value,
+                                                            )
+                                                        }
+                                                        title={option.label}
+                                                    />
+                                                ))}
+                                                {form.errors
+                                                    .narrator_tech_comfort !==
+                                                    undefined && (
+                                                    <p
+                                                        role="alert"
+                                                        className="field-error enter"
+                                                    >
+                                                        {
+                                                            form.errors
+                                                                .narrator_tech_comfort
+                                                        }
+                                                    </p>
                                                 )}
-                                                options={channels}
-                                                value={String(
-                                                    form.data.preferred_channel,
-                                                )}
-                                                onChange={(value) =>
-                                                    form.setData(
-                                                        'preferred_channel',
-                                                        value,
-                                                    )
-                                                }
-                                                error={
-                                                    form.errors
-                                                        .preferred_channel
-                                                }
-                                            />
-
-                                            <SelectField
-                                                label={t(
-                                                    'public.checkout.narrator.address_form',
-                                                )}
-                                                options={addressForms}
-                                                value={String(
-                                                    form.data.address_form,
-                                                )}
-                                                onChange={(value) =>
-                                                    form.setData(
-                                                        'address_form',
-                                                        value,
-                                                    )
-                                                }
-                                                error={form.errors.address_form}
-                                            />
-                                        </div>
+                                            </fieldset>
+                                        )}
                                     </>
                                 )}
 
                                 {step === 3 && (
                                     <>
                                         <p className="text-brand-muted">
-                                            {t('public.checkout.gift.intro')}
+                                            {forSelf
+                                                ? t(
+                                                      'public.checkout.gift.intro_self',
+                                                  )
+                                                : t(
+                                                      'public.checkout.gift.intro',
+                                                  )}
                                         </p>
 
-                                        <TextField
-                                            label={t(
-                                                'public.checkout.gift.send_at',
-                                            )}
-                                            error={form.errors.gift_send_at}
-                                            type="date"
-                                            min={isoDate(0)}
-                                            max={isoDate(90)}
-                                            value={String(
-                                                form.data.gift_send_at,
-                                            )}
-                                            onChange={(event) =>
-                                                form.setData(
-                                                    'gift_send_at',
-                                                    event.target.value,
-                                                )
-                                            }
-                                            className="sm:max-w-xs"
-                                            required
-                                        />
+                                        <div className="grid gap-6 sm:grid-cols-2 sm:items-end">
+                                            <TextField
+                                                label={t(
+                                                    'public.checkout.gift.send_at',
+                                                )}
+                                                error={form.errors.gift_send_at}
+                                                type="date"
+                                                min={isoDate(0)}
+                                                max={isoDate(90)}
+                                                value={String(
+                                                    form.data.gift_send_at,
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'gift_send_at',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                required
+                                            />
 
-                                        <TextAreaField
-                                            label={t(
-                                                'public.checkout.gift.message',
-                                            )}
-                                            hint={t(
-                                                'public.checkout.gift.message_hint',
-                                            )}
-                                            error={form.errors.gift_message}
-                                            counter={t(
-                                                'public.checkout.gift.message_counter',
-                                                {
-                                                    count: String(
-                                                        String(
-                                                            form.data
-                                                                .gift_message,
-                                                        ).length,
-                                                    ),
-                                                    max: String(MESSAGE_MAX),
-                                                },
-                                            )}
-                                            value={String(
-                                                form.data.gift_message,
-                                            )}
-                                            onChange={(event) =>
-                                                form.setData(
-                                                    'gift_message',
-                                                    event.target.value,
-                                                )
-                                            }
-                                            rows={5}
-                                            maxLength={MESSAGE_MAX}
-                                            required
-                                        />
+                                            <SelectField
+                                                label={t(
+                                                    'public.checkout.gift.send_time',
+                                                )}
+                                                options={TIMES.map((time) => ({
+                                                    value: time,
+                                                    label: formatTime(time),
+                                                }))}
+                                                value={String(
+                                                    form.data.gift_send_time,
+                                                )}
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'gift_send_time',
+                                                        value,
+                                                    )
+                                                }
+                                                error={
+                                                    form.errors.gift_send_time
+                                                }
+                                            />
+                                        </div>
 
-                                        <SelectField
-                                            label={t(
-                                                'public.checkout.gift.variant',
-                                            )}
-                                            options={GIFT_VARIANTS.map(
-                                                (variant) => ({
-                                                    value: variant.value,
-                                                    label: t(
-                                                        `public.checkout.gift.variant_${variant.key}`,
-                                                    ),
-                                                }),
-                                            )}
-                                            value={String(
-                                                form.data.gift_variant,
-                                            )}
-                                            onChange={(value) =>
-                                                form.setData(
-                                                    'gift_variant',
-                                                    value,
-                                                )
-                                            }
-                                            error={form.errors.gift_variant}
-                                        />
+                                        {!forSelf && (
+                                            <TextAreaField
+                                                label={t(
+                                                    'public.checkout.gift.message',
+                                                )}
+                                                hint={t(
+                                                    'public.checkout.gift.message_hint',
+                                                )}
+                                                error={form.errors.gift_message}
+                                                counter={t(
+                                                    'public.checkout.gift.message_counter',
+                                                    {
+                                                        count: String(
+                                                            String(
+                                                                form.data
+                                                                    .gift_message,
+                                                            ).length,
+                                                        ),
+                                                        max: String(
+                                                            MESSAGE_MAX,
+                                                        ),
+                                                    },
+                                                )}
+                                                value={String(
+                                                    form.data.gift_message,
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'gift_message',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                rows={5}
+                                                maxLength={MESSAGE_MAX}
+                                                required
+                                            />
+                                        )}
                                     </>
                                 )}
 
@@ -546,86 +613,139 @@ export default function Checkout({
                                             {t('public.checkout.options.intro')}
                                         </p>
 
-                                        <Counter
-                                            label={t(
-                                                'public.checkout.options.extra_copies',
+                                        <OptionCard
+                                            image="/img/landing/livre.jpg"
+                                            imageAlt={t(
+                                                'public.checkout.options.copies.alt',
                                             )}
-                                            hint={t(
-                                                'public.checkout.options.extra_copies_hint',
+                                            title={t(
+                                                'public.checkout.options.copies.title',
+                                            )}
+                                            price={t(
+                                                'public.checkout.options.copies.each',
                                                 {
                                                     amount: formatPrice(
                                                         prices.extraCopy,
                                                     ),
                                                 },
                                             )}
-                                            error={form.errors.extra_copies}
-                                            value={copies}
-                                            min={0}
-                                            max={5}
-                                            onChange={(value) =>
-                                                form.setData(
-                                                    'extra_copies',
-                                                    value,
-                                                )
+                                            body={t(
+                                                'public.checkout.options.copies.body',
+                                            )}
+                                            added={copies > 0}
+                                            onAdd={() =>
+                                                form.setData('extra_copies', 1)
                                             }
-                                            decrementLabel={t(
-                                                'public.checkout.options.fewer',
+                                            onRemove={() =>
+                                                form.setData('extra_copies', 0)
+                                            }
+                                            addLabel={t(
+                                                'public.checkout.options.add',
                                             )}
-                                            incrementLabel={t(
-                                                'public.checkout.options.more',
+                                            removeLabel={t(
+                                                'public.checkout.options.remove',
                                             )}
-                                        />
-
-                                        {phoneOption.open ? (
-                                            <CheckField
-                                                checked={
-                                                    form.data.phone_option ===
-                                                    true
-                                                }
-                                                onChange={(checked) =>
+                                            addedLabel={t(
+                                                'public.checkout.options.added',
+                                            )}
+                                        >
+                                            <Counter
+                                                label={t(
+                                                    'public.checkout.options.copies.count',
+                                                )}
+                                                error={form.errors.extra_copies}
+                                                value={copies}
+                                                min={1}
+                                                max={MAX_COPIES}
+                                                onChange={(value) =>
                                                     form.setData(
-                                                        'phone_option',
-                                                        checked,
+                                                        'extra_copies',
+                                                        value,
                                                     )
                                                 }
-                                                label={
-                                                    <>
-                                                        {t(
-                                                            'public.checkout.phone_option_label',
-                                                            {
-                                                                first_name:
-                                                                    firstName,
-                                                                cap: String(
-                                                                    phoneOption.cap,
-                                                                ),
-                                                            },
-                                                        )}{' '}
-                                                        <span className="font-semibold">
-                                                            {formatPrice(
-                                                                prices.phoneOption,
-                                                            )}
-                                                        </span>
-                                                    </>
-                                                }
-                                                hint={t(
-                                                    'public.checkout.options.phone_option_remaining',
-                                                    {
-                                                        remaining: String(
-                                                            phoneOption.remaining,
-                                                        ),
-                                                        cap: String(
-                                                            phoneOption.cap,
-                                                        ),
-                                                    },
+                                                decrementLabel={t(
+                                                    'public.checkout.options.copies.fewer',
+                                                )}
+                                                incrementLabel={t(
+                                                    'public.checkout.options.copies.more',
                                                 )}
                                             />
-                                        ) : (
-                                            <p className="text-brand-muted">
-                                                {t(
-                                                    'public.checkout.options.phone_option_closed',
-                                                )}
-                                            </p>
-                                        )}
+                                        </OptionCard>
+
+                                        <OptionCard
+                                            image="/img/landing/hero.jpg"
+                                            imageAlt={t(
+                                                'public.checkout.options.phone.alt',
+                                            )}
+                                            title={t(
+                                                'public.checkout.options.phone.title',
+                                            )}
+                                            price={formatPrice(
+                                                prices.phoneOption,
+                                            )}
+                                            body={[
+                                                t(
+                                                    'public.checkout.options.phone.body',
+                                                    {
+                                                        first_name:
+                                                            firstName !== ''
+                                                                ? firstName
+                                                                : '…',
+                                                    },
+                                                ),
+                                                phoneOption.open
+                                                    ? t(
+                                                          'public.checkout.options.phone.remaining',
+                                                          {
+                                                              remaining: String(
+                                                                  phoneOption.remaining,
+                                                              ),
+                                                              cap: String(
+                                                                  phoneOption.cap,
+                                                              ),
+                                                          },
+                                                      )
+                                                    : null,
+                                            ]
+                                                .filter(Boolean)
+                                                .join(' ')}
+                                            added={phone}
+                                            onAdd={() =>
+                                                form.setData(
+                                                    'phone_option',
+                                                    true,
+                                                )
+                                            }
+                                            onRemove={() =>
+                                                form.setData(
+                                                    'phone_option',
+                                                    false,
+                                                )
+                                            }
+                                            addLabel={t(
+                                                'public.checkout.options.add',
+                                            )}
+                                            removeLabel={t(
+                                                'public.checkout.options.remove',
+                                            )}
+                                            addedLabel={t(
+                                                'public.checkout.options.added',
+                                            )}
+                                            recommended={
+                                                phoneSuggested
+                                                    ? t(
+                                                          'public.checkout.options.recommended',
+                                                      )
+                                                    : undefined
+                                            }
+                                            closed={
+                                                phoneOption.open
+                                                    ? undefined
+                                                    : t(
+                                                          'public.checkout.options.closed',
+                                                      )
+                                            }
+                                        />
 
                                         {/*
                                          * Trois cases distinctes, dans cet
@@ -713,9 +833,15 @@ export default function Checkout({
                                                 )}
                                             />
                                             <SummaryRow
-                                                label={t(
-                                                    'public.checkout.summary.gift',
-                                                )}
+                                                label={
+                                                    forSelf
+                                                        ? t(
+                                                              'public.checkout.summary.gift_self',
+                                                          )
+                                                        : t(
+                                                              'public.checkout.summary.gift',
+                                                          )
+                                                }
                                                 value={t(
                                                     'public.checkout.summary.gift_line',
                                                     {
@@ -725,9 +851,12 @@ export default function Checkout({
                                                                     .gift_send_at,
                                                             ),
                                                         ),
-                                                        variant: t(
-                                                            `public.checkout.gift.variant_${variantLabel}`,
-                                                        ).toLowerCase(),
+                                                        time: formatTime(
+                                                            String(
+                                                                form.data
+                                                                    .gift_send_time,
+                                                            ),
+                                                        ),
                                                     },
                                                 )}
                                                 editHref="/acheter?step=3"
@@ -808,6 +937,7 @@ export default function Checkout({
 
                 <OrderSummary
                     firstName={firstName}
+                    forSelf={forSelf}
                     main={prices.main}
                     copies={copies}
                     copiesPrice={prices.extraCopy}
@@ -899,6 +1029,7 @@ function SummaryRow({
  */
 function OrderSummary({
     firstName,
+    forSelf,
     main,
     copies,
     copiesPrice,
@@ -907,6 +1038,7 @@ function OrderSummary({
     total,
 }: {
     firstName: string;
+    forSelf: boolean;
     main: number;
     copies: number;
     copiesPrice: number;
@@ -924,9 +1056,11 @@ function OrderSummary({
         >
             <p className="eyebrow">{t('public.checkout.aside.title')}</p>
 
-            {firstName !== '' && (
+            {(firstName !== '' || forSelf) && (
                 <p className="font-display text-brand mt-3 text-2xl font-medium">
-                    {t('public.checkout.aside.for', { name: firstName })}
+                    {forSelf
+                        ? t('public.checkout.aside.for_self')
+                        : t('public.checkout.aside.for', { name: firstName })}
                 </p>
             )}
 

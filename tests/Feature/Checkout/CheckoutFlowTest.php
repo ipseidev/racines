@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\Channel;
-use App\Enums\ClientEventName;
 use App\Features\PhoneOptionOffer;
 use App\Models\CheckoutDraft;
 use App\Models\ClientEvent;
@@ -33,7 +32,9 @@ function completeDraft(array $overrides = []): CheckoutDraft
             'narrator_email' => 'jeanne@exemple.test',
             'preferred_channel' => Channel::Email->value,
             'address_form' => 'vous',
+            'narrator_tech_comfort' => 'daily',
             'gift_send_at' => now()->addDay()->toDateString(),
+            'gift_send_time' => '09:00',
             'gift_message' => 'J’aimerais garder tes histoires.',
             'gift_variant' => 'ecard',
             'extra_copies' => 0,
@@ -73,13 +74,13 @@ it('refuse une étape 1 sans réponse', function (): void {
     $this->post('/acheter/etape/1', [])->assertSessionHasErrors('for');
 });
 
-it('enregistre l’intérêt pour raconter sa propre histoire', function (): void {
+it('accepte de raconter sa propre histoire', function (): void {
+    // Un vrai produit, pas un pilote (T-136) : raconter soi-même est un
+    // chemin entier, pas un intérêt qu'on note pour plus tard.
     $this->post('/acheter/etape/1', ['for' => 'self'])->assertRedirect();
 
-    // Au pilote on accompagne un proche. L'intérêt exprimé est une
-    // information de marché, pas une erreur de saisie : on le garde.
-    expect(ClientEvent::query()->where('event', ClientEventName::SelfNarrationInterest)->count())
-        ->toBe(1);
+    expect(CheckoutDraft::query()->firstOrFail()->value('for'))->toBe('self')
+        ->and(ClientEvent::query()->count())->toBe(0);
 });
 
 it('exige au moins une coordonnée pour le narrateur', function (): void {
@@ -90,20 +91,35 @@ it('exige au moins une coordonnée pour le narrateur', function (): void {
     ])->assertSessionHasErrors(['narrator_email', 'narrator_phone']);
 });
 
-it('refuse un numéro qui n’est pas au format international', function (): void {
+it('met un numéro tapé à la française au format international', function (): void {
+    // « 06 12 34 56 78 » est ce que tout le monde tape (T-136). Le format
+    // international est notre contrainte : on la porte, pas l'acheteur.
     $this->post('/acheter/etape/2', [
         'narrator_first_name' => 'Jeanne',
-        'narrator_phone' => '0612345678',
+        'narrator_phone' => '06 12 34 56 78',
         'preferred_channel' => Channel::Sms->value,
         'address_form' => 'vous',
+        'narrator_tech_comfort' => 'daily',
+    ])->assertSessionHasNoErrors();
+
+    expect(CheckoutDraft::query()->firstOrFail()->value('narrator_phone'))->toBe('+33612345678');
+});
+
+it('refuse un numéro qui ne ressemble à rien', function (): void {
+    $this->post('/acheter/etape/2', [
+        'narrator_first_name' => 'Jeanne',
+        'narrator_phone' => '12',
+        'preferred_channel' => Channel::Sms->value,
+        'address_form' => 'vous',
+        'narrator_tech_comfort' => 'daily',
     ])->assertSessionHasErrors('narrator_phone');
 });
 
 it('refuse une date d’envoi au-delà de quatre-vingt-dix jours', function (): void {
     $this->post('/acheter/etape/3', [
         'gift_send_at' => now()->addDays(120)->toDateString(),
+        'gift_send_time' => '09:00',
         'gift_message' => 'Bonjour',
-        'gift_variant' => 'ecard',
     ])->assertSessionHasErrors('gift_send_at');
 });
 
@@ -227,6 +243,7 @@ it('reprend le brouillon d’un aller-retour', function (): void {
         'narrator_email' => 'jeanne@exemple.test',
         'preferred_channel' => Channel::Email->value,
         'address_form' => 'vous',
+        'narrator_tech_comfort' => 'daily',
     ]);
 
     $draft = CheckoutDraft::query()->latest()->firstOrFail();

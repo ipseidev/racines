@@ -3,12 +3,14 @@ import { Head, Link } from '@inertiajs/react';
 import { useT } from '@/hooks/useT';
 import { ofName } from '@/lib/french';
 
-import { formatDate } from './Checkout';
+import { formatDate, formatTime } from './Checkout';
 
 type Props = {
     sessionId?: string | null;
+    forSelf: boolean;
     narratorFirstName: string | null;
     giftSendAt: string | null;
+    giftSendTime: string;
 };
 
 /**
@@ -25,23 +27,37 @@ type Props = {
  * Il s'ouvre une fois, et reste ouvert pour qui a demandé qu'on ne bouge pas.
  */
 export default function CheckoutThanks({
+    forSelf,
     narratorFirstName,
     giftSendAt,
+    giftSendTime,
 }: Props) {
     const t = useT();
     const name = narratorFirstName ?? '';
     const of = ofName(name);
 
-    const steps = [
-        t('public.checkout.thanks.next.email'),
-        giftSendAt !== null
-            ? t('public.checkout.thanks.next.invite', {
-                  date: formatDate(giftSendAt),
-              })
-            : t('public.checkout.thanks.next.invite_soon'),
-        t('public.checkout.thanks.next.first'),
-        t('public.checkout.thanks.next.space'),
-    ];
+    const when = {
+        date: giftSendAt !== null ? formatDate(giftSendAt) : '',
+        time: formatTime(giftSendTime),
+    };
+
+    const steps = forSelf
+        ? [
+              t('public.checkout.thanks.next.email'),
+              giftSendAt !== null
+                  ? t('public.checkout.thanks.next.invite_self', when)
+                  : t('public.checkout.thanks.next.invite_self_soon'),
+              t('public.checkout.thanks.next.first_self'),
+              t('public.checkout.thanks.next.space'),
+          ]
+        : [
+              t('public.checkout.thanks.next.email'),
+              giftSendAt !== null
+                  ? t('public.checkout.thanks.next.invite', when)
+                  : t('public.checkout.thanks.next.invite_soon'),
+              t('public.checkout.thanks.next.first'),
+              t('public.checkout.thanks.next.space'),
+          ];
 
     return (
         <div className="mx-auto w-full max-w-6xl px-6 py-12 lg:py-20">
@@ -54,9 +70,11 @@ export default function CheckoutThanks({
                     </p>
 
                     <h1 className="font-display mt-4 text-[2.25rem] leading-[1.1] font-medium sm:text-5xl">
-                        {name !== ''
-                            ? t('public.checkout.thanks.headline', { of })
-                            : t('public.checkout.thanks.headline_anonymous')}
+                        {forSelf
+                            ? t('public.checkout.thanks.headline_self')
+                            : name !== ''
+                              ? t('public.checkout.thanks.headline', { of })
+                              : t('public.checkout.thanks.headline_anonymous')}
                     </h1>
 
                     <p className="text-brand-muted mt-5 text-xl leading-snug">
@@ -91,9 +109,11 @@ export default function CheckoutThanks({
 
                 <Book
                     title={
-                        name !== ''
-                            ? t('public.checkout.thanks.book_cover', { of })
-                            : t('public.checkout.thanks.book_cover_anonymous')
+                        forSelf
+                            ? t('public.checkout.thanks.book_cover_self')
+                            : name !== ''
+                              ? t('public.checkout.thanks.book_cover', { of })
+                              : t('public.checkout.thanks.book_cover_anonymous')
                     }
                     sub={t('public.checkout.thanks.book_sub')}
                     aria={t('public.checkout.thanks.book_aria')}

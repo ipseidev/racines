@@ -118,7 +118,6 @@ return [
 
         // Le bloc produit, comme une fiche : ce qu'on achète, ce que ça contient.
         'product' => [
-            'badge' => 'Offre pilote',
             'title' => 'Le livre de vie qu’on peut écouter',
             'lede' => 'Une année de questions qui transforme les souvenirs racontés de votre proche en un livre relié d’histoires écrites.',
             'read' => [
@@ -263,8 +262,6 @@ return [
 
         'price' => [
             'title' => 'Le prix',
-            'pilot' => 'Offre pilote',
-            'pilot_body' => 'Douze semaines d’accompagnement, un livrable réduit, et un statut expérimental assumé. Remboursable.',
             'prevente' => 'Prévente',
             'prevente_body' => 'Vous réservez maintenant, le service démarre à l’ouverture. Remboursable jusqu’au démarrage.',
             'phone_option' => 'Enregistrement par téléphone',
@@ -288,7 +285,7 @@ return [
             ],
             'no_smartphone' => [
                 'q' => 'Et si mon proche n’a pas de smartphone ?',
-                'a' => 'L’option téléphone existe pour ça : nous appelons, et nous enregistrons la conversation. Elle est limitée à quelques familles pendant le pilote.',
+                'a' => 'L’option téléphone existe pour ça : nous appelons, et nous enregistrons la conversation. Elle est proposée en option, en nombre limité.',
             ],
             'refuses' => [
                 'q' => 'Et s’il ou elle refuse ?',
@@ -319,7 +316,7 @@ return [
         'imprint' => 'Mentions légales',
         'consents' => 'Vos accords, dans leur version en vigueur',
         'version' => 'Version :version, en vigueur depuis le :date.',
-        'draft_banner' => 'Ce texte n’est pas encore validé par notre conseil juridique. Il est publié pour transparence pendant la phase pilote.',
+        'draft_banner' => 'Ce texte n’est pas encore validé par notre conseil juridique. Il est publié pour transparence, et sera mis à jour après sa relecture.',
     ],
 
     'demo' => [
@@ -353,6 +350,7 @@ return [
             'for' => 'Pour qui ?',
             'narrator' => 'Le narrateur',
             'gift' => 'Le cadeau',
+            'gift_self' => 'Le début',
             'account' => 'Votre compte',
             'options' => 'Options et accords',
             'summary' => 'Récapitulatif',
@@ -372,34 +370,42 @@ return [
             'relative_hint' => 'Un parent, un grand-parent, quelqu’un que vous aimez. Vous offrez, la personne raconte.',
             'self' => 'Vous-même',
             'self_hint' => 'Vous racontez vos propres souvenirs.',
-            'self_notice' => 'Au pilote, nous accompagnons un proche. Voulez-vous continuer pour un proche ?',
-            'self_continue' => 'Continuer pour un proche',
         ],
 
+        // Deux jeux de libellés : « son » quand on offre à un proche, « votre »
+        // quand on raconte soi-même. La forme suit le choix de l'étape 1.
         'narrator' => [
             'intro' => 'La personne qui racontera. Nous ne lui écrirons qu’une fois, pour l’inviter, et nous n’enverrons aucune question avant qu’elle ait accepté.',
+            'intro_self' => 'Vous raconterez vous-même. Nous vous écrirons une fois pour commencer, puis une question par semaine.',
             'first_name' => 'Son prénom',
+            'first_name_self' => 'Votre prénom',
             'last_name' => 'Son nom (facultatif)',
+            'last_name_self' => 'Votre nom (facultatif)',
             'relationship' => 'Votre lien avec elle',
             'relationship_hint' => 'Ma mère, mon grand-père, une amie de toujours.',
+            'contact_hint' => 'Un courriel ou un numéro suffit.',
+            'contact_hint_self' => 'Un courriel ou un numéro suffit : c’est là que les questions arriveront.',
             'email' => 'Son courriel',
+            'email_self' => 'Votre courriel',
             'phone' => 'Son numéro de téléphone',
-            'contact_hint' => 'Un courriel ou un numéro suffit. Au format international : +33 6 12 34 56 78.',
-            'channel' => 'Par quel moyen préfère-t-elle être jointe ?',
+            'phone_self' => 'Votre numéro de téléphone',
+            'channel' => 'Comment la joindre ?',
+            'channel_self' => 'Comment vous joindre ?',
             'address_form' => 'Faut-il lui dire « vous » ou « tu » ?',
+            'address_form_self' => 'Préférez-vous « vous » ou « tu » ?',
+            'tech_comfort' => 'Cette personne est-elle à l’aise avec un téléphone ?',
+            'tech_comfort_hint' => 'Nous adaptons l’aide et les options à votre réponse.',
         ],
 
         'gift' => [
-            'intro' => 'L’invitation partira à la date que vous choisissez, à neuf heures du matin.',
-            'send_at' => 'Quand faut-il envoyer l’invitation ?',
+            'intro' => 'L’invitation partira à la date et à l’heure que vous choisissez, avec votre mot.',
+            'intro_self' => 'Votre première question partira à la date et à l’heure que vous choisissez.',
+            'send_at' => 'Quel jour ?',
+            'send_time' => 'À quelle heure ?',
             'message' => 'Votre message personnel',
             'message_hint' => 'C’est ce mot qui décide : un message de vous vaut dix des nôtres.',
             'message_counter' => ':count caractères sur :max',
             'message_default' => 'J’aimerais garder tes histoires. Il suffit de parler, une question par semaine, quand tu veux. Si ça ne te dit pas, dis-le-moi simplement.',
-            'variant' => 'Comment présenter le cadeau ?',
-            'variant_ecard' => 'Une carte à l’écran',
-            'variant_printed_card' => 'Une carte à imprimer',
-            'variant_audio_message' => 'Un message vocal de votre part',
         ],
 
         'account' => [
@@ -418,14 +424,30 @@ return [
             'forgot' => 'Mot de passe oublié ?',
         ],
 
+        // Les options, présentées comme chez le leader : une carte, une image,
+        // un prix, « Ajouter ». Puis les trois accords, chacun sa case.
         'options' => [
-            'intro' => 'Deux options, et trois accords. Aucun des trois n’est groupé avec un autre.',
-            'extra_copies' => 'Exemplaires supplémentaires du livre',
-            'extra_copies_hint' => ':amount par exemplaire. Un pour chaque foyer de la famille, par exemple.',
-            'fewer' => 'Un exemplaire de moins',
-            'more' => 'Un exemplaire de plus',
-            'phone_option_remaining' => 'Il reste :remaining places sur :cap.',
-            'phone_option_closed' => 'L’option téléphone est complète pour le pilote.',
+            'intro' => 'Deux options, si vous le souhaitez. Puis trois accords, chacun sa case.',
+            'add' => 'Ajouter',
+            'remove' => 'Retirer',
+            'added' => 'Ajouté',
+            'closed' => 'Complet pour le moment',
+            'recommended' => 'Recommandé pour elle',
+            'copies' => [
+                'title' => 'Exemplaires supplémentaires',
+                'body' => 'Pour que frères, sœurs, enfants et petits-enfants gardent chacun le leur.',
+                'each' => ':amount l’exemplaire',
+                'count' => 'Nombre d’exemplaires',
+                'fewer' => 'Un exemplaire de moins',
+                'more' => 'Un exemplaire de plus',
+                'alt' => 'Le livre relié, ouvert sur une double page',
+            ],
+            'phone' => [
+                'title' => 'Enregistrement par téléphone',
+                'body' => 'Un membre de notre équipe appelle :first_name chaque semaine au créneau choisi et enregistre l’histoire. Rien à manipuler de son côté.',
+                'remaining' => 'Places limitées : il en reste :remaining sur :cap.',
+                'alt' => 'Une femme âgée qui répond au téléphone',
+            ],
         ],
 
         'summary' => [
@@ -433,7 +455,8 @@ return [
             'intro' => 'Relisez, puis payez. Le paiement se fait chez notre prestataire, et vous revenez ici.',
             'narrator' => 'Le narrateur',
             'gift' => 'L’invitation',
-            'gift_line' => 'Le :date, :variant',
+            'gift_self' => 'La première question',
+            'gift_line' => 'Le :date à :time',
             'options' => 'Les options',
             'none' => 'Aucune option',
             'copies_one' => 'Un exemplaire supplémentaire',
@@ -447,6 +470,7 @@ return [
         'aside' => [
             'title' => 'Votre commande',
             'for' => 'Pour :name',
+            'for_self' => 'Pour vous',
             'main' => 'Le livre relié et une année de questions',
             'copies_one' => 'Un exemplaire supplémentaire',
             'copies_many' => ':count exemplaires supplémentaires',
@@ -462,25 +486,29 @@ return [
         'early_start' => 'Je demande que le service numérique démarre immédiatement, sans attendre la fin du délai de rétractation de quatorze jours.',
         'early_start_notice' => 'Dans ce cas, si vous vous rétractez, nous pourrons retenir une part correspondant à ce qui aura déjà été fourni.',
         'marketing' => 'Je souhaite recevoir des nouvelles.',
-        'phone_option_label' => 'Un membre de notre équipe appelle :first_name chaque semaine au créneau choisi et enregistre l’histoire. Offre limitée aux :cap premières familles.',
         'pay' => 'Payer :amount',
 
         'thanks' => [
             'title' => 'Merci',
             'headline' => 'Merci. Le livre :of commence ici.',
             'headline_anonymous' => 'Merci. Le livre commence ici.',
+            'headline_self' => 'Merci. Votre livre commence ici.',
             'body' => 'Votre paiement est passé. Vous recevez un courriel avec le détail, et l’invitation partira à la date que vous avez choisie.',
             'next_title' => 'Ce qui se passe maintenant',
             'next' => [
                 'email' => 'Vous recevez un courriel de confirmation dans quelques minutes.',
-                'invite' => 'L’invitation part le :date, à neuf heures du matin, avec votre mot.',
-                'invite_soon' => 'L’invitation part à la date que vous avez choisie, à neuf heures du matin, avec votre mot.',
+                'invite' => 'L’invitation part le :date à :time, avec votre mot.',
+                'invite_soon' => 'L’invitation part à la date et à l’heure que vous avez choisies, avec votre mot.',
+                'invite_self' => 'Votre première question arrive le :date à :time.',
+                'invite_self_soon' => 'Votre première question arrive à la date et à l’heure que vous avez choisies.',
                 'first' => 'La semaine où elle accepte, elle reçoit sa première question et répond en parlant.',
+                'first_self' => 'Vous répondez en parlant, depuis votre téléphone, quand vous voulez dans la semaine.',
                 'space' => 'Vous suivez tout depuis votre espace : les questions, les proches, les photos.',
             ],
             'book_aria' => 'Un livre qui s’ouvre',
             'book_cover' => 'Les histoires :of',
             'book_cover_anonymous' => 'Ses histoires',
+            'book_cover_self' => 'Vos histoires',
             'book_sub' => 'Premier chapitre à venir',
             'orders' => 'Aller dans mon espace',
         ],

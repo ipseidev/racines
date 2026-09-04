@@ -8,12 +8,14 @@ use App\Actions\SaveCheckoutStep;
 use App\Actions\StartStripeCheckout;
 use App\Enums\AddressForm;
 use App\Enums\Channel;
+use App\Enums\TechComfort;
 use App\Features\GiftExperience;
 use App\Features\PhoneOptionOffer;
 use App\Features\PreventePrice;
 use App\Models\CheckoutDraft;
 use App\Settings\PilotSettings;
 use App\Support\Options;
+use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -79,6 +81,8 @@ final readonly class CheckoutController
             'giftVariant' => app(GiftExperience::class)->resolve(),
             'channels' => Options::of(Channel::class),
             'addressForms' => Options::of(AddressForm::class),
+            'techComforts' => Options::of(TechComfort::class),
+            'giftSendHour' => $settings->gift_send_hour,
             'missingSteps' => SaveCheckoutStep::missingSteps($draft),
             'isAuthenticated' => $request->user() !== null,
         ]);
@@ -87,7 +91,15 @@ final readonly class CheckoutController
     public function store(Request $request, int $step): RedirectResponse
     {
         $draft = self::draftFor($request);
-        $rules = SaveCheckoutStep::rulesFor($step);
+        $rules = SaveCheckoutStep::rulesFor($step, $draft);
+
+        if ($step === 2) {
+            // « 06 12 34 56 78 » devient « +33612345678 » avant la validation :
+            // le format international est notre contrainte, pas la sienne.
+            $request->merge([
+                'narrator_phone' => Phone::e164($request->input('narrator_phone')),
+            ]);
+        }
 
         $validated = $rules === [] ? [] : $request->validate($rules);
 
@@ -130,11 +142,16 @@ final readonly class CheckoutController
 
         $firstName = $payload['narrator_first_name'] ?? null;
         $sendAt = $payload['gift_send_at'] ?? null;
+        $sendTime = $payload['gift_send_time'] ?? null;
 
         return inertia('public/CheckoutThanks', [
             'sessionId' => $request->query('session_id'),
+            'forSelf' => ($payload['for'] ?? null) === 'self',
             'narratorFirstName' => is_string($firstName) && $firstName !== '' ? $firstName : null,
             'giftSendAt' => is_string($sendAt) && $sendAt !== '' ? substr($sendAt, 0, 10) : null,
+            'giftSendTime' => is_string($sendTime) && $sendTime !== ''
+                ? $sendTime
+                : sprintf('%02d:00', app(PilotSettings::class)->gift_send_hour),
         ]);
     }
 

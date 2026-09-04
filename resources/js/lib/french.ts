@@ -12,3 +12,22 @@ export function ofName(name: string): string {
         ? `d’${trimmed}`
         : `de ${trimmed}`;
 }
+
+/**
+ * « +33612345678 » redevient « 06 12 34 56 78 » à l'écran.
+ *
+ * Le serveur garde le format international ; la personne, elle, a tapé un
+ * numéro français, et doit le retrouver tel qu'elle l'écrit quand elle revient
+ * corriger un champ. Tout autre numéro est rendu tel quel.
+ */
+export function nationalPhone(e164: string): string {
+    const match = /^\+33([1-9])(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(e164.trim());
+
+    if (match === null) {
+        return e164;
+    }
+
+    const [, first, ...rest] = match;
+
+    return [`0${first}`, ...rest].join(' ');
+}

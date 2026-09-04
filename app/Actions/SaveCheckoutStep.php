@@ -7,11 +7,10 @@ namespace App\Actions;
 use App\Enums\AddressForm;
 use App\Enums\Cadence;
 use App\Enums\Channel;
-use App\Enums\ClientEventName;
+use App\Enums\TechComfort;
 use App\Features\GiftExperience;
 use App\Features\PhoneOptionOffer;
 use App\Models\CheckoutDraft;
-use App\Models\ClientEvent;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
@@ -32,8 +31,13 @@ final class SaveCheckoutStep
      *
      * @return array<string, mixed>
      */
-    public static function rulesFor(int $step): array
+    public static function rulesFor(int $step, ?CheckoutDraft $draft = null): array
     {
+        // Raconter soi-même change deux choses (T-136) : on ne demande pas à
+        // quel point on est à l'aise avec son propre téléphone, et il n'y a
+        // pas de mot à joindre à une invitation qu'on s'envoie.
+        $self = $draft?->value('for') === 'self';
+
         return match ($step) {
             1 => [
                 'for' => ['required', Rule::in(['relative', 'self'])],
@@ -48,13 +52,22 @@ final class SaveCheckoutStep
                 'narrator_phone' => ['nullable', 'string', 'regex:/^\+[1-9]\d{7,14}$/', 'required_without:narrator_email'],
                 'preferred_channel' => ['required', new Enum(Channel::class)],
                 'address_form' => ['required', new Enum(AddressForm::class)],
+                'narrator_tech_comfort' => $self
+                    ? ['nullable', new Enum(TechComfort::class)]
+                    : ['required', new Enum(TechComfort::class)],
             ],
             3 => [
                 // Demain par défaut, quatre-vingt-dix jours au plus : au-delà,
                 // l'acheteur aurait oublié ce qu'il a commandé.
                 'gift_send_at' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.now()->addDays(90)->toDateString()],
-                'gift_message' => ['required', 'string', 'max:600'],
-                'gift_variant' => ['required', Rule::in(GiftExperience::variants())],
+                'gift_send_time' => ['required', 'date_format:H:i'],
+                'gift_message' => $self
+                    ? ['nullable', 'string', 'max:600']
+                    : ['required', 'string', 'max:600'],
+                // La forme du cadeau n'est plus demandée : une seule est livrée
+                // (T-108). Le drapeau décide, et la valeur reste acceptée si
+                // un ancien brouillon la porte.
+                'gift_variant' => ['sometimes', Rule::in(GiftExperience::variants())],
             ],
             5 => [
                 'extra_copies' => ['required', 'integer', 'min:0', 'max:5'],
@@ -74,15 +87,8 @@ final class SaveCheckoutStep
      */
     public function handle(CheckoutDraft $draft, int $step, array $values): CheckoutDraft
     {
-        if ($step === 1 && ($values['for'] ?? null) === 'self') {
-            // Au pilote, on accompagne un proche. L'intérêt pour raconter sa
-            // propre histoire est une information de marché : on la garde, et
-            // on propose de continuer pour un proche.
-            $event = new ClientEvent([
-                'event' => ClientEventName::SelfNarrationInterest,
-                'payload' => ['draft_id' => $draft->id],
-            ]);
-            $event->save();
+        if ($step === 3) {
+            $values['gift_variant'] ??= app(GiftExperience::class)->resolve();
         }
 
         if ($step === 5) {
@@ -104,8 +110,9 @@ final class SaveCheckoutStep
         $missing = [];
 
         foreach ([1, 2, 3, 5] as $step) {
-            foreach (array_keys(self::rulesFor($step)) as $field) {
-                $rules = self::rulesFor($step)[$field];
+            $stepRules = self::rulesFor($step, $draft);
+
+            foreach ($stepRules as $field => $rules) {
                 $required = is_array($rules) && (
                     in_array('required', $rules, true) || in_array('accepted', $rules, true)
                 );

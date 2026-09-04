@@ -140,6 +140,7 @@ final readonly class FulfillOrder
     private function createProject(CheckoutDraft $draft, User $buyer, PilotSettings $settings): Project
     {
         $sendAt = $draft->value('gift_send_at');
+        [$hour, $minute] = self::sendTime($draft->value('gift_send_time'), $settings->gift_send_hour);
 
         $project = new Project([
             'offer' => $settings->isPrevente() ? Offer::Prevente : Offer::Pilot,
@@ -149,8 +150,8 @@ final readonly class FulfillOrder
             'prompt_slot' => PromptSlot::Morning,
             'gift_message' => $draft->value('gift_message'),
             'gift_send_at' => $sendAt === null
-                ? now()->addDay()->setTime($settings->gift_send_hour, 0)
-                : CarbonImmutable::parse((string) $sendAt)->setTime($settings->gift_send_hour, 0),
+                ? now()->addDay()->setTime($hour, $minute)
+                : CarbonImmutable::parse((string) $sendAt)->setTime($hour, $minute),
         ]);
 
         $project->owner()->associate($buyer);
@@ -168,6 +169,7 @@ final readonly class FulfillOrder
             'email' => $draft->value('narrator_email'),
             'phone_e164' => $draft->value('narrator_phone'),
             'preferred_channel' => Channel::from((string) $draft->value('preferred_channel', Channel::Sms->value)),
+            'tech_comfort' => $draft->value('narrator_tech_comfort'),
         ]);
 
         $project->members()->create([
@@ -184,6 +186,20 @@ final readonly class FulfillOrder
         ]);
 
         return $project->refresh();
+    }
+
+    /**
+     * L'heure d'envoi choisie à l'achat (« 09:30 »), sinon celle des réglages.
+     *
+     * @return array{int, int}
+     */
+    private static function sendTime(mixed $time, int $defaultHour): array
+    {
+        if (is_string($time) && preg_match('/^(\d{2}):(\d{2})$/', $time, $matches) === 1) {
+            return [(int) $matches[1], (int) $matches[2]];
+        }
+
+        return [$defaultHour, 0];
     }
 
     private function createItems(Order $order, CheckoutDraft $draft, PilotSettings $settings, Project $project): void
