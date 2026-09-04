@@ -46,6 +46,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -98,6 +99,14 @@ final class AppServiceProvider extends ServiceProvider
         // `Feature::for($project)->value(ValidationVariant::class)` suffit,
         // sans définition à recopier ici.
         Feature::discover();
+
+        // Derrière un tunnel ou un proxy (cloudflared en test, l'hébergeur en
+        // production), la requête arrive en HTTP alors que la page est servie
+        // en HTTPS. Sans cela, les scripts sont écrits en `http://` et le
+        // navigateur les refuse : page blanche sur le téléphone (T-139).
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
 
         $this->configureRateLimiters();
         $this->configureSmsSender();
