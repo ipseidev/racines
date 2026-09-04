@@ -42,15 +42,18 @@ it('annonce la promesse et les quatre étapes', function (): void {
 it('décrit les quatre étapes dans l’ordre du parcours réel', function (): void {
     $how = landingStrings()['how'];
 
-    // L'ordre est celui du vécu : le lien arrive, on parle, le texte est relu
-    // et validé **par le narrateur**, la famille écoute. Inverser les deux
-    // dernières décrirait un produit où la famille lit avant l'accord.
+    // L'ordre est celui du vécu, dans la structure du leader (T-134) : la
+    // famille choisit les questions, le lien arrive et la personne parle, le
+    // texte est relu et validé **par le narrateur**, la famille écoute.
+    // Inverser les deux dernières décrirait un produit où la famille lit
+    // avant l'accord.
     //
     // Titre et corps sont lus ensemble : la répartition du sens entre les
     // deux est une question de rédaction, pas de contrat.
     $step = fn (string $key): string => $how[$key]['title'].' '.$how[$key]['body'];
 
-    expect($step('one'))->toContain('lien')
+    expect($step('one'))->toContain('questions')
+        ->and($step('two'))->toContain('lien')
         ->and($step('two'))->toContain('parle')
         ->and($step('three'))->toContain('relit')
         ->and($step('four'))->toContain('écoute');

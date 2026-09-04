@@ -117,7 +117,7 @@ it('démarre en mode pilote, jamais en prévente', function (): void {
     expect($settings->mode)->toBe('pilot')
         ->and($settings->isPilot())->toBeTrue()
         ->and($settings->isPrevente())->toBeFalse()
-        ->and($settings->pilot_price_cents)->toBe(4_900)
+        ->and($settings->pilot_price_cents)->toBe(8_900)
         ->and($settings->phone_option_price_cents)->toBe(2_500)
         ->and($settings->gift_send_hour)->toBe(9);
 });
