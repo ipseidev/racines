@@ -76,7 +76,7 @@ function MicIcon() {
             strokeWidth="1.8"
             strokeLinecap="round"
             aria-hidden="true"
-            className="size-10"
+            className="record-icon"
         >
             <rect x="9" y="3" width="6" height="11" rx="3" />
             <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" />
@@ -547,7 +547,7 @@ export default function Record({
                             className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press record-dial flex flex-col items-center justify-center gap-2 rounded-full shadow-[0_18px_40px_rgba(176,67,42,0.35)] transition-colors"
                         >
                             <MicIcon />
-                            <span className="text-2xl font-semibold">
+                            <span className="record-label leading-none font-semibold">
                                 {t('narrator.record.start')}
                             </span>
                         </button>
@@ -577,7 +577,7 @@ export default function Record({
                                     : 'bg-brand-linen text-brand record-dial-small'
                             }`}
                         >
-                            <span className="text-[2.5rem] leading-none font-semibold tabular-nums">
+                            <span className="record-time leading-none font-semibold tabular-nums">
                                 {formatDuration(context.elapsedSeconds)}
                             </span>
                             <span className="sr-only">

@@ -358,14 +358,40 @@
         font-size: clamp(1.2rem, 5.5vw, 1.5rem);
     }
 
+    /*
+     * Le cadran et ce qu'il contient se réduisent ensemble : le mot
+     * « Commencer », l'icône et le compteur suivent la taille du rond. Un
+     * texte à taille fixe dépassait du bouton sur un téléphone en hauteur
+     * réduite.
+     */
     .record-dial {
         width: 10.5rem;
         height: 10.5rem;
+        padding: 0 0.75rem;
     }
 
     .record-dial-small {
         width: 7.5rem;
         height: 7.5rem;
+        padding: 0 0.5rem;
+    }
+
+    .record-label {
+        font-size: 1.45rem;
+        letter-spacing: -0.01em;
+    }
+
+    .record-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .record-time {
+        font-size: 2.5rem;
+    }
+
+    .record-dial-small .record-time {
+        font-size: 1.75rem;
     }
 
     @media (max-height: 740px) {
@@ -389,6 +415,23 @@
         .record-dial-small {
             width: 5rem;
             height: 5rem;
+        }
+
+        .record-label {
+            font-size: 1.05rem;
+        }
+
+        .record-icon {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .record-time {
+            font-size: 1.85rem;
+        }
+
+        .record-dial-small .record-time {
+            font-size: 1.25rem;
         }
 
         .record-halo {
