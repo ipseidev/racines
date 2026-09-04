@@ -148,7 +148,7 @@ export default function Story({
                             className={`min-h-[2.75rem] rounded-md px-4 py-2 text-base font-medium ${
                                 tab === name
                                     ? 'bg-brand text-brand-foreground'
-                                    : 'border-brand-sand border'
+                                    : 'border-brand-sand bg-brand-surface border'
                             }`}
                         >
                             {t(`family.story.tab_${name}`)}
@@ -195,7 +195,7 @@ export default function Story({
                     maxLength={MAX_COMMENT}
                     rows={3}
                     onChange={(event) => setComment(event.target.value)}
-                    className="border-brand-sand mt-3 w-full rounded-md border px-4 py-3 text-[1.125rem]"
+                    className="border-brand-sand bg-brand-surface mt-3 w-full rounded-md border px-4 py-3 text-[1.125rem]"
                 />
                 <p className="text-brand-muted mt-1 text-base">
                     {t('family.reaction.comment_counter', {
@@ -212,7 +212,7 @@ export default function Story({
                             disabled={sending}
                             aria-pressed={yourReactions.includes(type)}
                             onClick={() => react(type)}
-                            className="bg-brand text-brand-foreground min-h-[2.75rem] rounded-md px-6 py-3 text-lg font-medium disabled:opacity-60"
+                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
                         >
                             {t(`family.reaction.${type}`)}
                         </button>

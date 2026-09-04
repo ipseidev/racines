@@ -30,7 +30,7 @@ export default function StoryUnavailable({ backUrl }: Props) {
             {backUrl === null ? null : (
                 <Link
                     href={backUrl}
-                    className="border-brand-sand mt-8 inline-block min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                    className="border-brand text-brand mt-8 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
                 >
                     {t('family.story.back')}
                 </Link>

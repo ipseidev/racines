@@ -183,7 +183,7 @@ export default function AudioPlayer({
                 <button
                     type="button"
                     onClick={() => seek(-15)}
-                    className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
+                    className="border-brand-sand bg-brand-surface min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
                 >
                     {t('family.player.back15')}
                 </button>
@@ -191,7 +191,7 @@ export default function AudioPlayer({
                 <button
                     type="button"
                     onClick={() => seek(15)}
-                    className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
+                    className="border-brand-sand bg-brand-surface min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
                 >
                     {t('family.player.forward15')}
                 </button>
@@ -200,7 +200,7 @@ export default function AudioPlayer({
                     type="button"
                     onClick={() => setSpeed(slower ? 1 : 0.9)}
                     aria-pressed={slower}
-                    className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
+                    className="border-brand-sand bg-brand-surface min-h-[2.75rem] rounded-md border px-4 py-2 text-base"
                 >
                     {slower
                         ? t('family.player.normal')
