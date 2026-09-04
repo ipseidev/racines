@@ -38,14 +38,23 @@ test('remplit le tunnel jusqu’au récapitulatif', async ({ page }) => {
     await expect(page.getByLabel('Votre message personnel')).not.toBeEmpty();
     await page.getByRole('button', { name: 'Continuer' }).click();
 
-    // Étape 4 — le compte. Sans connexion, on propose de le créer.
+    // Étape 4 — le compte, créé sans quitter le tunnel (T-135). Sans
+    // connexion, il n'y a pas de « Continuer » : on crée le compte ou on se
+    // connecte, et Fortify ramène à l'étape suivante.
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
-        'coordonnées',
+        'compte',
     );
     await expect(
-        page.getByRole('link', { name: 'Créer mon compte' }),
-    ).toBeVisible();
-    await page.getByRole('button', { name: 'Continuer' }).click();
+        page.getByRole('button', { name: 'Continuer', exact: true }),
+    ).toHaveCount(0);
+    await page.getByLabel('Votre nom').fill('Camille');
+    await page
+        .getByLabel('Votre courriel')
+        .fill(`camille+${UNIQUE}@example.test`);
+    await page.getByLabel('Un mot de passe').fill('un-mot-de-passe-solide-12');
+    await page
+        .getByRole('button', { name: 'Créer mon compte et continuer' })
+        .click();
 
     // Étape 5 — options et accords.
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -75,7 +84,8 @@ test('remplit le tunnel jusqu’au récapitulatif', async ({ page }) => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
         'Récapitulatif',
     );
-    await expect(page.getByText('Odette')).toBeVisible();
+    // Exact : la colonne de droite dit aussi « Pour Odette ».
+    await expect(page.getByText('Odette', { exact: true })).toBeVisible();
     await expect(page.getByText('Total à payer')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Payer' })).toBeVisible();
 

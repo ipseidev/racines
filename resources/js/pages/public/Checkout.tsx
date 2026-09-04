@@ -1,10 +1,18 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useBrand } from '@/brand/BrandProvider';
+import { CheckField } from '@/components/form/CheckField';
+import { ChoiceCard } from '@/components/form/ChoiceCard';
+import { Counter } from '@/components/form/Counter';
+import { PasswordField } from '@/components/form/PasswordField';
+import { SelectField, type Option } from '@/components/form/SelectField';
+import { Stepper } from '@/components/form/Stepper';
+import { SubmitButton } from '@/components/form/SubmitButton';
+import { TextAreaField } from '@/components/form/TextAreaField';
+import { TextField } from '@/components/form/TextField';
 import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
-
-type Option = { value: string; label: string };
 
 type Props = {
     step: number;
@@ -20,6 +28,8 @@ type Props = {
 };
 
 const LAST_STEP = 6;
+const ACCOUNT_STEP = 4;
+const MESSAGE_MAX = 600;
 
 const TITLES = [
     'for',
@@ -51,11 +61,29 @@ function bool(draft: Record<string, unknown>, key: string): boolean {
     return draft[key] === true;
 }
 
-function tomorrow(): string {
+function isoDate(daysFromNow: number): string {
     const date = new Date();
-    date.setDate(date.getDate() + 1);
+    date.setDate(date.getDate() + daysFromNow);
 
     return date.toISOString().slice(0, 10);
+}
+
+/** « vendredi 5 septembre 2026 », à partir d'une date ISO. */
+export function formatDate(iso: string, locale = 'fr-FR'): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+
+    if (match === null) {
+        return iso;
+    }
+
+    const [, year, month, day] = match;
+
+    return new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(new Date(Number(year), Number(month) - 1, Number(day)));
 }
 
 /**
@@ -65,6 +93,10 @@ function tomorrow(): string {
  * quelqu'un qui abandonne à la cinquième ne doit pas tout ressaisir. Le
  * brouillon vit sept jours côté serveur, ce qui permet de revenir corriger un
  * champ sans perdre la suite.
+ *
+ * Deux colonnes sur bureau, façon Remento (T-135) : le formulaire à gauche,
+ * et à droite ce qu'on achète et ce qu'on promet, qui ne bouge pas. Chaque
+ * étape entre en fondu ; le bouton dit quand il travaille.
  *
  * Les trois accords de l'étape 5 sont **trois cases**. Les grouper ferait
  * gagner une ligne et perdrait la valeur du consentement : on ne pourrait plus
@@ -97,7 +129,7 @@ export default function Checkout({
             text(draft, 'preferred_channel') || (channels[0]?.value ?? ''),
         address_form:
             text(draft, 'address_form') || (addressForms[0]?.value ?? ''),
-        gift_send_at: text(draft, 'gift_send_at').slice(0, 10) || tomorrow(),
+        gift_send_at: text(draft, 'gift_send_at').slice(0, 10) || isoDate(1),
         gift_message:
             text(draft, 'gift_message') ||
             t('public.checkout.gift.message_default'),
@@ -119,530 +151,1039 @@ export default function Checkout({
         form.post('/acheter/payer');
     };
 
+    const copies = Number(form.data.extra_copies);
+    const phone = form.data.phone_option === true && phoneOption.open;
     const total =
         prices.main +
-        Number(form.data.extra_copies) * prices.extraCopy +
-        (form.data.phone_option === true ? prices.phoneOption : 0);
+        copies * prices.extraCopy +
+        (phone ? prices.phoneOption : 0);
+
+    const firstName = String(form.data.narrator_first_name).trim();
+    const email =
+        (page.props.auth as { user?: { email?: string } } | undefined)?.user
+            ?.email ?? '';
+
+    const steps = TITLES.map((key, index) => ({
+        label: t(`public.checkout.labels.${key}`),
+        href: `/acheter?step=${index + 1}`,
+    }));
+
+    const variantLabel =
+        GIFT_VARIANTS.find((v) => v.value === form.data.gift_variant)?.key ??
+        'ecard';
+
+    const optionsSummary = [
+        copies === 1
+            ? t('public.checkout.summary.copies_one')
+            : copies > 1
+              ? t('public.checkout.summary.copies_many', {
+                    count: String(copies),
+                })
+              : null,
+        phone ? t('public.checkout.summary.phone') : null,
+    ].filter((line): line is string => line !== null);
+
+    const accountForms = step === ACCOUNT_STEP && !isAuthenticated;
 
     return (
-        <div className="mx-auto w-full max-w-3xl px-6 py-8 text-[1.125rem] leading-relaxed">
+        <div className="mx-auto w-full max-w-6xl px-6 py-8 lg:py-12">
             <Head title={t('public.checkout.title')} />
 
-            <p className="text-brand-muted text-base">
-                {t('public.checkout.step_of', {
-                    step: String(step),
-                    total: String(LAST_STEP),
-                })}
-            </p>
+            <div className="mb-8 lg:mb-10">
+                <Stepper
+                    steps={steps}
+                    current={step}
+                    ariaLabel={t('public.checkout.progress')}
+                    ofLabel={t('public.checkout.step_of', {
+                        step: String(step),
+                        total: String(LAST_STEP),
+                    })}
+                />
+            </div>
 
-            <h1 className="font-display mt-2 text-3xl leading-tight font-semibold">
-                {t(`public.checkout.steps.${TITLES[step - 1]}`)}
-            </h1>
+            <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-16">
+                <div className="min-w-0 lg:max-w-2xl">
+                    {/*
+                     * La clé change avec l'étape : le bloc se remonte, et son
+                     * entrée en fondu rejoue. Sans elle, React réutiliserait le
+                     * même nœud et rien ne signalerait qu'on a avancé.
+                     */}
+                    <div key={step} className="enter">
+                        <h1 className="font-display text-[2rem] leading-[1.15] font-medium sm:text-4xl">
+                            {t(`public.checkout.steps.${TITLES[step - 1]}`)}
+                        </h1>
 
-            <form
-                onSubmit={step === LAST_STEP ? pay : submit}
-                className="mt-8 flex flex-col gap-6"
-            >
-                {step === 1 && (
-                    <fieldset>
-                        <legend className="sr-only">
-                            {t('public.checkout.steps.for')}
-                        </legend>
-
-                        {(['relative', 'self'] as const).map((choice) => (
-                            <label
-                                key={choice}
-                                className="mt-2 flex items-center gap-3"
+                        {accountForms ? (
+                            <AccountStep email={email} />
+                        ) : (
+                            <form
+                                onSubmit={step === LAST_STEP ? pay : submit}
+                                className="mt-6 flex flex-col gap-6"
                             >
-                                <input
-                                    type="radio"
-                                    name="for"
-                                    value={choice}
-                                    checked={form.data.for === choice}
-                                    onChange={() => {
-                                        form.setData('for', choice);
-                                        setShowSelfNotice(choice === 'self');
-                                    }}
-                                />
-                                {t(`public.checkout.for.${choice}`)}
-                            </label>
-                        ))}
+                                {step === 1 && (
+                                    <fieldset className="flex flex-col gap-4">
+                                        <legend className="sr-only">
+                                            {t('public.checkout.steps.for')}
+                                        </legend>
+                                        <p className="text-brand-muted">
+                                            {t('public.checkout.for.intro')}
+                                        </p>
 
-                        {/*
-                         * Au pilote on accompagne un proche. On ne bloque pas :
-                         * on explique, et on garde l'intérêt exprimé — c'est
-                         * une information de marché, pas une erreur de saisie.
-                         */}
-                        {showSelfNotice && (
-                            <p role="status" className="mt-4">
-                                {t('public.checkout.for.self_notice')}
-                            </p>
-                        )}
-                    </fieldset>
-                )}
-
-                {step === 2 && (
-                    <>
-                        <p>{t('public.checkout.narrator.intro')}</p>
-
-                        <Field
-                            label={t('public.checkout.narrator.first_name')}
-                            error={form.errors.narrator_first_name}
-                        >
-                            <input
-                                type="text"
-                                value={String(form.data.narrator_first_name)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'narrator_first_name',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                autoComplete="off"
-                                required
-                            />
-                        </Field>
-
-                        <Field
-                            label={t('public.checkout.narrator.last_name')}
-                            error={form.errors.narrator_last_name}
-                        >
-                            <input
-                                type="text"
-                                value={String(form.data.narrator_last_name)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'narrator_last_name',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                autoComplete="off"
-                            />
-                        </Field>
-
-                        <Field
-                            label={t('public.checkout.narrator.relationship')}
-                            error={form.errors.relationship}
-                        >
-                            <input
-                                type="text"
-                                value={String(form.data.relationship)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'relationship',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                autoComplete="off"
-                            />
-                        </Field>
-
-                        <p className="text-brand-muted text-base">
-                            {t('public.checkout.narrator.contact_hint')}
-                        </p>
-
-                        <Field
-                            label={t('public.checkout.narrator.email')}
-                            error={form.errors.narrator_email}
-                        >
-                            <input
-                                type="email"
-                                value={String(form.data.narrator_email)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'narrator_email',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                autoComplete="off"
-                            />
-                        </Field>
-
-                        <Field
-                            label={t('public.checkout.narrator.phone')}
-                            error={form.errors.narrator_phone}
-                        >
-                            <input
-                                type="tel"
-                                value={String(form.data.narrator_phone)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'narrator_phone',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                autoComplete="off"
-                                placeholder="+33612345678"
-                            />
-                        </Field>
-
-                        <Choice
-                            label={t('public.checkout.narrator.channel')}
-                            options={channels}
-                            value={String(form.data.preferred_channel)}
-                            onChange={(value) =>
-                                form.setData('preferred_channel', value)
-                            }
-                            error={form.errors.preferred_channel}
-                        />
-
-                        <Choice
-                            label={t('public.checkout.narrator.address_form')}
-                            options={addressForms}
-                            value={String(form.data.address_form)}
-                            onChange={(value) =>
-                                form.setData('address_form', value)
-                            }
-                            error={form.errors.address_form}
-                        />
-                    </>
-                )}
-
-                {step === 3 && (
-                    <>
-                        <p>{t('public.checkout.gift.intro')}</p>
-
-                        <Field
-                            label={t('public.checkout.gift.send_at')}
-                            error={form.errors.gift_send_at}
-                        >
-                            <input
-                                type="date"
-                                value={String(form.data.gift_send_at)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'gift_send_at',
-                                        event.target.value,
-                                    )
-                                }
-                                className="input"
-                                required
-                            />
-                        </Field>
-
-                        <Field
-                            label={t('public.checkout.gift.message')}
-                            hint={t('public.checkout.gift.message_hint')}
-                            error={form.errors.gift_message}
-                        >
-                            <textarea
-                                value={String(form.data.gift_message)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'gift_message',
-                                        event.target.value,
-                                    )
-                                }
-                                rows={5}
-                                maxLength={600}
-                                className="input"
-                                required
-                            />
-                        </Field>
-
-                        <Choice
-                            label={t('public.checkout.gift.variant')}
-                            options={GIFT_VARIANTS.map((variant) => ({
-                                value: variant.value,
-                                label: t(
-                                    `public.checkout.gift.variant_${variant.key}`,
-                                ),
-                            }))}
-                            value={String(form.data.gift_variant)}
-                            onChange={(value) =>
-                                form.setData('gift_variant', value)
-                            }
-                            error={form.errors.gift_variant}
-                        />
-                    </>
-                )}
-
-                {step === 4 && (
-                    <>
-                        <p>{t('public.checkout.account.intro')}</p>
-
-                        {isAuthenticated ? (
-                            <p role="status">
-                                {t('public.checkout.account.signed_in', {
-                                    email:
-                                        (
-                                            page.props.auth as {
-                                                user?: { email?: string };
-                                            }
-                                        ).user?.email ?? '',
-                                })}
-                            </p>
-                        ) : (
-                            <div className="flex flex-wrap gap-4">
-                                <Link
-                                    href="/register"
-                                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] rounded-md px-6 py-3 font-semibold"
-                                >
-                                    {t('public.checkout.account.register')}
-                                </Link>
-                                <Link
-                                    href="/login"
-                                    className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
-                                >
-                                    {t('public.checkout.account.login')}
-                                </Link>
-                            </div>
-                        )}
-                    </>
-                )}
-
-                {step === 5 && (
-                    <>
-                        <p>{t('public.checkout.options.intro')}</p>
-
-                        <Field
-                            label={t('public.checkout.options.extra_copies')}
-                            hint={t(
-                                'public.checkout.options.extra_copies_hint',
-                                { amount: formatPrice(prices.extraCopy) },
-                            )}
-                            error={form.errors.extra_copies}
-                        >
-                            <input
-                                type="number"
-                                min={0}
-                                max={5}
-                                value={Number(form.data.extra_copies)}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'extra_copies',
-                                        Number(event.target.value),
-                                    )
-                                }
-                                className="input"
-                            />
-                        </Field>
-
-                        {phoneOption.open ? (
-                            <label className="flex items-start gap-3">
-                                <input
-                                    type="checkbox"
-                                    checked={form.data.phone_option === true}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'phone_option',
-                                            event.target.checked,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                <span>
-                                    {t('public.checkout.phone_option_label', {
-                                        first_name: String(
-                                            form.data.narrator_first_name,
-                                        ),
-                                        cap: String(phoneOption.cap),
-                                    })}{' '}
-                                    {formatPrice(prices.phoneOption)}
-                                    <span className="text-brand-muted mt-1 block text-base">
-                                        {t(
-                                            'public.checkout.options.phone_option_remaining',
-                                            {
-                                                remaining: String(
-                                                    phoneOption.remaining,
-                                                ),
-                                                cap: String(phoneOption.cap),
-                                            },
+                                        {(['relative', 'self'] as const).map(
+                                            (choice) => (
+                                                <ChoiceCard
+                                                    key={choice}
+                                                    name="for"
+                                                    value={choice}
+                                                    checked={
+                                                        form.data.for === choice
+                                                    }
+                                                    onChange={(value) => {
+                                                        form.setData(
+                                                            'for',
+                                                            value,
+                                                        );
+                                                        setShowSelfNotice(
+                                                            value === 'self',
+                                                        );
+                                                    }}
+                                                    title={t(
+                                                        `public.checkout.for.${choice}`,
+                                                    )}
+                                                    hint={t(
+                                                        `public.checkout.for.${choice}_hint`,
+                                                    )}
+                                                />
+                                            ),
                                         )}
-                                    </span>
-                                </span>
-                            </label>
-                        ) : (
-                            <p className="text-brand-muted">
-                                {t(
-                                    'public.checkout.options.phone_option_closed',
+
+                                        {/*
+                                         * Au pilote on accompagne un proche.
+                                         * On ne bloque pas : on explique, et on
+                                         * garde l'intérêt exprimé, qui est une
+                                         * information de marché.
+                                         */}
+                                        {showSelfNotice && (
+                                            <p
+                                                role="status"
+                                                className="panel enter"
+                                            >
+                                                {t(
+                                                    'public.checkout.for.self_notice',
+                                                )}
+                                            </p>
+                                        )}
+                                    </fieldset>
                                 )}
-                            </p>
+
+                                {step === 2 && (
+                                    <>
+                                        <p className="text-brand-muted">
+                                            {t(
+                                                'public.checkout.narrator.intro',
+                                            )}
+                                        </p>
+
+                                        <div className="grid gap-6 sm:grid-cols-2">
+                                            <TextField
+                                                label={t(
+                                                    'public.checkout.narrator.first_name',
+                                                )}
+                                                error={
+                                                    form.errors
+                                                        .narrator_first_name
+                                                }
+                                                type="text"
+                                                value={String(
+                                                    form.data
+                                                        .narrator_first_name,
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'narrator_first_name',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                autoComplete="off"
+                                                required
+                                            />
+
+                                            <TextField
+                                                label={t(
+                                                    'public.checkout.narrator.last_name',
+                                                )}
+                                                error={
+                                                    form.errors
+                                                        .narrator_last_name
+                                                }
+                                                type="text"
+                                                value={String(
+                                                    form.data
+                                                        .narrator_last_name,
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'narrator_last_name',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                autoComplete="off"
+                                            />
+                                        </div>
+
+                                        <TextField
+                                            label={t(
+                                                'public.checkout.narrator.relationship',
+                                            )}
+                                            hint={t(
+                                                'public.checkout.narrator.relationship_hint',
+                                            )}
+                                            error={form.errors.relationship}
+                                            type="text"
+                                            value={String(
+                                                form.data.relationship,
+                                            )}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'relationship',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            autoComplete="off"
+                                        />
+
+                                        <div className="border-brand-sand flex flex-col gap-6 border-t pt-6">
+                                            <p className="text-brand-muted text-base">
+                                                {t(
+                                                    'public.checkout.narrator.contact_hint',
+                                                )}
+                                            </p>
+
+                                            <TextField
+                                                label={t(
+                                                    'public.checkout.narrator.email',
+                                                )}
+                                                error={
+                                                    form.errors.narrator_email
+                                                }
+                                                type="email"
+                                                inputMode="email"
+                                                value={String(
+                                                    form.data.narrator_email,
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'narrator_email',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                autoComplete="off"
+                                            />
+
+                                            <TextField
+                                                label={t(
+                                                    'public.checkout.narrator.phone',
+                                                )}
+                                                error={
+                                                    form.errors.narrator_phone
+                                                }
+                                                type="tel"
+                                                inputMode="tel"
+                                                value={String(
+                                                    form.data.narrator_phone,
+                                                )}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'narrator_phone',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                autoComplete="off"
+                                                placeholder="+33612345678"
+                                            />
+                                        </div>
+
+                                        <div className="grid gap-6 sm:grid-cols-2">
+                                            <SelectField
+                                                label={t(
+                                                    'public.checkout.narrator.channel',
+                                                )}
+                                                options={channels}
+                                                value={String(
+                                                    form.data.preferred_channel,
+                                                )}
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'preferred_channel',
+                                                        value,
+                                                    )
+                                                }
+                                                error={
+                                                    form.errors
+                                                        .preferred_channel
+                                                }
+                                            />
+
+                                            <SelectField
+                                                label={t(
+                                                    'public.checkout.narrator.address_form',
+                                                )}
+                                                options={addressForms}
+                                                value={String(
+                                                    form.data.address_form,
+                                                )}
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'address_form',
+                                                        value,
+                                                    )
+                                                }
+                                                error={form.errors.address_form}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {step === 3 && (
+                                    <>
+                                        <p className="text-brand-muted">
+                                            {t('public.checkout.gift.intro')}
+                                        </p>
+
+                                        <TextField
+                                            label={t(
+                                                'public.checkout.gift.send_at',
+                                            )}
+                                            error={form.errors.gift_send_at}
+                                            type="date"
+                                            min={isoDate(0)}
+                                            max={isoDate(90)}
+                                            value={String(
+                                                form.data.gift_send_at,
+                                            )}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'gift_send_at',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="sm:max-w-xs"
+                                            required
+                                        />
+
+                                        <TextAreaField
+                                            label={t(
+                                                'public.checkout.gift.message',
+                                            )}
+                                            hint={t(
+                                                'public.checkout.gift.message_hint',
+                                            )}
+                                            error={form.errors.gift_message}
+                                            counter={t(
+                                                'public.checkout.gift.message_counter',
+                                                {
+                                                    count: String(
+                                                        String(
+                                                            form.data
+                                                                .gift_message,
+                                                        ).length,
+                                                    ),
+                                                    max: String(MESSAGE_MAX),
+                                                },
+                                            )}
+                                            value={String(
+                                                form.data.gift_message,
+                                            )}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'gift_message',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            rows={5}
+                                            maxLength={MESSAGE_MAX}
+                                            required
+                                        />
+
+                                        <SelectField
+                                            label={t(
+                                                'public.checkout.gift.variant',
+                                            )}
+                                            options={GIFT_VARIANTS.map(
+                                                (variant) => ({
+                                                    value: variant.value,
+                                                    label: t(
+                                                        `public.checkout.gift.variant_${variant.key}`,
+                                                    ),
+                                                }),
+                                            )}
+                                            value={String(
+                                                form.data.gift_variant,
+                                            )}
+                                            onChange={(value) =>
+                                                form.setData(
+                                                    'gift_variant',
+                                                    value,
+                                                )
+                                            }
+                                            error={form.errors.gift_variant}
+                                        />
+                                    </>
+                                )}
+
+                                {step === ACCOUNT_STEP && (
+                                    <p role="status" className="panel">
+                                        {t(
+                                            'public.checkout.account.signed_in',
+                                            { email },
+                                        )}
+                                    </p>
+                                )}
+
+                                {step === 5 && (
+                                    <>
+                                        <p className="text-brand-muted">
+                                            {t('public.checkout.options.intro')}
+                                        </p>
+
+                                        <Counter
+                                            label={t(
+                                                'public.checkout.options.extra_copies',
+                                            )}
+                                            hint={t(
+                                                'public.checkout.options.extra_copies_hint',
+                                                {
+                                                    amount: formatPrice(
+                                                        prices.extraCopy,
+                                                    ),
+                                                },
+                                            )}
+                                            error={form.errors.extra_copies}
+                                            value={copies}
+                                            min={0}
+                                            max={5}
+                                            onChange={(value) =>
+                                                form.setData(
+                                                    'extra_copies',
+                                                    value,
+                                                )
+                                            }
+                                            decrementLabel={t(
+                                                'public.checkout.options.fewer',
+                                            )}
+                                            incrementLabel={t(
+                                                'public.checkout.options.more',
+                                            )}
+                                        />
+
+                                        {phoneOption.open ? (
+                                            <CheckField
+                                                checked={
+                                                    form.data.phone_option ===
+                                                    true
+                                                }
+                                                onChange={(checked) =>
+                                                    form.setData(
+                                                        'phone_option',
+                                                        checked,
+                                                    )
+                                                }
+                                                label={
+                                                    <>
+                                                        {t(
+                                                            'public.checkout.phone_option_label',
+                                                            {
+                                                                first_name:
+                                                                    firstName,
+                                                                cap: String(
+                                                                    phoneOption.cap,
+                                                                ),
+                                                            },
+                                                        )}{' '}
+                                                        <span className="font-semibold">
+                                                            {formatPrice(
+                                                                prices.phoneOption,
+                                                            )}
+                                                        </span>
+                                                    </>
+                                                }
+                                                hint={t(
+                                                    'public.checkout.options.phone_option_remaining',
+                                                    {
+                                                        remaining: String(
+                                                            phoneOption.remaining,
+                                                        ),
+                                                        cap: String(
+                                                            phoneOption.cap,
+                                                        ),
+                                                    },
+                                                )}
+                                            />
+                                        ) : (
+                                            <p className="text-brand-muted">
+                                                {t(
+                                                    'public.checkout.options.phone_option_closed',
+                                                )}
+                                            </p>
+                                        )}
+
+                                        {/*
+                                         * Trois cases distinctes, dans cet
+                                         * ordre : l'accord obligatoire, puis
+                                         * celui qui coûte une partie du droit
+                                         * de rétractation, puis le marketing,
+                                         * décoché.
+                                         */}
+                                        <div className="border-brand-sand flex flex-col gap-5 border-t pt-6">
+                                            <CheckField
+                                                checked={
+                                                    form.data.accepts_terms ===
+                                                    true
+                                                }
+                                                onChange={(checked) =>
+                                                    form.setData(
+                                                        'accepts_terms',
+                                                        checked,
+                                                    )
+                                                }
+                                                label={t(
+                                                    'public.checkout.terms',
+                                                )}
+                                                error={
+                                                    form.errors.accepts_terms
+                                                }
+                                                required
+                                            />
+
+                                            <CheckField
+                                                checked={
+                                                    form.data
+                                                        .early_service_start ===
+                                                    true
+                                                }
+                                                onChange={(checked) =>
+                                                    form.setData(
+                                                        'early_service_start',
+                                                        checked,
+                                                    )
+                                                }
+                                                label={t(
+                                                    'public.checkout.early_start',
+                                                )}
+                                                hint={t(
+                                                    'public.checkout.early_start_notice',
+                                                )}
+                                            />
+
+                                            <CheckField
+                                                checked={
+                                                    form.data
+                                                        .marketing_email ===
+                                                    true
+                                                }
+                                                onChange={(checked) =>
+                                                    form.setData(
+                                                        'marketing_email',
+                                                        checked,
+                                                    )
+                                                }
+                                                label={t(
+                                                    'public.checkout.marketing',
+                                                )}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {step === LAST_STEP && (
+                                    <>
+                                        <p className="text-brand-muted">
+                                            {t('public.checkout.summary.intro')}
+                                        </p>
+
+                                        <dl className="card divide-brand-sand divide-y">
+                                            <SummaryRow
+                                                label={t(
+                                                    'public.checkout.summary.narrator',
+                                                )}
+                                                value={`${firstName} ${String(form.data.narrator_last_name)}`.trim()}
+                                                editHref="/acheter?step=2"
+                                                editLabel={t(
+                                                    'public.checkout.edit',
+                                                )}
+                                            />
+                                            <SummaryRow
+                                                label={t(
+                                                    'public.checkout.summary.gift',
+                                                )}
+                                                value={t(
+                                                    'public.checkout.summary.gift_line',
+                                                    {
+                                                        date: formatDate(
+                                                            String(
+                                                                form.data
+                                                                    .gift_send_at,
+                                                            ),
+                                                        ),
+                                                        variant: t(
+                                                            `public.checkout.gift.variant_${variantLabel}`,
+                                                        ).toLowerCase(),
+                                                    },
+                                                )}
+                                                editHref="/acheter?step=3"
+                                                editLabel={t(
+                                                    'public.checkout.edit',
+                                                )}
+                                            />
+                                            <SummaryRow
+                                                label={t(
+                                                    'public.checkout.summary.options',
+                                                )}
+                                                value={
+                                                    optionsSummary.length > 0
+                                                        ? optionsSummary.join(
+                                                              ' · ',
+                                                          )
+                                                        : t(
+                                                              'public.checkout.summary.none',
+                                                          )
+                                                }
+                                                editHref="/acheter?step=5"
+                                                editLabel={t(
+                                                    'public.checkout.edit',
+                                                )}
+                                            />
+                                            <SummaryRow
+                                                label={t(
+                                                    'public.checkout.summary.total',
+                                                )}
+                                                value={formatPrice(total)}
+                                                strong
+                                            />
+                                        </dl>
+
+                                        <p className="text-brand-muted text-base">
+                                            {t(
+                                                'public.checkout.summary.notice',
+                                            )}
+                                        </p>
+                                    </>
+                                )}
+
+                                <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    {step > 1 ? (
+                                        <Link
+                                            href={`/acheter?step=${step - 1}`}
+                                            className="btn-secondary press"
+                                        >
+                                            {t('public.checkout.back')}
+                                        </Link>
+                                    ) : (
+                                        <span />
+                                    )}
+
+                                    <SubmitButton
+                                        processing={form.processing}
+                                        waitingLabel={t(
+                                            'public.checkout.waiting',
+                                        )}
+                                        className="sm:min-w-[13rem]"
+                                    >
+                                        {step === LAST_STEP ? (
+                                            <>
+                                                <Lock />
+                                                {t('public.checkout.pay', {
+                                                    amount: formatPrice(total),
+                                                })}
+                                            </>
+                                        ) : (
+                                            t('public.checkout.next')
+                                        )}
+                                    </SubmitButton>
+                                </div>
+                            </form>
                         )}
-
-                        {/*
-                         * Trois cases distinctes, dans cet ordre : l'accord
-                         * obligatoire, puis celui qui coûte une partie du
-                         * droit de rétractation, puis le marketing — décoché.
-                         */}
-                        <label className="flex items-start gap-3">
-                            <input
-                                type="checkbox"
-                                checked={form.data.accepts_terms === true}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'accepts_terms',
-                                        event.target.checked,
-                                    )
-                                }
-                                className="mt-1"
-                                required
-                            />
-                            <span>{t('public.checkout.terms')}</span>
-                        </label>
-
-                        {form.errors.accepts_terms !== undefined && (
-                            <p role="alert" className="text-base">
-                                {form.errors.accepts_terms}
-                            </p>
-                        )}
-
-                        <label className="flex items-start gap-3">
-                            <input
-                                type="checkbox"
-                                checked={form.data.early_service_start === true}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'early_service_start',
-                                        event.target.checked,
-                                    )
-                                }
-                                className="mt-1"
-                            />
-                            <span>
-                                {t('public.checkout.early_start')}
-                                <span className="text-brand-muted mt-1 block text-base">
-                                    {t('public.checkout.early_start_notice')}
-                                </span>
-                            </span>
-                        </label>
-
-                        <label className="flex items-start gap-3">
-                            <input
-                                type="checkbox"
-                                checked={form.data.marketing_email === true}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'marketing_email',
-                                        event.target.checked,
-                                    )
-                                }
-                                className="mt-1"
-                            />
-                            <span>{t('public.checkout.marketing')}</span>
-                        </label>
-                    </>
-                )}
-
-                {step === LAST_STEP && (
-                    <>
-                        <dl className="flex flex-col gap-3">
-                            <div>
-                                <dt className="font-medium">
-                                    {t('public.checkout.summary.narrator')}
-                                </dt>
-                                <dd>
-                                    {String(form.data.narrator_first_name)}{' '}
-                                    {String(form.data.narrator_last_name)}
-                                </dd>
-                            </div>
-
-                            <div>
-                                <dt className="font-medium">
-                                    {t('public.checkout.summary.gift')}
-                                </dt>
-                                <dd>{String(form.data.gift_send_at)}</dd>
-                            </div>
-
-                            <div>
-                                <dt className="font-medium">
-                                    {t('public.checkout.summary.total')}
-                                </dt>
-                                <dd className="text-xl">
-                                    {formatPrice(total)}
-                                </dd>
-                            </div>
-                        </dl>
-
-                        <p className="text-brand-muted text-base">
-                            {t('public.checkout.summary.notice')}
-                        </p>
-                    </>
-                )}
-
-                <div className="mt-4 flex items-center gap-4">
-                    {step > 1 && (
-                        <Link
-                            href={`/acheter?step=${step - 1}`}
-                            className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
-                        >
-                            {t('public.checkout.back')}
-                        </Link>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={form.processing}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] rounded-md px-6 py-3 font-semibold disabled:opacity-60"
-                    >
-                        {step === LAST_STEP
-                            ? t('public.checkout.pay')
-                            : t('public.checkout.next')}
-                    </button>
+                    </div>
                 </div>
-            </form>
+
+                <OrderSummary
+                    firstName={firstName}
+                    main={prices.main}
+                    copies={copies}
+                    copiesPrice={prices.extraCopy}
+                    phone={phone}
+                    phonePrice={prices.phoneOption}
+                    total={total}
+                />
+            </div>
         </div>
     );
 }
 
-function Field({
-    label,
-    hint,
-    error,
-    children,
-}: {
-    label: string;
-    hint?: string;
-    error?: string;
-    children: React.ReactNode;
-}) {
+function Lock() {
     return (
-        <label className="flex flex-col gap-1">
-            <span className="font-medium">{label}</span>
-            {children}
-            {hint !== undefined && (
-                <span className="text-brand-muted text-base">{hint}</span>
-            )}
-            {error !== undefined && (
-                <span role="alert" className="text-base">
-                    {error}
-                </span>
-            )}
-        </label>
+        <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            aria-hidden="true"
+            className="size-4 flex-none"
+        >
+            <rect x="3" y="7" width="10" height="7" rx="1.5" />
+            <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+        </svg>
     );
 }
 
-function Choice({
+function Check() {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+            className="text-brand mt-0.5 size-5 flex-none"
+        >
+            <circle cx="12" cy="12" r="10" />
+            <path d="m8 12 3 3 5-6" />
+        </svg>
+    );
+}
+
+function SummaryRow({
     label,
-    options,
     value,
-    onChange,
-    error,
+    editHref,
+    editLabel,
+    strong = false,
 }: {
     label: string;
-    options: Option[];
     value: string;
-    onChange: (value: string) => void;
-    error?: string;
+    editHref?: string;
+    editLabel?: string;
+    strong?: boolean;
 }) {
     return (
-        <Field label={label} error={error}>
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className="input"
-            >
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
+        <div className="flex items-start justify-between gap-4 px-5 py-4">
+            <div className="min-w-0">
+                <dt className="text-brand-muted text-base">{label}</dt>
+                <dd
+                    className={
+                        strong
+                            ? 'font-display text-brand mt-0.5 text-3xl'
+                            : 'mt-0.5 font-medium'
+                    }
+                >
+                    {value}
+                </dd>
+            </div>
+            {editHref !== undefined && (
+                <Link
+                    href={editHref}
+                    className="text-brand hover:decoration-brand decoration-brand-sand flex-none text-base underline underline-offset-4 transition-colors"
+                >
+                    {editLabel}
+                </Link>
+            )}
+        </div>
+    );
+}
+
+/**
+ * La colonne de droite : ce qu'on achète, ce que ça coûte, ce qu'on promet.
+ *
+ * Elle suit le défilement sur bureau et passe sous le formulaire sur
+ * téléphone. Le total y bouge en direct quand on ajoute un exemplaire.
+ */
+function OrderSummary({
+    firstName,
+    main,
+    copies,
+    copiesPrice,
+    phone,
+    phonePrice,
+    total,
+}: {
+    firstName: string;
+    main: number;
+    copies: number;
+    copiesPrice: number;
+    phone: boolean;
+    phonePrice: number;
+    total: number;
+}) {
+    const t = useT();
+    const brand = useBrand();
+
+    return (
+        <aside
+            aria-label={t('public.checkout.aside.title')}
+            className="card self-start p-6 lg:sticky lg:top-8"
+        >
+            <p className="eyebrow">{t('public.checkout.aside.title')}</p>
+
+            {firstName !== '' && (
+                <p className="font-display text-brand mt-3 text-2xl font-medium">
+                    {t('public.checkout.aside.for', { name: firstName })}
+                </p>
+            )}
+
+            <ul className="mt-5 flex flex-col gap-3 text-base">
+                <li className="flex items-baseline justify-between gap-4">
+                    <span>{t('public.checkout.aside.main')}</span>
+                    <span className="tabular-nums">{formatPrice(main)}</span>
+                </li>
+                {copies > 0 && (
+                    <li className="enter flex items-baseline justify-between gap-4">
+                        <span>
+                            {copies === 1
+                                ? t('public.checkout.aside.copies_one')
+                                : t('public.checkout.aside.copies_many', {
+                                      count: String(copies),
+                                  })}
+                        </span>
+                        <span className="tabular-nums">
+                            {formatPrice(copies * copiesPrice)}
+                        </span>
+                    </li>
+                )}
+                {phone && (
+                    <li className="enter flex items-baseline justify-between gap-4">
+                        <span>{t('public.checkout.aside.phone')}</span>
+                        <span className="tabular-nums">
+                            {formatPrice(phonePrice)}
+                        </span>
+                    </li>
+                )}
+            </ul>
+
+            <div className="border-brand-sand mt-5 flex items-baseline justify-between gap-4 border-t pt-4">
+                <span className="font-semibold">
+                    {t('public.checkout.aside.total')}
+                </span>
+                <span className="font-display text-brand text-3xl font-medium tabular-nums">
+                    {formatPrice(total)}
+                </span>
+            </div>
+
+            <ul className="mt-6 flex flex-col gap-3 text-base">
+                {(['one_payment', 'secure', 'refund'] as const).map((key) => (
+                    <li key={key} className="flex items-start gap-2.5">
+                        <Check />
+                        <span>{t(`public.checkout.aside.${key}`)}</span>
+                    </li>
                 ))}
-            </select>
-        </Field>
+            </ul>
+
+            <p className="text-brand-muted mt-6 text-base">
+                {t('public.checkout.aside.help')}{' '}
+                <a
+                    href={`mailto:${brand.support_email}`}
+                    className="text-brand underline underline-offset-4"
+                >
+                    {brand.support_email}
+                </a>
+            </p>
+        </aside>
+    );
+}
+
+/**
+ * L'étape du compte, sans quitter le tunnel.
+ *
+ * Deux formulaires sous deux onglets : créer un compte, ou se connecter. Les
+ * deux partent chez Fortify, qui renvoie à l'étape suivante (le serveur a posé
+ * l'adresse de retour en affichant cette étape). Le mot de passe est un seul
+ * champ qu'on peut afficher : la confirmation est envoyée à l'identique.
+ */
+function AccountStep({ email }: { email: string }) {
+    const t = useT();
+    const [mode, setMode] = useState<'register' | 'login'>('register');
+
+    const register = useForm({
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+    });
+
+    const login = useForm({
+        email,
+        password: '',
+        remember: true,
+    });
+
+    const submitRegister = (event: React.FormEvent) => {
+        event.preventDefault();
+        register.transform((data) => ({
+            ...data,
+            password_confirmation: data.password,
+        }));
+        register.post('/register');
+    };
+
+    const submitLogin = (event: React.FormEvent) => {
+        event.preventDefault();
+        login.post('/login');
+    };
+
+    const tab = (active: boolean) =>
+        `press min-h-[2.75rem] flex-1 rounded-md px-2 text-[0.9rem] leading-tight font-semibold whitespace-nowrap transition-colors ${
+            active
+                ? 'bg-brand text-brand-foreground'
+                : 'text-brand hover:bg-brand/5'
+        }`;
+
+    return (
+        <div className="mt-6 flex flex-col gap-6">
+            <p className="text-brand-muted">
+                {t('public.checkout.account.intro')}
+            </p>
+
+            <div
+                role="tablist"
+                aria-label={t('public.checkout.steps.account')}
+                className="border-brand-sand bg-brand-surface flex gap-1 rounded-lg border p-1"
+            >
+                <button
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === 'register'}
+                    onClick={() => setMode('register')}
+                    className={tab(mode === 'register')}
+                >
+                    {t('public.checkout.account.create')}
+                </button>
+                <button
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === 'login'}
+                    onClick={() => setMode('login')}
+                    className={tab(mode === 'login')}
+                >
+                    {t('public.checkout.account.have')}
+                </button>
+            </div>
+
+            {mode === 'register' ? (
+                <form
+                    key="register"
+                    role="tabpanel"
+                    onSubmit={submitRegister}
+                    className="enter flex flex-col gap-6"
+                >
+                    <TextField
+                        label={t('public.checkout.account.name')}
+                        error={register.errors.name}
+                        type="text"
+                        value={register.data.name}
+                        onChange={(event) =>
+                            register.setData('name', event.target.value)
+                        }
+                        autoComplete="name"
+                        required
+                    />
+                    <TextField
+                        label={t('public.checkout.account.email')}
+                        error={register.errors.email}
+                        type="email"
+                        inputMode="email"
+                        value={register.data.email}
+                        onChange={(event) =>
+                            register.setData('email', event.target.value)
+                        }
+                        autoComplete="email"
+                        required
+                    />
+                    <PasswordField
+                        label={t('public.checkout.account.password')}
+                        hint={t('public.checkout.account.password_hint')}
+                        error={register.errors.password}
+                        showLabel={t('public.checkout.account.show')}
+                        hideLabel={t('public.checkout.account.hide')}
+                        value={register.data.password}
+                        onChange={(event) =>
+                            register.setData('password', event.target.value)
+                        }
+                        autoComplete="new-password"
+                        required
+                    />
+
+                    <Actions>
+                        <SubmitButton
+                            processing={register.processing}
+                            waitingLabel={t('public.checkout.waiting')}
+                        >
+                            {t('public.checkout.account.register')}
+                        </SubmitButton>
+                    </Actions>
+                </form>
+            ) : (
+                <form
+                    key="login"
+                    role="tabpanel"
+                    onSubmit={submitLogin}
+                    className="enter flex flex-col gap-6"
+                >
+                    <TextField
+                        label={t('public.checkout.account.email')}
+                        error={login.errors.email}
+                        type="email"
+                        inputMode="email"
+                        value={login.data.email}
+                        onChange={(event) =>
+                            login.setData('email', event.target.value)
+                        }
+                        autoComplete="email"
+                        required
+                    />
+                    <PasswordField
+                        label={t('public.checkout.account.password')}
+                        error={login.errors.password}
+                        showLabel={t('public.checkout.account.show')}
+                        hideLabel={t('public.checkout.account.hide')}
+                        value={login.data.password}
+                        onChange={(event) =>
+                            login.setData('password', event.target.value)
+                        }
+                        autoComplete="current-password"
+                        required
+                    />
+                    <Link
+                        href="/forgot-password"
+                        className="text-brand -mt-2 self-start text-base underline underline-offset-4"
+                    >
+                        {t('public.checkout.account.forgot')}
+                    </Link>
+
+                    <Actions>
+                        <SubmitButton
+                            processing={login.processing}
+                            waitingLabel={t('public.checkout.waiting')}
+                        >
+                            {t('public.checkout.account.login')}
+                        </SubmitButton>
+                    </Actions>
+                </form>
+            )}
+        </div>
+    );
+}
+
+function Actions({ children }: { children: React.ReactNode }) {
+    const t = useT();
+
+    return (
+        <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Link
+                href={`/acheter?step=${ACCOUNT_STEP - 1}`}
+                className="btn-secondary press"
+            >
+                {t('public.checkout.back')}
+            </Link>
+            {children}
+        </div>
     );
 }

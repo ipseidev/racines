@@ -33,6 +33,9 @@ final readonly class CheckoutController
 {
     public const DRAFT_COOKIE = 'checkout_draft';
 
+    /** L'étape où l'on crée son compte, ou l'on se connecte. */
+    public const ACCOUNT_STEP = 4;
+
     public function __construct(
         private SaveCheckoutStep $steps,
         private StartStripeCheckout $checkout,
@@ -45,6 +48,17 @@ final readonly class CheckoutController
 
         $requested = (int) $request->query('step', (string) $draft->step);
         $step = max(1, min(SaveCheckoutStep::LAST_STEP, $requested));
+
+        // Le compte se crée à l'étape 4 sans quitter le tunnel : Fortify
+        // renvoie à l'adresse « voulue » après l'inscription ou la connexion.
+        // On la pose ici, et seulement ici, pour que la personne revienne à
+        // l'étape suivante et non sur un espace encore vide (T-135).
+        if ($step === self::ACCOUNT_STEP && $request->user() === null) {
+            $request->session()->put(
+                'url.intended',
+                route('checkout.show', ['step' => self::ACCOUNT_STEP + 1]),
+            );
+        }
 
         return inertia('public/Checkout', [
             'step' => $step,
@@ -107,8 +121,20 @@ final readonly class CheckoutController
 
     public function thanks(Request $request): Response
     {
+        // Le brouillon, s'il est encore là, donne le prénom et la date de
+        // l'invitation : c'est ce qui rend le merci personnel. On ne crée rien
+        // pour l'obtenir : un brouillon né sur la page de merci ne servirait
+        // qu'à encombrer la table.
+        $draft = self::existingDraft($request);
+        $payload = $draft instanceof CheckoutDraft ? $draft->payload : [];
+
+        $firstName = $payload['narrator_first_name'] ?? null;
+        $sendAt = $payload['gift_send_at'] ?? null;
+
         return inertia('public/CheckoutThanks', [
             'sessionId' => $request->query('session_id'),
+            'narratorFirstName' => is_string($firstName) && $firstName !== '' ? $firstName : null,
+            'giftSendAt' => is_string($sendAt) && $sendAt !== '' ? substr($sendAt, 0, 10) : null,
         ]);
     }
 
@@ -117,6 +143,37 @@ final readonly class CheckoutController
      * cookie, sinon un neuf.
      */
     private static function draftFor(Request $request): CheckoutDraft
+    {
+        $existing = self::existingDraft($request);
+
+        if ($existing instanceof CheckoutDraft) {
+            return $existing;
+        }
+
+        $user = $request->user();
+
+        $draft = new CheckoutDraft([
+            'step' => 1,
+            'payload' => [],
+            'price_variant' => PreventePrice::forRequest($request),
+            'expires_at' => now()->addDays(CheckoutDraft::LIFETIME_DAYS),
+        ]);
+
+        if ($user !== null) {
+            $draft->user()->associate($user);
+        }
+
+        $draft->save();
+
+        return $draft;
+    }
+
+    /**
+     * Le brouillon déjà là, sans en créer : celui du compte, sinon celui du
+     * cookie. Rattaché au compte dès qu'il en a un : le brouillon suit la
+     * personne, pas le navigateur.
+     */
+    private static function existingDraft(Request $request): ?CheckoutDraft
     {
         $user = $request->user();
 
@@ -134,33 +191,20 @@ final readonly class CheckoutController
 
         $id = $request->cookie(self::DRAFT_COOKIE);
 
-        if (is_string($id) && $id !== '') {
-            $draft = CheckoutDraft::query()->whereKey($id)->first();
-
-            if ($draft instanceof CheckoutDraft && ! $draft->isExpired()) {
-                // Rattaché au compte dès qu'il en a un : le brouillon suit la
-                // personne, pas le navigateur.
-                if ($user !== null && $draft->user_id === null) {
-                    $draft->user()->associate($user);
-                    $draft->save();
-                }
-
-                return $draft;
-            }
+        if (! is_string($id) || $id === '') {
+            return null;
         }
 
-        $draft = new CheckoutDraft([
-            'step' => 1,
-            'payload' => [],
-            'price_variant' => PreventePrice::forRequest($request),
-            'expires_at' => now()->addDays(CheckoutDraft::LIFETIME_DAYS),
-        ]);
+        $draft = CheckoutDraft::query()->whereKey($id)->first();
 
-        if ($user !== null) {
+        if (! $draft instanceof CheckoutDraft || $draft->isExpired()) {
+            return null;
+        }
+
+        if ($user !== null && $draft->user_id === null) {
             $draft->user()->associate($user);
+            $draft->save();
         }
-
-        $draft->save();
 
         return $draft;
     }

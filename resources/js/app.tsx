@@ -15,6 +15,7 @@ const FamilyLayout = lazy(() => import('@/layouts/family-layout'));
 const NarratorLayout = lazy(() => import('@/layouts/narrator-layout'));
 const InitiatorLayout = lazy(() => import('@/layouts/initiator-layout'));
 const PublicLayout = lazy(() => import('@/layouts/public-layout'));
+const CheckoutLayout = lazy(() => import('@/layouts/checkout-layout'));
 const SettingsLayout = lazy(() => import('@/layouts/settings/layout'));
 
 const meta = (name: string) =>
@@ -65,6 +66,11 @@ if (Reflect.get(window, MOUNTED) !== true) {
                     return NarratorLayout;
                 case name.startsWith('family/'):
                     return FamilyLayout;
+                // Le tunnel d'achat a sa propre mise en page : sans la
+                // navigation ni le bouton d'achat de l'accueil, qui
+                // concurrenceraient « Continuer » (T-135).
+                case name.startsWith('public/Checkout'):
+                    return CheckoutLayout;
                 // Les pages publiques portent le pied de page légal partout, y
                 // compris dans le tunnel : on doit pouvoir lire les conditions
                 // sans revenir en arrière et perdre sa saisie.
