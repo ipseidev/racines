@@ -63,7 +63,7 @@ export default function AlreadyRecorded({
             </h1>
 
             {question !== null ? (
-                <p className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-4 text-[1.25rem]">
+                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]">
                     {question}
                 </p>
             ) : null}
@@ -71,7 +71,7 @@ export default function AlreadyRecorded({
             {status !== null ? (
                 <p
                     role="status"
-                    className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-3"
+                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
                 >
                     {status}
                 </p>
@@ -85,7 +85,7 @@ export default function AlreadyRecorded({
                 <button
                     type="button"
                     onClick={() => router.post(restartAction)}
-                    className="border-brand-muted/40 mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                    className="border-brand-sand mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
                 >
                     {t('narrator.already_recorded.restart')}
                 </button>
@@ -100,7 +100,7 @@ export default function AlreadyRecorded({
              */}
             {canHide ? (
                 confirmingHide ? (
-                    <div className="border-brand-muted/40 mt-8 rounded-md border px-4 py-4">
+                    <div className="border-brand-sand mt-8 rounded-md border px-4 py-4">
                         <p>{t('narrator.withdrawals.hide_confirm')}</p>
                         <button
                             type="button"
@@ -131,7 +131,7 @@ export default function AlreadyRecorded({
                     <button
                         type="button"
                         onClick={() => setConfirmingHide(true)}
-                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg"
+                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg"
                     >
                         {t('narrator.withdrawals.hide')}
                     </button>

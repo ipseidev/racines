@@ -64,7 +64,7 @@ export default function ShareDecision({ action, onDecided }: Props) {
                         type="button"
                         disabled={processing}
                         onClick={() => decide(decision)}
-                        className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-4 text-left disabled:opacity-60"
+                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-4 text-left disabled:opacity-60"
                     >
                         <span className="block text-lg font-medium">
                             {t(`narrator.share_decision.${decision}.label`)}

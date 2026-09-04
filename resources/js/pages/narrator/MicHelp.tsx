@@ -46,7 +46,7 @@ export default function MicHelp({
             </p>
 
             {canRetry ? (
-                <p className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-4">
+                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4">
                     {t(`narrator.mic_help.${platform}`)}
                 </p>
             ) : null}
@@ -67,7 +67,7 @@ export default function MicHelp({
             <button
                 type="button"
                 onClick={() => onWrite?.()}
-                className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
             >
                 {t('narrator.record.written_link')}
             </button>

@@ -222,7 +222,7 @@ export default function Demo({ limits }: Props) {
                     <button
                         type="button"
                         onClick={again}
-                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] rounded-md border px-6 py-3"
+                        className="border-brand-sand mt-4 min-h-[2.75rem] rounded-md border px-6 py-3"
                     >
                         {t('public.demo.again')}
                     </button>

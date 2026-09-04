@@ -127,7 +127,7 @@ export default function Dashboard({
                         {alerts.map((alert) => (
                             <li
                                 key={`${alert.ruleId}-${alert.firedAt}`}
-                                className="border-brand-muted/40 rounded-md border px-4 py-3"
+                                className="border-brand-sand rounded-md border px-4 py-3"
                             >
                                 {alert.message}
                             </li>
@@ -153,7 +153,7 @@ export default function Dashboard({
                             preserveScroll: true,
                         })
                     }
-                    className="border-brand-muted/40 mt-4 min-h-[2.75rem] rounded-md border px-6 py-3 disabled:opacity-60"
+                    className="border-brand-sand mt-4 min-h-[2.75rem] rounded-md border px-6 py-3 disabled:opacity-60"
                 >
                     {t('initiator.dashboard.copy_link')}
                 </button>
@@ -176,7 +176,7 @@ export default function Dashboard({
                         {copiedWhatsapp !== null && (
                             <a
                                 href={copiedWhatsapp}
-                                className="border-brand-muted/40 mt-3 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
+                                className="border-brand-sand mt-3 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
                             >
                                 {t('initiator.dashboard.send_whatsapp')}
                             </a>
@@ -205,7 +205,7 @@ export default function Dashboard({
                         {stories.map((story) => (
                             <li
                                 key={story.id}
-                                className="border-brand-muted/40 rounded-md border px-4 py-3"
+                                className="border-brand-sand rounded-md border px-4 py-3"
                             >
                                 <p className="font-medium">
                                     {story.title ??
@@ -259,7 +259,7 @@ export default function Dashboard({
                                 preserveScroll: true,
                             })
                         }
-                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] rounded-md border px-6 py-3"
+                        className="border-brand-sand mt-4 min-h-[2.75rem] rounded-md border px-6 py-3"
                     >
                         {t('initiator.dashboard.listen')}
                     </button>

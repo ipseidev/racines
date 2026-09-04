@@ -387,7 +387,7 @@ export default function Checkout({
                                 </Link>
                                 <Link
                                     href="/login"
-                                    className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-3"
+                                    className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3"
                                 >
                                     {t('public.checkout.account.login')}
                                 </Link>
@@ -569,7 +569,7 @@ export default function Checkout({
                     {step > 1 && (
                         <Link
                             href={`/acheter?step=${step - 1}`}
-                            className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-3"
+                            className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3"
                         >
                             {t('public.checkout.back')}
                         </Link>

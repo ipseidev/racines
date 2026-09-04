@@ -26,7 +26,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
             {!pilot.legalValidated && (
                 <p
                     role="status"
-                    className="border-brand-muted/40 text-brand-muted border-b px-6 py-3 text-center text-base"
+                    className="border-brand-sand text-brand-muted border-b px-6 py-3 text-center text-base"
                 >
                     {t('public.legal.draft_banner')}
                 </p>
@@ -49,7 +49,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                 {children}
             </main>
 
-            <footer className="border-brand-muted/40 text-brand-muted mt-12 border-t px-6 py-8 text-base">
+            <footer className="border-brand-sand text-brand-muted mt-12 border-t px-6 py-8 text-base">
                 <nav className="flex flex-wrap gap-x-6 gap-y-2">
                     <Link href="/cgv">{t('public.legal.terms')}</Link>
                     <Link href="/confidentialite">

@@ -130,7 +130,7 @@ export default function OptIn({
                     aria-label={t('narrator.optin.from', {
                         inviter: inviterName,
                     })}
-                    className="border-brand-muted/40 mt-8 rounded-md border px-5 py-4"
+                    className="border-brand-sand mt-8 rounded-md border px-5 py-4"
                 >
                     <p className="text-brand-muted text-base">
                         {t('narrator.optin.from', { inviter: inviterName })}
@@ -216,7 +216,7 @@ export default function OptIn({
                         <button
                             type="button"
                             onClick={() => setRefusing(false)}
-                            className="border-brand-muted/40 min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg"
+                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg"
                         >
                             {t('narrator.optin.refusal.back')}
                         </button>
@@ -225,7 +225,7 @@ export default function OptIn({
                             type="button"
                             disabled={refusal.processing}
                             onClick={() => refusal.post(refuseAction)}
-                            className="border-brand-muted/40 min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg disabled:opacity-60"
+                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg disabled:opacity-60"
                         >
                             {t('narrator.optin.refusal.confirm')}
                         </button>
@@ -305,7 +305,7 @@ export default function OptIn({
                                                 </button>
 
                                                 {isOpen && (
-                                                    <div className="border-brand-muted/40 mt-2 ml-8 rounded-md border px-4 py-3 text-base">
+                                                    <div className="border-brand-sand mt-2 ml-8 rounded-md border px-4 py-3 text-base">
                                                         <p>{consent.body}</p>
                                                         {consent.version !==
                                                             null && (
@@ -427,7 +427,7 @@ export default function OptIn({
                         <button
                             type="submit"
                             disabled={form.processing}
-                            className="border-brand-muted/40 min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg disabled:opacity-60"
+                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg disabled:opacity-60"
                         >
                             {t('narrator.optin.accept')}
                         </button>
@@ -435,7 +435,7 @@ export default function OptIn({
                         <button
                             type="button"
                             onClick={() => setRefusing(true)}
-                            className="border-brand-muted/40 min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg"
+                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg"
                         >
                             {t('narrator.optin.refuse')}
                         </button>

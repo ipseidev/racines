@@ -26,7 +26,7 @@ export default function CheckoutThanks() {
 
             <Link
                 href="/espace/commandes"
-                className="border-brand-muted/40 mt-8 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
+                className="border-brand-sand mt-8 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
             >
                 {t('public.checkout.thanks.orders')}
             </Link>

@@ -72,7 +72,7 @@ export default function Landing({ mode, price, phoneOptionPrice }: Props) {
 
                 <Link
                     href="/essai"
-                    className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-3"
+                    className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3"
                 >
                     {t('public.landing.cta_try')}
                 </Link>
@@ -121,7 +121,7 @@ export default function Landing({ mode, price, phoneOptionPrice }: Props) {
 
                 <Link
                     href="/essai"
-                    className="border-brand-muted/40 mt-6 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
+                    className="border-brand-sand mt-6 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
                 >
                     {t('public.landing.cta_try')}
                 </Link>

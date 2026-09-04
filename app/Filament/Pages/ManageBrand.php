@@ -173,15 +173,19 @@ final class ManageBrand extends SettingsPage
         return $report;
     }
 
-    /** @var array<string, string> */
+    /**
+     * Une seule famille par rôle. Le kit en livrait quatre ; les deux autres
+     * ne servaient à rien et pesaient sur une page narrateur en 4G. Une
+     * famille de plus ici, c'est aussi une police de plus à héberger (T-40).
+     *
+     * @var array<string, string>
+     */
     private const DISPLAY_FONTS = [
         'Fraunces' => 'Fraunces',
-        'Newsreader' => 'Newsreader',
     ];
 
     /** @var array<string, string> */
     private const BODY_FONTS = [
         'Inter' => 'Inter',
-        'Instrument Sans' => 'Instrument Sans',
     ];
 }

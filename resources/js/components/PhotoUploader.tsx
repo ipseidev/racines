@@ -85,7 +85,7 @@ export default function PhotoUploader({ action, onDone }: Props) {
                     <img
                         src={preview}
                         alt=""
-                        className="border-brand-muted/40 max-h-64 w-full rounded-md border object-contain"
+                        className="border-brand-sand max-h-64 w-full rounded-md border object-contain"
                     />
 
                     <label className="flex flex-col gap-1">

@@ -64,7 +64,7 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                         <button
                             type="button"
                             onClick={() => setOpened(photo)}
-                            className="border-brand-muted/40 block size-[88px] overflow-hidden rounded-md border"
+                            className="border-brand-sand block size-[88px] overflow-hidden rounded-md border"
                         >
                             <img
                                 src={photo.thumbUrl}
@@ -103,7 +103,7 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                         <button
                             type="button"
                             onClick={() => setOpened(null)}
-                            className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-3"
+                            className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3"
                         >
                             {t('common.actions.close')}
                         </button>
@@ -115,7 +115,7 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                                     onRemove(opened.id);
                                     setOpened(null);
                                 }}
-                                className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-3"
+                                className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3"
                             >
                                 {t('common.photos.remove')}
                             </button>

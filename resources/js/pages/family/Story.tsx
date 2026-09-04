@@ -117,7 +117,7 @@ export default function Story({
             </h1>
 
             {question !== null ? (
-                <p className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-4 text-[1.25rem]">
+                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]">
                     {question}
                 </p>
             ) : null}
@@ -148,7 +148,7 @@ export default function Story({
                             className={`min-h-[2.75rem] rounded-md px-4 py-2 text-base font-medium ${
                                 tab === name
                                     ? 'bg-brand text-brand-foreground'
-                                    : 'border-brand-muted/40 border'
+                                    : 'border-brand-sand border'
                             }`}
                         >
                             {t(`family.story.tab_${name}`)}
@@ -175,7 +175,7 @@ export default function Story({
                 {status !== null ? (
                     <p
                         role="status"
-                        className="bg-brand-accent text-brand-accent-foreground mt-4 rounded-md px-4 py-3"
+                        className="bg-brand-linen text-brand-text mt-4 rounded-md px-4 py-3"
                     >
                         {status}
                     </p>
@@ -195,7 +195,7 @@ export default function Story({
                     maxLength={MAX_COMMENT}
                     rows={3}
                     onChange={(event) => setComment(event.target.value)}
-                    className="border-brand-muted/40 mt-3 w-full rounded-md border px-4 py-3 text-[1.125rem]"
+                    className="border-brand-sand mt-3 w-full rounded-md border px-4 py-3 text-[1.125rem]"
                 />
                 <p className="text-brand-muted mt-1 text-base">
                     {t('family.reaction.comment_counter', {
@@ -267,7 +267,7 @@ export default function Story({
                 {siblings.previous === null ? null : (
                     <Link
                         href={`${listPath}/stories/${siblings.previous}`}
-                        className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-4 py-3 text-base"
+                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-base"
                     >
                         {t('family.story.previous')}
                     </Link>
@@ -275,7 +275,7 @@ export default function Story({
                 {siblings.next === null ? null : (
                     <Link
                         href={`${listPath}/stories/${siblings.next}`}
-                        className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-4 py-3 text-base"
+                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-base"
                     >
                         {t('family.story.next')}
                     </Link>

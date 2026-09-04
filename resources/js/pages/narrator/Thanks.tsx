@@ -26,7 +26,7 @@ export default function Thanks({ message }: Props) {
 
             <p
                 role="status"
-                className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-4 text-[1.25rem]"
+                className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]"
             >
                 {message ?? t('narrator.thanks.body')}
             </p>

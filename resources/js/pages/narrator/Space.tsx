@@ -82,14 +82,14 @@ export default function Space({
             {status !== null ? (
                 <p
                     role="status"
-                    className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-3"
+                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
                 >
                     {status}
                 </p>
             ) : null}
 
             {pausedUntil !== null ? (
-                <p className="border-brand-muted/40 mt-6 rounded-md border px-4 py-3">
+                <p className="border-brand-sand mt-6 rounded-md border px-4 py-3">
                     {t('narrator.space.paused_until', {
                         date: longDate(pausedUntil),
                     })}
@@ -103,7 +103,7 @@ export default function Space({
                     {stories.map((story) => (
                         <li
                             key={story.id}
-                            className="border-brand-muted/40 rounded-md border px-4 py-4"
+                            className="border-brand-sand rounded-md border px-4 py-4"
                         >
                             <h2 className="text-lg font-medium">
                                 {story.title ?? story.question}
@@ -125,7 +125,7 @@ export default function Space({
                             ) : null}
 
                             {story.printedInBook ? (
-                                <p className="border-brand-muted/40 mt-3 rounded-md border px-3 py-2 text-base">
+                                <p className="border-brand-sand mt-3 rounded-md border px-3 py-2 text-base">
                                     {printedCopiesWarning}
                                 </p>
                             ) : null}
@@ -135,7 +135,7 @@ export default function Space({
                                     <button
                                         type="button"
                                         onClick={() => act(story, 'unhide')}
-                                        className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
+                                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
                                     >
                                         {t('narrator.withdrawals.unhide')}
                                     </button>
@@ -145,7 +145,7 @@ export default function Space({
                                     <button
                                         type="button"
                                         onClick={() => act(story, 'restore')}
-                                        className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
+                                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
                                     >
                                         {t('narrator.withdrawals.restore')}
                                     </button>
@@ -157,7 +157,7 @@ export default function Space({
                                     <button
                                         type="button"
                                         onClick={() => act(story, 'hide')}
-                                        className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
+                                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
                                     >
                                         {t('narrator.withdrawals.hide')}
                                     </button>
@@ -166,7 +166,7 @@ export default function Space({
                                 {story.state !== 'trashed' &&
                                 story.state !== 'deleted' ? (
                                     confirming === story.id ? (
-                                        <div className="border-brand-muted/40 rounded-md border px-3 py-3">
+                                        <div className="border-brand-sand rounded-md border px-3 py-3">
                                             <p className="text-base">
                                                 {t(
                                                     'narrator.withdrawals.trash_confirm',
@@ -190,7 +190,7 @@ export default function Space({
                                             onClick={() =>
                                                 setConfirming(story.id)
                                             }
-                                            className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
+                                            className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
                                         >
                                             {t('narrator.withdrawals.trash')}
                                         </button>
@@ -199,7 +199,7 @@ export default function Space({
 
                                 {story.state === 'trashed' ? (
                                     deleting === story.id ? (
-                                        <div className="border-brand-muted/40 rounded-md border px-3 py-3">
+                                        <div className="border-brand-sand rounded-md border px-3 py-3">
                                             <p className="text-base">
                                                 {t(
                                                     'narrator.withdrawals.delete_confirm',
@@ -219,7 +219,7 @@ export default function Space({
                                                 onChange={(event) =>
                                                     setWord(event.target.value)
                                                 }
-                                                className="border-brand-muted/40 mt-2 min-h-[2.75rem] w-full rounded-md border px-3 py-2 text-lg"
+                                                className="border-brand-sand mt-2 min-h-[2.75rem] w-full rounded-md border px-3 py-2 text-lg"
                                             />
                                             <button
                                                 type="button"
@@ -241,7 +241,7 @@ export default function Space({
                                             onClick={() =>
                                                 setDeleting(story.id)
                                             }
-                                            className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
+                                            className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-left text-lg"
                                         >
                                             {t('narrator.withdrawals.delete')}
                                         </button>
@@ -295,11 +295,11 @@ export default function Space({
                     min={1}
                     max={26}
                     defaultValue={4}
-                    className="border-brand-muted/40 mt-3 min-h-[2.75rem] w-24 rounded-md border px-3 py-2 text-lg"
+                    className="border-brand-sand mt-3 min-h-[2.75rem] w-24 rounded-md border px-3 py-2 text-lg"
                 />
                 <button
                     type="submit"
-                    className="border-brand-muted/40 mt-4 block min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                    className="border-brand-sand mt-4 block min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
                 >
                     {t('narrator.space.pause')}
                 </button>

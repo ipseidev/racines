@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,24 +12,10 @@
              narrateur la refusait (T-75). --}}
         <meta name="csp-nonce" content="{{ Vite::cspNonce() }}">
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        {{-- Le nonce vient de SecurityHeaders : sans lui, la politique de
-             contenu stricte refuserait ce script et ce style. --}}
-        <script nonce="{{ Vite::cspNonce() }}">
-            (function() {
-                const appearance = '{{ $appearance ?? "system" }}';
-
-                if (appearance === 'system') {
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-                    if (prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    }
-                }
-            })();
-        </script>
-
-        {{-- Marque : éditable dans l'administration, appliquée sans redéploiement. --}}
+        {{-- Marque : éditable dans l'administration, appliquée sans redéploiement.
+             Le nonce vient de SecurityHeaders : sans lui, la politique de
+             contenu stricte refuserait ce style. Thème clair seul, décision du
+             3 septembre 2026 : un livre se lit sur du papier. --}}
         <style nonce="{{ Vite::cspNonce() }}">
             :root {
 @foreach ($brandCss as $variable => $value)
@@ -39,10 +25,6 @@
 
             html {
                 background-color: var(--brand-background);
-            }
-
-            html.dark {
-                background-color: oklch(0.145 0 0);
             }
         </style>
 

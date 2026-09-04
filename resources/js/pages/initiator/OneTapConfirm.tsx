@@ -48,13 +48,13 @@ export default function OneTapConfirm({
                 <>
                     <p
                         role="status"
-                        className="bg-brand-accent text-brand-accent-foreground mt-8 rounded-md px-4 py-4 text-[1.125rem]"
+                        className="bg-brand-linen text-brand-text mt-8 rounded-md px-4 py-4 text-[1.125rem]"
                     >
                         {message}
                     </p>
 
                     {link == null ? null : (
-                        <p className="border-brand-muted/40 mt-6 rounded-md border px-4 py-3 break-all">
+                        <p className="border-brand-sand mt-6 rounded-md border px-4 py-3 break-all">
                             {link}
                         </p>
                     )}

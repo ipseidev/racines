@@ -22,15 +22,22 @@ return [
     'support_phone' => env('BRAND_SUPPORT_PHONE'),
     'sms_sender_id' => env('BRAND_SMS_SENDER_ID', 'PRODUCT'),
 
+    /*
+     * Palette issue de l'analyse colorimétrique du fondateur (3 septembre 2026,
+     * docs/design/README.md). Deux couleurs signature : le vert forêt, qui
+     * porte la marque, et la terracotta, qui porte l'action — et rien d'autre.
+     * Un bouton se voit par son isolement, pas par sa teinte : la terracotta
+     * est la seule couleur chaude saturée d'une page.
+     */
     'colors' => [
-        'primary' => '#1F3D2B',
+        'primary' => '#2F4A3F',
         'primary_foreground' => '#FFFFFF',
-        'accent' => '#D9E76C',
-        'accent_foreground' => '#1F3D2B',
-        'background' => '#F7F5EF',
+        'accent' => '#B0432A',
+        'accent_foreground' => '#FFFFFF',
+        'background' => '#FBF6EE',
         'surface' => '#FFFFFF',
-        'text' => '#1B1B1B',
-        'muted' => '#6B6B6B',
+        'text' => '#26211C',
+        'muted' => '#5A5049',
     ],
 
     'fonts' => [

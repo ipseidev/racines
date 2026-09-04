@@ -110,7 +110,7 @@ export default function Review({
             </h1>
 
             {question !== null ? (
-                <p className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-4 text-[1.25rem]">
+                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]">
                     {question}
                 </p>
             ) : null}
@@ -120,7 +120,7 @@ export default function Review({
             {status !== null ? (
                 <p
                     role="status"
-                    className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-3"
+                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
                 >
                     {status}
                 </p>
@@ -162,7 +162,7 @@ export default function Review({
                             className={`min-h-[2.75rem] rounded-md px-4 py-2 text-base font-medium ${
                                 tab === name
                                     ? 'bg-brand text-brand-foreground'
-                                    : 'border-brand-muted/40 border'
+                                    : 'border-brand-sand border'
                             }`}
                         >
                             {t(`narrator.review.tab_${name}`)}
@@ -190,7 +190,7 @@ export default function Review({
                             value={text}
                             rows={14}
                             onChange={(event) => setText(event.target.value)}
-                            className="border-brand-muted/40 mt-3 w-full rounded-md border px-4 py-3 text-[1.125rem] leading-relaxed"
+                            className="border-brand-sand mt-3 w-full rounded-md border px-4 py-3 text-[1.125rem] leading-relaxed"
                         />
                         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                             <button
@@ -204,7 +204,7 @@ export default function Review({
                             <button
                                 type="button"
                                 onClick={() => setEditing(false)}
-                                className="border-brand-muted/40 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                                className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
                             >
                                 {t('narrator.review.cancel')}
                             </button>
@@ -221,7 +221,7 @@ export default function Review({
                                 setText(readable ?? fluide ?? verbatim ?? '');
                                 setEditing(true);
                             }}
-                            className="border-brand-muted/40 mt-6 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                            className="border-brand-sand mt-6 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
                         >
                             {t('narrator.review.edit')}
                         </button>
@@ -321,7 +321,7 @@ export default function Review({
                                 type="button"
                                 disabled={processing}
                                 onClick={() => decide(decision)}
-                                className="border-brand-muted/40 min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-left disabled:opacity-60"
+                                className="border-brand-sand min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-left disabled:opacity-60"
                             >
                                 <span className="block text-lg font-medium">
                                     {t(

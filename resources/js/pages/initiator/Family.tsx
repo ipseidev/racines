@@ -80,7 +80,7 @@ export default function Family({ members, copiedLink }: Props) {
                     {members.map((member) => (
                         <li
                             key={member.id}
-                            className="border-brand-muted/40 rounded-md border px-4 py-3"
+                            className="border-brand-sand rounded-md border px-4 py-3"
                         >
                             <p className="font-medium">
                                 {member.name}
@@ -264,7 +264,7 @@ export default function Family({ members, copiedLink }: Props) {
                     <button
                         type="submit"
                         disabled={form.processing}
-                        className="border-brand-muted/40 min-h-[2.75rem] self-start rounded-md border px-6 py-3 disabled:opacity-60"
+                        className="border-brand-sand min-h-[2.75rem] self-start rounded-md border px-6 py-3 disabled:opacity-60"
                     >
                         {t('initiator.family.invite.submit')}
                     </button>

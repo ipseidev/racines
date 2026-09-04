@@ -64,14 +64,14 @@ export default function Home({
                         <li key={story.id}>
                             <Link
                                 href={`${window.location.pathname}/stories/${story.id}`}
-                                className="border-brand-muted/40 block min-h-[2.75rem] rounded-md border px-4 py-4"
+                                className="border-brand-sand block min-h-[2.75rem] rounded-md border px-4 py-4"
                             >
                                 <span className="flex flex-wrap items-baseline gap-3">
                                     <span className="text-lg font-medium">
                                         {story.title ?? story.question}
                                     </span>
                                     {story.isNew ? (
-                                        <span className="bg-brand-accent text-brand-accent-foreground rounded-full px-3 py-1 text-sm">
+                                        <span className="bg-brand-linen text-brand-text rounded-full px-3 py-1 text-sm">
                                             {t('family.home.new')}
                                         </span>
                                     ) : null}

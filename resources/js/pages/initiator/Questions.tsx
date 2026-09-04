@@ -86,7 +86,7 @@ export default function Questions({ questions, narratorFirstName }: Props) {
                     return (
                         <li
                             key={id}
-                            className="border-brand-muted/40 rounded-md border px-4 py-3"
+                            className="border-brand-sand rounded-md border px-4 py-3"
                         >
                             <p>{question.text}</p>
 
@@ -158,7 +158,7 @@ export default function Questions({ questions, narratorFirstName }: Props) {
                             .map((question) => (
                                 <li
                                     key={question.id}
-                                    className="border-brand-muted/40 rounded-md border px-4 py-3"
+                                    className="border-brand-sand rounded-md border px-4 py-3"
                                 >
                                     <p className="text-brand-muted">
                                         {question.text}
@@ -227,7 +227,7 @@ export default function Questions({ questions, narratorFirstName }: Props) {
                     <button
                         type="submit"
                         disabled={custom.processing}
-                        className="border-brand-muted/40 mt-2 min-h-[2.75rem] self-start rounded-md border px-6 py-3 disabled:opacity-60"
+                        className="border-brand-sand mt-2 min-h-[2.75rem] self-start rounded-md border px-6 py-3 disabled:opacity-60"
                     >
                         {t('initiator.questions.add.submit')}
                     </button>

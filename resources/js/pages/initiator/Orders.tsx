@@ -71,7 +71,7 @@ export default function Orders({ orders, supportEmail }: Props) {
                     {orders.map((order) => (
                         <li
                             key={order.id}
-                            className="border-brand-muted/40 rounded-md border px-5 py-4"
+                            className="border-brand-sand rounded-md border px-5 py-4"
                         >
                             <p className="font-medium">{order.statusLabel}</p>
 
@@ -152,7 +152,7 @@ export default function Orders({ orders, supportEmail }: Props) {
                                                 { preserveScroll: true },
                                             )
                                         }
-                                        className="border-brand-muted/40 mt-3 min-h-[2.75rem] rounded-md border px-6 py-3"
+                                        className="border-brand-sand mt-3 min-h-[2.75rem] rounded-md border px-6 py-3"
                                     >
                                         {t('initiator.orders.withdrawal')}
                                     </button>

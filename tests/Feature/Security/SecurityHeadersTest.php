@@ -31,19 +31,34 @@ it('n’autorise aucune origine de police tierce : elles sont auto-hébergées',
         ->and($csp)->not->toContain('fonts.gstatic.com');
 });
 
-it('pose le nonce sur le script et le style en ligne de la vue racine', function (): void {
+it('pose le nonce sur le style en ligne de la vue racine, et sur chaque script', function (): void {
     $response = $this->get('/');
     $html = (string) $response->getContent();
     $csp = (string) $response->headers->get('Content-Security-Policy');
 
-    expect($html)->toContain('<script nonce="')
-        ->and($html)->toContain('<style nonce="');
-
     preg_match("/script-src 'self' 'nonce-([^']+)'/", $csp, $matches);
     $nonce = $matches[1] ?? null;
 
-    expect($nonce)->not->toBeNull()
-        ->and($html)->toContain('<script nonce="'.$nonce.'"');
+    expect($nonce)->not->toBeNull();
+
+    // Le style de marque est le seul élément en ligne de la vue racine depuis
+    // le retrait du mode sombre (T-132) : il porte le nonce.
+    expect($html)->toContain('<style nonce="'.$nonce.'"');
+
+    // Et aucun script exécutable ne part sans nonce — qu'il soit en ligne ou
+    // chargé par Vite. Le bloc de données d'Inertia (`application/json`) n'est
+    // pas exécuté : la politique ne s'y applique pas.
+    preg_match_all('/<script\b[^>]*>/', $html, $tags);
+    $executable = array_values(array_filter(
+        $tags[0],
+        fn (string $tag): bool => ! str_contains($tag, 'application/json'),
+    ));
+
+    expect($executable)->not->toBeEmpty();
+
+    foreach ($executable as $tag) {
+        expect($tag)->toContain('nonce="'.$nonce.'"');
+    }
 });
 
 it('donne son nonce au front, qui crée des styles après le rendu', function (): void {

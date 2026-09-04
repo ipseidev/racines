@@ -45,7 +45,7 @@ export default function SpaceRequest({ codeLength }: Props) {
             {status !== null ? (
                 <p
                     role="status"
-                    className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-3"
+                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
                 >
                     {status}
                 </p>
@@ -75,7 +75,7 @@ export default function SpaceRequest({ codeLength }: Props) {
                     onChange={(event) =>
                         form.setData('identifier', event.target.value)
                     }
-                    className="border-brand-muted/40 mt-3 min-h-[2.75rem] w-full rounded-md border px-4 py-3 text-[1.125rem]"
+                    className="border-brand-sand mt-3 min-h-[2.75rem] w-full rounded-md border px-4 py-3 text-[1.125rem]"
                 />
 
                 {form.errors.identifier !== undefined ? (
@@ -102,7 +102,7 @@ export default function SpaceRequest({ codeLength }: Props) {
                             onChange={(event) =>
                                 form.setData('code', event.target.value)
                             }
-                            className="border-brand-muted/40 mt-3 min-h-[2.75rem] w-full rounded-md border px-4 py-3 text-[1.5rem] tracking-[0.3em]"
+                            className="border-brand-sand mt-3 min-h-[2.75rem] w-full rounded-md border px-4 py-3 text-[1.5rem] tracking-[0.3em]"
                         />
 
                         {form.errors.code !== undefined ? (

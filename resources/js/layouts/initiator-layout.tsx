@@ -28,7 +28,7 @@ export default function InitiatorLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="bg-brand-surface text-brand-text min-h-screen">
-            <header className="border-brand-muted/40 border-b px-6 py-6">
+            <header className="border-brand-sand border-b px-6 py-6">
                 <BrandLogo className="text-brand-muted text-base font-medium" />
 
                 <nav className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-base">
@@ -57,7 +57,7 @@ export default function InitiatorLayout({ children }: PropsWithChildren) {
                 {status !== null && (
                     <p
                         role="status"
-                        className="border-brand-muted/40 mb-6 rounded-md border px-4 py-3"
+                        className="border-brand-sand mb-6 rounded-md border px-4 py-3"
                     >
                         {status}
                     </p>

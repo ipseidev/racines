@@ -8,17 +8,39 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Le schéma de couleurs suit la classe posée par `use-appearance`, en CSS et
- * non par un style en ligne : la politique de contenu stricte des pages
- * narrateur refuse ces derniers, et un formulaire natif au mauvais schéma se
- * lit mal.
+ * Thème clair seul (décision du 3 septembre 2026) : un livre se lit sur du
+ * papier, et un thème de moins est un tiers de CSS et de tests en moins. Le
+ * `color-scheme` est écrit ici et non en style en ligne : la politique de
+ * contenu stricte des pages narrateur refuse ces derniers, et un formulaire
+ * natif au mauvais schéma se lit mal.
  */
 :root {
     color-scheme: light;
 }
 
-:root.dark {
-    color-scheme: dark;
+/*
+ * Fraunces, en police variable auto-hébergée (T-40, T-132).
+ *
+ * Le greffon de polices sert des graisses fixes ; or la direction artistique
+ * repose sur les axes variables de Fraunces — SOFT arrondit les empattements,
+ * WONK penche les lettres —, c'est ce qui en fait un serif de livre plutôt
+ * que de site. Les deux fichiers viennent de Google Fonts (sous-ensemble
+ * latin, licence OFL) et vivent dans public/fonts.
+ */
+@font-face {
+    font-family: 'Fraunces';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('/fonts/fraunces-var-roman.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Fraunces';
+    font-style: italic;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('/fonts/fraunces-var-italic.woff2') format('woff2');
 }
 
 @theme {
@@ -28,20 +50,41 @@
      * charte ne demande ni build ni déploiement.
      */
     --font-sans:
-        var(--brand-font-body, 'Instrument Sans'), ui-sans-serif, system-ui,
-        sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        var(--brand-font-body, 'Inter'), ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
     --font-display:
-        var(--brand-font-display, 'Fraunces'), Georgia, 'Times New Roman', serif;
+        var(--brand-font-display, 'Fraunces'), 'Iowan Old Style',
+        'Palatino Linotype', Georgia, serif;
 
+    /* La marque : huit valeurs éditables dans l'administration. */
     --color-brand: var(--brand-primary);
     --color-brand-foreground: var(--brand-primary-foreground);
     --color-brand-accent: var(--brand-accent);
     --color-brand-accent-foreground: var(--brand-accent-foreground);
+    --color-brand-background: var(--brand-background);
     --color-brand-surface: var(--brand-surface);
     --color-brand-text: var(--brand-text);
     --color-brand-muted: var(--brand-muted);
+
+    /*
+     * Le système de design : des tons qui accompagnent la marque sans être la
+     * marque (docs/design/README.md). Fixes, parce que ce sont des choix de
+     * dessin et non d'identité — si la marque change, le lin et l'or restent.
+     *  - linen : fond d'une section chaude, d'un panneau de mise en avant ;
+     *  - sand  : filets, bordures, champs ;
+     *  - gold  : liserés, numéros, détail premium — jamais en petit texte ;
+     *  - sage  : décor sans texte, l'onde d'une voix ;
+     *  - deep  : le fond d'un bandeau sombre, un cran sous la marque ;
+     *  - accent-deep : la couleur d'action au survol.
+     */
+    --color-brand-linen: #f3eadb;
+    --color-brand-sand: #e0d6c7;
+    --color-brand-gold: #c9a24b;
+    --color-brand-sage: #7c9a8e;
+    --color-brand-deep: #24392f;
+    --color-brand-accent-deep: #8f361f;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -127,41 +170,6 @@
     --sidebar-ring: oklch(0.87 0 0);
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
-}
-
 @layer base {
     * {
         @apply border-border;
@@ -169,6 +177,19 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    /*
+     * Fraunces réglée pour le livre : empattements adoucis, lettres penchées.
+     * Ce réglage est ce qui distingue un serif de livre d'un serif de site ;
+     * la taille optique suit la taille de rendu (auto).
+     */
+    .font-display {
+        font-variation-settings:
+            'SOFT' 50,
+            'WONK' 1;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
     }
 }
 
@@ -183,7 +204,36 @@
  */
 @layer components {
     .input {
-        @apply border-brand-muted/40 bg-brand-surface text-brand-text min-h-[2.75rem] w-full rounded-md border px-3 py-2 text-[1.0625rem];
+        @apply border-brand-sand bg-brand-surface text-brand-text min-h-[2.75rem] w-full rounded-md border px-3 py-2 text-[1.0625rem];
+    }
+
+    /*
+     * Les boutons des espaces à jeton. Deux rôles, et pas de troisième :
+     *  - primaire : l'action de la page, en terracotta. Une seule par écran,
+     *    parce qu'un bouton se voit par son isolement (docs/design/README.md) ;
+     *  - secondaire : un contour dans la couleur de marque, pour ce qui
+     *    accompagne sans concurrencer.
+     * 3,25 rem de haut : au-dessus de la cible tactile de 44 px du dossier.
+     */
+    .btn-primary {
+        @apply bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep inline-flex min-h-[3.25rem] items-center justify-center gap-2 rounded-md px-6 py-3 text-[1.0625rem] font-semibold no-underline transition-colors;
+    }
+
+    .btn-secondary {
+        @apply border-brand text-brand hover:bg-brand/5 inline-flex min-h-[3.25rem] items-center justify-center gap-2 rounded-md border-2 bg-transparent px-6 py-3 text-[1.0625rem] font-semibold no-underline transition-colors;
+    }
+
+    /*
+     * Le panneau de mise en avant : une question posée, un statut, un texte à
+     * relire. Sur lin, jamais sur la couleur d'action — un panneau en
+     * terracotta ferait croire à un bouton.
+     */
+    .panel {
+        @apply bg-brand-linen text-brand-text rounded-md px-4 py-4;
+    }
+
+    .card {
+        @apply bg-brand-surface border-brand-sand rounded-xl border;
     }
 
     /*
@@ -232,6 +282,6 @@
 
     .legal-prose th,
     .legal-prose td {
-        @apply border-brand-muted/40 border px-3 py-2 text-left align-top;
+        @apply border-brand-sand border px-3 py-2 text-left align-top;
     }
 }

@@ -57,8 +57,8 @@ Ce que cela change par rapport aux tokens actuels de `config/brand.php` : le
 vert acide `#D9E76C` **disparaît** — c'était la couleur d'accent de Remento, et
 un accent vert sur une marque verte se fond au lieu de se voir. Le vert sapin
 `#1F3D2B` se réchauffe en `#2F4A3F`, le crème `#F7F5EF` s'éclaircit en
-`#FBF6EE`. Ces trois valeurs sont à porter dans `BrandSettings` au moment de la
-propagation — pas avant que la maquette soit validée.
+`#FBF6EE`. **Porté le 4 septembre 2026** (T-132) : migration de réglages,
+tokens de dessin en CSS, Fraunces variable auto-hébergée, mode sombre retiré.
 
 ## La typographie
 

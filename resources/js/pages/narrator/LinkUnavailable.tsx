@@ -54,7 +54,7 @@ export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
             {status !== null ? (
                 <p
                     role="status"
-                    className="bg-brand-accent text-brand-accent-foreground mt-8 rounded-md px-4 py-3"
+                    className="bg-brand-linen text-brand-text mt-8 rounded-md px-4 py-3"
                 >
                     {status}
                 </p>

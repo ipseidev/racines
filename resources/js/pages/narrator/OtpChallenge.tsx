@@ -77,7 +77,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
             {status !== null ? (
                 <p
                     role="status"
-                    className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-3"
+                    className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-3"
                 >
                     {status}
                 </p>
@@ -111,7 +111,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                                         index === 0 ? 'one-time-code' : 'off'
                                     }
                                     aria-label={`${t('narrator.otp.code_label')} ${index + 1}`}
-                                    className="border-brand-muted/40 h-14 w-full min-w-[2.75rem] rounded-md border text-center text-2xl"
+                                    className="border-brand-sand h-14 w-full min-w-[2.75rem] rounded-md border text-center text-2xl"
                                 />
                             ))}
                         </div>
@@ -137,7 +137,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                 type="button"
                 onClick={() => send.post(window.location.pathname)}
                 disabled={send.processing}
-                className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium disabled:opacity-60"
+                className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium disabled:opacity-60"
             >
                 {sentToMasked === null
                     ? t('narrator.otp.send')

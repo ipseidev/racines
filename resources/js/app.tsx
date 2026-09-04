@@ -1,6 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
-import { initializeTheme } from '@/hooks/use-appearance';
 
 /*
  * Les mises en page sont chargées à la demande.
@@ -94,7 +93,4 @@ if (Reflect.get(window, MOUNTED) !== true) {
             color: '#4B5563',
         },
     });
-
-    // Applique le thème clair ou sombre au chargement.
-    initializeTheme();
 }

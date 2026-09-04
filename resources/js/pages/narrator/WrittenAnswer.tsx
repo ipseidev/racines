@@ -34,7 +34,7 @@ export default function WrittenAnswer({
             </h1>
 
             {question !== null ? (
-                <p className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-4 text-[1.25rem]">
+                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]">
                     {question}
                 </p>
             ) : null}
@@ -63,7 +63,7 @@ export default function WrittenAnswer({
                     }
                     maxLength={maxChars}
                     rows={10}
-                    className="border-brand-muted/40 mt-2 w-full rounded-md border p-3 text-[1.25rem] leading-relaxed"
+                    className="border-brand-sand mt-2 w-full rounded-md border p-3 text-[1.25rem] leading-relaxed"
                 />
 
                 <p className="text-brand-muted mt-2 text-base">
@@ -94,7 +94,7 @@ export default function WrittenAnswer({
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
                     >
                         {t('common.actions.back')}
                     </button>

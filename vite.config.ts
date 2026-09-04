@@ -17,13 +17,11 @@ export default defineConfig({
             refresh: true,
             // Polices auto-hébergées : aucune requête vers un tiers depuis les
             // pages narrateur. La liste doit rester alignée sur les options du
-            // sélecteur de ManageBrand.
-            fonts: [
-                bunny('Instrument Sans', { weights: [400, 500, 600] }),
-                bunny('Inter', { weights: [400, 500, 600] }),
-                bunny('Fraunces', { weights: [400, 600] }),
-                bunny('Newsreader', { weights: [400, 600] }),
-            ],
+            // sélecteur de ManageBrand. Fraunces n'est pas ici : le greffon
+            // sert des graisses fixes, et la direction artistique repose sur
+            // ses axes variables (SOFT, WONK). Elle est déclarée à la main dans
+            // app.css, depuis public/fonts (T-132).
+            fonts: [bunny('Inter', { weights: [400, 500, 600] })],
         }),
         inertia(),
         react(),

@@ -330,7 +330,7 @@ export default function Record({
             </h1>
 
             {question !== null ? (
-                <p className="bg-brand-accent text-brand-accent-foreground mt-6 rounded-md px-4 py-5 text-[1.5rem] leading-snug">
+                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-5 text-[1.5rem] leading-snug">
                     {question}
                 </p>
             ) : null}
@@ -375,7 +375,7 @@ export default function Record({
                                 send({ type: 'DISCARD_DRAFT' }),
                             );
                         }}
-                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
                     >
                         {t('narrator.record.draft_discard')}
                     </button>
@@ -384,7 +384,7 @@ export default function Record({
 
             {snapshot.state === 'explaining' ? (
                 <section className="mt-8">
-                    <p className="bg-brand-surface border-brand-muted/30 rounded-md border px-4 py-4">
+                    <p className="bg-brand-surface border-brand-sand rounded-md border px-4 py-4">
                         {t(
                             tu
                                 ? 'narrator.record.mic_notice_tu'
@@ -453,7 +453,7 @@ export default function Record({
                                 send({ type: 'RESUME' });
                             }
                         }}
-                        className="border-brand-muted/40 mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-xl font-medium"
+                        className="border-brand-sand mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-xl font-medium"
                     >
                         {snapshot.state === 'recording'
                             ? t('narrator.record.pause')
@@ -489,7 +489,7 @@ export default function Record({
                     <button
                         type="button"
                         onClick={() => void finish()}
-                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-xl font-medium"
+                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-xl font-medium"
                     >
                         {t('narrator.record.finish')}
                     </button>
@@ -540,7 +540,7 @@ export default function Record({
                                 );
                             }
                         }}
-                        className="border-brand-muted/40 mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
                     >
                         {t('narrator.record.restart')}
                     </button>
@@ -614,7 +614,7 @@ export default function Record({
                         ) : (
                             <p
                                 role="status"
-                                className="bg-brand-accent text-brand-accent-foreground mt-8 rounded-md px-4 py-3"
+                                className="bg-brand-linen text-brand-text mt-8 rounded-md px-4 py-3"
                             >
                                 {t(
                                     `narrator.share_decision.recorded.${decided}`,
@@ -641,7 +641,7 @@ export default function Record({
                         <button
                             type="button"
                             onClick={() => setAddingPhoto(true)}
-                            className="border-brand-muted/40 mt-8 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                            className="border-brand-sand mt-8 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
                         >
                             {t('common.photos.add')}
                         </button>
