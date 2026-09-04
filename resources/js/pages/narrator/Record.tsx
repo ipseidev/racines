@@ -244,6 +244,7 @@ export default function Record({
                 reportClientEvent('interrupted', {
                     segments: snapshot.context.segments,
                 });
+                startedAt.current = null;
                 send({ type: 'INTERRUPTED' });
             }
         };
@@ -627,6 +628,12 @@ export default function Record({
                             onClick={() => {
                                 if (state === 'recording') {
                                     recorder.pause();
+                                    // Le point de départ du compteur s'oublie :
+                                    // à la reprise, il repart de la durée
+                                    // acquise, pas de l'heure du premier
+                                    // « Commencer ». Sinon la pause se
+                                    // comptait comme du temps parlé (T-140).
+                                    startedAt.current = null;
                                     reportClientEvent('recording_paused');
                                     send({ type: 'PAUSE' });
                                     void preparePausedPlayback();
