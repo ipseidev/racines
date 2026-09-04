@@ -31,7 +31,15 @@ type Props = {
  *
  * Direction artistique du 3 septembre (docs/design/README.md) : une seule
  * couleur d'action, la terracotta ; des sections pleine largeur qui alternent
- * crème, lin et forêt ; la question de la semaine comme objet du héros.
+ * crème, lin et forêt.
+ *
+ * Le héros suit celui du leader dans l'ordre et le choix des informations
+ * (T-142, premier retour d'un prospect : « on ne comprend pas ce que le site
+ * fait avant Comment ça marche ») : la photo d'abord sur téléphone, le titre,
+ * un texte qui dit qui parle, qui fait quoi, et ce qu'on reçoit, l'action,
+ * « Comment ça marche », puis quatre repères. La carte « question de la
+ * semaine » a quitté le héros : elle décrivait un rituel avant qu'on ait
+ * compris le produit.
  */
 const STEPS = ['one', 'two', 'three', 'four'] as const;
 
@@ -68,8 +76,20 @@ const PRIMARY =
 const SECONDARY =
     'border-brand text-brand hover:bg-brand/5 inline-flex min-h-[3.5rem] items-center justify-center rounded-md border-2 px-7 text-[1.05rem] font-semibold';
 
-/** Une coche dans la couleur de marque, jamais dans celle de l'action. */
-function Check({ light = false }: { light?: boolean }) {
+/**
+ * Une coche dans la couleur de marque, jamais dans celle de l'action.
+ *
+ * Décalée d'un cran vers le bas par défaut, pour s'aligner sur la première
+ * ligne d'un texte ; dans une pastille, on lui retire ce décalage, sinon elle
+ * n'est plus au centre.
+ */
+function Check({
+    light = false,
+    className = 'mt-1',
+}: {
+    light?: boolean;
+    className?: string;
+}) {
     return (
         <svg
             viewBox="0 0 24 24"
@@ -77,7 +97,7 @@ function Check({ light = false }: { light?: boolean }) {
             stroke="currentColor"
             strokeWidth="2"
             aria-hidden="true"
-            className={`mt-1 size-[22px] flex-none ${light ? 'text-brand-gold' : 'text-brand'}`}
+            className={`${className} size-[22px] flex-none ${light ? 'text-brand-gold' : 'text-brand'}`}
         >
             <circle cx="12" cy="12" r="10" />
             <path d="m8 12 3 3 5-6" />
@@ -188,9 +208,9 @@ function BookMockup() {
     return (
         <figure
             aria-label={t('public.landing.product.mockup.aria')}
-            className="relative mx-auto flex w-full max-w-[520px] items-end justify-center gap-6 py-6"
+            className="relative mx-auto flex w-full max-w-[520px] flex-col items-center py-6 sm:flex-row sm:items-end sm:justify-center sm:gap-6"
         >
-            <div className="bg-brand-deep relative aspect-[3/4] w-[62%] rounded-l-sm rounded-r-md shadow-[0_30px_60px_rgba(38,33,28,0.28)]">
+            <div className="bg-brand-deep relative aspect-[3/4] w-[68%] rounded-l-sm rounded-r-md shadow-[0_30px_60px_rgba(38,33,28,0.28)] sm:w-[62%]">
                 <div className="bg-brand absolute top-0 bottom-0 left-0 w-[5%] rounded-l-sm" />
                 <div className="absolute inset-x-[16%] top-[14%] flex flex-col items-center gap-3 text-center">
                     <span className="bg-brand-gold h-px w-10" />
@@ -214,8 +234,13 @@ function BookMockup() {
                 </div>
             </div>
 
-            <div className="bg-brand-surface flex w-[34%] flex-col gap-3 rounded-2xl p-4 shadow-[0_24px_60px_rgba(38,33,28,0.18)]">
-                <span className="font-display text-brand text-[clamp(0.85rem,1.8vw,1.05rem)] leading-tight font-medium">
+            {/*
+             * Sur téléphone, la page d'écoute est posée sous le livre et le
+             * chevauche un peu, comme une carte glissée dans la couverture ;
+             * côte à côte, elle n'avait plus la place de ses mots (T-142).
+             */}
+            <div className="bg-brand-surface relative z-10 -mt-12 flex w-[76%] flex-col gap-3 self-end rounded-2xl p-4 shadow-[0_24px_60px_rgba(38,33,28,0.18)] sm:z-auto sm:mt-0 sm:w-[34%] sm:self-auto">
+                <span className="font-display text-brand text-[clamp(1rem,1.8vw,1.05rem)] leading-tight font-medium">
                     {t('public.landing.product.mockup.chapter')}
                 </span>
                 <Wave bars={14} />
@@ -251,14 +276,14 @@ export default function Landing({
             />
 
             {/* Héros ============================================================ */}
-            <section className="mx-auto grid w-full max-w-6xl gap-10 px-6 pt-10 pb-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:pt-16 lg:pb-24">
+            <section className="mx-auto grid w-full max-w-6xl gap-8 px-6 pt-6 pb-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:pt-16 lg:pb-24">
                 <div className="flex flex-col gap-7">
                     <h1 className="font-display text-[2.5rem] leading-[1.05] font-medium sm:text-5xl lg:text-[4rem]">
                         {t('public.landing.promise')}
                     </h1>
 
                     <p className={`${LEDE} max-w-[34em]`}>
-                        {t('public.landing.hero.lede')}
+                        {t('public.landing.hero.lede', { brand: brand.name })}
                     </p>
 
                     <div className="flex flex-wrap items-center gap-3.5">
@@ -296,36 +321,17 @@ export default function Landing({
                     </p>
                 </div>
 
-                <div className="relative mb-11 lg:mb-0">
-                    <img
-                        src="/img/landing/hero.jpg"
-                        alt={t('public.landing.hero.photo_alt')}
-                        width="1400"
-                        height="933"
-                        className="aspect-[5/4] w-full rounded-2xl object-cover object-[60%_25%]"
-                    />
-                    <figure
-                        aria-label={t('public.landing.hero.card.aria')}
-                        className="bg-brand-surface absolute bottom-[-2.25rem] left-3 flex w-[min(380px,calc(100%-1.5rem))] flex-col gap-3.5 rounded-2xl px-6 py-5 shadow-[0_24px_60px_rgba(38,33,28,0.18),0_2px_6px_rgba(38,33,28,0.08)] lg:bottom-[-1.75rem] lg:-left-6"
-                    >
-                        <div className="text-brand-muted flex justify-between text-[0.78rem] font-semibold tracking-[0.08em] uppercase">
-                            <span>{t('public.landing.hero.card.label')}</span>
-                            <span>{t('public.landing.hero.card.name')}</span>
-                        </div>
-                        <p className="font-display text-[1.35rem] leading-[1.3] font-medium">
-                            {t('public.landing.hero.card.question')}
-                        </p>
-                        <div className="text-brand-muted flex items-center gap-3.5 text-[0.9rem]">
-                            <Wave />
-                            <span>
-                                <b className="text-brand font-semibold">
-                                    {t('public.landing.hero.card.answers')}
-                                </b>{' '}
-                                {t('public.landing.hero.card.duration')}
-                            </span>
-                        </div>
-                    </figure>
-                </div>
+                {/*
+                 * La photo d'abord sur téléphone, à droite sur bureau : ce qu'on
+                 * voit avant de lire doit déjà dire « une personne, sa voix ».
+                 */}
+                <img
+                    src="/img/landing/hero.jpg"
+                    alt={t('public.landing.hero.photo_alt')}
+                    width="1400"
+                    height="933"
+                    className="order-first aspect-[4/3] w-full rounded-2xl object-cover object-[60%_25%] lg:order-none lg:aspect-[5/4]"
+                />
             </section>
 
             {/* Trois engagements, en bandeau sombre ============================ */}
@@ -376,7 +382,8 @@ export default function Landing({
                 aria-labelledby="how"
                 className="border-brand-sand mx-auto w-full max-w-6xl border-t px-6 py-16 lg:py-24"
             >
-                <div className="mb-12 flex flex-col items-center gap-4 text-center">
+                {/* À gauche sur téléphone, comme les étapes qui suivent ; centré sur bureau, au-dessus des quatre colonnes. */}
+                <div className="mb-12 flex flex-col items-start gap-4 text-left lg:items-center lg:text-center">
                     <span className="eyebrow">
                         {t('public.landing.how.title')}
                     </span>
@@ -493,7 +500,7 @@ export default function Landing({
             {/* Pour toujours, et le prix ======================================== */}
             <section aria-labelledby="forever" className="bg-brand-linen">
                 <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-16 lg:py-24">
-                    <div className="mx-auto flex max-w-[40em] flex-col items-center gap-4 text-center">
+                    <div className="flex max-w-[40em] flex-col items-start gap-4 text-left lg:mx-auto lg:items-center lg:text-center">
                         <h2 id="forever" className={H2}>
                             {t('public.landing.forever.headline')}
                         </h2>
@@ -517,7 +524,7 @@ export default function Landing({
                                         className="flex flex-col gap-2"
                                     >
                                         <span className="bg-brand text-brand-foreground flex size-10 items-center justify-center rounded-full">
-                                            <Check light />
+                                            <Check light className="" />
                                         </span>
                                         <h3 className="font-display text-[1.35rem] leading-tight font-medium">
                                             {t(
@@ -656,7 +663,7 @@ export default function Landing({
                 aria-labelledby="book"
                 className="mx-auto w-full max-w-6xl px-6 py-16 lg:py-24"
             >
-                <div className="bg-brand-linen flex flex-col items-center gap-8 rounded-2xl px-6 py-14 text-center lg:px-16">
+                <div className="bg-brand-linen flex flex-col items-start gap-8 rounded-2xl px-6 py-14 text-left lg:items-center lg:px-16 lg:text-center">
                     <span className="eyebrow">
                         {t('public.landing.book.title')}
                     </span>
@@ -779,7 +786,7 @@ export default function Landing({
                     </div>
                     <div className="bg-brand-surface mx-auto flex w-full max-w-[320px] rotate-[-3deg] flex-col gap-4 rounded-md px-7 py-9 shadow-[0_20px_50px_rgba(38,33,28,0.18)]">
                         <span className="font-display text-brand text-2xl leading-tight font-medium italic">
-                            {t('public.landing.hero.card.name')},
+                            {t('public.landing.gift.card_name')},
                         </span>
                         <span className="bg-brand-sand h-1.5 w-full rounded-full" />
                         <span className="bg-brand-sand h-1.5 w-[86%] rounded-full" />

@@ -95,8 +95,7 @@ concurrents ; les vidéos de clients en carrousel ; l'abonnement. La popup de
 réduction, laissée le 3, a été **reprise le 4 au soir** (T-141), dans sa forme
 et pas dans ses conditions : voir « La fenêtre de bienvenue » plus bas.
 
-**Ajouté, parce que c'est le fond du produit** : la question de la semaine
-comme **objet du héros** — c'est le rituel qu'on vend ; le **mot à mot et le
+**Ajouté, parce que c'est le fond du produit** : le **mot à mot et le
 texte mis au propre côte à côte**, tirés de notre propre corpus
 (`docs/corpus/essai-01-pain.txt`) — la preuve plutôt que la promesse ; les
 **trois choix** de la narratrice ; **un paiement, pas d'abonnement** ; les
@@ -199,6 +198,34 @@ Trouvé au passage par l'analyse d'accessibilité : les utilitaires
 `prefers-reduced-motion`, parce que la règle qui les éteint vivait dans la
 couche `components` et que Tailwind les émet dans `utilities`, qui l'emporte.
 La règle est désormais hors couche, et vaut partout.
+
+## Le premier retour d'un prospect (4 septembre au soir, T-142)
+
+« On ne comprend pas clairement ce que le site fait avant de scroller jusqu'à
+Comment ça marche. » Le fondateur demande de reprendre le héros du leader,
+dans **l'ordre** et le **choix** des informations. Ce qui change :
+
+- **La photo d'abord sur téléphone**, à droite sur bureau : ce qu'on voit
+  avant de lire doit déjà dire « une personne, sa voix ». Une vraie photo de
+  famille autour du livre fera plus que toute phrase ; elle viendra des
+  familles pilotes.
+- **Le texte sous le titre dit qui parle, qui fait quoi, et ce qu'on reçoit**,
+  dans cet ordre et en nommant la marque, comme le leader : « Votre proche
+  parle, c'est tout. Chaque semaine, [marque] lui envoie une question,
+  enregistre sa réponse, la met au propre et la relie dans un livre… ». Le
+  titre reste la promesse arrêtée le 4 (T-134).
+- **La carte « question de la semaine » quitte le héros.** Elle était l'objet
+  du héros depuis le 3 ; elle décrivait un rituel avant qu'on ait compris le
+  produit, et le leader n'a rien de tel à cet endroit.
+- **Les en-têtes de section centrés passent à gauche sur téléphone** (Comment
+  ça marche, ce que comprend l'achat, la double page) : centrés au-dessus de
+  contenus alignés à gauche, ils cassaient la colonne de lecture. Ils restent
+  centrés sur bureau, au-dessus des colonnes.
+- **La maquette du livre s'empile sur téléphone** : la page d'écoute est posée
+  sous la couverture et la chevauche un peu, comme une carte glissée dedans ;
+  côte à côte, elle n'avait plus la place de ses mots.
+- **La coche dans la pastille est au centre** : elle portait le décalage prévu
+  pour s'aligner sur une ligne de texte.
 
 ## Les règles de propagation, pour les pages à venir
 

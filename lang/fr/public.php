@@ -49,21 +49,16 @@ return [
         ],
 
         'hero' => [
-            'lede' => 'Chaque semaine, une question. Elle répond en parlant, depuis son téléphone. À la fin de l’année, un livre relié de ses histoires, et sa voix à chaque page.',
+            // Qui parle, qui fait quoi, ce qu'on reçoit : dans cet ordre, comme le
+            // leader. Un prospect n'avait pas compris le produit avant « Comment ça
+            // marche » (T-142) ; le héros doit se suffire.
+            'lede' => 'Votre proche parle, c’est tout. Chaque semaine, :brand lui envoie une question, enregistre sa réponse, la met au propre et la relie dans un livre où sa voix se réécoute à chaque page. Rien à écrire, rien à installer. Ses histoires, dans ses mots et avec sa voix, dans un livre que votre famille gardera.',
             'note' => 'Un seul paiement sécurisé, pas d’abonnement. Ses souvenirs restent privés.',
             'checks' => [
                 'voice' => 'Sa voix se réécoute à chaque page du livre.',
                 'no_app' => 'Aucune application, aucun mot de passe : un lien, elle parle.',
                 'kept_words' => 'Ses mots sont mis au propre, jamais réécrits. Le mot à mot est conservé.',
                 'she_decides' => 'C’est elle qui décide de ce que la famille entend.',
-            ],
-            'card' => [
-                'aria' => 'Exemple de question de la semaine',
-                'label' => 'Question de la semaine',
-                'name' => 'Odette',
-                'question' => 'Quelle odeur vous ramène à votre enfance ?',
-                'answers' => 'Elle répond en parlant.',
-                'duration' => '2 min 14',
             ],
             'photo_alt' => 'Une femme assise à la table de sa cuisine, le téléphone à la main, songeuse.',
         ],
@@ -230,6 +225,8 @@ return [
         'gift' => [
             'headline' => 'Programmez l’envoi du cadeau',
             'body' => 'Choisissez la date : ce jour-là, votre proche reçoit votre message et le lien de sa première question. Vous pouvez aussi imprimer une carte à glisser dans une enveloppe.',
+            // Le prénom sur la carte dessinée : le même que sur la couverture du livre.
+            'card_name' => 'Odette',
         ],
 
         'tiles' => [
