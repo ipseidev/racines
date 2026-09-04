@@ -216,7 +216,7 @@ export default function OptIn({
                         <button
                             type="button"
                             onClick={() => setRefusing(false)}
-                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg"
+                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold"
                         >
                             {t('narrator.optin.refusal.back')}
                         </button>
@@ -225,7 +225,7 @@ export default function OptIn({
                             type="button"
                             disabled={refusal.processing}
                             onClick={() => refusal.post(refuseAction)}
-                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg disabled:opacity-60"
+                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold disabled:opacity-60"
                         >
                             {t('narrator.optin.refusal.confirm')}
                         </button>
@@ -427,7 +427,7 @@ export default function OptIn({
                         <button
                             type="submit"
                             disabled={form.processing}
-                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg disabled:opacity-60"
+                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold disabled:opacity-60"
                         >
                             {t('narrator.optin.accept')}
                         </button>
@@ -435,7 +435,7 @@ export default function OptIn({
                         <button
                             type="button"
                             onClick={() => setRefusing(true)}
-                            className="border-brand-sand min-h-[3.5rem] flex-1 rounded-md border px-6 py-4 text-lg"
+                            className="border-brand text-brand min-h-[3.5rem] flex-1 rounded-md border-2 px-6 py-4 text-lg font-semibold"
                         >
                             {t('narrator.optin.refuse')}
                         </button>

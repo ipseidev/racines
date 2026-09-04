@@ -65,7 +65,7 @@ export default function LinkUnavailable({ reason, canRequestNewLink }: Props) {
                     type="button"
                     onClick={requestNewLink}
                     disabled={processing}
-                    className="bg-brand text-brand-foreground mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium disabled:opacity-60"
+                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
                 >
                     {t('narrator.link_unavailable.request_new_link')}
                 </button>

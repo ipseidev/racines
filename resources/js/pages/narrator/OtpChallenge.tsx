@@ -126,7 +126,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                     <button
                         type="submit"
                         disabled={form.processing}
-                        className="bg-brand text-brand-foreground mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium disabled:opacity-60"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
                     >
                         {t('narrator.otp.submit')}
                     </button>
@@ -137,7 +137,7 @@ export default function OtpChallenge({ sentToMasked, locked }: Props) {
                 type="button"
                 onClick={() => send.post(window.location.pathname)}
                 disabled={send.processing}
-                className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium disabled:opacity-60"
+                className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold disabled:opacity-60"
             >
                 {sentToMasked === null
                     ? t('narrator.otp.send')

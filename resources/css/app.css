@@ -185,6 +185,7 @@
      * la taille optique suit la taille de rendu (auto).
      */
     .font-display {
+        color: var(--color-brand);
         font-variation-settings:
             'SOFT' 50,
             'WONK' 1;

@@ -197,14 +197,14 @@ export default function Review({
                                 type="button"
                                 onClick={save}
                                 disabled={processing}
-                                className="bg-brand text-brand-foreground min-h-[2.75rem] rounded-md px-6 py-3 text-lg font-medium disabled:opacity-60"
+                                className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
                             >
                                 {t('narrator.review.save')}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setEditing(false)}
-                                className="border-brand-sand min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                                className="border-brand text-brand min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
                             >
                                 {t('narrator.review.cancel')}
                             </button>
@@ -221,7 +221,7 @@ export default function Review({
                                 setText(readable ?? fluide ?? verbatim ?? '');
                                 setEditing(true);
                             }}
-                            className="border-brand-sand mt-6 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                            className="border-brand text-brand mt-6 min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
                         >
                             {t('narrator.review.edit')}
                         </button>
@@ -321,7 +321,7 @@ export default function Review({
                                 type="button"
                                 disabled={processing}
                                 onClick={() => decide(decision)}
-                                className="border-brand-sand min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-left disabled:opacity-60"
+                                className="border-brand text-brand min-h-[2.75rem] w-full rounded-md border-2 px-6 py-4 text-left disabled:opacity-60"
                             >
                                 <span className="block text-lg font-medium">
                                     {t(

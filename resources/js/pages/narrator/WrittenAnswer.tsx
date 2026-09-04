@@ -85,7 +85,7 @@ export default function WrittenAnswer({
                         form.processing ||
                         form.data.written_answer.trim().length === 0
                     }
-                    className="bg-brand text-brand-foreground mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium disabled:opacity-60"
+                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
                 >
                     {t('narrator.written_answer.send')}
                 </button>
@@ -94,7 +94,7 @@ export default function WrittenAnswer({
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
                     >
                         {t('common.actions.back')}
                     </button>

@@ -85,7 +85,7 @@ export default function AlreadyRecorded({
                 <button
                     type="button"
                     onClick={() => router.post(restartAction)}
-                    className="border-brand-sand mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                    className="border-brand text-brand mt-8 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
                 >
                     {t('narrator.already_recorded.restart')}
                 </button>
@@ -115,7 +115,7 @@ export default function AlreadyRecorded({
                                     },
                                 )
                             }
-                            className="bg-brand text-brand-foreground mt-4 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium"
+                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-4 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold"
                         >
                             {t('narrator.withdrawals.hide')}
                         </button>
@@ -131,7 +131,7 @@ export default function AlreadyRecorded({
                     <button
                         type="button"
                         onClick={() => setConfirmingHide(true)}
-                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg"
+                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
                     >
                         {t('narrator.withdrawals.hide')}
                     </button>

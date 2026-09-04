@@ -362,7 +362,7 @@ export default function Record({
                                 send({ type: 'RESUME_DRAFT' });
                             })();
                         }}
-                        className="bg-brand text-brand-foreground mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold"
                     >
                         {t('narrator.record.draft_resume')}
                     </button>
@@ -375,7 +375,7 @@ export default function Record({
                                 send({ type: 'DISCARD_DRAFT' }),
                             );
                         }}
-                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
                     >
                         {t('narrator.record.draft_discard')}
                     </button>
@@ -395,7 +395,7 @@ export default function Record({
                     <button
                         type="button"
                         onClick={() => void askPermission()}
-                        className="bg-brand text-brand-foreground mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-medium"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
                     >
                         {t('narrator.record.ready')}
                     </button>
@@ -412,7 +412,7 @@ export default function Record({
                 <button
                     type="button"
                     onClick={() => void startRecording()}
-                    className="bg-brand text-brand-foreground mt-8 min-h-[5.5rem] w-full rounded-full px-6 py-6 text-2xl font-medium"
+                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[5.5rem] w-full rounded-full px-6 py-6 text-2xl font-semibold"
                 >
                     {t('narrator.record.start')}
                 </button>
@@ -453,7 +453,7 @@ export default function Record({
                                 send({ type: 'RESUME' });
                             }
                         }}
-                        className="border-brand-sand mt-8 min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-xl font-medium"
+                        className="border-brand text-brand mt-8 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-4 text-xl font-semibold"
                     >
                         {snapshot.state === 'recording'
                             ? t('narrator.record.pause')
@@ -463,7 +463,7 @@ export default function Record({
                     <button
                         type="button"
                         onClick={() => void finish()}
-                        className="bg-brand text-brand-foreground mt-4 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-medium"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-4 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
                     >
                         {t('narrator.record.finish')}
                     </button>
@@ -481,7 +481,7 @@ export default function Record({
                                 send({ type: 'RESUME_AFTER_INTERRUPTION' });
                             });
                         }}
-                        className="bg-brand text-brand-foreground mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-medium"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
                     >
                         {t('narrator.record.interrupted_resume')}
                     </button>
@@ -489,7 +489,7 @@ export default function Record({
                     <button
                         type="button"
                         onClick={() => void finish()}
-                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-4 text-xl font-medium"
+                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-4 text-xl font-semibold"
                     >
                         {t('narrator.record.finish')}
                     </button>
@@ -522,7 +522,7 @@ export default function Record({
                     <button
                         type="button"
                         onClick={() => void upload()}
-                        className="bg-brand text-brand-foreground mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-medium"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-8 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
                     >
                         {t('narrator.record.send')}
                     </button>
@@ -540,7 +540,7 @@ export default function Record({
                                 );
                             }
                         }}
-                        className="border-brand-sand mt-4 min-h-[2.75rem] w-full rounded-md border px-6 py-3 text-lg font-medium"
+                        className="border-brand text-brand mt-4 min-h-[2.75rem] w-full rounded-md border-2 px-6 py-3 text-lg font-semibold"
                     >
                         {t('narrator.record.restart')}
                     </button>
@@ -582,7 +582,7 @@ export default function Record({
                             send({ type: 'RETRY_UPLOAD' });
                             void upload();
                         }}
-                        className="bg-brand text-brand-foreground mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-medium"
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-4 text-xl font-semibold"
                     >
                         {t('narrator.record.retry')}
                     </button>
@@ -641,7 +641,7 @@ export default function Record({
                         <button
                             type="button"
                             onClick={() => setAddingPhoto(true)}
-                            className="border-brand-sand mt-8 min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                            className="border-brand text-brand mt-8 min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
                         >
                             {t('common.photos.add')}
                         </button>

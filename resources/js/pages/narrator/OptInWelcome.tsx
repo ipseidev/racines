@@ -101,7 +101,7 @@ export default function OptInWelcome({
 
                 <a
                     href={vcardUrl}
-                    className="border-brand-sand mt-4 inline-block min-h-[2.75rem] rounded-md border px-6 py-3"
+                    className="border-brand text-brand mt-4 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
                 >
                     {t('narrator.optin_welcome.vcard.button')}
                 </a>
@@ -195,7 +195,7 @@ export default function OptInWelcome({
                             <button
                                 type="submit"
                                 disabled={form.processing}
-                                className="border-brand-sand min-h-[2.75rem] flex-1 rounded-md border px-6 py-3 disabled:opacity-60"
+                                className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold disabled:opacity-60"
                             >
                                 {t('narrator.optin_welcome.wishes.save')}
                             </button>
@@ -203,7 +203,7 @@ export default function OptInWelcome({
                             <button
                                 type="button"
                                 onClick={() => setAsking(false)}
-                                className="border-brand-sand min-h-[2.75rem] flex-1 rounded-md border px-6 py-3"
+                                className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold"
                             >
                                 {t('narrator.optin_welcome.wishes.later')}
                             </button>
@@ -226,7 +226,7 @@ export default function OptInWelcome({
                         <button
                             type="button"
                             onClick={() => setAsking(true)}
-                            className="border-brand-sand min-h-[2.75rem] flex-1 rounded-md border px-6 py-3"
+                            className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold"
                         >
                             {t('narrator.optin_welcome.wishes.start')}
                         </button>
@@ -234,7 +234,7 @@ export default function OptInWelcome({
                         <button
                             type="button"
                             onClick={() => setDeferred(true)}
-                            className="border-brand-sand min-h-[2.75rem] flex-1 rounded-md border px-6 py-3"
+                            className="border-brand text-brand min-h-[2.75rem] flex-1 rounded-md border-2 px-6 py-3 font-semibold"
                         >
                             {t('narrator.optin_welcome.wishes.later')}
                         </button>

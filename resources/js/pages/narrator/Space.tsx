@@ -177,7 +177,7 @@ export default function Space({
                                                 onClick={() =>
                                                     act(story, 'trash')
                                                 }
-                                                className="bg-brand text-brand-foreground mt-3 min-h-[2.75rem] w-full rounded-md px-4 py-3 text-lg"
+                                                className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-3 min-h-[2.75rem] w-full rounded-md px-4 py-3 text-lg"
                                             >
                                                 {t(
                                                     'narrator.withdrawals.trash',
@@ -228,7 +228,7 @@ export default function Space({
                                                         confirmation: word,
                                                     })
                                                 }
-                                                className="bg-brand text-brand-foreground mt-3 min-h-[2.75rem] w-full rounded-md px-4 py-3 text-lg"
+                                                className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-3 min-h-[2.75rem] w-full rounded-md px-4 py-3 text-lg"
                                             >
                                                 {t(
                                                     'narrator.withdrawals.delete',
@@ -299,7 +299,7 @@ export default function Space({
                 />
                 <button
                     type="submit"
-                    className="border-brand-sand mt-4 block min-h-[2.75rem] rounded-md border px-6 py-3 text-lg"
+                    className="border-brand text-brand mt-4 block min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
                 >
                     {t('narrator.space.pause')}
                 </button>

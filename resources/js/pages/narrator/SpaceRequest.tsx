@@ -116,7 +116,7 @@ export default function SpaceRequest({ codeLength }: Props) {
                 <button
                     type="submit"
                     disabled={form.processing}
-                    className="bg-brand text-brand-foreground mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-medium disabled:opacity-60"
+                    className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep mt-6 min-h-[2.75rem] w-full rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
                 >
                     {sent
                         ? t('narrator.space.request.verify')
