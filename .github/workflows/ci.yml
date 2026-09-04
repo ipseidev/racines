@@ -193,10 +193,17 @@ jobs:
           npx wait-on http://127.0.0.1:8000 --timeout 60000
           npx playwright test
 
+      # Le point d'audit de npm rend parfois 503 (vu le 4 septembre 2026) : trois
+      # essais espacés avant de conclure, pour ne pas prendre une panne du
+      # registre pour une vulnérabilité — sans jamais passer outre si elle dure.
       - name: Vulnérabilités connues
         run: |
           composer audit --no-interaction
-          npm audit --audit-level=high
+          for essai in 1 2 3; do
+            if npm audit --audit-level=high; then exit 0; fi
+            [ "$essai" -lt 3 ] && sleep 30
+          done
+          exit 1
 
       - name: Rapport Playwright
         if: failure()
