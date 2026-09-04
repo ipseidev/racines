@@ -60,6 +60,16 @@ return [
                 'kept_words' => 'Ses mots sont mis au propre, jamais réécrits. Le mot à mot est conservé.',
                 'she_decides' => 'C’est elle qui décide de ce que la famille entend.',
             ],
+            // La carte « question de la semaine », posée sur la photo : retirée par
+            // T-142, reprise le soir même à la demande du fondateur (T-144).
+            'card' => [
+                'aria' => 'Exemple de question de la semaine',
+                'label' => 'Question de la semaine',
+                'name' => 'Odette',
+                'question' => 'Quelle odeur vous ramène à votre enfance ?',
+                'answers' => 'Elle répond en parlant.',
+                'duration' => '2 min 14',
+            ],
             'photo_alt' => 'Une femme assise à la table de sa cuisine, le téléphone à la main, songeuse.',
         ],
 
@@ -344,7 +354,6 @@ return [
         'imprint' => 'Mentions légales',
         'consents' => 'Vos accords, dans leur version en vigueur',
         'version' => 'Version :version, en vigueur depuis le :date.',
-        'draft_banner' => 'Ce texte n’est pas encore validé par notre conseil juridique. Il est publié pour transparence, et sera mis à jour après sa relecture.',
     ],
 
     'demo' => [

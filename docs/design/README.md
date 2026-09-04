@@ -215,9 +215,10 @@ dans **l'ordre** et le **choix** des informations. Ce qui change :
   parle, c'est tout. Chaque semaine, [marque] lui envoie une question,
   enregistre sa réponse, la met au propre et la relie dans un livre… ». Le
   titre reste la promesse arrêtée le 4 (T-134).
-- **La carte « question de la semaine » quitte le héros.** Elle était l'objet
-  du héros depuis le 3 ; elle décrivait un rituel avant qu'on ait compris le
-  produit, et le leader n'a rien de tel à cet endroit.
+- **La carte « question de la semaine » quitte le héros, puis y revient le
+  soir même (T-144).** Elle décrivait un rituel avant qu'on ait compris le
+  produit, et le leader n'a rien de tel à cet endroit ; mais le fondateur y
+  tient, et elle reste posée sur la photo, à cheval sur son bord bas.
 - **Les en-têtes de section centrés passent à gauche sur téléphone** (Comment
   ça marche, ce que comprend l'achat, la double page) : centrés au-dessus de
   contenus alignés à gauche, ils cassaient la colonne de lecture. Ils restent

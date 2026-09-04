@@ -44,15 +44,6 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                 })}
             </p>
 
-            {!pilot.legalValidated && (
-                <p
-                    role="status"
-                    className="bg-brand-linen text-brand-muted px-6 py-2.5 text-center text-[0.95rem]"
-                >
-                    {t('public.legal.draft_banner')}
-                </p>
-            )}
-
             <header className="border-brand-sand border-b">
                 <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-4">
                     <div className="flex items-center gap-8">

@@ -92,11 +92,3 @@ test('la page d’accueil annonce ses sections dans l’ordre du dossier', async
         ).toBeVisible();
     }
 });
-
-test('les pages légales portent leur bandeau tant que le conseil n’a pas relu', async ({
-    page,
-}) => {
-    await page.goto('/cgv');
-
-    await expect(page.getByText(/conseil juridique/)).toBeVisible();
-});

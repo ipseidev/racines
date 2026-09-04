@@ -102,7 +102,7 @@ Aucun.
 
 ## 9. Règle de décision par défaut
 
-Si le conseil juridique n'a pas validé un texte au moment prévu, le pilote attend. On ne lance pas avec un bandeau `[À VALIDER PAR CONSEIL]`.
+Si le conseil juridique n'a pas validé un texte au moment prévu, le lancement attend. Depuis T-145 les pages publiques ne portent plus de bandeau d'attente : la garde est `PilotSettings::legal_validated_at`, vérifiée par `golive:check`.
 
 ## 10. Note de checkpoint
 

@@ -38,8 +38,8 @@ type Props = {
  * fait avant Comment ça marche ») : la photo d'abord sur téléphone, le titre,
  * un texte qui dit qui parle, qui fait quoi, et ce qu'on reçoit, l'action,
  * « Comment ça marche », puis quatre repères. La carte « question de la
- * semaine » a quitté le héros : elle décrivait un rituel avant qu'on ait
- * compris le produit.
+ * semaine » reste posée sur la photo : T-142 l'avait retirée, le fondateur
+ * l'a reprise le soir même, il y tient (T-144).
  */
 const STEPS = ['one', 'two', 'three', 'four'] as const;
 
@@ -324,14 +324,40 @@ export default function Landing({
                 {/*
                  * La photo d'abord sur téléphone, à droite sur bureau : ce qu'on
                  * voit avant de lire doit déjà dire « une personne, sa voix ».
+                 * La carte « question de la semaine » est posée dessus, à cheval
+                 * sur le bord bas : le fondateur y tient (T-144). La marge basse
+                 * lui laisse la place qu'elle déborde.
                  */}
-                <img
-                    src="/img/landing/hero.jpg"
-                    alt={t('public.landing.hero.photo_alt')}
-                    width="1400"
-                    height="933"
-                    className="order-first aspect-[4/3] w-full rounded-2xl object-cover object-[60%_25%] lg:order-none lg:aspect-[5/4]"
-                />
+                <div className="relative order-first mb-11 lg:order-none lg:mb-0">
+                    <img
+                        src="/img/landing/hero.jpg"
+                        alt={t('public.landing.hero.photo_alt')}
+                        width="1400"
+                        height="933"
+                        className="aspect-[4/3] w-full rounded-2xl object-cover object-[60%_25%] lg:aspect-[5/4]"
+                    />
+                    <figure
+                        aria-label={t('public.landing.hero.card.aria')}
+                        className="bg-brand-surface absolute bottom-[-2.25rem] left-3 flex w-[min(380px,calc(100%-1.5rem))] flex-col gap-3.5 rounded-2xl px-6 py-5 shadow-[0_24px_60px_rgba(38,33,28,0.18),0_2px_6px_rgba(38,33,28,0.08)] lg:bottom-[-1.75rem] lg:-left-6"
+                    >
+                        <div className="text-brand-muted flex justify-between text-[0.78rem] font-semibold tracking-[0.08em] uppercase">
+                            <span>{t('public.landing.hero.card.label')}</span>
+                            <span>{t('public.landing.hero.card.name')}</span>
+                        </div>
+                        <p className="font-display text-[1.35rem] leading-[1.3] font-medium">
+                            {t('public.landing.hero.card.question')}
+                        </p>
+                        <div className="text-brand-muted flex items-center gap-3.5 text-[0.9rem]">
+                            <Wave />
+                            <span>
+                                <b className="text-brand font-semibold">
+                                    {t('public.landing.hero.card.answers')}
+                                </b>{' '}
+                                {t('public.landing.hero.card.duration')}
+                            </span>
+                        </div>
+                    </figure>
+                </div>
             </section>
 
             {/* Trois engagements, en bandeau sombre ============================ */}

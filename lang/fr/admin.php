@@ -115,9 +115,9 @@ return [
         'welcome_offer_discount' => 'Réduction, en pour cent de la commande',
         'welcome_offer_discount_help' => 'Copié sur chaque code au moment de la demande : changer ce pourcentage ne change ni les codes déjà envoyés, ni le coupon Stripe.',
         'legal' => 'Validation juridique',
-        'legal_help' => 'Tant que cette date est vide, les pages légales portent leur bandeau « à valider par conseil ».',
+        'legal_help' => 'Tant que cette date est vide, les textes publics sont réputés non relus par un conseil, et le lancement attend.',
         'legal_validated_at' => 'Textes validés le',
-        'legal_validated_at_help' => 'Poser cette date fait disparaître le bandeau de toutes les pages publiques. Ne la posez qu’après une relecture réelle par un conseil : sinon vous retirez un avertissement qui est vrai.',
+        'legal_validated_at_help' => 'Cette date atteste que les textes publics ont été relus. Ne la posez qu’après une relecture réelle par un conseil : sinon elle inscrirait une validation fausse, et le lancement s’appuie dessus.',
     ],
 
     // Les adresses laissées contre un code de réduction (T-141).

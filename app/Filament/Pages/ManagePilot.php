@@ -24,10 +24,10 @@ use Filament\Schemas\Schema;
  * `mode` gouverne ce que la page d'accueil annonce et ce que le tunnel vend.
  * Le passer à `prevente` change le prix affiché à tous les visiteurs.
  *
- * `legal_validated_at` fait **disparaître** le bandeau « à valider par
- * conseil » de toutes les pages publiques. C'est un acte, pas une case de
- * confort : le poser sans que le conseil ait relu ferait disparaître un
- * avertissement vrai. `golive:check` le vérifiera au bloc 17.
+ * `legal_validated_at` **atteste** la relecture des textes publics par un
+ * conseil. C'est un acte, pas une case de confort : le poser sans que le
+ * conseil ait relu inscrirait une validation fausse, et `golive:check` s'y
+ * fiera au bloc 17. Les pages n'affichent plus de bandeau d'attente (T-145).
  */
 final class ManagePilot extends SettingsPage
 {
@@ -131,7 +131,7 @@ final class ManagePilot extends SettingsPage
     /**
      * L'enregistrement laisse une trace.
      *
-     * Changer un prix ou lever le bandeau juridique sont des actes qu'on doit
+     * Changer un prix ou dater la validation juridique sont des actes qu'on doit
      * pouvoir dater et attribuer. Les valeurs partent au journal ; ce sont des
      * réglages, pas des données personnelles.
      */

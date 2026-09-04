@@ -70,7 +70,7 @@ it('réserve les réglages du pilote à qui gère la marque', function (): void 
     $this->actingAs($admin)->get(ManagePilot::getUrl())->assertOk();
 });
 
-it('avertit avant de lever le bandeau juridique', function (): void {
+it('avertit avant de dater la validation juridique', function (): void {
     $admin = User::factory()->admin()->withAppAuthentication()->create();
 
     // Le texte d'aide n'est pas décoratif : poser cette date retire un

@@ -19,9 +19,10 @@ use League\CommonMark\CommonMarkConverter;
  * relus par un conseil, et un conseil relit un texte — pas du JSX entrecoupé
  * de classes CSS. Le markdown se diffuse, s'annote et se compare.
  *
- * Tant que `PilotSettings::legal_validated_at` est nul, chaque page porte son
- * bandeau « à valider par conseil ». Il ne disparaît pas de lui-même : c'est
- * un acte, posé dans l'administration, et `golive:check` le vérifie (bloc 17).
+ * `PilotSettings::legal_validated_at` date la relecture des textes par un
+ * conseil. Les pages n'affichent plus de bandeau d'attente (T-145) mais
+ * reçoivent l'état ; il ne change pas de lui-même : c'est un acte, posé dans
+ * l'administration, et `golive:check` le vérifie (bloc 17).
  */
 final class LegalController
 {

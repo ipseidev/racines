@@ -12,8 +12,8 @@ use Inertia\Testing\AssertableInertia;
  * depuis les réglages : un texte juridique qui nomme la mauvaise société est
  * un texte inopposable, et le nom n'est pas encore arrêté.
  *
- * Le bandeau « à valider par conseil » ne disparaît pas de lui-même. C'est un
- * acte, posé dans l'administration.
+ * L'état de validation juridique est exposé aux pages ; il ne change pas de
+ * lui-même, c'est un acte posé dans l'administration (T-145 : plus de bandeau).
  */
 it('rend les trois pages légales', function (string $path, string $needle): void {
     $this->get($path)
@@ -41,7 +41,7 @@ it('substitue l’entité et l’adresse des réglages', function (): void {
     );
 });
 
-it('porte le bandeau tant que le conseil n’a pas relu', function (): void {
+it('expose aux pages l’état de la validation juridique, posé dans l’administration', function (): void {
     $this->get('/cgv')->assertInertia(fn (AssertableInertia $page) => $page
         ->where('legalValidated', false),
     );
@@ -66,10 +66,4 @@ it('affiche les accords dans leur version en vigueur', function (): void {
             ->where('texts.0.label', fn (mixed $label) => is_string($label)
                 && ! str_starts_with($label, 'enums.')),
         );
-});
-
-it('annonce que les textes ne sont pas encore validés', function (): void {
-    $public = require base_path('lang/fr/public.php');
-
-    expect($public['legal']['draft_banner'])->toContain('conseil juridique');
 });

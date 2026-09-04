@@ -14,8 +14,8 @@ const fallback: Pilot = {
     pilotPriceCents: 0,
     extraCopyPriceCents: 0,
     phoneOptionPriceCents: 0,
-    // Faux par défaut : si le réglage n'arrive pas, on affiche le bandeau
-    // plutôt que de le taire. Se tromper dans ce sens-là est bénin.
+    // Faux par défaut : si le réglage n'arrive pas, on ne prétend pas que les
+    // textes ont été relus. Se tromper dans ce sens-là est bénin.
     legalValidated: false,
 };
 
