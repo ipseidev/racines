@@ -7,15 +7,21 @@ import { cn } from '@/lib/utils';
 export default function PasswordInput({
     className,
     ref,
+    showLabel = 'Show password',
+    hideLabel = 'Hide password',
     ...props
-}: Omit<ComponentProps<'input'>, 'type'> & { ref?: Ref<HTMLInputElement> }) {
+}: Omit<ComponentProps<'input'>, 'type'> & {
+    ref?: Ref<HTMLInputElement>;
+    showLabel?: string;
+    hideLabel?: string;
+}) {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
         <div className="relative">
             <Input
                 type={showPassword ? 'text' : 'password'}
-                className={cn('pr-10', className)}
+                className={cn('pr-11', className)}
                 ref={ref}
                 {...props}
             />
@@ -23,13 +29,13 @@ export default function PasswordInput({
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute inset-y-0 right-0 flex items-center rounded-r-md px-3 focus-visible:ring-[3px] focus-visible:outline-none"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? hideLabel : showLabel}
                 tabIndex={-1}
             >
                 {showPassword ? (
-                    <EyeOff className="size-4" />
+                    <EyeOff className="size-5" />
                 ) : (
-                    <Eye className="size-4" />
+                    <Eye className="size-5" />
                 )}
             </button>
         </div>

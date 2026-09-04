@@ -1,6 +1,7 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,38 +10,21 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { Label } from '@/components/ui/label';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
+import { useT } from '@/hooks/useT';
 import { store } from '@/routes/two-factor/login';
 
 export default function TwoFactorChallenge() {
+    const t = useT();
     const [showRecoveryInput, setShowRecoveryInput] = useState<boolean>(false);
     const [code, setCode] = useState<string>('');
 
-    const authConfigContent = useMemo<{
-        title: string;
-        description: string;
-        toggleText: string;
-    }>(() => {
-        if (showRecoveryInput) {
-            return {
-                title: 'Recovery code',
-                description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
-            };
-        }
-
-        return {
-            title: 'Authentication code',
-            description:
-                'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
-        };
-    }, [showRecoveryInput]);
-
     setLayoutProps({
-        title: authConfigContent.title,
-        description: authConfigContent.description,
+        title: t('auth.pages.two_factor_challenge.title'),
+        description: showRecoveryInput
+            ? t('auth.two_factor.recovery')
+            : t('auth.two_factor.code'),
     });
 
     const toggleRecoveryMode = (clearErrors: () => void): void => {
@@ -51,83 +35,84 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-factor authentication" />
+            <Head title={t('auth.pages.two_factor_challenge.title')} />
 
-            <div className="space-y-6">
-                <Form
-                    {...store.form()}
-                    className="space-y-4"
-                    resetOnError
-                    resetOnSuccess={!showRecoveryInput}
-                >
-                    {({ errors, processing, clearErrors }) => (
-                        <>
-                            {showRecoveryInput ? (
-                                <>
-                                    <Input
-                                        name="recovery_code"
-                                        type="text"
-                                        placeholder="Enter recovery code"
-                                        autoFocus={showRecoveryInput}
-                                        required
-                                    />
-                                    <InputError
-                                        message={errors.recovery_code}
-                                    />
-                                </>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center space-y-3 text-center">
-                                    <div className="flex w-full items-center justify-center">
-                                        <InputOTP
-                                            name="code"
-                                            maxLength={OTP_MAX_LENGTH}
-                                            value={code}
-                                            onChange={(value) => setCode(value)}
-                                            disabled={processing}
-                                            pattern={REGEXP_ONLY_DIGITS}
-                                            autoFocus
-                                        >
-                                            <InputOTPGroup>
-                                                {Array.from(
-                                                    { length: OTP_MAX_LENGTH },
-                                                    (_, index) => (
-                                                        <InputOTPSlot
-                                                            key={index}
-                                                            index={index}
-                                                        />
-                                                    ),
-                                                )}
-                                            </InputOTPGroup>
-                                        </InputOTP>
-                                    </div>
-                                    <InputError message={errors.code} />
-                                </div>
-                            )}
-
-                            <Button
-                                type="submit"
-                                className="w-full"
-                                disabled={processing}
-                            >
-                                Continue
-                            </Button>
-
-                            <div className="text-muted-foreground text-center text-sm">
-                                <span>or you can </span>
-                                <button
-                                    type="button"
-                                    className="text-foreground cursor-pointer underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                    onClick={() =>
-                                        toggleRecoveryMode(clearErrors)
-                                    }
-                                >
-                                    {authConfigContent.toggleText}
-                                </button>
+            <Form
+                {...store.form()}
+                className="flex flex-col gap-5"
+                resetOnError
+                resetOnSuccess={!showRecoveryInput}
+            >
+                {({ errors, processing, clearErrors }) => (
+                    <>
+                        {showRecoveryInput ? (
+                            <div className="grid gap-2">
+                                <Label htmlFor="recovery_code">
+                                    {t('auth.fields.recovery_code')}
+                                </Label>
+                                <Input
+                                    id="recovery_code"
+                                    name="recovery_code"
+                                    type="text"
+                                    autoFocus={showRecoveryInput}
+                                    autoComplete="one-time-code"
+                                    required
+                                />
+                                <InputError message={errors.recovery_code} />
                             </div>
-                        </>
-                    )}
-                </Form>
-            </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-3 text-center">
+                                <InputOTP
+                                    name="code"
+                                    maxLength={OTP_MAX_LENGTH}
+                                    value={code}
+                                    onChange={(value) => setCode(value)}
+                                    disabled={processing}
+                                    pattern={REGEXP_ONLY_DIGITS}
+                                    aria-label={t('auth.fields.code')}
+                                    autoFocus
+                                >
+                                    <InputOTPGroup>
+                                        {Array.from(
+                                            { length: OTP_MAX_LENGTH },
+                                            (_, index) => (
+                                                <InputOTPSlot
+                                                    key={index}
+                                                    index={index}
+                                                />
+                                            ),
+                                        )}
+                                    </InputOTPGroup>
+                                </InputOTP>
+                                <InputError message={errors.code} />
+                            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={processing}
+                        >
+                            {processing
+                                ? t('auth.actions.waiting')
+                                : t('auth.actions.continue')}
+                        </Button>
+
+                        <p className="text-brand-muted text-center text-base">
+                            {t('auth.two_factor.or')}{' '}
+                            <button
+                                type="button"
+                                className="text-brand hover:decoration-brand decoration-brand-sand cursor-pointer underline underline-offset-4 transition-colors"
+                                onClick={() => toggleRecoveryMode(clearErrors)}
+                            >
+                                {showRecoveryInput
+                                    ? t('auth.links.use_code')
+                                    : t('auth.links.use_recovery')}
+                            </button>
+                        </p>
+                    </>
+                )}
+            </Form>
         </>
     );
 }

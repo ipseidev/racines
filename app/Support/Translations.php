@@ -18,11 +18,22 @@ final class Translations
 {
     private const COMMON = 'common';
 
-    /** Préfixe de nom de route vers fichier de langue. */
+    /**
+     * Préfixe de nom de route vers fichier de langue.
+     *
+     * Les pages de compte n'ont pas de préfixe commun : Fortify nomme ses
+     * routes `login`, `register`, `password.*`, `verification.*`,
+     * `two-factor.*`. Elles sont énumérées, et partagent un seul fichier.
+     */
     private const SPACES = [
         'narrator.' => 'narrator',
         'family.' => 'family',
         'initiator.' => 'initiator',
+        'login' => 'auth',
+        'register' => 'auth',
+        'password.' => 'auth',
+        'verification.' => 'auth',
+        'two-factor.' => 'auth',
     ];
 
     /**
