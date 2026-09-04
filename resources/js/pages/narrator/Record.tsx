@@ -495,7 +495,7 @@ export default function Record({
 
             {/* Écran 2 : le grand bouton rond ==================================== */}
             {state === 'ready' ? (
-                <section className="enter mt-10 flex flex-col items-center gap-6 text-center">
+                <section className="enter mt-4 flex flex-col items-center gap-5 text-center">
                     <div className="record-halo">
                         <button
                             type="button"
@@ -520,7 +520,7 @@ export default function Record({
 
             {/* Écran 3 : ça tourne =============================================== */}
             {capturing ? (
-                <section className="enter mt-10 flex flex-col items-center gap-6 text-center">
+                <section className="enter mt-4 flex flex-col items-center gap-5 text-center">
                     <div className={state === 'recording' ? 'record-halo' : ''}>
                         <div
                             className={`flex size-44 flex-col items-center justify-center gap-1 rounded-full transition-colors duration-500 ${

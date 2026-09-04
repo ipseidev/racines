@@ -339,6 +339,9 @@
     .record-halo {
         position: relative;
         isolation: isolate;
+        /* Le halo déborde du bouton d'un tiers : on lui laisse cette place,
+           sinon il passe sur la question au-dessus et sur l'aide en dessous. */
+        margin-block: 3rem;
     }
 
     .record-halo::before,
@@ -366,7 +369,7 @@
             opacity: 0.9;
         }
         100% {
-            transform: scale(1.55);
+            transform: scale(1.4);
             opacity: 0;
         }
     }
