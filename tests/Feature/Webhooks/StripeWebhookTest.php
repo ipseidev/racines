@@ -289,3 +289,78 @@ it('naît en prévente quand le mode l’est', function (): void {
 
     expect(Order::query()->firstOrFail()->includes(Sku::CorePrevente))->toBeTrue();
 });
+
+/*
+ * Les paiements à notification différée.
+ *
+ * Le compte a Klarna, Pix et BLIK actifs — et c'est voulu : omettre
+ * `payment_method_types` laisse Stripe proposer la méthode qui convertit le
+ * mieux. Mais pour ces méthodes-là, `checkout.session.completed` arrive
+ * **pendant que la session est encore impayée**, et le succès ne vient
+ * qu'ensuite, par `checkout.session.async_payment_succeeded`.
+ *
+ * Sans distinction, la chaîne se trompe deux fois d'un coup : elle offre le
+ * cadeau à quelqu'un qui n'a pas payé, et n'offre rien à celui qui paie une
+ * heure plus tard. Ici, un projet créé pour rien, c'est une invitation
+ * envoyée à un parent pour une commande qui échouera (T-167).
+ */
+it('n’exécute rien tant que la session n’est pas payée', function (): void {
+    Queue::fake();
+    Notification::fake();
+
+    $buyer = User::factory()->create();
+    $draft = payableDraft();
+
+    $session = completedSession($draft, $buyer, ['payment_status' => 'unpaid']);
+
+    postWebhook(['type' => 'checkout.session.completed', 'data' => ['object' => $session]])
+        ->assertSuccessful();
+
+    expect(Order::query()->count())->toBe(0)
+        ->and(Project::query()->count())->toBe(0);
+
+    Queue::assertNotPushed(SendGiftInvitation::class);
+});
+
+it('exécute la commande quand le paiement différé aboutit', function (): void {
+    Queue::fake();
+    Notification::fake();
+
+    $buyer = User::factory()->create();
+    $draft = payableDraft();
+
+    $session = completedSession($draft, $buyer, ['payment_status' => 'unpaid']);
+
+    postWebhook(['type' => 'checkout.session.completed', 'data' => ['object' => $session]])
+        ->assertSuccessful();
+
+    // Une heure plus tard, Klarna confirme.
+    $paid = array_merge($session, ['payment_status' => 'paid']);
+
+    postWebhook(['type' => 'checkout.session.async_payment_succeeded', 'data' => ['object' => $paid]])
+        ->assertSuccessful();
+
+    $order = Order::query()->where('stripe_checkout_session_id', $session['id'])->firstOrFail();
+
+    expect($order->status)->toBe(OrderStatus::Paid);
+    Queue::assertPushed(SendGiftInvitation::class);
+});
+
+it('ne crée rien quand le paiement différé échoue', function (): void {
+    Queue::fake();
+    Notification::fake();
+
+    $buyer = User::factory()->create();
+    $draft = payableDraft();
+
+    $session = completedSession($draft, $buyer, ['payment_status' => 'unpaid']);
+
+    postWebhook(['type' => 'checkout.session.completed', 'data' => ['object' => $session]])
+        ->assertSuccessful();
+
+    postWebhook(['type' => 'checkout.session.async_payment_failed', 'data' => ['object' => $session]])
+        ->assertSuccessful();
+
+    expect(Order::query()->count())->toBe(0)
+        ->and(Project::query()->count())->toBe(0);
+});

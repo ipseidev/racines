@@ -14,11 +14,21 @@ use Laravel\Cashier\Events\WebhookReceived;
 /**
  * Ce que Stripe nous dit, et ce qu'on en fait.
  *
- * Deux événements seulement, et c'est volontaire : `checkout.session.completed`
- * exécute la commande, `charge.refunded` en enregistre le remboursement. Tout
- * le reste est ignoré **sans broncher** — Stripe envoie des dizaines de types
- * d'événements, et une erreur sur un type inconnu ferait retenter le webhook
- * indéfiniment.
+ * Quatre événements, et c'est volontaire. `checkout.session.completed` exécute
+ * la commande **si la session est payée**, `checkout.session.async_payment_succeeded`
+ * l'exécute quand elle finit par l'être, `async_payment_failed` en prend acte,
+ * et `charge.refunded` enregistre le remboursement. Tout le reste est ignoré
+ * **sans broncher** — Stripe envoie des dizaines de types d'événements, et une
+ * erreur sur un type inconnu ferait retenter le webhook indéfiniment.
+ *
+ * **Pourquoi la condition de paiement.** Le tunnel ne passe pas
+ * `payment_method_types` : Stripe propose alors la méthode qui convertit le
+ * mieux, et le compte a Klarna, Pix et BLIK actifs. Pour ces méthodes à
+ * notification différée, `completed` arrive **pendant que la session est
+ * encore impayée**, et le succès ne vient qu'ensuite. Exécuter sur `completed`
+ * seul se tromperait deux fois d'un coup : le cadeau partirait chez un parent
+ * pour une commande qui échouera, et la commande qui aboutit une heure plus
+ * tard ne partirait jamais (T-167).
  *
  * La signature est vérifiée par Cashier avant que cet écouteur soit appelé :
  * un événement non signé n'arrive jamais ici.
@@ -32,7 +42,9 @@ final readonly class FulfillOrderOnStripeWebhook
         $type = (string) ($event->payload['type'] ?? '');
 
         match ($type) {
-            'checkout.session.completed' => $this->complete($event->payload),
+            'checkout.session.completed',
+            'checkout.session.async_payment_succeeded' => $this->complete($event->payload),
+            'checkout.session.async_payment_failed' => $this->paymentFailed($event->payload),
             'charge.refunded' => $this->refund($event->payload),
             default => null,
         };
@@ -45,7 +57,35 @@ final readonly class FulfillOrderOnStripeWebhook
     {
         $session = (array) data_get($payload, 'data.object', []);
 
+        // « Pas impayée » plutôt que « payée » : une commande entièrement
+        // remisée sort en `no_payment_required`, et une session ancienne peut
+        // ne pas porter le champ du tout. C'est l'impayé qu'on refuse, pas
+        // tout ce qui n'est pas exactement `paid`.
+        if (data_get($session, 'payment_status') === 'unpaid') {
+            Log::info('checkout.awaiting_payment', [
+                'session_id' => data_get($session, 'id'),
+            ]);
+
+            return;
+        }
+
         $this->fulfil->handle($session);
+    }
+
+    /**
+     * Le paiement différé a échoué.
+     *
+     * Rien à défaire : la condition de paiement fait qu'aucune commande n'a
+     * été créée. On le consigne pour que le support puisse répondre à
+     * quelqu'un qui croit avoir payé.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function paymentFailed(array $payload): void
+    {
+        Log::warning('checkout.async_payment_failed', [
+            'session_id' => data_get($payload, 'data.object.id'),
+        ]);
     }
 
     /**
