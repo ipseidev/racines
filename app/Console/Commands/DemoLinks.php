@@ -300,8 +300,8 @@ final class DemoLinks extends Command
                 'titre' => 'On achète, elle dit oui ou non',
                 'etapes' => [
                     ['quoi' => 'Page d’accueil, puis l’essai : enregistrer 20 secondes, réécouter. Rien ne doit partir.', 'url' => rtrim((string) config('app.url'), '/').'/essai'],
-                    ['quoi' => sprintf('Commander %s plus l’option téléphone %s avec la carte de test.', self::euros($pilot->pilot_price_cents), self::euros($pilot->phone_option_price_cents)), 'bloque' => 'compte Stripe de test et ses cinq prix'],
-                    ['quoi' => 'Recevoir le webhook et vérifier commande, projet, narrateur, option.', 'bloque' => 'Stripe CLI'],
+                    ['quoi' => sprintf('Commander %s plus l’option téléphone %s avec la carte de test.', self::euros($pilot->pilot_price_cents), self::euros($pilot->phone_option_price_cents)), 'cmd' => 'stripe listen --api-key "$(grep \'^STRIPE_SECRET=\' .env | cut -d= -f2-)" --forward-to http://localhost:8001/stripe/webhook'],
+                    ['quoi' => 'Recevoir le webhook et vérifier commande, projet, narrateur, option. L’écouteur imprime le code de réponse : un 200 sur `checkout.session.completed` et la commande existe.'],
                     [
                         'quoi' => 'Elle accepte : les quatre cases, puis projet actif, premier prompt au jour choisi 09:00, fiche contact proposée. **Lien à usage unique**, et la suite bout en bout le consomme : s’il répond « vous avez déjà répondu », prenez-en un neuf avec `demo:invitation`.',
                         'url' => self::link(TokenType::Invitation, 'optin-accept'),
@@ -321,8 +321,8 @@ final class DemoLinks extends Command
                     ['quoi' => 'Se connecter : la configuration TOTP est forcée au premier accès, puis exigée ensuite.', 'url' => rtrim((string) config('app.url'), '/').'/admin'],
                     ['quoi' => 'Ouvrir une histoire partagée, écouter 5 secondes, corriger un mot : trois entrées d’audit, dont la correction avec son diff.'],
                     ['quoi' => 'Modifier une ligne d’audit à la main dans psql : le trigger refuse. Puis vérifier la chaîne.', 'cmd' => 'audit:verify'],
-                    ['quoi' => 'Avec un compte en lecture seule : aucun bouton d’action, et 403 sur une tentative directe.'],
-                    ['quoi' => 'Rembourser partiellement une commande.', 'bloque' => 'compte Stripe de test'],
+                    ['quoi' => 'Avec le compte de lecture seule `lecture@example.test` (même mot de passe) : aucun bouton d’action, et 403 sur une tentative directe.'],
+                    ['quoi' => 'Rembourser partiellement une commande. Demande une commande née d’un **vrai** paiement : celle du décor porte une référence factice que Stripe refusera. En faire une par `/acheter`, écouteur allumé.'],
                 ],
             ],
             [

@@ -11,10 +11,16 @@ use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 
 /**
- * Compte d'administration pour le développement et les tests.
+ * Comptes du back-office pour le développement et les tests.
  *
  * Jamais exécuté en production : les comptes du personnel y sont créés à la
  * main, avec double authentification obligatoire (doc 04 §12).
+ *
+ * **Deux comptes et non un.** Le point 4 du checkpoint du bloc 11 vérifie
+ * qu'un compte en lecture seule ne voit aucun bouton d'action et reçoit un 403
+ * s'il force le passage — un bouton n'est pas une autorisation, et le serveur
+ * ne le croit pas sur parole. La feuille demandait ce geste sans que le décor
+ * fournisse de quoi le faire (T-173).
  */
 final class AdminUserSeeder extends Seeder
 {
@@ -34,6 +40,19 @@ final class AdminUserSeeder extends Seeder
                 'password' => Hash::make($password),
                 'email_verified_at' => now(),
                 'role' => UserRole::Admin,
+            ],
+        );
+
+        // Même mot de passe : c'est un décor local, et deux mots de passe à
+        // retenir feraient chercher dans un fichier au milieu d'une
+        // vérification.
+        User::query()->updateOrCreate(
+            ['email' => 'lecture@example.test'],
+            [
+                'name' => 'Support, lecture seule',
+                'password' => Hash::make($password),
+                'email_verified_at' => now(),
+                'role' => UserRole::SupportReadonly,
             ],
         );
     }
