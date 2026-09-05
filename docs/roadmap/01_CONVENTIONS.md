@@ -194,6 +194,8 @@ d'onglets a introduit des cibles de 40 px là où le dossier en exige 44 (T-164)
 et une entrée en fondu a rendu trois audits d'accessibilité intermittents
 (T-161). Aucun n'aurait été vu par `npm run check`.
 
+**Et on ne la joue pas pendant une vérification humaine.** La suite écrit sur la même base que la personne qui déroule un checkpoint : une notification différée d'une minute tombée au milieu d'une exécution a coûté une heure de recherche pour un défaut qui n'existait pas (T-166).
+
 **Et on resème avant de conclure.** Trois échecs consécutifs ont été imputés à
 tort au code alors qu'ils venaient du décor vieilli entre deux exécutions —
 cent cinq secondes écoutées au lieu de trente-cinq, un jeton à usage unique

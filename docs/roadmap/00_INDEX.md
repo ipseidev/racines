@@ -37,7 +37,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) Twilio + Resend | `bloc-05-done` |
 | 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) clés + corpus de voix | `bloc-06-done` |
 | 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ☑ terminé (2026-09-03) — checkpoint §7 joué par un humain, 4 écarts trouvés et corrigés | `bloc-07-done` |
-| 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-08-done` |
+| 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ☑ terminé (2026-09-05) — checkpoint §7 joué sur un vrai téléphone, 4 écarts trouvés et corrigés | `bloc-08-done` |
 | 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ☑ terminé (2026-09-05) — checkpoint §7 joué par un humain, 3 écarts trouvés et corrigés | `bloc-09-done` |
 | 10 | [Tunnel d'achat, Stripe, cadeau, opt-in narrateur](blocs/B10_tunnel_achat_optin.md) | 09 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) un compte Stripe | `bloc-10-done` |
 | 11 | [Back-office support et journal d'audit](blocs/B11_backoffice_audit.md) | 10 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local (sauf le point 5) | `bloc-11-done` |

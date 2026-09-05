@@ -246,7 +246,7 @@ Tout le mode opératoire — jouer un achat, rejouer un événement, diagnostiqu
 **Rien à acheter, rien à créer.** Six checkpoints sont codés et n'attendent qu'un humain pour être déroulés, en local, avec les fournisseurs simulés.
 
 - **Bloc 07** — validation, visibilité, retraits. ~30 minutes.
-- **Bloc 08** — écoute famille et réactions. ~20 minutes.
+- ~~**Bloc 08** — écoute famille et réactions.~~ **Fait le 2026-09-05**, sur un vrai iPhone.
 - ~~**Bloc 09** — moteur de complétion.~~ **Fait le 2026-09-05.** Le préalable ne se force plus à la main : `sail artisan demo:moteur` arme les trois signaux, dit ce qu'il a armé, et se rejoue (T-153).
 - **Bloc 12** — les photos. ~15 minutes, et deux préalables gratuits : `sail up -d clamav` une première fois (deux à trois minutes, un demi-gigaoctet de signatures, gardé ensuite), puis une **photo prise avec ton iPhone** — c'est le seul moyen d'éprouver la conversion HEIC, qu'aucun outil de cette image ne sait fabriquer. Vérifie avec `exiftool` sur l'original stocké qu'il ne reste aucune coordonnée GPS : c'est le point le plus important du bloc.
 - **Bloc 11, points 1 à 4** — le back-office. ~20 minutes : configurer ta double authentification à la première connexion sur `/admin` (l'application d'authentification de ton téléphone suffit), ouvrir la fiche d'une histoire, corriger un mot, puis `sail artisan audit:verify` — et pour voir la garde fonctionner, tenter un `update audit_logs set action='x'` en base, qui doit échouer. Le point 5 demande Stripe.
@@ -317,7 +317,7 @@ Le seul endroit à tenir à jour.
 | 9 | Twilio : SID, token, numéro vérifié, expéditeur « NARRAE » enregistré | bloc 05 — **le nom est arrêté** | ☐ |
 | 10 | Resend : clé, domaine narrae.fr vérifié, secret de webhook | bloc 05 — **le nom est arrêté** | ☐ |
 | 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☑ **fait le 2026-09-03** — cinq points sur cinq, quatre écarts trouvés et corrigés (T-127 à T-129), bloc tagué |
-| 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | **en cours** — points 1 et 2 validés le 2026-09-03, deux écarts déjà corrigés (T-130, T-131) |
+| 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | ☑ **fait le 2026-09-05** — sept points sur sept, joué sur un vrai iPhone ; quatre écarts trouvés et corrigés (T-156 à T-158, T-160, T-164, T-166), bloc tagué |
 | 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☑ **fait le 2026-09-05** — cinq points sur cinq, trois écarts trouvés et corrigés (T-153 à T-155), bloc tagué |
 | 12ter | Relire le ton des onze messages du moteur | bloc 09 | **en cours** — les onze textes lus le 2026-09-05, rien de culpabilisant ; deux formulations pointent une absence (`react_suggestion`, `initiator_alert`), toutes deux adressées à l'Initiateur·rice. Verdict du fondateur en attente |
 | 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | **en cours** — point 5 joué le 2026-09-05 : fonctionnel mais « brut » ; passe de design faite le jour même (T-149) ; **à rejouer**, puis points 3 et 4 |

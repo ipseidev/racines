@@ -1,6 +1,6 @@
 # Bloc 08 — Écoute famille et réactions
 
-Statut : ◐ en cours · Dépend de : 07 · Tag de fin : `bloc-08-done`
+Statut : ☑ terminé (2026-09-05) — checkpoint §7 joué par un humain sur un vrai téléphone, quatre écarts trouvés et corrigés · Dépend de : 07 · Tag de fin : `bloc-08-done`
 
 **⏳ Prêt à checkpointer** — [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md) §2 : rien à fournir, ~20 minutes de ton temps. Mailpit couvre l'invitation et la notification ; un téléphone sur le réseau local est un confort, pas une condition.
 
@@ -73,7 +73,7 @@ Aucun.
 ### 6.5 Clôture
 - [x] Annexe B, `01_CONVENTIONS.md` §15, `02_GLOSSAIRE_TECH.md` §7 si des événements ont été ajoutés.
 - [x] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts.
-- [ ] Commit `chore(bloc-08): terminé`, tag `bloc-08-done` — après le checkpoint §7 joué sur un vrai téléphone.
+- [x] Commit `chore(bloc-08): terminé`, tag `bloc-08-done` — checkpoint §7 joué sur un vrai téléphone le 2026-09-05, sept points sur sept (T-158, T-160, T-164, T-166).
 
 ## 7. Checkpoint démontrable
 
@@ -96,6 +96,42 @@ Si un proche n'a ni email ni téléphone valide, l'Initiateur·rice peut copier 
 ## 10. Note de checkpoint
 
 _Date, exécutant, résultat, écarts :_
+
+**2026-09-05 — Nicolas Serra (humain, sur son iPhone) + Claude (agent) — checkpoint §7 terminé, sept points sur sept, quatre écarts trouvés et corrigés.**
+
+Les points 1 et 2 avaient été validés le 2026-09-03. Les points 3 à 7 se sont joués le 2026-09-05, sur un téléphone réel du même réseau.
+
+### Ce que le checkpoint a donné
+
+| Point | Résultat |
+|---|---|
+| 3. Écouter 35 s puis réagir | Les 35 secondes comptées, `reached_30s` posé, la réaction enregistrée avec le mot. La notification n'est pas arrivée **pour une raison extérieure au produit** : la suite bout en bout tournait au même moment sur la même base. Rejouée seule, la chaîne produit bien son message (voir l'écart de méthode ci-dessous) |
+| 4. Drapeau « lendemain matin » | Une réaction de plus, **aucun message parti** |
+| 5. Antidater puis `reactions:send-digests` | « 1 résumé envoyé », et le texte dit « Hier, une personne a écouté vos histoires » — le pluriel corrigé en T-130 tient |
+| 6. Remettre le drapeau | Revenu à `immediate` |
+| 7. Forger l'adresse d'une histoire masquée | **404**, page `StoryUnavailable`, et **aucune donnée** dans la réponse : ni titre, ni question, ni audio, ni transcription |
+
+### Écarts consignés
+
+- **T-158, T-160, T-164 — le design.** Verdict du fondateur en ouvrant le lien : « très brut, pauvre, comparé au reste de l'application ». Ces pages dataient d'avant le socle de T-134 et T-149. Reprises sur ce socle, mécanisme inchangé. Trois passages sur un vrai téléphone ont ensuite trouvé un double cadre autour du lecteur, deux libellés coupés en deux, un curseur d'onglets mal ancré, et — par la garde ajoutée pour les libellés — des cibles tactiles de 40 px là où le dossier en exige 44.
+- **T-156, T-157 — jouer sur un téléphone était impossible.** Les routes à jeton étaient liées au domaine court : depuis l'IP du Mac, tout lien recevait un 404 pendant que la page d'accueil répondait 200. `Links::routeDomain()` ne contraint plus le domaine qu'en production. Débloque aussi les blocs 04 et 12.
+- **T-161 — la palette ne fait pas défaut.** Trois audits d'accessibilité ont accusé les couleurs de marque ; c'était le scan qui mesurait pendant le fondu d'entrée. Le blanc sur terracotta vaut 5,70:1 une fois la page posée, non 3,78.
+- **T-166 — les numéros du décor n'étaient pas des numéros.** Le narrateur du scénario d'écoute portait `+336000175de` : les numéros étaient bâtis sur `md5()`, dont les chiffres vont jusqu'à `f`. Invisible en local, refusé par Twilio — donc un échec qui serait tombé au premier envoi réel du bloc 05.
+
+### Un écart de méthode, et il a coûté une heure
+
+**J'ai lancé la suite bout en bout pendant que le fondateur testait, sur la même base.** Sa réaction de 18:12 a bien été enregistrée, mais la notification différée d'une minute est tombée au milieu de la suite, qui écrivait sur les mêmes tables. Une heure de recherche pour un défaut qui n'existait pas. Corollaire de T-165 : **on ne joue pas la suite pendant une vérification humaine.**
+
+### Ce qui reste dû, et n'appartient pas au code
+
+- **Le SMS de réaction ne porte pas le mot du proche.** Vérifié à l'envoi : « Camille a écouté « … » sur Narrae. » Le courriel le porte. Un narrateur joignable par SMS seulement apprend donc qu'on l'a écouté sans lire ce qu'on lui a dit — et c'est précisément le mot qui donne envie de raconter la suivante. La question était déjà ouverte dans la note du 2026-09-03 ; elle appartient au fondateur, parce qu'un SMS long coûte deux segments et qu'un mot de proche peut contenir n'importe quoi.
+- **Le moment de la notification** (`immediate` contre `next-morning`) reste une micro-expérience du pilote.
+
+### Portail qualité
+
+`sail composer check` vert : Pint, Larastan niveau 8 à zéro erreur, **1 268 tests** Pest. Vitest 173. **71 tests bout en bout sur 71**, `--workers=1`.
+
+---
 
 **2026-09-02 — Claude (agent) — code livré, checkpoint §7 joué en simulé.**
 

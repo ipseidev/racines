@@ -492,7 +492,7 @@ final class E2ELinksSeeder extends Seeder
         $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
-            'phone_e164' => '+336000'.substr(md5($scenario), 0, 4),
+            'phone_e164' => '+336000'.self::digits($scenario),
             'birth_year' => 1943,
         ]);
 
@@ -524,7 +524,7 @@ final class E2ELinksSeeder extends Seeder
         $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
-            'phone_e164' => '+3360001'.substr(md5($scenario), 0, 4),
+            'phone_e164' => '+3360001'.self::digits($scenario),
             'birth_year' => 1943,
         ]);
 
@@ -701,7 +701,7 @@ final class E2ELinksSeeder extends Seeder
         $this->consentingNarrator($project, [
             'first_name' => 'Odette',
             'display_name' => 'Odette',
-            'phone_e164' => '+3360000'.substr(md5($scenario), 0, 4),
+            'phone_e164' => '+3360000'.self::digits($scenario),
             'birth_year' => 1943,
         ]);
 
@@ -866,6 +866,20 @@ final class E2ELinksSeeder extends Seeder
     }
 
     /** Valeur connue d'un lien, complétée à 43 caractères. */
+    /**
+     * Quatre chiffres stables tirés du nom d'un scénario.
+     *
+     * `md5()` était utilisé ici, et ses chiffres hexadécimaux vont jusqu'à
+     * `f` : un numéro sur deux portait une lettre. En local le journal
+     * l'accepte et le défaut reste invisible ; Twilio le refuse, et ce refus
+     * serait tombé au premier envoi réel du bloc 05 — sur le checkpoint qui
+     * attend justement de voir un SMS partir.
+     */
+    private static function digits(string $scenario): string
+    {
+        return str_pad((string) (crc32($scenario) % 10000), 4, '0', STR_PAD_LEFT);
+    }
+
     public static function token(string $scenario): string
     {
         return str_pad("demo-{$scenario}-link", 43, 'x');
