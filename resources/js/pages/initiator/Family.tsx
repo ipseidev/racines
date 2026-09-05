@@ -1,6 +1,18 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
+import { CheckField } from '@/components/form/CheckField';
+import { SubmitButton } from '@/components/form/SubmitButton';
+import { TextField } from '@/components/form/TextField';
+import { Avatar } from '@/components/space/Avatar';
+import { ConfirmDialog } from '@/components/space/ConfirmDialog';
+import { Refresh, Trash } from '@/components/space/Icons';
+import { PageHeader } from '@/components/space/PageHeader';
+import { Pill } from '@/components/space/Pill';
+import { ShareSheet } from '@/components/space/ShareSheet';
 import { useT } from '@/hooks/useT';
+import { formatDate } from '@/lib/dates';
+import { stagger } from '@/lib/motion';
 
 type Member = {
     id: string;
@@ -16,29 +28,22 @@ type Member = {
 type Props = {
     members: Member[];
     copiedLink: string | null;
+    copiedFor: string | null;
 };
 
-function formatDate(iso: string): string {
-    return new Intl.DateTimeFormat('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    }).format(new Date(iso));
-}
-
 /**
- * Le cercle d'écoute.
+ * Les proches qui écoutent.
  *
- * Un lien par personne, jamais un lien commun (bloc 08) : c'est ce qui permet
- * de retirer un accès à une seule personne, et de savoir qui a écouté. Le
- * retrait est un `removed_at` et non une suppression — savoir qu'une personne
- * a eu accès fait partie de ce qu'on doit pouvoir répondre plus tard.
- *
- * Les coordonnées s'affichent masquées : cette page se laisse ouverte sur un
- * écran, et le carnet d'adresses d'une famille n'a pas à y figurer.
+ * Une carte par personne, son état en pastille (a ouvert son lien, ou pas
+ * encore), deux gestes : réémettre le lien, retirer l'accès. Le retrait
+ * demande une confirmation, parce qu'il coupe un accès à l'instant ; c'est un
+ * `removed_at` et non une suppression, savoir qu'une personne a écouté reste
+ * vrai. Le nouveau lien apparaît **dans la carte** de la personne concernée,
+ * là où l'on a cliqué (T-149).
  */
-export default function Family({ members, copiedLink }: Props) {
+export default function Family({ members, copiedLink, copiedFor }: Props) {
     const t = useT();
+    const [removing, setRemoving] = useState<Member | null>(null);
 
     const form = useForm({
         display_name: '',
@@ -52,110 +57,163 @@ export default function Family({ members, copiedLink }: Props) {
         <>
             <Head title={t('initiator.family.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold">
-                {t('initiator.family.title')}
-            </h1>
+            <div className="enter" style={stagger(0)}>
+                <PageHeader
+                    eyebrow={t('initiator.nav.family')}
+                    title={t('initiator.family.title')}
+                    intro={t('initiator.family.intro')}
+                />
+            </div>
 
-            <p className="text-brand-muted mt-2 text-base">
-                {t('initiator.family.intro')}
-            </p>
+            <section aria-label={t('initiator.family.title')} className="mt-8">
+                {members.length === 0 ? (
+                    <p className="card enter p-5" style={stagger(1)}>
+                        {t('initiator.family.empty')}
+                    </p>
+                ) : (
+                    <ul className="flex flex-col gap-3">
+                        {members.map((member, index) => (
+                            <li
+                                key={member.id}
+                                className="card enter p-5"
+                                style={stagger(index + 1)}
+                            >
+                                <div className="flex items-start gap-4">
+                                    <Avatar name={member.name} />
 
-            {copiedLink !== null && (
-                <div className="mt-6">
-                    <input
-                        type="text"
-                        readOnly
-                        value={copiedLink}
-                        onFocus={(event) => event.target.select()}
-                        className="input"
-                        aria-label={t('initiator.family.reissue')}
-                    />
-                </div>
-            )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="flex flex-wrap items-center gap-2">
+                                            <span className="font-display text-brand text-xl leading-snug font-medium">
+                                                {member.name}
+                                            </span>
+                                            {member.isYou && (
+                                                <Pill tone="brand">
+                                                    {t('initiator.family.you')}
+                                                </Pill>
+                                            )}
+                                        </p>
 
-            {members.length === 0 ? (
-                <p className="mt-8">{t('initiator.family.empty')}</p>
-            ) : (
-                <ul className="mt-8 flex flex-col gap-4">
-                    {members.map((member) => (
-                        <li
-                            key={member.id}
-                            className="border-brand-sand bg-brand-surface rounded-md border px-4 py-3"
-                        >
-                            <p className="font-medium">
-                                {member.name}
-                                {member.isYou && (
-                                    <span className="text-brand-muted ml-2 text-base">
-                                        ({t('initiator.family.you')})
-                                    </span>
-                                )}
-                            </p>
+                                        {member.relationship !== null && (
+                                            <p className="text-brand-muted text-base">
+                                                {member.relationship}
+                                            </p>
+                                        )}
 
-                            {member.relationship !== null && (
-                                <p className="text-brand-muted text-base">
-                                    {member.relationship}
-                                </p>
-                            )}
+                                        {member.contact !== null && (
+                                            <p className="text-brand-muted text-base">
+                                                {member.contact}
+                                            </p>
+                                        )}
 
-                            {member.contact !== null && (
-                                <p className="text-brand-muted text-base">
-                                    {member.contact}
-                                </p>
-                            )}
+                                        <div className="mt-2.5 flex flex-wrap gap-2">
+                                            <Pill
+                                                tone={
+                                                    member.firstSeenAt === null
+                                                        ? 'gold'
+                                                        : 'sage'
+                                                }
+                                            >
+                                                {member.firstSeenAt === null
+                                                    ? t(
+                                                          'initiator.family.never_opened',
+                                                      )
+                                                    : t(
+                                                          'initiator.family.first_seen_at',
+                                                          {
+                                                              date: formatDate(
+                                                                  member.firstSeenAt,
+                                                              ),
+                                                          },
+                                                      )}
+                                            </Pill>
 
-                            <p className="text-brand-muted mt-1 text-base">
-                                {member.firstSeenAt === null
-                                    ? t('initiator.family.never_opened')
-                                    : t('initiator.family.first_seen_at', {
-                                          date: formatDate(member.firstSeenAt),
-                                      })}
-                            </p>
+                                            {member.canContribute && (
+                                                <Pill tone="muted">
+                                                    {t(
+                                                        'initiator.family.can_contribute',
+                                                    )}
+                                                </Pill>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
 
-                            {member.canContribute && (
-                                <p className="text-brand-muted text-base">
-                                    {t('initiator.family.can_contribute')}
-                                </p>
-                            )}
-
-                            <div className="mt-2 flex flex-wrap gap-4 text-base">
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        router.post(
-                                            `/espace/proches/${member.id}/renvoyer`,
-                                            undefined,
-                                            { preserveScroll: true },
-                                        )
-                                    }
-                                    className="underline"
-                                >
-                                    {t('initiator.family.reissue')}
-                                </button>
-
-                                {!member.isYou && (
+                                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 pl-15 text-base">
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            router.delete(
-                                                `/espace/proches/${member.id}`,
+                                            router.post(
+                                                `/espace/proches/${member.id}/renvoyer`,
+                                                undefined,
                                                 { preserveScroll: true },
                                             )
                                         }
-                                        className="underline"
+                                        className="text-brand press inline-flex min-h-[2.75rem] items-center gap-1.5 font-medium underline-offset-4 hover:underline"
                                     >
-                                        {t('initiator.family.remove')}
+                                        <Refresh className="size-4" />
+                                        {t('initiator.family.reissue')}
                                     </button>
-                                )}
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
 
-            <section aria-labelledby="invite" className="mt-10">
-                <h2 id="invite" className="text-xl font-medium">
+                                    {!member.isYou && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setRemoving(member)}
+                                            className="text-brand-muted hover:text-brand-accent-deep press inline-flex min-h-[2.75rem] items-center gap-1.5 underline-offset-4 hover:underline"
+                                        >
+                                            <Trash className="size-4" />
+                                            {t('initiator.family.remove')}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {copiedLink !== null &&
+                                    copiedFor === member.id && (
+                                        <ShareSheet
+                                            link={copiedLink}
+                                            whatsapp={null}
+                                            sms={null}
+                                            title={t(
+                                                'initiator.family.link_title',
+                                                { name: member.name },
+                                            )}
+                                            hint={t(
+                                                'initiator.family.reissue_hint',
+                                            )}
+                                            copyLabel={t(
+                                                'initiator.dashboard.share.copy',
+                                            )}
+                                            copiedLabel={t(
+                                                'initiator.dashboard.share.copied',
+                                            )}
+                                            whatsappLabel={t(
+                                                'initiator.dashboard.share.whatsapp',
+                                            )}
+                                            smsLabel={t(
+                                                'initiator.dashboard.share.sms',
+                                            )}
+                                        />
+                                    )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
+
+            <section
+                aria-labelledby="invite"
+                className="card enter mt-10 p-6"
+                style={stagger(members.length + 1)}
+            >
+                <h2
+                    id="invite"
+                    className="font-display text-brand text-xl leading-snug font-medium"
+                >
                     {t('initiator.family.invite.title')}
                 </h2>
+
+                <p className="text-brand-muted mt-1 text-base">
+                    {t('initiator.family.invite.intro')}
+                </p>
 
                 <form
                     onSubmit={(event) => {
@@ -165,111 +223,100 @@ export default function Family({ members, copiedLink }: Props) {
                             onSuccess: () => form.reset(),
                         });
                     }}
-                    className="mt-4 flex flex-col gap-5"
+                    className="mt-5 flex flex-col gap-5"
                 >
-                    <label className="flex flex-col gap-1">
-                        <span className="font-medium">
-                            {t('initiator.family.invite.name')}
-                        </span>
-                        <input
-                            type="text"
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <TextField
+                            label={t('initiator.family.invite.name')}
                             value={form.data.display_name}
                             onChange={(event) =>
                                 form.setData('display_name', event.target.value)
                             }
-                            className="input"
+                            error={form.errors.display_name}
+                            autoComplete="off"
                             required
                         />
-                        {form.errors.display_name !== undefined && (
-                            <span role="alert" className="text-base">
-                                {form.errors.display_name}
-                            </span>
-                        )}
-                    </label>
 
-                    <label className="flex flex-col gap-1">
-                        <span className="font-medium">
-                            {t('initiator.family.invite.relationship')}
-                        </span>
-                        <input
-                            type="text"
+                        <TextField
+                            label={t('initiator.family.invite.relationship')}
                             value={form.data.relationship}
                             onChange={(event) =>
                                 form.setData('relationship', event.target.value)
                             }
-                            className="input"
+                            error={form.errors.relationship}
+                            autoComplete="off"
                         />
-                    </label>
+                    </div>
 
-                    <p className="text-brand-muted text-base">
+                    <p className="text-brand-muted -mb-2 text-base">
                         {t('initiator.family.invite.contact_hint')}
                     </p>
 
-                    <label className="flex flex-col gap-1">
-                        <span className="font-medium">
-                            {t('initiator.family.invite.email')}
-                        </span>
-                        <input
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <TextField
                             type="email"
+                            label={t('initiator.family.invite.email')}
                             value={form.data.email}
                             onChange={(event) =>
                                 form.setData('email', event.target.value)
                             }
-                            className="input"
+                            error={form.errors.email}
+                            autoComplete="off"
+                            inputMode="email"
                         />
-                        {form.errors.email !== undefined && (
-                            <span role="alert" className="text-base">
-                                {form.errors.email}
-                            </span>
-                        )}
-                    </label>
 
-                    <label className="flex flex-col gap-1">
-                        <span className="font-medium">
-                            {t('initiator.family.invite.phone')}
-                        </span>
-                        <input
+                        <TextField
                             type="tel"
+                            label={t('initiator.family.invite.phone')}
                             value={form.data.phone_e164}
                             onChange={(event) =>
                                 form.setData('phone_e164', event.target.value)
                             }
-                            className="input"
+                            error={form.errors.phone_e164}
                             placeholder="+33612345678"
+                            autoComplete="off"
+                            inputMode="tel"
                         />
-                        {form.errors.phone_e164 !== undefined && (
-                            <span role="alert" className="text-base">
-                                {form.errors.phone_e164}
-                            </span>
-                        )}
-                    </label>
+                    </div>
 
-                    <label className="flex items-start gap-3">
-                        <input
-                            type="checkbox"
-                            checked={form.data.can_contribute}
-                            onChange={(event) =>
-                                form.setData(
-                                    'can_contribute',
-                                    event.target.checked,
-                                )
-                            }
-                            className="mt-1"
-                        />
-                        <span>
-                            {t('initiator.family.invite.can_contribute')}
-                        </span>
-                    </label>
+                    <CheckField
+                        checked={form.data.can_contribute}
+                        onChange={(checked) =>
+                            form.setData('can_contribute', checked)
+                        }
+                        label={t('initiator.family.invite.can_contribute')}
+                    />
 
-                    <button
-                        type="submit"
-                        disabled={form.processing}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] self-start rounded-md px-6 py-3 font-semibold disabled:opacity-60"
+                    <SubmitButton
+                        processing={form.processing}
+                        waitingLabel={t('initiator.family.invite.waiting')}
+                        className="self-start"
                     >
                         {t('initiator.family.invite.submit')}
-                    </button>
+                    </SubmitButton>
                 </form>
             </section>
+
+            <ConfirmDialog
+                open={removing !== null}
+                title={t('initiator.family.remove_confirm.title', {
+                    name: removing?.name ?? '',
+                })}
+                body={t('initiator.family.remove_confirm.body')}
+                confirmLabel={t('initiator.family.remove_confirm.confirm')}
+                cancelLabel={t('common.actions.cancel')}
+                onCancel={() => setRemoving(null)}
+                onConfirm={() => {
+                    if (removing === null) {
+                        return;
+                    }
+
+                    router.delete(`/espace/proches/${removing.id}`, {
+                        preserveScroll: true,
+                        onFinish: () => setRemoving(null),
+                    });
+                }}
+            />
         </>
     );
 }
