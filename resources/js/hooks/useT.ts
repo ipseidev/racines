@@ -36,9 +36,41 @@ export function translate(
     }
 
     return Object.entries(params).reduce(
-        (text, [name, value]) => text.split(`:${name}`).join(String(value)),
+        (text, [name, value]) => interpolate(text, name, String(value)),
         current,
     );
+}
+
+/**
+ * Le français élide devant une voyelle ou un h muet, et un prénom arrive
+ * toujours par un paramètre : la chaîne du catalogue ne peut pas savoir
+ * lequel. Sans cette règle, le tableau de bord titrait « Le projet de
+ * Odette ». Le h aspiré (Hans, Hugues) n'est pas distingué : il est rare, et
+ * l'erreur inverse se lisait sur chaque page.
+ */
+const ELIDABLE = /^[aeiouyhàâäéèêëìíîïòóôöùúûüœæ]/i;
+
+function interpolate(text: string, name: string, value: string): string {
+    const elidable = ELIDABLE.test(value);
+    const pattern = new RegExp(
+        `(^|[^\\p{L}])(de|que) :${name}(?![\\p{L}_])`,
+        'giu',
+    );
+
+    const elided = text.replace(
+        pattern,
+        (_match, before: string, word: string) => {
+            if (!elidable) {
+                return `${before}${word} ${value}`;
+            }
+
+            const stem = word.slice(0, word.toLowerCase() === 'de' ? 1 : 2);
+
+            return `${before}${stem}’${value}`;
+        },
+    );
+
+    return elided.replace(new RegExp(`:${name}(?![\\p{L}_])`, 'gu'), value);
 }
 
 export function useT() {

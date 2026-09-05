@@ -229,7 +229,7 @@ export default function Story({
                         {reactions.map((one, index) => (
                             <li key={`${one.name}-${one.type}-${index}`}>
                                 <span className="font-medium">{one.name}</span>
-                                {' — '}
+                                {' : '}
                                 {t(`family.reaction.${one.type}`)}
                                 {one.comment === null
                                     ? null

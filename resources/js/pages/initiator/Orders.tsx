@@ -106,7 +106,7 @@ export default function Orders({ orders, supportEmail }: Props) {
                             <ul className="mt-2 flex flex-col gap-1 text-base">
                                 {order.items.map((item) => (
                                     <li key={item.sku}>
-                                        {item.label} × {item.quantity} —{' '}
+                                        {item.label} × {item.quantity},{' '}
                                         {formatPrice(item.unitCents)}
                                     </li>
                                 ))}
@@ -114,7 +114,7 @@ export default function Orders({ orders, supportEmail }: Props) {
 
                             {order.phoneOption !== null && (
                                 <p className="mt-4 text-base">
-                                    {t('initiator.orders.phone_option')} —{' '}
+                                    {t('initiator.orders.phone_option')} :{' '}
                                     {order.phoneOption.statusLabel}
                                 </p>
                             )}
