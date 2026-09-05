@@ -35,7 +35,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 02 | [Modèle de domaine et machine d'états](blocs/B02_modele_domaine.md) | 01 | ☑ terminé (2026-09-02) | `bloc-02-done` |
 | 03 | [Jetons, OTP et sécurité des liens](blocs/B03_jetons_securite.md) | 02 | ☑ terminé (2026-09-02) | `bloc-03-done` |
 | 04 | [Page d'enregistrement narrateur et spike navigateur](blocs/B04_enregistrement.md) | 03 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) téléphones + HTTPS | `bloc-04-done` |
-| 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) Twilio + Resend | `bloc-05-done` |
+| 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — ⛔ clés posées le 2026-09-05, [attend](05_A_FAIRE_HUMAIN.md) l'expéditeur « NARRAE » (enregistrement AF2M, jours ouvrés) | `bloc-05-done` |
 | 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) clés + corpus de voix | `bloc-06-done` |
 | 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ☑ terminé (2026-09-03) — checkpoint §7 joué par un humain, 4 écarts trouvés et corrigés | `bloc-07-done` |
 | 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ☑ terminé (2026-09-05) — checkpoint §7 joué sur un vrai téléphone, 4 écarts trouvés et corrigés | `bloc-08-done` |

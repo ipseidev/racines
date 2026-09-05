@@ -314,8 +314,8 @@ Le seul endroit à tenir à jour.
 | 6 | Lecture humaine du Fluide sur 5 histoires | bloc 06 | **à moitié** — 5 mots à mot **écrits** lus le 2026-09-03, deux défauts corrigés (`fluide-v2`, T-126) ; reste 5 histoires **réelles**, dans la même séance que le corpus de voix |
 | 7 | iPhone réel + Android réel *(5 idéalement, dont Samsung Internet)* | bloc 04 | ☐ |
 | 8 | Accès HTTPS (tunnel ou préproduction) | bloc 04 | ☐ |
-| 9 | Twilio : SID, token, numéro vérifié, expéditeur « NARRAE » enregistré | bloc 05 — **le nom est arrêté** | ☐ |
-| 10 | Resend : clé, domaine narrae.fr vérifié, secret de webhook | bloc 05 — **le nom est arrêté** | ☐ |
+| 9 | Twilio : SID, token, numéro vérifié, expéditeur « NARRAE » enregistré | bloc 05 | **en cours** — clés dans `.env` le 2026-09-05, demande d'enregistrement AF2M déposée le même jour. **Deux corrections à faire** : `TWILIO_FROM` doit porter un numéro et non « Narrae » (c'est le repli là où l'alphanumérique est interdit), et renseigner `SMS_ALLOWLIST` avant de basculer `SMS_PROVIDER=twilio` — sans elle rien ne part, et c'est voulu (T-174) |
+| 10 | Resend : clé, domaine narrae.fr vérifié, secret de webhook | bloc 05 | **en cours** — clé dans `.env` le 2026-09-05. Restent le domaine vérifié (SPF, DKIM, DMARC) et `RESEND_WEBHOOK_SECRET`, sans lequel aucun message ne passe en `delivered` — et c'est ce statut qui distingue « lien non ouvert » de « courriel jamais reçu » |
 | 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☑ **fait le 2026-09-03** — cinq points sur cinq, quatre écarts trouvés et corrigés (T-127 à T-129), bloc tagué |
 | 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | ☑ **fait le 2026-09-05** — sept points sur sept, joué sur un vrai iPhone ; quatre écarts trouvés et corrigés (T-156 à T-158, T-160, T-164, T-166), bloc tagué |
 | 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☑ **fait le 2026-09-05** — cinq points sur cinq, trois écarts trouvés et corrigés (T-153 à T-155), bloc tagué |
