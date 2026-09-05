@@ -282,10 +282,11 @@ final class DemoLinks extends Command
             [
                 'bloc' => '09',
                 'titre' => 'Le moteur relance sans harceler',
-                'avant' => ['forcer les horodatages : un lien envoyé il y a 3 jours non ouvert, une histoire partagée il y a 5 jours non écoutée, un silence de 21 jours.'],
+                'avant' => ['les trois horodatages s’arment par une commande, pas à la main : `sail artisan demo:moteur`. Elle dit ce qu’elle a armé, et se rejoue.'],
                 'etapes' => [
+                    ['quoi' => 'Armer les trois signaux : lien envoyé il y a 3 jours et jamais ouvert, histoire partagée depuis 5 jours et jamais écoutée, silence de 21 jours.', 'cmd' => 'demo:moteur'],
                     ['quoi' => 'Passer un tour de moteur.', 'cmd' => 'engine:tick'],
-                    ['quoi' => 'Lire `outbound_messages` : un renvoi sur l’autre canal, un rappel par proche, une alerte à l’Initiateur·rice avec quatre liens en un tap.'],
+                    ['quoi' => 'Lire `outbound_messages` : un renvoi sur l’autre canal, un rappel par proche, une alerte à l’Initiateur·rice avec quatre liens en un tap. Deux autres règles apparaissent dans `engine_events` marquées supprimées : elles parlaient au même narrateur le même jour, et c’est la garde anti-harcèlement qui les a tues.'],
                     ['quoi' => 'Repasser un tour : plus rien ne part. C’est le point qui compte — un moteur qui relance deux fois harcèle.', 'cmd' => 'engine:tick'],
                     [
                         'quoi' => 'Cliquer « toutes les deux semaines » : confirmation, cadence changée, prochaine relance recalculée.',
