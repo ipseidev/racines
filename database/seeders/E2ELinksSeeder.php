@@ -246,6 +246,7 @@ final class E2ELinksSeeder extends Seeder
 
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
+        $project->accepted_at = now()->subDays(60);
         $project->save();
 
         $this->consentingNarrator($project, [
@@ -442,6 +443,7 @@ final class E2ELinksSeeder extends Seeder
     {
         $project = app(CreateProject::class)->handle($initiator, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
+        $project->accepted_at = now()->subDays(60);
         $project->save();
 
         // Le prochain envoi est celui que le produit calculerait : le jour et
@@ -486,6 +488,7 @@ final class E2ELinksSeeder extends Seeder
     {
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
+        $project->accepted_at = now()->subDays(60);
         $project->cadence = Cadence::Weekly;
         $project->save();
 
@@ -519,6 +522,7 @@ final class E2ELinksSeeder extends Seeder
     {
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
+        $project->accepted_at = now()->subDays(60);
         $project->save();
 
         $this->consentingNarrator($project, [
@@ -693,6 +697,7 @@ final class E2ELinksSeeder extends Seeder
     {
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
+        $project->accepted_at = now()->subDays(60);
         $project->validation_variant = ValidationVariant::from(
             (string) self::BLOCK_07[$scenario]['variant'],
         );
@@ -800,6 +805,7 @@ final class E2ELinksSeeder extends Seeder
     {
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
+        $project->accepted_at = now()->subDays(60);
         $project->save();
 
         $narrator = $this->consentingNarrator($project, [
@@ -880,6 +886,16 @@ final class E2ELinksSeeder extends Seeder
         return str_pad((string) (crc32($scenario) % 10000), 4, '0', STR_PAD_LEFT);
     }
 
+    /**
+     * Pourquoi chaque projet actif du décor porte une date d'acceptation.
+     *
+     * Un projet `active` que personne n'a accepté n'existe pas dans le
+     * produit, et les deux règles de silence du moteur exigent cette date : un
+     * narrateur qui n'a jamais accepté relève d'`invitation_not_accepted`, pas
+     * d'une relance. Sans elle, ces règles se **taisent sans rien dire**, et
+     * il a fallu écrire `demo:moteur` puis le déboguer pour s'en apercevoir
+     * (T-153). `DecorConsistencyTest` échoue si un semis l'oublie.
+     */
     public static function token(string $scenario): string
     {
         return str_pad("demo-{$scenario}-link", 43, 'x');

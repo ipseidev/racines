@@ -48,12 +48,21 @@ final class SendGiftInvitation implements ShouldQueue
         return [60, 300, 900];
     }
 
-    public function handle(TokenService $tokens): void
+    /**
+     * @return string|null Le jeton en clair, pour l'appelant **synchrone**.
+     *
+     * Une file jette la valeur de retour, et rien ne la stocke : elle n'existe
+     * que pour `demo:invitation`, qui doit imprimer un lien que le journal
+     * masque à dessein. La rendre ici plutôt que de réémettre un jeton
+     * ailleurs évite d'avoir deux chemins d'émission — et un second chemin
+     * finit toujours par diverger du vrai.
+     */
+    public function handle(TokenService $tokens): ?string
     {
         $project = Project::query()->with(['owner', 'primaryNarrator'])->find($this->projectId);
 
         if ($project === null) {
-            return;
+            return null;
         }
 
         $narrator = $project->primaryNarrator;
@@ -61,18 +70,18 @@ final class SendGiftInvitation implements ShouldQueue
         if ($narrator === null) {
             Log::error('gift.no_narrator', ['project_id' => $project->id]);
 
-            return;
+            return null;
         }
 
         if ($project->accepted_at !== null || $project->refused_at !== null) {
             // Déjà répondu : on ne relance pas quelqu'un qui a tranché.
-            return;
+            return null;
         }
 
         if (! Invitation::canSendTo($narrator)) {
             Log::info('gift.attempts_exhausted', ['project_id' => $project->id]);
 
-            return;
+            return null;
         }
 
         $issued = $tokens->issue(
@@ -113,5 +122,7 @@ final class SendGiftInvitation implements ShouldQueue
             'attempt' => $this->attempt,
             'channel' => $channel->value,
         ]);
+
+        return $issued->plain;
     }
 }

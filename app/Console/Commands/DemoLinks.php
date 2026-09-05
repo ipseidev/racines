@@ -303,13 +303,14 @@ final class DemoLinks extends Command
                     ['quoi' => sprintf('Commander %s plus l’option téléphone %s avec la carte de test.', self::euros($pilot->pilot_price_cents), self::euros($pilot->phone_option_price_cents)), 'bloque' => 'compte Stripe de test et ses cinq prix'],
                     ['quoi' => 'Recevoir le webhook et vérifier commande, projet, narrateur, option.', 'bloque' => 'Stripe CLI'],
                     [
-                        'quoi' => 'Elle accepte : les quatre cases, puis projet actif, premier prompt au lendemain 09:00, fiche contact proposée.',
+                        'quoi' => 'Elle accepte : les quatre cases, puis projet actif, premier prompt au jour choisi 09:00, fiche contact proposée. **Lien à usage unique**, et la suite bout en bout le consomme : s’il répond « vous avez déjà répondu », prenez-en un neuf avec `demo:invitation`.',
                         'url' => self::link(TokenType::Invitation, 'optin-accept'),
                     ],
                     [
-                        'quoi' => 'Elle refuse : l’Initiateur·rice reçoit le message avec tact, et l’effacement des coordonnées est daté.',
+                        'quoi' => 'Elle refuse : l’Initiateur·rice reçoit le message avec tact, et l’effacement des coordonnées est daté. Même remarque : un lien neuf s’obtient par `demo:invitation`.',
                         'url' => self::link(TokenType::Invitation, 'optin-refuse'),
                     ],
+                    ['quoi' => 'Un lien d’invitation neuf, à volonté — chaque appel fabrique un projet, parce que l’opt-in ne se rejoue pas.', 'cmd' => 'demo:invitation'],
                     ['quoi' => 'Son espace : réordonner deux questions, inviter un proche, copier le lien WhatsApp, demander la rétractation.', 'url' => rtrim((string) config('app.url'), '/').'/espace'],
                 ],
             ],

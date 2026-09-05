@@ -65,6 +65,11 @@ final class DemoProjectSeeder extends Seeder
 
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, ['prompt_day' => 3]);
         $project->status = ProjectStatus::Active;
+        // Un projet actif que personne n'a accepté n'existe pas dans le
+        // produit, et les deux règles de silence du moteur exigent cette date :
+        // sans elle, elles se taisent **sans rien dire** (T-153). Le décor a
+        // menti pendant tout un bloc avant qu'on s'en aperçoive.
+        $project->accepted_at = now()->subDays(60);
         $project->save();
         $project->startCollection();
 
