@@ -38,7 +38,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) clés + corpus de voix | `bloc-06-done` |
 | 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ☑ terminé (2026-09-03) — checkpoint §7 joué par un humain, 4 écarts trouvés et corrigés | `bloc-07-done` |
 | 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-08-done` |
-| 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-09-done` |
+| 09 | [Moteur de complétion v1](blocs/B09_moteur_completion.md) | 08 | ☑ terminé (2026-09-05) — checkpoint §7 joué par un humain, 3 écarts trouvés et corrigés | `bloc-09-done` |
 | 10 | [Tunnel d'achat, Stripe, cadeau, opt-in narrateur](blocs/B10_tunnel_achat_optin.md) | 09 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) un compte Stripe | `bloc-10-done` |
 | 11 | [Back-office support et journal d'audit](blocs/B11_backoffice_audit.md) | 10 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local (sauf le point 5) | `bloc-11-done` |
 | 12 | [Photos, réponse écrite, contributeurs](blocs/B12_photos_contributeurs.md) | 11 | ◐ en cours — ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) (un téléphone, et ClamAV à démarrer) | `bloc-12-done` |
@@ -87,6 +87,7 @@ Un bloc marqué `◐` a son code livré, testé et poussé ; il attend son check
 | Vendeur R2 hors UE | 16 | Bucket créé avec juridiction UE, DPA, alternative Scaleway documentée sans changement de code |
 | Coût humain de l'option téléphone D-9 | 17 | Plafond à 10 familles dans `PilotSettings`, compteur bloquant au checkout |
 | **Défaut d'interface qu'aucune assertion ne voit** | tous | Trois sont sortis du seul checkpoint du bloc 07 : un bouton relié à rien (T-127), un décor sans consentement qui arrêtait la chaîne en silence (T-128), deux racines React qui cassaient toute la navigation en mode développement (T-129). Ni PHPStan, ni TypeScript, ni Playwright ne pouvaient les voir. Mitigation : les checkpoints humains ne sont pas une formalité, et chaque défaut trouvé laisse une garde derrière lui |
+| **Défaut qu'un test double masque** | tous | Le checkpoint du bloc 09 a montré que deux proches sur trois ne recevaient jamais leur relance (T-154) : la clé de déduplication ignorait le destinataire, et les onze fichiers de règles faussent les notifications, donc ils prouvaient l'appel à `notify()` et jamais le départ d'un message. Mitigation : au moins un test par chaîne d'envoi qui descend jusqu'à `outbound_messages` sans `Notification::fake()` |
 
 ## Fichiers du dossier
 

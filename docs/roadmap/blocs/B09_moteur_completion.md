@@ -1,6 +1,6 @@
 # Bloc 09 — Moteur de complétion v1
 
-Statut : ◐ en cours · Dépend de : 08 · Tag de fin : `bloc-09-done`
+Statut : ☑ terminé (2026-09-05) — checkpoint §7 joué par un humain, trois écarts trouvés et corrigés · Dépend de : 08 · Tag de fin : `bloc-09-done`
 
 **⏳ Prêt à checkpointer** — [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md) §2 : rien à fournir, ~20 minutes de ton temps. Le checkpoint se joue en local avec les fournisseurs simulés ; il suffit de forcer trois horodatages sur le projet semé, puis de lancer `engine:tick`.
 
@@ -76,7 +76,7 @@ Implémenter dans l'ordre de l'annexe C. Pour chacune : `detect` = une requête 
 ### 6.6 Clôture
 - [x] Annexe B (`engine_events`, `support_tickets`), annexe C relue et alignée sur le code.
 - [x] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts.
-- [ ] Commit `chore(bloc-09): terminé`, tag `bloc-09-done` — après le checkpoint §7 joué par un humain.
+- [x] Commit `chore(bloc-09): terminé`, tag `bloc-09-done` — checkpoint §7 joué le 2026-09-05, cinq points sur cinq, trois écarts corrigés (T-153, T-154, T-155).
 
 ## 7. Checkpoint démontrable
 
@@ -99,6 +99,37 @@ Quand deux règles pourraient se déclencher le même jour pour le même narrate
 ## 10. Note de checkpoint
 
 _Date, exécutant, résultat, écarts :_
+
+**2026-09-05 — Nicolas Serra (humain) + Claude (agent) — checkpoint §7 joué en local, cinq points sur cinq, trois écarts trouvés et corrigés.**
+
+Les points 1, 2, 3 et 5 déroulés au terminal par l'agent, le point 4 cliqué par le fondateur. Trois écarts sont sortis, dont un que le pilote aurait payé cher.
+
+### Ce que le checkpoint a donné
+
+| Point | Résultat |
+|---|---|
+| 1. `engine:tick` | **3 déclenchements, 2 supprimés, 0 ignoré, 0 en échec** |
+| 2. `outbound_messages` | `engine_link_not_opened` au narrateur **sur l'autre canal** (courriel, sa préférence est le SMS) ; `engine_validated_not_listened` à Camille, Julien **et** Alice ; `engine_narrator_silence_21d` à l'Initiateur·rice avec ses quatre actions. Et dans `engine_events`, deux lignes de plus marquées supprimées — `recorded_not_validated` et `narrator_silence_10d` voulaient parler au même narrateur le même jour |
+| 3. Second tour | **0 déclenchement, 5 ignorés.** Le moteur ne relance pas deux fois |
+| 4. « Toutes les deux semaines » | Cliqué. Jeton consommé (`use_count = 1`), `cadence = biweekly`, `next_prompt_at` recalculé au lendemain 09:00 |
+| 5. `engine:report` | Les trois déclenchements, un par règle |
+
+### Écarts consignés
+
+- **T-153 — le préalable du checkpoint n'existait pas.** La feuille disait « forcer les horodatages » et s'arrêtait là : trois signaux, trois tables, dont deux qui se lisent à l'envers. `demo:moteur` les arme, énumère et se rejoue. En l'écrivant, deux défauts du décor : **`DemoProjectSeeder` pose `status = active` sans dater `accepted_at`**, ce qui faisait taire les deux règles de silence *sans rien dire* ; et le narrateur n'avait qu'un canal, si bien que « renvoyer sur l'autre canal » renvoyait sur le même.
+- **T-154 — deux proches sur trois ne recevaient jamais leur relance.** La clé de déduplication d'un message sortant valait `engine:{règle}:{occurrence}:{canal}`, sans le destinataire. `validated_not_listened` écrit à chaque proche pour un seul déclenchement : les trois messages portaient la même clé, la contrainte unique gardait le premier et jetait les autres **en silence**, pendant que `action_taken` annonçait « nudged: 3 ». Un courriel parti sur trois, et **l'hypothèse H2 mesurée sur un tiers de ce qu'elle vaut**. Aucun test ne pouvait le voir : les onze fichiers de règles font `Notification::fake()`, donc ils prouvent que la règle *appelle* `notify()` par proche, jamais qu'un message part.
+- **T-155 — le planificateur rendait le checkpoint injouable.** Le conteneur `scheduler` passe `engine:tick` à :07 de chaque heure, sur un décor pas encore armé, et avait déjà consommé deux occurrences. Le premier tour annonçait « 1 déclenchement, 2 supprimés, 2 ignorés » sans dire pourquoi.
+
+### Ce qui reste dû, et n'appartient pas au code
+
+- **La relecture du ton des onze messages.** Les textes ont été sortis et lus le 2026-09-05 : rien de culpabilisant, « quand vous voulez » revient partout. Deux formulations pointent une absence — *« :narrator raconte, et personne ne répond »* (objet de `react_suggestion`) et *« :narrator n'a pas enregistré depuis trois semaines »* (`initiator_alert`) — toutes deux adressées à l'Initiateur·rice et non au narrateur. Verdict du fondateur en attente ; ligne 12ter de `05_A_FAIRE_HUMAIN.md`.
+- **Les paramètres chiffrés** (3, 4, 5, 10, 21 jours) : le pilote dira lesquels sont trop courts.
+
+### Portail qualité
+
+`sail composer check` vert : Pint, Larastan niveau 8 à **zéro erreur**, **1 260 tests** Pest, 7 040 assertions.
+
+---
 
 **2026-09-03 — Claude (agent) — code livré, checkpoint §7 jouable en local.**
 

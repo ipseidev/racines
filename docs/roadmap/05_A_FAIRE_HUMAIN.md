@@ -247,7 +247,7 @@ Tout le mode opératoire — jouer un achat, rejouer un événement, diagnostiqu
 
 - **Bloc 07** — validation, visibilité, retraits. ~30 minutes.
 - **Bloc 08** — écoute famille et réactions. ~20 minutes.
-- **Bloc 09** — moteur de complétion. ~20 minutes : forcer trois horodatages sur le projet semé, lancer `engine:tick`, lire les envois, relancer pour vérifier qu'aucun ne se répète, cliquer un lien d'action, puis `engine:report`.
+- ~~**Bloc 09** — moteur de complétion.~~ **Fait le 2026-09-05.** Le préalable ne se force plus à la main : `sail artisan demo:moteur` arme les trois signaux, dit ce qu'il a armé, et se rejoue (T-153).
 - **Bloc 12** — les photos. ~15 minutes, et deux préalables gratuits : `sail up -d clamav` une première fois (deux à trois minutes, un demi-gigaoctet de signatures, gardé ensuite), puis une **photo prise avec ton iPhone** — c'est le seul moyen d'éprouver la conversion HEIC, qu'aucun outil de cette image ne sait fabriquer. Vérifie avec `exiftool` sur l'original stocké qu'il ne reste aucune coordonnée GPS : c'est le point le plus important du bloc.
 - **Bloc 11, points 1 à 4** — le back-office. ~20 minutes : configurer ta double authentification à la première connexion sur `/admin` (l'application d'authentification de ton téléphone suffit), ouvrir la fiche d'une histoire, corriger un mot, puis `sail artisan audit:verify` — et pour voir la garde fonctionner, tenter un `update audit_logs set action='x'` en base, qui doit échouer. Le point 5 demande Stripe.
 - **Bloc 10, points 3 à 5** — le cadeau, l'opt-in et l'espace Initiateur·rice. ~20 minutes, sans Stripe. Le décor se complète en place, sans `migrate:fresh` : `sail artisan db:seed --class=E2ELinksSeeder` sème aussi la commande payée de `espace@example.test` (au prix des réglages, rétractable onze jours), sans laquelle « demander la rétractation » n'a rien à rétracter (T-147). Ouvrir `/i/demo-optin-accept-linkxxxxxxxxxxxxxxxxxxxxx` (accepter) et `/i/demo-optin-refuse-linkxxxxxxxxxxxxxxxxxxxxx` (refuser) — ces deux liens ne servent qu'une fois —, et se connecter en `espace@example.test` (mot de passe : `ADMIN_PASSWORD` de ton `.env`) pour l'espace. Les points 1 et 2 du checkpoint, eux, demandent Stripe.
@@ -318,8 +318,8 @@ Le seul endroit à tenir à jour.
 | 10 | Resend : clé, domaine narrae.fr vérifié, secret de webhook | bloc 05 — **le nom est arrêté** | ☐ |
 | 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☑ **fait le 2026-09-03** — cinq points sur cinq, quatre écarts trouvés et corrigés (T-127 à T-129), bloc tagué |
 | 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | **en cours** — points 1 et 2 validés le 2026-09-03, deux écarts déjà corrigés (T-130, T-131) |
-| 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☐ |
-| 12ter | Relire le ton des onze messages du moteur | bloc 09 | ☐ |
+| 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☑ **fait le 2026-09-05** — cinq points sur cinq, trois écarts trouvés et corrigés (T-153 à T-155), bloc tagué |
+| 12ter | Relire le ton des onze messages du moteur | bloc 09 | **en cours** — les onze textes lus le 2026-09-05, rien de culpabilisant ; deux formulations pointent une absence (`react_suggestion`, `initiator_alert`), toutes deux adressées à l'Initiateur·rice. Verdict du fondateur en attente |
 | 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | **en cours** — point 5 joué le 2026-09-05 : fonctionnel mais « brut » ; passe de design faite le jour même (T-149) ; **à rejouer**, puis points 3 et 4 |
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil, et leur soumettre la garantie « satisfait ou remboursé pendant trente jours, sans justification » affichée sur la page d'accueil (T-134) | bloc 10 | ☐ |
 | 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☐ |
@@ -334,7 +334,7 @@ Le seul endroit à tenir à jour.
 | 19 | **Socle juridique validé par conseil** | bloc 17 | ☐ |
 | 20 | DPA signés (11 sous-traitants) | bloc 17 | ☐ |
 
-**Le chemin le plus court vers trois tags** : lignes 11, 12 et 12bis (une heure et demie de ton temps, rien à acheter), puis 1 + 2 + 3 + 5 pour le bloc 06.
+**Le chemin le plus court vers les tags restants** : la ligne 12 (bloc 08, vingt minutes et un téléphone sur le même wifi), puis 12sexies (bloc 11) et 12octies (bloc 12). La ligne 12bis est faite. Ensuite 1 + 2 + 3 + 5 pour le bloc 06.
 
 **Ce qui ne dépend ni de Resend ni de Twilio, par ordre d'utilité** : la ligne 6 (une heure de lecture du Fluide, la clé Anthropic est déjà dans ton `.env`), la ligne 14 (Stripe, vingt minutes), puis les lignes 11 à 12octies (les checkpoints, deux heures de ton temps).
 
