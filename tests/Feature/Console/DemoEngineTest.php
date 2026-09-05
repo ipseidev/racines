@@ -108,6 +108,42 @@ it('donne au narrateur un second canal, sans quoi le renvoi n’a nulle part où
         ->and($narrator->preferred_channel)->toBe(Channel::Sms);
 });
 
+/**
+ * Le défaut trouvé en jouant le checkpoint pour de vrai : le planificateur
+ * tourne à :07 de chaque heure, dans son propre conteneur, et il avait déjà
+ * consommé deux occurrences avant qu'on arme quoi que ce soit.
+ *
+ * Conséquence : `recorded_not_validated` avait parlé au narrateur le matin,
+ * donc `link_not_opened` sortait supprimée, et `validated_not_listened` était
+ * déjà dédupliquée. Le tick annonçait « 1 déclenchement, 2 supprimés, 2
+ * ignorés » là où le checkpoint en attend trois — et rien n'expliquait
+ * pourquoi. Un checkpoint qu'on ne peut pas rejouer n'est pas un checkpoint.
+ */
+it('efface la trace du jour, sinon un tick du planificateur rend le checkpoint injouable', function (): void {
+    // Le planificateur tourne à :07 de chaque heure, dans son propre
+    // conteneur, et il passe avant nous sur un décor pas encore armé :
+    // `recorded_not_validated` parle alors au narrateur, et
+    // `validated_not_listened` consomme son idempotence.
+    $this->artisan('engine:tick')->assertSuccessful();
+
+    $avant = EngineEvent::query()->pluck('id')->all();
+
+    $this->artisan('demo:moteur')->assertSuccessful();
+    $this->artisan('engine:tick')->assertSuccessful();
+
+    $apres = EngineEvent::query()
+        ->whereNotIn('id', $avant)
+        ->where('dedupe_key', 'not like', '%:suppressed:%')
+        ->pluck('rule_id')
+        ->map(fn (EngineRuleId $id): string => $id->value)
+        ->all();
+
+    expect($apres)
+        ->toContain(EngineRuleId::LinkNotOpened->value)
+        ->toContain(EngineRuleId::ValidatedNotListened->value)
+        ->toContain(EngineRuleId::NarratorSilence21d->value);
+});
+
 it('se rejoue sans empiler les jetons', function (): void {
     $this->artisan('demo:moteur')->assertSuccessful();
     $this->artisan('demo:moteur')->assertSuccessful();

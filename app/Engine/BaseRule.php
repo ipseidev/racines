@@ -119,6 +119,9 @@ abstract class BaseRule implements Rule
             actions: $actions,
             payload: ['occurrence_key' => $occurrence->occurrenceKey(), ...$payload],
             forceChannel: $forceChannel,
+            // Sans le destinataire, deux proches d'une même occurrence
+            // partagent une clé, et le second message est jeté en silence.
+            recipientKey: (string) $recipient->getKey(),
         );
 
         $recipient->notify($notification);

@@ -46,6 +46,18 @@ final class EngineNotification extends Notification implements TracksDelivery
          * courriel, et inversement.
          */
         private readonly ?Channel $forceChannel = null,
+        /**
+         * Ce qui distingue deux messages d'une même occurrence.
+         *
+         * Une règle peut écrire à plusieurs personnes pour un seul
+         * déclenchement — `validated_not_listened` relance chaque proche. Sans
+         * cette part, leurs clés de déduplication sont identiques, la
+         * contrainte unique des messages sortants garde la première et jette
+         * les autres **en silence** (défaut T-154). L'occurrence seule ne
+         * suffit donc pas : la clé dit « ce message, à cette personne, sur ce
+         * canal ».
+         */
+        private readonly ?string $recipientKey = null,
     ) {}
 
     /**
@@ -113,8 +125,9 @@ final class EngineNotification extends Notification implements TracksDelivery
     public function dedupeKey(Channel $channel): string
     {
         $occurrence = (string) ($this->payload['occurrence_key'] ?? $this->project->id);
+        $recipient = $this->recipientKey === null ? '' : ':'.$this->recipientKey;
 
-        return "engine:{$this->rule->value}:{$occurrence}:{$channel->value}";
+        return "engine:{$this->rule->value}:{$occurrence}{$recipient}:{$channel->value}";
     }
 
     public function template(): string

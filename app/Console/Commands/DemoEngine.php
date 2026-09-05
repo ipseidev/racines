@@ -67,6 +67,7 @@ final class DemoEngine extends Command
             return self::FAILURE;
         }
 
+        $this->clearTrace($project);
         $this->acceptance($project);
         $this->secondChannel($project);
         $this->linkNotOpened($project, $issueToken);
@@ -83,8 +84,43 @@ final class DemoEngine extends Command
         $this->line('  <fg=yellow>supprimées</>. Elles parlaient au même narrateur le même jour, et une');
         $this->line('  seule règle par jour a le droit de le déranger. C’est la garde anti-harcèlement,');
         $this->line('  pas une panne — c’est même le point le plus important du checkpoint.');
+        $this->newLine();
+        $this->components->warn('Enchaînez tout de suite : le planificateur passe à :07 de chaque heure et consommerait les occurrences avant vous.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Efface ce que le moteur a déjà dit à ce projet.
+     *
+     * Le défaut trouvé en jouant le checkpoint pour de vrai : le planificateur
+     * tourne à :07 de chaque heure, dans son propre conteneur, sur un décor
+     * pas encore armé. Il avait déjà fait parler `recorded_not_validated` au
+     * narrateur le matin même, si bien que `link_not_opened` sortait
+     * **supprimée** — une seule règle par jour a le droit de déranger — et que
+     * `validated_not_listened` avait consommé son idempotence. Le tick
+     * annonçait « 1 déclenchement, 2 supprimés, 2 ignorés » là où le
+     * checkpoint en attend trois, et rien à l'écran ne disait pourquoi.
+     *
+     * Un checkpoint qu'on ne peut pas rejouer n'est pas un checkpoint. On
+     * efface donc la trace du moteur sur ce projet — ses événements et les
+     * messages qu'ils ont produits — pour que le tour suivant reparte de zéro.
+     * Les messages des autres blocs (invitations, bienvenue) ne sont pas
+     * touchés : ils ne gênent pas, et les effacer effacerait du décor utile.
+     */
+    private function clearTrace(Project $project): void
+    {
+        $events = DB::table('engine_events')->where('project_id', $project->id)->delete();
+
+        $messages = DB::table('outbound_messages')
+            ->where('project_id', $project->id)
+            ->where('template', 'like', 'engine\_%')
+            ->delete();
+
+        $this->components->twoColumnDetail(
+            'Trace du moteur effacée',
+            $events.' événement(s), '.$messages.' message(s)',
+        );
     }
 
     /**
