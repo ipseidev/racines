@@ -283,6 +283,8 @@ Rien à faire maintenant. C'est ici pour que tu puisses grouper les démarches l
 | Bloc 17 | **Le socle juridique validé par un conseil** : consentements, LIA, AIPD proportionnée, CGV, politique de confidentialité, contrat pilote, information sur l'enregistrement des appels | `golive:check` **refuse de passer** sans `legal_validated_at`. C'est la démarche la plus longue de toutes : à lancer bien avant le bloc 17 |
 | Bloc 17 | **Les DPA signés** avec chaque sous-traitant : Cloudflare, DigitalOcean, Twilio, Resend, Anthropic, Gladia, Deepgram, Stripe, PostHog, Flare, Oh Dear | Idem : la liste est longue, chaque signature prend des jours |
 
+**À ajouter à la revue juridique (T-175).** Mesurer le WER sur les premières familles du pilote suppose d'écrire à la main la référence d'une histoire réelle : écouter et transcrire le souvenir de quelqu'un **pour une mesure technique** n'est pas couvert par le consentement `transcription`, qui autorise la transcription du service et non sa relecture par nous. Deux exigences à faire trancher : un consentement distinct, et le passage par le chemin audité du back-office plutôt que par un dossier local.
+
 Les textes de consentement semés aujourd'hui portent tous la mention `[À VALIDER PAR CONSEIL]`. Elle ne disparaît pas d'elle-même. Depuis le bloc 10, les trois pages légales — `/cgv`, `/confidentialite`, `/mentions-legales` — portent aussi leur bandeau, sur **toutes** les pages publiques : tant que `PilotSettings::legal_validated_at` est nul, une page de vente qui le tairait mentirait par omission. Les textes sont rédigés et lisibles ; ils attendent une relecture, pas une rédaction.
 
 ---
@@ -310,8 +312,8 @@ Le seul endroit à tenir à jour.
 | 2 | Clé Gladia | bloc 06 | ☐ |
 | 3 | `ASR_CALLBACK_SECRET` généré | bloc 06 | ☐ |
 | 4 | Clé Deepgram *(optionnelle)* | bloc 06 | ☐ |
-| 5 | **Corpus : 10 voix de 65 ans et plus, avec références relues** | bloc 06 | ☐ |
-| 6 | Lecture humaine du Fluide sur 5 histoires | bloc 06 | **à moitié** — 5 mots à mot **écrits** lus le 2026-09-03, deux défauts corrigés (`fluide-v2`, T-126) ; reste 5 histoires **réelles**, dans la même séance que le corpus de voix |
+| 5 | ~~Corpus : 10 voix de 65 ans et plus~~ | bloc 06 | **reporté le 2026-09-06** (T-175) — la mesure se fera sur les premières familles du pilote. Ne bloque ni le code ni le go-live ; le coût est de découvrir la qualité ASR en même temps qu'elles |
+| 6 | Lecture humaine du Fluide sur 5 histoires **réelles** | bloc 06 | **à moitié** — 5 mots à mot **écrits** lus le 2026-09-03, deux défauts corrigés (`fluide-v2`, T-126) ; reste 5 histoires **réelles**, dans la même séance que le corpus de voix |
 | 7 | iPhone réel + Android réel *(5 idéalement, dont Samsung Internet)* | bloc 04 | ☐ |
 | 8 | Accès HTTPS (tunnel ou préproduction) | bloc 04 | ☐ |
 | 9 | Twilio : SID, token, numéro vérifié, expéditeur « NARRAE » enregistré | bloc 05 | **en cours** — clés dans `.env` le 2026-09-05, demande d'enregistrement AF2M déposée le même jour. **Deux corrections à faire** : `TWILIO_FROM` doit porter un numéro et non « Narrae » (c'est le repli là où l'alphanumérique est interdit), et renseigner `SMS_ALLOWLIST` avant de basculer `SMS_PROVIDER=twilio` — sans elle rien ne part, et c'est voulu (T-174) |
