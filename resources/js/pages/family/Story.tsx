@@ -142,12 +142,13 @@ export default function Story({
             ) : null}
 
             {/*
-             * L'écoute sur une carte à elle : c'est le geste de la page, et
-             * une carte le sépare du texte au lieu de le poser dessus.
+             * Le lecteur porte déjà sa carte (il est partagé avec la page
+             * narratrice) : l'envelopper dans une seconde en dessinait deux,
+             * l'une dans l'autre. Ce conteneur ne fait que l'entrée en fondu.
              */}
-            <div className="card enter mt-7 px-5 py-5" style={stagger(3)}>
+            <div className="enter mt-7" style={stagger(3)}>
                 {audioUrl === null ? (
-                    <p className="text-brand-muted text-base">
+                    <p className="card text-brand-muted px-5 py-5 text-base">
                         {t('family.story.no_audio')}
                     </p>
                 ) : (
@@ -265,7 +266,15 @@ export default function Story({
                                 disabled={sending}
                                 aria-pressed={done}
                                 onClick={() => react(type)}
-                                className={`press inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2 rounded-md px-6 py-3 text-[1.0625rem] font-semibold transition-colors disabled:opacity-60 ${
+                                /*
+                                 * `basis` plutôt qu'un simple `flex-1` : à
+                                 * deux par ligne, « J'ai aimé » se coupait en
+                                 * deux sur un téléphone étroit. En dessous de
+                                 * la largeur de base, la ligne se rompt et
+                                 * chaque bouton prend toute la largeur —
+                                 * plutôt qu'un mot coupé en deux.
+                                 */
+                                className={`press inline-flex min-h-[3.25rem] flex-1 basis-[9.5rem] items-center justify-center gap-2 rounded-md px-4 py-3 text-[1.0625rem] font-semibold whitespace-nowrap transition-colors disabled:opacity-60 ${
                                     done
                                         ? 'border-brand-sage text-brand bg-brand-sage/12 border-2'
                                         : 'bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep'
