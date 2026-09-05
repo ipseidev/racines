@@ -1,6 +1,16 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
+import { Counter } from '@/components/form/Counter';
+import { SelectField } from '@/components/form/SelectField';
+import { SubmitButton } from '@/components/form/SubmitButton';
+import { TextField } from '@/components/form/TextField';
+import { IconButton } from '@/components/space/IconButton';
+import { Check, Pause, Plus, Trash } from '@/components/space/Icons';
+import { PageHeader } from '@/components/space/PageHeader';
 import { useT } from '@/hooks/useT';
+import { formatDate, formatDateTime } from '@/lib/dates';
+import { stagger } from '@/lib/motion';
 
 type Option = { value: string; label: string };
 
@@ -31,29 +41,10 @@ type Props = {
 
 const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 
-function formatDateTime(iso: string | null): string {
-    if (iso === null) {
-        return '';
-    }
-
-    return new Intl.DateTimeFormat('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(iso));
-}
-
 /**
- * Les réglages du projet : rythme, forme d'adresse, lexique, pause.
- *
- * Le lexique est ici plutôt que côté narrateur pour une raison pratique :
- * c'est la famille qui sait comment s'écrit le nom du village de sa
- * grand-mère, et le narrateur ne devrait pas avoir à épeler ses souvenirs.
- *
- * Le mandat n'apparaît que si le drapeau est ouvert : une fonctionnalité
- * fermée ne s'annonce pas (T-82).
+ * Les réglages du projet : le rythme, le lexique, la pause. Trois cartes, un
+ * geste par carte. Le rythme est la seule action principale de la page ;
+ * « Enregistré » apparaît près du bouton, puis s'efface, en plus du toast.
  */
 export default function Settings({
     narratorFirstName,
@@ -77,23 +68,50 @@ export default function Settings({
     const entry = useForm({ term: '', replacement: '', notes: '' });
     const pause = useForm({ weeks: 2 });
 
+    const [saved, setSaved] = useState(false);
+
+    useEffect(() => {
+        if (!saved) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => setSaved(false), 2400);
+
+        return () => window.clearTimeout(timer);
+    }, [saved]);
+
     return (
         <>
             <Head title={t('initiator.settings.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold">
-                {t('initiator.settings.title')}
-            </h1>
+            <div className="enter" style={stagger(0)}>
+                <PageHeader
+                    eyebrow={t('initiator.nav.settings')}
+                    title={t('initiator.settings.title')}
+                    intro={
+                        project.nextPromptAt !== null
+                            ? t('initiator.settings.next_prompt', {
+                                  when: formatDateTime(project.nextPromptAt),
+                              })
+                            : undefined
+                    }
+                />
+            </div>
 
-            <section aria-labelledby="rhythm" className="mt-8">
-                <h2 id="rhythm" className="text-xl font-medium">
+            <section
+                aria-labelledby="rhythm"
+                className="card enter mt-8 p-6"
+                style={stagger(1)}
+            >
+                <h2 id="rhythm" className="eyebrow">
                     {t('initiator.settings.rhythm')}
                 </h2>
 
-                {project.nextPromptAt !== null && (
-                    <p className="text-brand-muted mt-2 text-base">
-                        {t('initiator.settings.next_prompt', {
-                            when: formatDateTime(project.nextPromptAt),
+                {project.pausedUntil !== null && (
+                    <p className="panel mt-4 inline-flex items-center gap-2">
+                        <Pause className="size-4" />
+                        {t('initiator.dashboard.paused_until', {
+                            date: formatDate(project.pausedUntil),
                         })}
                     </p>
                 )}
@@ -103,50 +121,55 @@ export default function Settings({
                         event.preventDefault();
                         rhythm.post('/espace/reglages', {
                             preserveScroll: true,
+                            onSuccess: () => setSaved(true),
                         });
                     }}
-                    className="mt-4 flex flex-col gap-5"
+                    className="mt-5 flex flex-col gap-5"
                 >
-                    <Choice
-                        label={t('initiator.settings.cadence')}
-                        options={cadences}
-                        value={rhythm.data.cadence}
-                        onChange={(value) => rhythm.setData('cadence', value)}
-                        error={rhythm.errors.cadence}
-                    />
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <SelectField
+                            label={t('initiator.settings.cadence')}
+                            options={cadences}
+                            value={rhythm.data.cadence}
+                            onChange={(value) =>
+                                rhythm.setData('cadence', value)
+                            }
+                            error={rhythm.errors.cadence}
+                        />
 
-                    <Choice
-                        label={t('initiator.settings.day')}
-                        options={DAYS.map((day) => ({
-                            value: String(day),
-                            label: t(`initiator.days.${day}`),
-                        }))}
-                        value={String(rhythm.data.prompt_day)}
-                        onChange={(value) =>
-                            rhythm.setData('prompt_day', Number(value))
-                        }
-                        error={rhythm.errors.prompt_day}
-                    />
+                        <SelectField
+                            label={t('initiator.settings.day')}
+                            options={DAYS.map((day) => ({
+                                value: String(day),
+                                label: t(`initiator.days.${day}`),
+                            }))}
+                            value={String(rhythm.data.prompt_day)}
+                            onChange={(value) =>
+                                rhythm.setData('prompt_day', Number(value))
+                            }
+                            error={rhythm.errors.prompt_day}
+                        />
 
-                    <Choice
-                        label={t('initiator.settings.slot')}
-                        options={slots}
-                        value={rhythm.data.prompt_slot}
-                        onChange={(value) =>
-                            rhythm.setData('prompt_slot', value)
-                        }
-                        error={rhythm.errors.prompt_slot}
-                    />
+                        <SelectField
+                            label={t('initiator.settings.slot')}
+                            options={slots}
+                            value={rhythm.data.prompt_slot}
+                            onChange={(value) =>
+                                rhythm.setData('prompt_slot', value)
+                            }
+                            error={rhythm.errors.prompt_slot}
+                        />
 
-                    <Choice
-                        label={t('initiator.settings.address_form')}
-                        options={addressForms}
-                        value={rhythm.data.address_form}
-                        onChange={(value) =>
-                            rhythm.setData('address_form', value)
-                        }
-                        error={rhythm.errors.address_form}
-                    />
+                        <SelectField
+                            label={t('initiator.settings.address_form')}
+                            options={addressForms}
+                            value={rhythm.data.address_form}
+                            onChange={(value) =>
+                                rhythm.setData('address_form', value)
+                            }
+                            error={rhythm.errors.address_form}
+                        />
+                    </div>
 
                     <p className="text-brand-muted text-base">
                         {t('initiator.settings.timezone', {
@@ -154,58 +177,78 @@ export default function Settings({
                         })}
                     </p>
 
-                    <button
-                        type="submit"
-                        disabled={rhythm.processing}
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] self-start rounded-md px-6 py-3 font-semibold disabled:opacity-60"
-                    >
-                        {t('initiator.settings.submit')}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <SubmitButton
+                            processing={rhythm.processing}
+                            waitingLabel={t('initiator.settings.waiting')}
+                        >
+                            {t('initiator.settings.submit')}
+                        </SubmitButton>
+
+                        {saved && (
+                            <span
+                                role="status"
+                                className="text-brand enter inline-flex items-center gap-1.5 font-medium"
+                            >
+                                <Check className="size-5" />
+                                {t('initiator.settings.saved_short')}
+                            </span>
+                        )}
+                    </div>
                 </form>
             </section>
 
-            <section aria-labelledby="lexicon" className="mt-12">
-                <h2 id="lexicon" className="text-xl font-medium">
+            <section
+                aria-labelledby="lexicon"
+                className="card enter mt-8 p-6"
+                style={stagger(2)}
+            >
+                <h2 id="lexicon" className="eyebrow">
                     {t('initiator.settings.lexicon.title')}
                 </h2>
 
-                <p className="text-brand-muted mt-2 text-base">
+                <p className="text-brand-muted mt-3 text-base">
                     {t('initiator.settings.lexicon.intro', { name })}
                 </p>
 
                 {lexicon.length === 0 ? (
-                    <p className="mt-4">
+                    <p className="text-brand-muted mt-4 text-base italic">
                         {t('initiator.settings.lexicon.empty')}
                     </p>
                 ) : (
-                    <ul className="mt-4 flex flex-col gap-3">
+                    <ul className="border-brand-sand divide-brand-sand mt-5 divide-y rounded-lg border">
                         {lexicon.map((item) => (
                             <li
                                 key={item.id}
-                                className="border-brand-sand bg-brand-surface flex items-baseline justify-between gap-4 rounded-md border px-4 py-3"
+                                className="flex items-center justify-between gap-4 px-4 py-3"
                             >
-                                <span>
-                                    {item.term}
+                                <div className="min-w-0">
+                                    <p className="font-medium">
+                                        {item.replacement ?? item.term}
+                                    </p>
                                     {item.replacement !== null && (
-                                        <span className="text-brand-muted">
-                                            {' → '}
-                                            {item.replacement}
-                                        </span>
+                                        <p className="text-brand-muted text-base">
+                                            {t(
+                                                'initiator.settings.lexicon.heard',
+                                                { term: item.term },
+                                            )}
+                                        </p>
                                     )}
-                                </span>
+                                </div>
 
-                                <button
-                                    type="button"
+                                <IconButton
+                                    label={t(
+                                        'initiator.settings.lexicon.remove',
+                                    )}
                                     onClick={() =>
                                         router.delete(
                                             `/espace/reglages/lexique/${item.id}`,
                                             { preserveScroll: true },
                                         )
                                     }
-                                    className="text-base underline"
                                 >
-                                    {t('initiator.settings.lexicon.remove')}
-                                </button>
+                                    <Trash className="size-4" />
+                                </IconButton>
                             </li>
                         ))}
                     </ul>
@@ -219,53 +262,50 @@ export default function Settings({
                             onSuccess: () => entry.reset(),
                         });
                     }}
-                    className="mt-6 flex flex-col gap-5"
+                    className="mt-5 grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
                 >
-                    <label className="flex flex-col gap-1">
-                        <span className="font-medium">
-                            {t('initiator.settings.lexicon.term')}
-                        </span>
-                        <input
-                            type="text"
-                            value={entry.data.term}
-                            onChange={(event) =>
-                                entry.setData('term', event.target.value)
-                            }
-                            className="input"
-                            required
-                        />
-                    </label>
+                    <TextField
+                        label={t('initiator.settings.lexicon.term')}
+                        value={entry.data.term}
+                        onChange={(event) =>
+                            entry.setData('term', event.target.value)
+                        }
+                        error={entry.errors.term}
+                        autoComplete="off"
+                        required
+                    />
 
-                    <label className="flex flex-col gap-1">
-                        <span className="font-medium">
-                            {t('initiator.settings.lexicon.replacement')}
-                        </span>
-                        <input
-                            type="text"
-                            value={entry.data.replacement}
-                            onChange={(event) =>
-                                entry.setData('replacement', event.target.value)
-                            }
-                            className="input"
-                        />
-                    </label>
+                    <TextField
+                        label={t('initiator.settings.lexicon.replacement')}
+                        value={entry.data.replacement}
+                        onChange={(event) =>
+                            entry.setData('replacement', event.target.value)
+                        }
+                        error={entry.errors.replacement}
+                        autoComplete="off"
+                    />
 
                     <button
                         type="submit"
                         disabled={entry.processing}
-                        className="border-brand text-brand min-h-[2.75rem] self-start rounded-md border-2 px-6 py-3 font-semibold disabled:opacity-60"
+                        className="btn-secondary press min-h-[2.75rem] disabled:opacity-60"
                     >
+                        <Plus className="size-4" />
                         {t('initiator.settings.lexicon.submit')}
                     </button>
                 </form>
             </section>
 
-            <section aria-labelledby="pause" className="mt-12">
-                <h2 id="pause" className="text-xl font-medium">
+            <section
+                aria-labelledby="pause"
+                className="card enter mt-8 p-6"
+                style={stagger(3)}
+            >
+                <h2 id="pause" className="eyebrow">
                     {t('initiator.settings.pause.title')}
                 </h2>
 
-                <p className="text-brand-muted mt-2 text-base">
+                <p className="text-brand-muted mt-3 text-base">
                     {t('initiator.settings.pause.intro', { name })}
                 </p>
 
@@ -276,84 +316,45 @@ export default function Settings({
                             preserveScroll: true,
                         });
                     }}
-                    className="mt-4 flex flex-col gap-5"
+                    className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-end"
                 >
-                    <label className="flex flex-col gap-1">
-                        <span className="font-medium">
-                            {t('initiator.settings.pause.weeks')}
-                        </span>
-                        <input
-                            type="number"
-                            min={1}
-                            max={26}
-                            value={pause.data.weeks}
-                            onChange={(event) =>
-                                pause.setData(
-                                    'weeks',
-                                    Number(event.target.value),
-                                )
-                            }
-                            className="input"
-                        />
-                    </label>
+                    <Counter
+                        label={t('initiator.settings.pause.weeks')}
+                        value={pause.data.weeks}
+                        min={1}
+                        max={26}
+                        onChange={(value) => pause.setData('weeks', value)}
+                        decrementLabel={t('initiator.settings.pause.fewer')}
+                        incrementLabel={t('initiator.settings.pause.more')}
+                        error={pause.errors.weeks}
+                    />
 
                     <button
                         type="submit"
                         disabled={pause.processing}
-                        className="border-brand text-brand min-h-[2.75rem] self-start rounded-md border-2 px-6 py-3 font-semibold disabled:opacity-60"
+                        className="btn-secondary press min-h-[2.75rem] disabled:opacity-60"
                     >
+                        <Pause className="size-4" />
                         {t('initiator.settings.pause.submit')}
                     </button>
                 </form>
             </section>
 
             {mandateOpen && (
-                <section aria-labelledby="mandate" className="mt-12">
-                    <h2 id="mandate" className="text-xl font-medium">
+                <section
+                    aria-labelledby="mandate"
+                    className="card enter mt-8 p-6"
+                    style={stagger(4)}
+                >
+                    <h2 id="mandate" className="eyebrow">
                         {t('initiator.settings.mandate.title', { name })}
                     </h2>
 
-                    <p className="mt-2">
+                    <p className="mt-3">
                         {t('initiator.settings.mandate.body', { name })}
                     </p>
                 </section>
             )}
         </>
-    );
-}
-
-function Choice({
-    label,
-    options,
-    value,
-    onChange,
-    error,
-}: {
-    label: string;
-    options: Option[];
-    value: string;
-    onChange: (value: string) => void;
-    error?: string;
-}) {
-    return (
-        <label className="flex flex-col gap-1">
-            <span className="font-medium">{label}</span>
-            <select
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                className="input"
-            >
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
-            {error !== undefined && (
-                <span role="alert" className="text-base">
-                    {error}
-                </span>
-            )}
-        </label>
     );
 }

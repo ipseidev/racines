@@ -1,7 +1,14 @@
 import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 
+import { ConfirmDialog } from '@/components/space/ConfirmDialog';
+import { External, Message } from '@/components/space/Icons';
+import { PageHeader } from '@/components/space/PageHeader';
+import { Pill, type PillTone } from '@/components/space/Pill';
 import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
+import { formatDate } from '@/lib/dates';
+import { stagger } from '@/lib/motion';
 
 type Item = {
     sku: string;
@@ -34,140 +41,224 @@ type Props = {
     supportEmail: string;
 };
 
-function formatDate(iso: string): string {
-    return new Intl.DateTimeFormat('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    }).format(new Date(iso));
-}
+const TONES: Record<string, PillTone> = {
+    paid: 'sage',
+    pending: 'gold',
+    refunded: 'muted',
+    partially_refunded: 'muted',
+    failed: 'muted',
+};
 
 /**
- * Les commandes, et le droit de rétractation.
+ * La commande, et le droit de rétractation.
  *
- * Passé l'échéance, la page ne dit pas « c'est trop tard » : elle explique la
- * garantie de trente jours et donne le contact du support. Un refus sec est
- * l'occasion parfaite de perdre une famille qu'on aurait pu garder.
- *
- * Cette page est la seule de l'espace accessible **sans** vérification de
- * courriel : un droit légal ne se conditionne pas à un clic dans une boîte de
- * réception.
+ * Une carte par commande : ce qui a été payé, le détail, la facture, puis le
+ * délai légal et le bouton pour l'exercer. La rétractation demande une
+ * confirmation : le geste engage, et personne ne doit se rétracter d'un doigt
+ * qui glisse. Passé l'échéance, la carte ne dit pas « trop tard » : elle
+ * explique la garantie et donne le contact.
  */
 export default function Orders({ orders, supportEmail }: Props) {
     const t = useT();
+    const [withdrawing, setWithdrawing] = useState<Order | null>(null);
+    const [processing, setProcessing] = useState(false);
 
     return (
         <>
             <Head title={t('initiator.orders.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold">
-                {t('initiator.orders.title')}
-            </h1>
+            <div className="enter" style={stagger(0)}>
+                <PageHeader
+                    eyebrow={t('initiator.nav.orders')}
+                    title={t('initiator.orders.title')}
+                />
+            </div>
 
             {orders.length === 0 ? (
-                <p className="mt-8">{t('initiator.orders.empty')}</p>
+                <p className="card enter mt-8 p-5" style={stagger(1)}>
+                    {t('initiator.orders.empty')}
+                </p>
             ) : (
-                <ul className="mt-8 flex flex-col gap-8">
-                    {orders.map((order) => (
+                <ul className="mt-8 flex flex-col gap-6">
+                    {orders.map((order, index) => (
                         <li
                             key={order.id}
-                            className="border-brand-sand bg-brand-surface rounded-md border px-5 py-4"
+                            className="card enter overflow-hidden"
+                            style={stagger(index + 1)}
                         >
-                            <p className="font-medium">{order.statusLabel}</p>
-
-                            {order.paidAt !== null && (
-                                <p className="text-brand-muted text-base">
-                                    {t('initiator.orders.paid_at', {
-                                        date: formatDate(order.paidAt),
-                                    })}
-                                </p>
-                            )}
-
-                            <p className="mt-2">
-                                {t('initiator.orders.total', {
-                                    amount: formatPrice(order.totalCents),
-                                })}
-                            </p>
-
-                            {order.refundedCents > 0 && (
-                                <p className="text-brand-muted text-base">
-                                    {t('initiator.orders.refunded', {
-                                        amount: formatPrice(
-                                            order.refundedCents,
-                                        ),
-                                    })}
-                                </p>
-                            )}
-
-                            <h2 className="mt-4 font-medium">
-                                {t('initiator.orders.items')}
-                            </h2>
-
-                            <ul className="mt-2 flex flex-col gap-1 text-base">
-                                {order.items.map((item) => (
-                                    <li key={item.sku}>
-                                        {item.label} × {item.quantity},{' '}
-                                        {formatPrice(item.unitCents)}
-                                    </li>
-                                ))}
-                            </ul>
-
-                            {order.phoneOption !== null && (
-                                <p className="mt-4 text-base">
-                                    {t('initiator.orders.phone_option')} :{' '}
-                                    {order.phoneOption.statusLabel}
-                                </p>
-                            )}
-
-                            {order.invoiceUrl !== null && (
-                                <a
-                                    href={order.invoiceUrl}
-                                    className="mt-4 inline-block underline"
-                                >
-                                    {t('initiator.orders.invoice')}
-                                </a>
-                            )}
-
-                            {order.canBeWithdrawn ? (
-                                <div className="mt-6">
-                                    {order.withdrawalDeadlineAt !== null && (
-                                        <p className="text-base">
-                                            {t(
-                                                'initiator.orders.withdrawal_until',
-                                                {
-                                                    date: formatDate(
-                                                        order.withdrawalDeadlineAt,
-                                                    ),
-                                                },
-                                            )}
+                            <div className="flex flex-wrap items-start justify-between gap-4 p-6">
+                                <div>
+                                    {order.paidAt !== null && (
+                                        <p className="eyebrow">
+                                            {t('initiator.orders.paid_at', {
+                                                date: formatDate(order.paidAt),
+                                            })}
                                         </p>
                                     )}
 
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            router.post(
-                                                `/espace/commandes/${order.id}/retractation`,
-                                                undefined,
-                                                { preserveScroll: true },
-                                            )
-                                        }
-                                        className="border-brand text-brand mt-3 min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
-                                    >
-                                        {t('initiator.orders.withdrawal')}
-                                    </button>
+                                    <p className="font-display text-brand mt-3 text-[2rem] leading-none font-semibold">
+                                        {formatPrice(order.totalCents)}
+                                    </p>
+
+                                    {order.refundedCents > 0 && (
+                                        <p className="text-brand-muted mt-2 text-base">
+                                            {t('initiator.orders.refunded', {
+                                                amount: formatPrice(
+                                                    order.refundedCents,
+                                                ),
+                                            })}
+                                        </p>
+                                    )}
                                 </div>
-                            ) : (
-                                <p className="text-brand-muted mt-6 text-base">
-                                    {t('initiator.orders.withdrawal_expired', {
-                                        email: supportEmail,
-                                    })}
-                                </p>
-                            )}
+
+                                <Pill tone={TONES[order.status] ?? 'muted'}>
+                                    {order.statusLabel}
+                                </Pill>
+                            </div>
+
+                            <div className="border-brand-sand border-t px-6 py-5">
+                                <h2 className="text-brand-muted text-[0.8rem] font-semibold tracking-[0.08em] uppercase">
+                                    {t('initiator.orders.items')}
+                                </h2>
+
+                                <ul className="mt-2 flex flex-col gap-1.5">
+                                    {order.items.map((item) => (
+                                        <li
+                                            key={item.sku}
+                                            className="flex justify-between gap-4"
+                                        >
+                                            <span>
+                                                {item.label}
+                                                {item.quantity > 1 &&
+                                                    ` × ${item.quantity}`}
+                                            </span>
+                                            <span className="tabular-nums">
+                                                {formatPrice(
+                                                    item.unitCents *
+                                                        item.quantity,
+                                                )}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                {order.phoneOption !== null && (
+                                    <p className="mt-4 text-base">
+                                        {t('initiator.orders.phone_option')} :{' '}
+                                        {order.phoneOption.statusLabel}
+                                        {order.phoneOption.callDay !== null &&
+                                            order.phoneOption.callSlot !==
+                                                null && (
+                                                <>
+                                                    {' ('}
+                                                    {t(
+                                                        'initiator.orders.phone_option_slot',
+                                                        {
+                                                            day: t(
+                                                                `initiator.days.${order.phoneOption.callDay}`,
+                                                            ),
+                                                            slot: order
+                                                                .phoneOption
+                                                                .callSlot,
+                                                        },
+                                                    )}
+                                                    {')'}
+                                                </>
+                                            )}
+                                    </p>
+                                )}
+
+                                {order.invoiceUrl !== null && (
+                                    <a
+                                        href={order.invoiceUrl}
+                                        target="_blank"
+                                        rel="noopener"
+                                        className="text-brand mt-4 inline-flex min-h-[2.75rem] items-center gap-1.5 font-medium underline underline-offset-4"
+                                    >
+                                        <External className="size-4" />
+                                        {t('initiator.orders.invoice')}
+                                    </a>
+                                )}
+                            </div>
+
+                            <div className="bg-brand-linen px-6 py-5">
+                                {order.canBeWithdrawn ? (
+                                    <>
+                                        {order.withdrawalDeadlineAt !==
+                                            null && (
+                                            <p className="text-base">
+                                                {t(
+                                                    'initiator.orders.withdrawal_until',
+                                                    {
+                                                        date: formatDate(
+                                                            order.withdrawalDeadlineAt,
+                                                        ),
+                                                    },
+                                                )}
+                                            </p>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setWithdrawing(order)
+                                            }
+                                            className="btn-secondary press mt-4 min-h-[2.75rem]"
+                                        >
+                                            {t('initiator.orders.withdrawal')}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-base">
+                                            {t(
+                                                'initiator.orders.withdrawal_expired',
+                                                { email: supportEmail },
+                                            )}
+                                        </p>
+
+                                        <a
+                                            href={`mailto:${supportEmail}`}
+                                            className="btn-secondary press mt-4 min-h-[2.75rem]"
+                                        >
+                                            <Message className="size-4" />
+                                            {t('initiator.orders.support')}
+                                        </a>
+                                    </>
+                                )}
+                            </div>
                         </li>
                     ))}
                 </ul>
             )}
+
+            <ConfirmDialog
+                open={withdrawing !== null}
+                title={t('initiator.orders.withdraw_confirm.title')}
+                body={t('initiator.orders.withdraw_confirm.body')}
+                confirmLabel={t('initiator.orders.withdraw_confirm.confirm')}
+                cancelLabel={t('common.actions.cancel')}
+                processing={processing}
+                onCancel={() => setWithdrawing(null)}
+                onConfirm={() => {
+                    if (withdrawing === null) {
+                        return;
+                    }
+
+                    router.post(
+                        `/espace/commandes/${withdrawing.id}/retractation`,
+                        undefined,
+                        {
+                            preserveScroll: true,
+                            onStart: () => setProcessing(true),
+                            onFinish: () => {
+                                setProcessing(false);
+                                setWithdrawing(null);
+                            },
+                        },
+                    );
+                }}
+            />
         </>
     );
 }
