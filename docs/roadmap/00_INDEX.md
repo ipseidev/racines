@@ -9,6 +9,7 @@
 3. Dans le bloc : installer les packages listés (commandes exactes), **écrire d'abord les tests listés en §5**, les voir échouer, implémenter les étapes de §6 dans l'ordre, cocher chaque case au fur et à mesure, exécuter le checkpoint §7, vérifier les critères de sortie §8.
 4. Un bloc est terminé quand : toutes les cases sont cochées, `sail composer check` est vert (voir conventions), le checkpoint a été démontré, un commit `chore(bloc-XX): terminé` a été créé et le tag `bloc-XX-done` posé.
 5. Reporter le statut dans le tableau ci-dessous et dans `04_VERSIONS.md` si une version a été figée.
+5bis. Relire les **dettes contractées** plus bas : une clôture de bloc qui en laisse une sans l'y inscrire la perd.
 6. Si une information manque pour exécuter une étape, **ne pas inventer** : appliquer la règle de décision par défaut du bloc (chaque bloc en a une en §9) et noter la décision prise dans `03_DECISIONS.md` sous « Décisions prises en cours de route ».
 7. Si l'étape attend une **clé, un appareil, un corpus ou une décision humaine**, ne pas s'arrêter là : l'inscrire dans `05_A_FAIRE_HUMAIN.md`, poser le bandeau d'attente en tête du fichier du bloc, laisser le bloc en `◐ en cours`, et **passer au bloc suivant**. Un bloc bloqué par le monde extérieur ne bloque pas le code.
 
@@ -67,12 +68,27 @@ Un bloc marqué `◐` a son code livré, testé et poussé ; il attend son check
 - [ ] Tous les tests listés en §5 existent et passent.
 - [ ] `sail composer check` passe : Pint, Larastan niveau 8, Pest.
 - [ ] `sail npm run check` passe : TypeScript, ESLint, Prettier, Vitest.
-- [ ] Les tests Playwright du bloc passent en local (`sail npm run e2e`).
+- [ ] Les tests Playwright du bloc passent en local, **depuis le Mac et en série** : `E2E_BASE_URL=http://localhost:8001 npx playwright test --workers=1`. Ni `sail npx`, qui ne peut pas joindre l'hôte d'envoi présigné (T-159), ni en parallèle, où la session partagée se dispute (T-111).
 - [ ] La CI GitHub Actions est verte sur `main`.
 - [ ] Le checkpoint §7 a été exécuté par un humain et le résultat noté en bas du fichier du bloc (date, résultat, écarts).
 - [ ] Les nouvelles variables d'environnement sont dans `.env.example` et dans `01_CONVENTIONS.md` §8.
 - [ ] Les versions figées sont dans `04_VERSIONS.md`.
 - [ ] Commit `chore(bloc-XX): terminé` et tag `bloc-XX-done`.
+- [ ] Toute dette laissée derrière — décor à usage unique, contournement, geste non exercé — est inscrite dans « Dettes contractées » ci-dessous. Une dette qui ne vit que dans une note de checkpoint est une dette perdue : la note est un compte rendu, pas une liste de travail.
+
+## Dettes contractées, et à qui elles reviennent
+
+Ce que la construction a laissé derrière elle et que personne ne réclamera si ce n'est pas écrit. À vider avant le bloc 16, et à relire à chaque clôture de bloc. Une dette payée disparaît d'ici — elle ne se coche pas, elle s'efface.
+
+| # | Dette | Née de | Pour qui |
+|---|---|---|---|
+| D-a | **Le lien d'opt-in du décor est à usage unique et la suite bout en bout le consomme.** Le refus n'est donc jouable qu'une fois par semis, et la feuille `demo:liens` l'annonce sans le dire. Même famille que T-155 : un checkpoint qu'on ne peut pas rejouer n'est pas un checkpoint. Remède : une commande `demo:invitation`, sur le modèle de `demo:moteur` | T-169, bloc 10 | agent |
+| D-b | **`DemoProjectSeeder` pose `status = active` sans dater `accepted_at`.** `demo:moteur` date l'acceptation au vol, mais la source reste fausse, et deux règles du moteur se taisent sans rien dire sur tout décor qui l'oublierait | T-153, bloc 09 | agent |
+| D-c | **Le domaine des liens a deux sources qui ne se parlent pas** : les routes lisent la config, `Links` lit le réglage en base. Le changer depuis l'administration — le geste que le dossier présente comme supporté — ferait répondre 404 à **chaque** lien sans que rien ne le signale | T-156, bloc 01 | à trancher : maintenant ou bloc 16 |
+| D-d | **Le SMS de réaction ne porte pas le mot du proche**, là où le courriel le porte. Un narrateur joignable par SMS seulement apprend qu'on l'a écouté sans lire ce qu'on lui a dit — et c'est le mot qui donne envie de raconter la suivante | bloc 08 | fondateur (un SMS long coûte deux segments) |
+| D-e | **L'option téléphone au paiement n'a jamais été exercée par un checkpoint.** Elle a ses tests, pas son passage humain | bloc 10 | fondateur, au prochain achat de test |
+| D-f | **Les prix Stripe en mode live, et une clé restreinte (`rk_`) plutôt que la clé secrète.** Sans enjeu en test, avec enjeu en production | T-167, bloc 10 | fondateur, avant le go-live |
+| D-g | **La narratrice de la commande de test du 2026-09-05 a été modifiée** — courriel ajouté, canal basculé au courriel — pour récupérer un lien d'invitation que le journal masquait. Sans conséquence, mais le décor local ne reflète plus exactement ce qui a été acheté | T-169, bloc 10 | pour mémoire |
 
 ## Registre des risques techniques suivis
 

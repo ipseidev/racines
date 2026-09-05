@@ -16,7 +16,7 @@ Chaque bloc arrêté par une de ces lignes le dit en tête de son fichier. Quand
 
 ## La feuille des vérifications
 
-Six checkpoints attendent quelqu'un devant un navigateur. Aucun ne se joue sans un
+Deux checkpoints attendent encore quelqu'un devant un navigateur — les blocs 11 et 12 ; les autres sont joués. Aucun ne se joue sans un
 lien à jeton de quarante-trois caractères, un téléphone connu ou un code à six
 chiffres — et rien de tout cela ne se retient.
 
@@ -54,7 +54,7 @@ Tout le reste est indépendant du nom, et une bonne partie est déjà branchée 
 
 ## §1. Ce qui débloque du travail déjà écrit
 
-Quatre blocs sont codés, testés et poussés, mais ne peuvent pas être tagués sans ça : **04** (téléphones réels), **05** (Twilio, Resend : le nom est arrêté, restent le domaine d'envoi à vérifier et l'expéditeur à enregistrer), **06** (clés, corpus de voix) et **10** (Stripe). Le **11** n'attend que vingt minutes de ton temps pour ses quatre premiers points.
+Trois blocs sont codés, testés et poussés, mais ne peuvent pas être tagués sans ça : **04** (téléphones réels), **05** (Twilio, Resend : le nom est arrêté, restent le domaine d'envoi à vérifier et l'expéditeur à enregistrer) et **06** (clés, corpus de voix). Le **10** est fermé depuis le 2026-09-05 : le compte Stripe de test est configuré, restent les prix en mode live et une clé restreinte avant le go-live. Le **11** et le **12** n'attendent que trente-cinq minutes de ton temps.
 
 ### 1.1 Clé Anthropic — débloque le bloc 06
 
@@ -243,14 +243,14 @@ Tout le mode opératoire — jouer un achat, rejouer un événement, diagnostiqu
 
 ## §2. Ce qui ne demande que ton temps
 
-**Rien à acheter, rien à créer.** Six checkpoints sont codés et n'attendent qu'un humain pour être déroulés, en local, avec les fournisseurs simulés.
+**Rien à acheter, rien à créer.** Il reste **deux** checkpoints à dérouler en local — les blocs 11 et 12. Les blocs 07, 08, 09 et 10 sont joués et tagués.
 
 - **Bloc 07** — validation, visibilité, retraits. ~30 minutes.
 - ~~**Bloc 08** — écoute famille et réactions.~~ **Fait le 2026-09-05**, sur un vrai iPhone.
 - ~~**Bloc 09** — moteur de complétion.~~ **Fait le 2026-09-05.** Le préalable ne se force plus à la main : `sail artisan demo:moteur` arme les trois signaux, dit ce qu'il a armé, et se rejoue (T-153).
 - **Bloc 12** — les photos. ~15 minutes, et deux préalables gratuits : `sail up -d clamav` une première fois (deux à trois minutes, un demi-gigaoctet de signatures, gardé ensuite), puis une **photo prise avec ton iPhone** — c'est le seul moyen d'éprouver la conversion HEIC, qu'aucun outil de cette image ne sait fabriquer. Vérifie avec `exiftool` sur l'original stocké qu'il ne reste aucune coordonnée GPS : c'est le point le plus important du bloc.
 - **Bloc 11, points 1 à 4** — le back-office. ~20 minutes : configurer ta double authentification à la première connexion sur `/admin` (l'application d'authentification de ton téléphone suffit), ouvrir la fiche d'une histoire, corriger un mot, puis `sail artisan audit:verify` — et pour voir la garde fonctionner, tenter un `update audit_logs set action='x'` en base, qui doit échouer. Le point 5 demande Stripe.
-- **Bloc 10, points 3 à 5** — le cadeau, l'opt-in et l'espace Initiateur·rice. ~20 minutes, sans Stripe. Le décor se complète en place, sans `migrate:fresh` : `sail artisan db:seed --class=E2ELinksSeeder` sème aussi la commande payée de `espace@example.test` (au prix des réglages, rétractable onze jours), sans laquelle « demander la rétractation » n'a rien à rétracter (T-147). Ouvrir `/i/demo-optin-accept-linkxxxxxxxxxxxxxxxxxxxxx` (accepter) et `/i/demo-optin-refuse-linkxxxxxxxxxxxxxxxxxxxxx` (refuser) — ces deux liens ne servent qu'une fois —, et se connecter en `espace@example.test` (mot de passe : `ADMIN_PASSWORD` de ton `.env`) pour l'espace. Les points 1 et 2 du checkpoint, eux, demandent Stripe.
+- ~~**Bloc 10**~~ — **fait le 2026-09-05**, avec un vrai paiement de test. Trois défauts de paiement trouvés et corrigés (T-167 à T-169).
 
 Un piège vérifié : `RedactTokens` masque aussi **les codes à six chiffres** dans les journaux, donc `SMS_PROVIDER=log` ne te donnera pas le code OTP. Le chemin local passe par un narrateur dont le canal préféré est le courriel — le code arrive alors en clair dans Mailpit (`http://localhost:8027`).
 
@@ -334,7 +334,7 @@ Le seul endroit à tenir à jour.
 | 19 | **Socle juridique validé par conseil** | bloc 17 | ☐ |
 | 20 | DPA signés (11 sous-traitants) | bloc 17 | ☐ |
 
-**Le chemin le plus court vers les tags restants** : la ligne 12 (bloc 08, vingt minutes et un téléphone sur le même wifi), puis 12sexies (bloc 11) et 12octies (bloc 12). La ligne 12bis est faite. Ensuite 1 + 2 + 3 + 5 pour le bloc 06.
+**Le chemin le plus court vers les tags restants** : les lignes 12sexies (bloc 11, vingt minutes) et 12octies (bloc 12, quinze minutes) — rien à acheter, et le chemin du téléphone est ouvert depuis le 2026-09-05. Ensuite 1 + 2 + 3 + 5 pour le bloc 06, dont le corpus de voix est la pièce la plus longue à réunir.
 
 **Ce qui ne dépend ni de Resend ni de Twilio, par ordre d'utilité** : la ligne 6 (une heure de lecture du Fluide, la clé Anthropic est déjà dans ton `.env`), la ligne 14 (Stripe, vingt minutes), puis les lignes 11 à 12octies (les checkpoints, deux heures de ton temps).
 
