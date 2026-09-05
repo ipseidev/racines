@@ -255,3 +255,50 @@ it('reprend le brouillon d’un aller-retour', function (): void {
             ->where('draft.narrator_email', 'jeanne@exemple.test'),
         );
 });
+
+/*
+ * Le clic sur « Payer » emmène vraiment chez Stripe.
+ *
+ * Le tunnel est une page Inertia : le bouton envoie une requête XHR portant
+ * `X-Inertia`. Une redirection ordinaire vers un domaine extérieur est alors
+ * suivie **par le navigateur, en XHR** ; Stripe répond une page HTML qui n'est
+ * pas une réponse Inertia, le client ne sait qu'en faire, et **il ne se passe
+ * rien à l'écran**. Aucune erreur, aucun message : le bouton paraît mort.
+ *
+ * `Inertia::location()` est la seule forme correcte : elle répond 409 avec
+ * `X-Inertia-Location`, et le client fait une vraie navigation.
+ *
+ * Ce défaut a traversé toutes les gardes. Le test d'à côté vérifiait
+ * `assertRedirect()`, qui passe. La suite bout en bout s'arrête au
+ * récapitulatif, par construction, parce que Stripe n'est pas à nous. Il ne
+ * restait que le clic lui-même, et il a fallu un humain pour le voir (T-168).
+ */
+it('emmène chez Stripe depuis une requête Inertia', function (): void {
+    $sessions = fakeCheckout();
+    $buyer = User::factory()->create();
+    $draft = completeDraft();
+    $draft->user()->associate($buyer)->save();
+
+    $response = $this->actingAs($buyer)
+        ->withCookie('checkout_draft', $draft->id)
+        ->withHeaders(['X-Inertia' => 'true', 'X-Inertia-Version' => ''])
+        ->post('/acheter/payer');
+
+    // Le double ne renvoie pas l'URL dans sa trace : elle se déduit de
+    // l'identifiant, exactement comme il la fabrique.
+    $url = 'https://checkout.stripe.test/'.($sessions->last()['id'] ?? '');
+
+    $response->assertStatus(409)->assertHeader('X-Inertia-Location', $url);
+});
+
+it('redirige normalement hors d’une requête Inertia', function (): void {
+    $sessions = fakeCheckout();
+    $buyer = User::factory()->create();
+    $draft = completeDraft();
+    $draft->user()->associate($buyer)->save();
+
+    $this->actingAs($buyer)
+        ->withCookie('checkout_draft', $draft->id)
+        ->post('/acheter/payer')
+        ->assertRedirect('https://checkout.stripe.test/'.($sessions->last()['id'] ?? ''));
+});

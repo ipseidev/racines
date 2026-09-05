@@ -22,8 +22,10 @@ use App\Support\Options;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Le tunnel d'achat, en six étapes.
@@ -159,7 +161,7 @@ final readonly class CheckoutController
             ->withCookie(self::draftCookie($draft));
     }
 
-    public function pay(Request $request): RedirectResponse
+    public function pay(Request $request): SymfonyResponse
     {
         $draft = self::draftFor($request);
         $buyer = $request->user();
@@ -177,7 +179,17 @@ final readonly class CheckoutController
 
         $session = $this->checkout->handle($draft, $buyer);
 
-        return redirect()->away($session->url);
+        // `Inertia::location` et non `redirect()->away` : le bouton « Payer »
+        // envoie une requête XHR portant `X-Inertia`, et le navigateur suit
+        // une redirection ordinaire **dans cette requête**. Stripe répond
+        // alors une page HTML qui n'est pas une réponse Inertia, le client ne
+        // sait qu'en faire, et **il ne se passe rien à l'écran** — aucune
+        // erreur, aucun message, un bouton qui paraît mort (T-168).
+        //
+        // `location()` répond 409 avec `X-Inertia-Location`, et le client fait
+        // une vraie navigation. Hors requête Inertia, elle redirige
+        // normalement : les deux chemins sont couverts par un test.
+        return Inertia::location($session->url);
     }
 
     public function thanks(Request $request): Response
