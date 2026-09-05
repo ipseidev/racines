@@ -1,10 +1,13 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AudioPlayer from '@/components/AudioPlayer';
 import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
 import PhotoUploader from '@/components/PhotoUploader';
+import { Avatar } from '@/components/space/Avatar';
+import { Check, Chevron, Heart, Send } from '@/components/space/Icons';
 import { useT } from '@/hooks/useT';
+import { stagger } from '@/lib/motion';
 
 type ReactionRow = {
     name: string;
@@ -43,6 +46,13 @@ const MAX_COMMENT = 280;
  *
  * Deux réactions, et aucune façon de désapprouver : le produit ne propose pas
  * de pouce baissé sur le souvenir de quelqu'un.
+ *
+ * La page a été reprise après le checkpoint du bloc 08 (T-158), sur le même
+ * socle que l'espace Initiateur·rice. Le mécanisme n'a pas bougé — deux
+ * réactions, un mot facultatif, la mesure d'écoute inchangée — mais l'écoute
+ * est désormais posée sur une carte à elle, les deux textes se prennent par un
+ * sélecteur à curseur glissant, et un bouton déjà pressé le montre au lieu de
+ * redevenir neutre. Les sections entrent l'une après l'autre.
  */
 export default function Story({
     narratorFirstName,
@@ -59,9 +69,6 @@ export default function Story({
     siblings,
 }: Props) {
     const t = useT();
-    const status =
-        (usePage().props.flash as { status?: string | null } | undefined)
-            ?.status ?? null;
 
     const [tab, setTab] = useState<'text' | 'verbatim'>('text');
     const [comment, setComment] = useState('');
@@ -107,22 +114,38 @@ export default function Story({
 
             <Link
                 href={listPath}
-                className="text-brand-muted min-h-[2.75rem] text-base underline"
+                className="text-brand-muted hover:text-brand enter inline-flex min-h-[2.75rem] items-center gap-1 text-[0.9375rem] no-underline transition-colors"
             >
+                <Chevron aria-hidden="true" className="size-4 rotate-90" />
                 {t('family.story.back')}
             </Link>
 
-            <h1 className="font-display mt-4 text-2xl leading-tight font-semibold sm:text-3xl">
-                {heading}
-            </h1>
+            <header className="enter" style={stagger(1)}>
+                <p className="eyebrow mt-2">
+                    {t('family.story.eyebrow', {
+                        first_name: narratorFirstName,
+                    })}
+                </p>
+
+                <h1 className="font-display mt-3 text-[2rem] leading-[1.1] font-semibold sm:text-[2.375rem]">
+                    {heading}
+                </h1>
+            </header>
 
             {question !== null ? (
-                <p className="bg-brand-linen text-brand-text mt-6 rounded-md px-4 py-4 text-[1.25rem]">
+                <p
+                    className="panel enter mt-6 text-[1.125rem]"
+                    style={stagger(2)}
+                >
                     {question}
                 </p>
             ) : null}
 
-            <div className="mt-8">
+            {/*
+             * L'écoute sur une carte à elle : c'est le geste de la page, et
+             * une carte le sépare du texte au lieu de le poser dessus.
+             */}
+            <div className="card enter mt-7 px-5 py-5" style={stagger(3)}>
                 {audioUrl === null ? (
                     <p className="text-brand-muted text-base">
                         {t('family.story.no_audio')}
@@ -132,12 +155,35 @@ export default function Story({
                 )}
             </div>
 
-            <section aria-labelledby="story-text" className="mt-10">
+            <section
+                aria-labelledby="story-text"
+                className="enter mt-10"
+                style={stagger(4)}
+            >
                 <h2 id="story-text" className="sr-only">
                     {t('family.story.tab_text')}
                 </h2>
 
-                <div role="tablist" className="flex gap-2">
+                {/*
+                 * Un sélecteur à deux positions, et le curseur glisse de l'une
+                 * à l'autre : le mouvement dit que c'est le même texte vu
+                 * autrement, là où deux boutons qui s'allument diraient deux
+                 * contenus différents.
+                 */}
+                <div
+                    role="tablist"
+                    className="border-brand-sand bg-brand-surface relative inline-flex rounded-full border p-1"
+                >
+                    <span
+                        aria-hidden="true"
+                        className="bg-brand-linen absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full transition-transform duration-300 ease-out"
+                        style={{
+                            transform:
+                                tab === 'text'
+                                    ? 'translateX(0)'
+                                    : 'translateX(100%)',
+                        }}
+                    />
                     {(['text', 'verbatim'] as const).map((name) => (
                         <button
                             key={name}
@@ -145,10 +191,8 @@ export default function Story({
                             role="tab"
                             aria-selected={tab === name}
                             onClick={() => setTab(name)}
-                            className={`min-h-[2.75rem] rounded-md px-4 py-2 text-base font-medium ${
-                                tab === name
-                                    ? 'bg-brand text-brand-foreground'
-                                    : 'border-brand-sand bg-brand-surface border'
+                            className={`relative z-10 min-h-[2.5rem] flex-1 rounded-full px-5 text-[0.9375rem] font-semibold transition-colors ${
+                                tab === name ? 'text-brand' : 'text-brand-muted'
                             }`}
                         >
                             {t(`family.story.tab_${name}`)}
@@ -157,47 +201,53 @@ export default function Story({
                 </div>
 
                 {tab === 'text' ? (
-                    <p className="text-brand-muted mt-3 text-base">{aiLabel}</p>
+                    <p className="text-brand-muted mt-4 text-[0.9375rem]">
+                        {aiLabel}
+                    </p>
                 ) : null}
 
-                <div className="mt-4 text-[1.125rem] leading-relaxed whitespace-pre-line">
+                <div
+                    key={tab}
+                    className="enter mt-4 text-[1.125rem] leading-relaxed whitespace-pre-line"
+                >
                     {tab === 'text' ? text : verbatim}
                 </div>
             </section>
 
-            <section aria-labelledby="story-react" className="mt-12">
-                <h2 id="story-react" className="text-lg font-medium">
+            <section
+                aria-labelledby="story-react"
+                className="card enter mt-12 px-5 py-6"
+                style={stagger(5)}
+            >
+                <p className="eyebrow">{t('family.reaction.eyebrow')}</p>
+
+                <h2
+                    id="story-react"
+                    className="font-display mt-3 text-[1.375rem] leading-snug font-semibold"
+                >
                     {t('family.reaction.title', {
                         first_name: narratorFirstName,
                     })}
                 </h2>
 
-                {status !== null ? (
-                    <p
-                        role="status"
-                        className="bg-brand-linen text-brand-text mt-4 rounded-md px-4 py-3"
-                    >
-                        {status}
-                    </p>
-                ) : null}
-
-                <label htmlFor="comment" className="sr-only">
-                    {t('family.reaction.comment_label')}
-                </label>
-                <p className="text-brand-muted mt-3 text-base">
+                <p className="text-brand-muted mt-2 text-[0.9375rem]">
                     {t('family.reaction.comment_help', {
                         first_name: narratorFirstName,
                     })}
                 </p>
+
+                <label htmlFor="comment" className="sr-only">
+                    {t('family.reaction.comment_label')}
+                </label>
                 <textarea
                     id="comment"
                     value={comment}
                     maxLength={MAX_COMMENT}
                     rows={3}
                     onChange={(event) => setComment(event.target.value)}
-                    className="border-brand-sand bg-brand-surface mt-3 w-full rounded-md border px-4 py-3 text-[1.125rem]"
+                    className="input mt-4 w-full resize-y text-[1.0625rem]"
                 />
-                <p className="text-brand-muted mt-1 text-base">
+                <p className="text-brand-muted mt-1 text-[0.875rem]">
                     {t('family.reaction.comment_counter', {
                         count: String(comment.length),
                         max: String(MAX_COMMENT),
@@ -205,35 +255,83 @@ export default function Story({
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                    {(['heart', 'thanks'] as const).map((type) => (
-                        <button
-                            key={type}
-                            type="button"
-                            disabled={sending}
-                            aria-pressed={yourReactions.includes(type)}
-                            onClick={() => react(type)}
-                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep min-h-[2.75rem] rounded-md px-6 py-3 text-lg font-semibold disabled:opacity-60"
-                        >
-                            {t(`family.reaction.${type}`)}
-                        </button>
-                    ))}
+                    {(['heart', 'thanks'] as const).map((type) => {
+                        const done = yourReactions.includes(type);
+
+                        return (
+                            <button
+                                key={type}
+                                type="button"
+                                disabled={sending}
+                                aria-pressed={done}
+                                onClick={() => react(type)}
+                                className={`press inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2 rounded-md px-6 py-3 text-[1.0625rem] font-semibold transition-colors disabled:opacity-60 ${
+                                    done
+                                        ? 'border-brand-sage text-brand bg-brand-sage/12 border-2'
+                                        : 'bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep'
+                                }`}
+                            >
+                                {done ? (
+                                    <Check
+                                        aria-hidden="true"
+                                        className="text-brand-sage size-5 flex-none"
+                                    />
+                                ) : type === 'heart' ? (
+                                    <Heart
+                                        aria-hidden="true"
+                                        className="size-5 flex-none"
+                                    />
+                                ) : (
+                                    <Send
+                                        aria-hidden="true"
+                                        className="size-5 flex-none"
+                                    />
+                                )}
+                                {t(`family.reaction.${type}`)}
+                            </button>
+                        );
+                    })}
                 </div>
             </section>
 
             {reactions.length > 0 ? (
-                <section aria-labelledby="story-reacted" className="mt-10">
-                    <h2 id="story-reacted" className="text-lg font-medium">
+                <section
+                    aria-labelledby="story-reacted"
+                    className="enter mt-10"
+                    style={stagger(6)}
+                >
+                    <h2
+                        id="story-reacted"
+                        className="text-[1.0625rem] font-semibold"
+                    >
                         {t('family.story.reacted')}
                     </h2>
-                    <ul className="mt-3 flex flex-col gap-2">
+
+                    <ul className="mt-4 flex flex-col gap-3">
                         {reactions.map((one, index) => (
-                            <li key={`${one.name}-${one.type}-${index}`}>
-                                <span className="font-medium">{one.name}</span>
-                                {' : '}
-                                {t(`family.reaction.${one.type}`)}
-                                {one.comment === null
-                                    ? null
-                                    : ` : « ${one.comment} »`}
+                            <li
+                                key={`${one.name}-${one.type}-${index}`}
+                                className="flex items-start gap-3"
+                            >
+                                <Avatar name={one.name} />
+
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[1rem]">
+                                        <span className="font-semibold">
+                                            {one.name}
+                                        </span>
+                                        <span className="text-brand-muted">
+                                            {' · '}
+                                            {t(`family.reaction.${one.type}`)}
+                                        </span>
+                                    </p>
+
+                                    {one.comment === null ? null : (
+                                        <p className="panel mt-2 text-[1rem]">
+                                            {`« ${one.comment} »`}
+                                        </p>
+                                    )}
+                                </div>
                             </li>
                         ))}
                     </ul>
@@ -263,21 +361,29 @@ export default function Story({
 
             {canContribute && <PhotoUploader action={`${base}/photos`} />}
 
-            <nav className="mt-12 flex flex-wrap gap-4">
+            <nav className="mt-12 flex flex-wrap gap-3">
                 {siblings.previous === null ? null : (
                     <Link
                         href={`${listPath}/stories/${siblings.previous}`}
-                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-base"
+                        className="btn-secondary press flex-1"
                     >
+                        <Chevron
+                            aria-hidden="true"
+                            className="size-4 rotate-90"
+                        />
                         {t('family.story.previous')}
                     </Link>
                 )}
                 {siblings.next === null ? null : (
                     <Link
                         href={`${listPath}/stories/${siblings.next}`}
-                        className="border-brand-sand min-h-[2.75rem] rounded-md border px-4 py-3 text-base"
+                        className="btn-secondary press flex-1"
                     >
                         {t('family.story.next')}
+                        <Chevron
+                            aria-hidden="true"
+                            className="size-4 -rotate-90"
+                        />
                     </Link>
                 )}
             </nav>

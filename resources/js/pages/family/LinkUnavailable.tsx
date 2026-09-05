@@ -29,15 +29,17 @@ export default function LinkUnavailable({ reason }: Props) {
         <>
             <Head title={t(`family.link_unavailable.${reason}.title`)} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
-                {t(`family.link_unavailable.${reason}.title`)}
-            </h1>
+            <div className="card enter px-6 py-8">
+                <h1 className="font-display text-[1.75rem] leading-tight font-semibold sm:text-[2rem]">
+                    {t(`family.link_unavailable.${reason}.title`)}
+                </h1>
 
-            <p className="mt-6">
-                {t(`family.link_unavailable.${reason}.body`)}
-            </p>
+                <p className="text-brand-muted mt-4 text-[1.0625rem]">
+                    {t(`family.link_unavailable.${reason}.body`)}
+                </p>
+            </div>
 
-            <p className="text-brand-muted mt-10 text-base">
+            <p className="text-brand-muted mt-8 text-[0.9375rem]">
                 {t('family.link_unavailable.help', {
                     email: brand.support_email,
                 })}

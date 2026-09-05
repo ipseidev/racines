@@ -1,6 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 
+import { Chevron } from '@/components/space/Icons';
 import { useT } from '@/hooks/useT';
+import { stagger } from '@/lib/motion';
 
 type Props = {
     backUrl: string | null;
@@ -21,20 +23,29 @@ export default function StoryUnavailable({ backUrl }: Props) {
         <>
             <Head title={t('family.story_unavailable.title')} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">
-                {t('family.story_unavailable.title')}
-            </h1>
+            <div className="card enter px-6 py-8">
+                <h1 className="font-display text-[1.75rem] leading-tight font-semibold sm:text-[2rem]">
+                    {t('family.story_unavailable.title')}
+                </h1>
 
-            <p className="mt-6">{t('family.story_unavailable.body')}</p>
+                <p className="text-brand-muted mt-4 text-[1.0625rem]">
+                    {t('family.story_unavailable.body')}
+                </p>
 
-            {backUrl === null ? null : (
-                <Link
-                    href={backUrl}
-                    className="border-brand text-brand mt-8 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 text-lg font-semibold"
-                >
-                    {t('family.story.back')}
-                </Link>
-            )}
+                {backUrl === null ? null : (
+                    <Link
+                        href={backUrl}
+                        className="btn-secondary press mt-7"
+                        style={stagger(1)}
+                    >
+                        <Chevron
+                            aria-hidden="true"
+                            className="size-4 rotate-90"
+                        />
+                        {t('family.story.back')}
+                    </Link>
+                )}
+            </div>
         </>
     );
 }

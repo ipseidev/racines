@@ -10,6 +10,7 @@ use App\Http\Middleware\NoStore;
 use App\Http\Middleware\RequireSensitiveGrant;
 use App\Http\Middleware\ResolveAccessToken;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\Links;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,14 +31,20 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::pattern('token', '[A-Za-z0-9_-]{43}');
 
             // Espaces narrateur et famille : servis sur le domaine court des
-            // liens, sans compte, par jeton porteur (doc 04 §9 et §12).
-            Route::middleware('web')
-                ->domain(config('brand.links_domain'))
-                ->group(base_path('routes/narrator.php'));
+            // liens, sans compte, par jeton porteur (doc 04 §9 et §12). Hors
+            // production, aucun domaine n'est contraint — voir
+            // `Links::routeDomain()`, qui dit pourquoi.
+            $linksDomain = Links::routeDomain();
 
-            Route::middleware('web')
-                ->domain(config('brand.links_domain'))
-                ->group(base_path('routes/family.php'));
+            foreach (['narrator', 'family'] as $file) {
+                $group = Route::middleware('web');
+
+                if ($linksDomain !== null) {
+                    $group = $group->domain($linksDomain);
+                }
+
+                $group->group(base_path("routes/{$file}.php"));
+            }
 
             // Webhooks : ni session ni CSRF, signature vérifiée par route.
             Route::group([], base_path('routes/webhooks.php'));

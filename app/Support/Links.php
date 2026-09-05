@@ -76,6 +76,38 @@ final class Links
     }
 
     /**
+     * Le domaine sur lequel les routes à jeton sont servies, ou `null` pour
+     * n'en contraindre aucun.
+     *
+     * En production, le domaine court est contraignant : c'est lui qu'on
+     * annonce dès l'invitation, et le servir ailleurs affaiblirait la seule
+     * défense anti-hameçonnage du produit (doc 04 §9).
+     *
+     * Ailleurs, aucune contrainte — et ce n'est pas un relâchement, c'est ce
+     * qui rend les vérifications jouables. Trois blocs se vérifient sur un
+     * appareil qui n'est pas la machine de développement : le spike navigateur
+     * (04), l'écoute famille sur un vrai téléphone (08), la photo HEIC (12).
+     * L'adresse vue par l'appareil — l'IP du réseau local, un tunnel — n'est
+     * jamais celle du domaine court, et le lien à jeton y recevait un **404**
+     * pendant que la page d'accueil répondait 200 (T-156). Aligner
+     * l'environnement sur l'appareil cassait en retour la suite bout en bout,
+     * qui attaque `localhost` : les deux doivent tenir en même temps.
+     *
+     * Le jeton reste la seule pièce d'authentification, ici comme là-bas. Le
+     * domaine n'a jamais été une garde, il est une promesse d'adresse.
+     */
+    public static function routeDomain(): ?string
+    {
+        if (! app()->isProduction()) {
+            return null;
+        }
+
+        $domain = (string) config('brand.links_domain');
+
+        return $domain === '' ? null : $domain;
+    }
+
+    /**
      * Racine des liens : `https://{domaine court}`.
      *
      * Quand le domaine court est celui de l'application — c'est le cas en

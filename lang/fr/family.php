@@ -14,6 +14,10 @@ declare(strict_types=1);
 
 return [
 
+    'nav' => [
+        'skip' => 'Aller au contenu',
+    ],
+
     'link_unavailable' => [
         'not_found' => [
             'title' => 'Ce lien ne fonctionne pas',
@@ -39,6 +43,11 @@ return [
     ],
 
     'home' => [
+        'eyebrow' => 'Écoute',
+        'intro' => 'Écoutez sa voix, puis dites-lui un mot. C’est ce mot qui lui donne envie de raconter la suivante.',
+        'intro_empty' => 'Vous serez prévenu·e dès qu’une histoire arrive.',
+        'count' => '{1} Une histoire partagée|]1,*[ :count histoires partagées',
+        'reacted_by_you' => 'Vous avez réagi',
         'title' => 'Les histoires de :first_name',
         'title_generic' => 'Les histoires de votre proche',
         'empty' => 'Aucune histoire n’est partagée pour l’instant. Vous serez prévenu·e.',
@@ -52,6 +61,9 @@ return [
     ],
 
     'story' => [
+        'eyebrow' => 'Une histoire de :first_name',
+        'eyebrow_generic' => 'Une histoire',
+        'listen' => 'À écouter',
         'photo_alt' => 'Photo jointe par :first_name',
         'someone' => 'un proche',
         'photos' => 'Les photos',
@@ -89,6 +101,8 @@ return [
         'send' => 'Envoyer',
         'sent' => 'C’est envoyé. Merci pour :first_name.',
         'sent_generic' => 'C’est envoyé.',
+        'eyebrow' => 'Votre réponse',
+        'done' => 'Envoyé',
     ],
 
     // Le lecteur audio vit dans `common.player` depuis T-138 : il sert aussi

@@ -151,3 +151,19 @@ export function Pause(props: IconProps) {
         </Icon>
     );
 }
+
+/*
+ * Le cœur des réactions famille. Contour seul : il se remplit quand la
+ * personne a déjà réagi, et le remplissage est alors la seule différence —
+ * un cœur qui change de forme se lit comme un autre bouton.
+ */
+export function Heart({
+    filled = false,
+    ...props
+}: IconProps & { filled?: boolean }) {
+    return (
+        <Icon fill={filled ? 'currentColor' : 'none'} {...props}>
+            <path d="M12 20.5C6.5 16.9 3.5 13.8 3.5 10.2A4.7 4.7 0 0 1 12 7.4a4.7 4.7 0 0 1 8.5 2.8c0 3.6-3 6.7-8.5 10.3Z" />
+        </Icon>
+    );
+}
