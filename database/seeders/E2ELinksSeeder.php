@@ -22,6 +22,7 @@ use App\Enums\OtpPurpose;
 use App\Enums\ProjectStatus;
 use App\Enums\QuestionTheme;
 use App\Enums\ShareDecision;
+use App\Enums\Sku;
 use App\Enums\TokenType;
 use App\Enums\TranscriptKind;
 use App\Enums\ValidatedVia;
@@ -29,6 +30,8 @@ use App\Enums\ValidationVariant;
 use App\Models\AccessToken;
 use App\Models\Invitation;
 use App\Models\Narrator;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\OtpChallenge;
 use App\Models\Project;
 use App\Models\Question;
@@ -39,6 +42,7 @@ use App\Models\User;
 use App\Services\Storage\MediaStorage;
 use App\Services\Tokens\OtpService;
 use App\Services\Tokens\TokenService;
+use App\Settings\PilotSettings;
 use App\States\Story\Recorded;
 use App\States\Story\Shared;
 use App\States\Story\ToReview;
@@ -67,7 +71,7 @@ use RuntimeException;
  */
 final class E2ELinksSeeder extends Seeder
 {
-    private const OWNER_EMAIL = 'liens@example.test';
+    public const OWNER_EMAIL = 'liens@example.test';
 
     /** @var array<string, string> */
     private const SCENARIOS = [
@@ -218,6 +222,12 @@ final class E2ELinksSeeder extends Seeder
         // heure sur la machine, et échoue au deuxième appel de la suite.
         Cache::flush();
 
+        // L'espace Initiateur·rice se sème **avant** la garde du banc d'essai :
+        // il a la sienne, et relancer ce seeder sur une base déjà semée doit
+        // pouvoir le compléter (sa commande, arrivée après coup) sans
+        // `migrate:fresh`, qui effacerait aussi les réglages de la machine.
+        $this->seedInitiatorSpace();
+
         $owner = User::query()->firstOrCreate(
             ['email' => self::OWNER_EMAIL],
             [
@@ -247,10 +257,7 @@ final class E2ELinksSeeder extends Seeder
         $project->refresh();
 
         foreach (self::SCENARIOS as $scenario => $text) {
-            $question = Question::query()->firstOrCreate(
-                ['slug' => 'e2e-'.$scenario],
-                ['text' => $text, 'theme' => QuestionTheme::Childhood],
-            );
+            $question = self::question('e2e-'.$scenario, $text);
 
             // Les scénarios du bloc 07 vivent chacun dans **leur** projet :
             // la variante de validation est un réglage de projet, et deux
@@ -286,8 +293,22 @@ final class E2ELinksSeeder extends Seeder
         foreach (self::INVITATION_LINKS as $scenario) {
             $this->seedInvitationLink($owner, $scenario);
         }
+    }
 
-        $this->seedInitiatorSpace();
+    /**
+     * Une question du décor, hors corpus.
+     *
+     * Elle n'existe que pour porter l'histoire d'un scénario. Active, elle
+     * rejoindrait le corpus de **toutes** les familles : la page « Les
+     * questions » de Camille s'ouvrait sur vingt-six questions de test, dont
+     * six fois la même, et le moteur aurait pu en poser une pour de vrai.
+     */
+    private static function question(string $slug, string $text): Question
+    {
+        return Question::query()->firstOrCreate(
+            ['slug' => $slug],
+            ['text' => $text, 'theme' => QuestionTheme::Childhood, 'is_active' => false],
+        );
     }
 
     /**
@@ -356,7 +377,8 @@ final class E2ELinksSeeder extends Seeder
     /**
      * L'espace de l'Initiateur·rice, avec de quoi montrer la garde de
      * visibilité : une histoire partagée qui porte son titre, une histoire
-     * transcrite qui ne le porte pas.
+     * transcrite qui ne le porte pas. Et sa commande, pour que la page
+     * « Ma commande » ait quelque chose à rétracter.
      */
     private function seedInitiatorSpace(): void
     {
@@ -369,10 +391,54 @@ final class E2ELinksSeeder extends Seeder
             ],
         );
 
-        if (Project::query()->where('owner_user_id', $initiator->id)->exists()) {
+        $project = Project::query()->where('owner_user_id', $initiator->id)->first();
+
+        if (! $project instanceof Project) {
+            $project = $this->initiatorProject($initiator);
+        }
+
+        $this->seedInitiatorOrder($initiator, $project);
+    }
+
+    /**
+     * La commande de l'Initiateur·rice, payée il y a trois jours.
+     *
+     * Le point 5 du checkpoint du bloc 10 finit par « demander la
+     * rétractation » : sans commande payée dont le délai court encore, la page
+     * est vide et l'étape n'existe pas. Trois jours après le paiement, il reste
+     * onze jours de délai légal — de quoi jouer le checkpoint sans se presser.
+     * Le prix est celui des réglages, comme dans le tunnel : un décor à 49 €
+     * quand le produit se vend 89 € raconterait une autre histoire.
+     */
+    private function seedInitiatorOrder(User $initiator, Project $project): void
+    {
+        if (Order::query()->where('project_id', $project->id)->exists()) {
             return;
         }
 
+        $price = app(PilotSettings::class)->pilot_price_cents;
+        $paidAt = now()->subDays(3);
+
+        $order = Order::factory()
+            ->paid()
+            ->for($initiator)
+            ->for($project)
+            ->create([
+                'subtotal_cents' => $price,
+                'total_cents' => $price,
+                'paid_at' => $paidAt,
+                'withdrawal_deadline_at' => Order::withdrawalDeadlineFrom($paidAt),
+            ]);
+
+        OrderItem::factory()->for($order)->ofSku(Sku::Pilot, $price)->create();
+    }
+
+    /**
+     * Le projet de Camille : Odette raconte, une question est en cours, une
+     * histoire est partagée.
+     */
+    private function initiatorProject(User $initiator): Project
+    {
         $project = app(CreateProject::class)->handle($initiator, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
         $project->next_prompt_at = now()->addDays(3);
@@ -392,22 +458,18 @@ final class E2ELinksSeeder extends Seeder
 
         // Une question en cours : sans elle, « copier le lien de cette
         // semaine » n'a rien à réémettre.
-        $current = Question::query()->firstOrCreate(
-            ['slug' => 'e2e-espace-courante'],
-            ['text' => 'Quel était le métier de votre mère ?', 'theme' => QuestionTheme::Childhood],
-        );
+        $current = self::question('e2e-espace-courante', 'Quel était le métier de votre mère ?');
 
         app(ProposeStory::class)->handle($project, $current);
 
         // Et une histoire partagée, qui porte son titre.
-        $shared = Question::query()->firstOrCreate(
-            ['slug' => 'e2e-espace-partagee'],
-            ['text' => 'Où avez-vous grandi ?', 'theme' => QuestionTheme::Childhood],
-        );
+        $shared = self::question('e2e-espace-partagee', 'Où avez-vous grandi ?');
 
         $story = app(ProposeStory::class)->handle($project, $shared);
         $this->prepareStory($story, 'withdraw');
         $story->refresh()->forceFill(['title' => 'Le village de mon enfance'])->save();
+
+        return $project->refresh();
     }
 
     /**
@@ -462,10 +524,7 @@ final class E2ELinksSeeder extends Seeder
             'birth_year' => 1943,
         ]);
 
-        $question = Question::query()->firstOrCreate(
-            ['slug' => 'e2e-'.$scenario],
-            ['text' => 'Quelle odeur vous ramène à votre enfance ?', 'theme' => QuestionTheme::Childhood],
-        );
+        $question = self::question('e2e-'.$scenario, 'Quelle odeur vous ramène à votre enfance ?');
 
         $story = app(ProposeStory::class)->handle($project->refresh(), $question);
         $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
@@ -746,10 +805,7 @@ final class E2ELinksSeeder extends Seeder
             'birth_year' => 1943,
         ]);
 
-        $question = Question::query()->firstOrCreate(
-            ['slug' => 'e2e-'.$scenario],
-            ['text' => 'Quel métier rêviez-vous de faire ?', 'theme' => QuestionTheme::Childhood],
-        );
+        $question = self::question('e2e-'.$scenario, 'Quel métier rêviez-vous de faire ?');
 
         $story = app(ProposeStory::class)->handle($project->refresh(), $question);
         Recording::factory()->confirmed()->create(['story_id' => $story->id]);

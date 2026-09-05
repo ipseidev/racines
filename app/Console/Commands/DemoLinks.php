@@ -8,6 +8,7 @@ use App\Enums\TokenType;
 use App\Features\ReactionNotificationTiming;
 use App\Models\FamilyMember;
 use App\Models\Story;
+use App\Settings\PilotSettings;
 use App\Support\Links;
 use Database\Seeders\E2ELinksSeeder;
 use Illuminate\Console\Command;
@@ -163,6 +164,18 @@ final class DemoLinks extends Command
     }
 
     /**
+     * Un prix en euros, lu dans les réglages : la feuille disait « 49 € »
+     * quand le produit se vendait déjà 89 € (T-136), et personne ne relit
+     * une feuille de vérifications pour y corriger un prix.
+     */
+    private static function euros(int $cents): string
+    {
+        $decimals = $cents % 100 === 0 ? 0 : 2;
+
+        return number_format($cents / 100, $decimals, ',', ' ').' €';
+    }
+
+    /**
      * Une liste, et non un tableau indexé par numéro de bloc : PHP convertirait
      * les clés « 10 », « 11 » et « 12 » en entiers tout en laissant « 07 »
      * en chaîne, et le filtre `--bloc` porterait sur deux types à la fois.
@@ -171,6 +184,8 @@ final class DemoLinks extends Command
      */
     private function sheet(): array
     {
+        $pilot = app(PilotSettings::class);
+
         return [
             [
                 'bloc' => '07',
@@ -284,7 +299,7 @@ final class DemoLinks extends Command
                 'titre' => 'On achète, elle dit oui ou non',
                 'etapes' => [
                     ['quoi' => 'Page d’accueil, puis l’essai : enregistrer 20 secondes, réécouter. Rien ne doit partir.', 'url' => rtrim((string) config('app.url'), '/').'/essai'],
-                    ['quoi' => 'Commander 49 € plus l’option téléphone 25 € avec la carte de test.', 'bloque' => 'compte Stripe de test et ses cinq prix'],
+                    ['quoi' => sprintf('Commander %s plus l’option téléphone %s avec la carte de test.', self::euros($pilot->pilot_price_cents), self::euros($pilot->phone_option_price_cents)), 'bloque' => 'compte Stripe de test et ses cinq prix'],
                     ['quoi' => 'Recevoir le webhook et vérifier commande, projet, narrateur, option.', 'bloque' => 'Stripe CLI'],
                     [
                         'quoi' => 'Elle accepte : les quatre cases, puis projet actif, premier prompt au lendemain 09:00, fiche contact proposée.',
