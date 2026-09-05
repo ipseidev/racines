@@ -1,8 +1,22 @@
 import { Head, Link, router } from '@inertiajs/react';
 
-import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
+import PhotoGallery from '@/components/PhotoGallery';
 import PhotoUploader from '@/components/PhotoUploader';
+import { External, Headphones, Pause, Send } from '@/components/space/Icons';
+import { PageHeader } from '@/components/space/PageHeader';
+import { Pill, type PillTone } from '@/components/space/Pill';
+import { ShareSheet } from '@/components/space/ShareSheet';
 import { useT } from '@/hooks/useT';
+import { formatDate, formatDateTime } from '@/lib/dates';
+import { stagger } from '@/lib/motion';
+
+type Photo = {
+    id: number | string;
+    caption: string | null;
+    thumbUrl: string;
+    url: string;
+    alt: string;
+};
 
 type Story = {
     id: string;
@@ -16,12 +30,15 @@ type Story = {
     photos: Photo[];
 };
 
+type Alert = { ruleId: string; firedAt: string; message: string };
+
 type Props = {
     project: {
         id: string;
         status: string;
         statusLabel: string;
         cadence: string;
+        cadenceLabel: string;
         promptDay: number;
         promptSlot: string;
         nextPromptAt: string | null;
@@ -30,32 +47,52 @@ type Props = {
     };
     stories: Story[];
     hasCurrentStory: boolean;
-    alerts: { ruleId: string; firedAt: string; message: string }[];
+    alerts: Alert[];
     listensAsFamilyMember: boolean;
     copiedLink: string | null;
     copiedWhatsapp: string | null;
+    copiedSms: string | null;
 };
 
-function formatDateTime(iso: string | null): string {
-    if (iso === null) {
-        return '';
-    }
+/*
+ * L'état d'une histoire, en couleur : or pour ce qui attend la narratrice,
+ * sauge pour ce qui avance chez elle, marque pour ce qui est partagé, sable
+ * pour ce qu'elle a retiré. Jamais la couleur d'action.
+ */
+const TONES: Record<string, PillTone> = {
+    proposed: 'gold',
+    recorded: 'sage',
+    transcribed: 'sage',
+    to_review: 'sage',
+    validated: 'brand',
+    shared: 'brand',
+    in_book: 'brand',
+    hidden: 'muted',
+    archived: 'muted',
+    trashed: 'muted',
+    deleted: 'muted',
+};
 
-    return new Intl.DateTimeFormat('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(iso));
-}
+const DOTS: Record<PillTone, string> = {
+    gold: 'bg-brand-gold',
+    sage: 'bg-brand-sage',
+    brand: 'bg-brand',
+    muted: 'bg-brand-sand',
+};
 
-function formatDate(iso: string): string {
-    return new Intl.DateTimeFormat('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    }).format(new Date(iso));
+const PROJECT_TONES: Record<string, PillTone> = {
+    active: 'sage',
+    awaiting_acceptance: 'gold',
+    draft: 'gold',
+    paused: 'muted',
+    dormant: 'muted',
+    completed: 'brand',
+    cancelled: 'muted',
+    frozen_bereavement: 'muted',
+};
+
+function toneFor(state: string): PillTone {
+    return TONES[state] ?? 'muted';
 }
 
 /**
@@ -68,8 +105,8 @@ function formatDate(iso: string): string {
  *
  * Le lien de la semaine se **réémet** : les jetons sont stockés hachés, un
  * lien en clair n'existe qu'entre son émission et son envoi (bloc 03). Il
- * n'apparaît donc qu'après un geste explicite, et le précédent cesse alors de
- * fonctionner.
+ * n'apparaît donc qu'après un geste explicite, dans la carte où l'on a cliqué,
+ * et le précédent cesse alors de fonctionner.
  */
 export default function Dashboard({
     project,
@@ -79,47 +116,57 @@ export default function Dashboard({
     listensAsFamilyMember,
     copiedLink,
     copiedWhatsapp,
+    copiedSms,
 }: Props) {
     const t = useT();
     const name = project.narratorFirstName;
 
+    const title =
+        name === null
+            ? t('initiator.dashboard.title_generic')
+            : t('initiator.dashboard.title', { name });
+
+    const current = stories.find((story) => story.state === 'proposed') ?? null;
+
+    const rhythm =
+        project.pausedUntil !== null
+            ? t('initiator.dashboard.paused_until', {
+                  date: formatDate(project.pausedUntil),
+              })
+            : project.nextPromptAt === null
+              ? t('initiator.dashboard.next_prompt_none')
+              : t('initiator.dashboard.next_prompt', {
+                    when: formatDateTime(project.nextPromptAt),
+                });
+
     return (
         <>
-            <Head
-                title={
-                    name === null
-                        ? t('initiator.dashboard.title_generic')
-                        : t('initiator.dashboard.title', { name })
-                }
-            />
+            <Head title={title} />
 
-            <h1 className="font-display text-2xl leading-tight font-semibold">
-                {name === null
-                    ? t('initiator.dashboard.title_generic')
-                    : t('initiator.dashboard.title', { name })}
-            </h1>
-
-            <p className="text-brand-muted mt-2">{project.statusLabel}</p>
-
-            {project.pausedUntil !== null ? (
-                <p className="mt-4">
-                    {t('initiator.dashboard.paused_until', {
-                        date: formatDate(project.pausedUntil),
-                    })}
-                </p>
-            ) : (
-                <p className="mt-4">
-                    {project.nextPromptAt === null
-                        ? t('initiator.dashboard.next_prompt_none')
-                        : t('initiator.dashboard.next_prompt', {
-                              when: formatDateTime(project.nextPromptAt),
-                          })}
-                </p>
-            )}
+            <div className="enter" style={stagger(0)}>
+                <PageHeader
+                    eyebrow={t('initiator.nav.dashboard')}
+                    title={title}
+                    intro={
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                            <Pill
+                                tone={PROJECT_TONES[project.status] ?? 'muted'}
+                            >
+                                {project.statusLabel}
+                            </Pill>
+                            <span>{rhythm}</span>
+                        </div>
+                    }
+                />
+            </div>
 
             {alerts.length > 0 && (
-                <section aria-labelledby="alerts" className="mt-8">
-                    <h2 id="alerts" className="text-xl font-medium">
+                <section
+                    aria-labelledby="alerts"
+                    className="enter mt-8"
+                    style={stagger(1)}
+                >
+                    <h2 id="alerts" className="eyebrow">
                         {t('initiator.dashboard.alerts')}
                     </h2>
 
@@ -127,7 +174,7 @@ export default function Dashboard({
                         {alerts.map((alert) => (
                             <li
                                 key={`${alert.ruleId}-${alert.firedAt}`}
-                                className="border-brand-sand bg-brand-surface rounded-md border px-4 py-3"
+                                className="panel border-brand-gold border-l-4"
                             >
                                 {alert.message}
                             </li>
@@ -136,142 +183,220 @@ export default function Dashboard({
                 </section>
             )}
 
-            <section aria-labelledby="link" className="mt-10">
-                <h2 id="link" className="text-xl font-medium">
-                    {t('initiator.dashboard.copy_link')}
+            <section
+                aria-labelledby="week"
+                className="card enter mt-8 p-6"
+                style={stagger(2)}
+            >
+                <h2 id="week" className="eyebrow">
+                    {t('initiator.dashboard.this_week')}
                 </h2>
 
-                <p className="text-brand-muted mt-2 text-base">
-                    {t('initiator.dashboard.copy_link_hint')}
-                </p>
+                {current !== null ? (
+                    <>
+                        <span
+                            aria-hidden="true"
+                            className="bg-brand-gold mt-5 mb-3 block h-px w-10"
+                        />
+                        <p className="font-display text-brand text-[1.5rem] leading-snug font-medium">
+                            {current.question ??
+                                t('initiator.dashboard.not_shared_yet')}
+                        </p>
+                        <p className="text-brand-muted mt-3 text-base">
+                            {t('initiator.dashboard.story_number', {
+                                n: current.sequence,
+                            })}
+                            {' · '}
+                            {current.label}
+                        </p>
+                    </>
+                ) : (
+                    <p className="mt-4">{t('initiator.copy_link.no_story')}</p>
+                )}
 
-                <button
-                    type="button"
-                    disabled={!hasCurrentStory}
-                    onClick={() =>
-                        router.post('/espace/lien/question', undefined, {
-                            preserveScroll: true,
-                        })
-                    }
-                    className="border-brand text-brand mt-4 min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold disabled:opacity-60"
-                >
-                    {t('initiator.dashboard.copy_link')}
-                </button>
+                <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <button
+                        type="button"
+                        disabled={!hasCurrentStory}
+                        onClick={() =>
+                            router.post('/espace/lien/question', undefined, {
+                                preserveScroll: true,
+                            })
+                        }
+                        className="btn-primary press flex-none disabled:opacity-60"
+                    >
+                        <Send />
+                        {name === null
+                            ? t('initiator.dashboard.send_link_generic')
+                            : t('initiator.dashboard.send_link', { name })}
+                    </button>
+
+                    <p className="text-brand-muted text-base">
+                        {t('initiator.dashboard.copy_link_hint')}
+                    </p>
+                </div>
 
                 {copiedLink !== null && (
-                    <div className="mt-4">
-                        <p className="text-base">
-                            {t('initiator.dashboard.copied')}
-                        </p>
-
-                        <input
-                            type="text"
-                            readOnly
-                            value={copiedLink}
-                            onFocus={(event) => event.target.select()}
-                            className="input mt-2"
-                            aria-label={t('initiator.dashboard.copied')}
-                        />
-
-                        {copiedWhatsapp !== null && (
-                            <a
-                                href={copiedWhatsapp}
-                                className="border-brand text-brand mt-3 inline-block min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
-                            >
-                                {t('initiator.dashboard.send_whatsapp')}
-                            </a>
-                        )}
-                    </div>
+                    <ShareSheet
+                        link={copiedLink}
+                        whatsapp={copiedWhatsapp}
+                        sms={copiedSms}
+                        title={t('initiator.dashboard.share.title')}
+                        hint={t('initiator.dashboard.share.hint')}
+                        copyLabel={t('initiator.dashboard.share.copy')}
+                        copiedLabel={t('initiator.dashboard.share.copied')}
+                        whatsappLabel={t('initiator.dashboard.share.whatsapp')}
+                        smsLabel={t('initiator.dashboard.share.sms')}
+                    />
                 )}
             </section>
 
-            <section aria-labelledby="timeline" className="mt-10">
-                <h2 id="timeline" className="text-xl font-medium">
+            <section
+                aria-labelledby="timeline"
+                className="enter mt-10"
+                style={stagger(3)}
+            >
+                <h2 id="timeline" className="eyebrow">
                     {t('initiator.dashboard.timeline')}
                 </h2>
 
-                <p className="text-brand-muted mt-2 text-base">
+                <p className="text-brand-muted mt-3 text-base">
                     {t('initiator.dashboard.private_notice', {
                         name: name ?? '',
                     })}
                 </p>
 
                 {stories.length === 0 ? (
-                    <p className="mt-4">
+                    <p className="card mt-5 p-5">
                         {t('initiator.dashboard.timeline_empty')}
                     </p>
                 ) : (
-                    <ol className="mt-4 flex flex-col gap-4">
-                        {stories.map((story) => (
-                            <li
-                                key={story.id}
-                                className="border-brand-sand bg-brand-surface rounded-md border px-4 py-3"
-                            >
-                                <p className="font-medium">
-                                    {story.title ??
-                                        story.question ??
-                                        t('initiator.dashboard.not_shared_yet')}
-                                </p>
-                                <p className="text-brand-muted mt-1 text-base">
-                                    {story.label}
-                                </p>
+                    <ol className="timeline-rail relative mt-5 flex flex-col gap-4 pl-9">
+                        {stories.map((story) => {
+                            const tone = toneFor(story.state);
 
-                                {/*
-                                 * Ses photos, et seulement les siennes tant
-                                 * que l'histoire n'est pas partagée : une
-                                 * photo est du contenu, comme le texte et la
-                                 * voix. Le serveur filtre ; l'écran n'a rien
-                                 * à décider.
-                                 */}
-                                <PhotoGallery
-                                    photos={story.photos}
-                                    onRemove={(id) =>
-                                        router.delete(
-                                            `/espace/histoires/${story.id}/photos/${id}`,
-                                            { preserveScroll: true },
-                                        )
-                                    }
-                                />
+                            return (
+                                <li key={story.id} className="relative">
+                                    <span
+                                        aria-hidden="true"
+                                        className={`border-brand-background absolute top-5 -left-9 size-[1.375rem] rounded-full border-[3px] ${DOTS[tone]}`}
+                                    />
 
-                                <PhotoUploader
-                                    action={`/espace/histoires/${story.id}/photos`}
-                                />
-                            </li>
-                        ))}
+                                    <article className="card p-5">
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="text-brand-muted text-[0.8rem] font-semibold tracking-[0.08em] uppercase">
+                                                    {t(
+                                                        'initiator.dashboard.story_number',
+                                                        { n: story.sequence },
+                                                    )}
+                                                </p>
+                                                <p className="font-display text-brand mt-1 text-xl leading-snug font-medium">
+                                                    {story.title ??
+                                                        story.question ??
+                                                        t(
+                                                            'initiator.dashboard.not_shared_yet',
+                                                        )}
+                                                </p>
+                                            </div>
+
+                                            <Pill tone={tone}>
+                                                {story.label}
+                                            </Pill>
+                                        </div>
+
+                                        {story.sharedAt !== null ? (
+                                            <p className="text-brand-muted mt-2 text-base">
+                                                {t(
+                                                    'initiator.dashboard.shared_on',
+                                                    {
+                                                        date: formatDate(
+                                                            story.sharedAt,
+                                                        ),
+                                                    },
+                                                )}
+                                            </p>
+                                        ) : story.recordedAt !== null ? (
+                                            <p className="text-brand-muted mt-2 text-base">
+                                                {t(
+                                                    'initiator.dashboard.recorded_on',
+                                                    {
+                                                        date: formatDate(
+                                                            story.recordedAt,
+                                                        ),
+                                                    },
+                                                )}
+                                            </p>
+                                        ) : null}
+
+                                        {/*
+                                         * Ses photos, et seulement les siennes
+                                         * tant que l'histoire n'est pas
+                                         * partagée : une photo est du contenu,
+                                         * comme le texte et la voix. Le serveur
+                                         * filtre ; l'écran n'a rien à décider.
+                                         */}
+                                        <PhotoGallery
+                                            photos={story.photos}
+                                            onRemove={(id) =>
+                                                router.delete(
+                                                    `/espace/histoires/${story.id}/photos/${id}`,
+                                                    { preserveScroll: true },
+                                                )
+                                            }
+                                        />
+
+                                        <PhotoUploader
+                                            action={`/espace/histoires/${story.id}/photos`}
+                                        />
+                                    </article>
+                                </li>
+                            );
+                        })}
                     </ol>
                 )}
             </section>
 
             {listensAsFamilyMember && (
-                <section aria-labelledby="listen" className="mt-10">
-                    <h2 id="listen" className="text-xl font-medium">
-                        {t('initiator.dashboard.listen')}
-                    </h2>
+                <section
+                    aria-labelledby="listen"
+                    className="card enter mt-10 flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between"
+                    style={stagger(4)}
+                >
+                    <div>
+                        <h2
+                            id="listen"
+                            className="font-display text-brand text-xl leading-snug font-medium"
+                        >
+                            {t('initiator.dashboard.listen')}
+                        </h2>
+                        <p className="text-brand-muted mt-1 text-base">
+                            {t('initiator.dashboard.listen_hint')}
+                        </p>
+                    </div>
 
-                    <p className="text-brand-muted mt-2 text-base">
-                        {t('initiator.dashboard.listen_hint')}
-                    </p>
-
-                    <button
-                        type="button"
-                        onClick={() =>
-                            router.post('/espace/lien/ecoute', undefined, {
-                                preserveScroll: true,
-                            })
-                        }
-                        className="border-brand text-brand mt-4 min-h-[2.75rem] rounded-md border-2 px-6 py-3 font-semibold"
+                    <a
+                        href="/espace/ecoute"
+                        target="_blank"
+                        rel="noopener"
+                        className="btn-secondary press flex-none"
                     >
-                        {t('initiator.dashboard.listen')}
-                    </button>
+                        <Headphones />
+                        {t('initiator.dashboard.listen_open')}
+                        <External className="size-4" />
+                    </a>
                 </section>
             )}
 
-            <Link
-                href="/espace/reglages"
-                className="text-brand-muted mt-10 inline-block underline"
-            >
-                {t('initiator.dashboard.pause')}
-            </Link>
+            <p className="enter mt-10 text-base" style={stagger(5)}>
+                <Link
+                    href="/espace/reglages"
+                    className="text-brand-muted hover:text-brand inline-flex items-center gap-2 underline underline-offset-4 transition-colors"
+                >
+                    <Pause className="size-4" />
+                    {t('initiator.dashboard.pause')}
+                </Link>
+            </p>
         </>
     );
 }
