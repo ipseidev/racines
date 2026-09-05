@@ -561,6 +561,34 @@
     }
 
     /*
+     * Les onglets de l'espace Initiateur·rice (T-149) : le soulignement d'or
+     * glisse sous l'onglet courant. Une seule ligne dans une seule couleur ;
+     * la couleur d'action reste aux boutons.
+     */
+    .tab {
+        @apply text-brand-muted hover:text-brand relative inline-flex min-h-[2.75rem] items-center px-3 pt-1 pb-3 font-medium no-underline transition-colors;
+    }
+
+    .tab::after {
+        content: '';
+        @apply bg-brand-gold absolute inset-x-3 bottom-0 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-300;
+    }
+
+    .tab-current {
+        @apply text-brand font-semibold;
+    }
+
+    .tab-current::after {
+        @apply scale-x-100;
+    }
+
+    /* La ligne de la frise des histoires, d'un point à l'autre. */
+    .timeline-rail::before {
+        content: '';
+        @apply bg-brand-sand absolute top-3 bottom-0 left-[0.6875rem] w-px;
+    }
+
+    /*
      * L'onde d'une voix, sur la carte « question de la semaine » de l'accueil.
      * Le seul mouvement de la page, et il s'arrête pour qui l'a demandé.
      */
@@ -594,6 +622,10 @@
         .record-halo::before,
         .record-halo::after {
             display: none;
+        }
+
+        .tab::after {
+            transition: none;
         }
 
         .press {
