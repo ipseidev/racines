@@ -275,3 +275,52 @@ it('dit toujours qui décide, sans le bandeau pour le rappeler', function (): vo
     // pages qui les portent (elle est vérifiée plus haut).
     expect($strings['commitments']['validation'])->toContain('explicite, jamais tacite');
 });
+
+/**
+ * Le préchargement du héros répète le `srcSet` que photo.ts construit. Deux
+ * échelles pour une seule photo, et le navigateur demande le fichier deux
+ * fois : une pour le préchargement, une pour la balise. Ce test lit l'échelle
+ * dans photo.ts et la compare à celle du gabarit — l'un ne peut plus bouger
+ * sans l'autre.
+ */
+it('précharge le héros dans la même échelle de largeurs que le front', function (): void {
+    $ladder = file_get_contents(resource_path('js/lib/photo.ts'));
+
+    expect($ladder)->toMatch('/const WIDTHS = \[400, 550, 700, 900, 1100\]/');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee(
+            'imagesrcset="/img/landing/hero-400.webp 400w, '
+                .'/img/landing/hero-550.webp 550w, '
+                .'/img/landing/hero-700.webp 700w, '
+                .'/img/landing/hero-900.webp 900w, '
+                .'/img/landing/hero-1100.webp 1100w, '
+                .'/img/landing/hero.webp 1400w"',
+            false,
+        );
+});
+
+/**
+ * Un barreau annoncé sans fichier derrière est un 404 au moment où le
+ * navigateur choisit sa largeur, et il ne se rattrape pas : la photo manque.
+ * scripts/photos.sh les régénère tous.
+ */
+it('a bien sur le disque chaque largeur qu’elle annonce', function (): void {
+    $photos = ['hero', 'etape-1', 'etape-2', 'etape-3', 'etape-4', 'livre'];
+
+    foreach ($photos as $photo) {
+        foreach ([400, 550, 700, 900, 1100] as $width) {
+            expect(public_path("img/landing/{$photo}-{$width}.webp"))
+                ->toBeFile();
+        }
+
+        expect(public_path("img/landing/{$photo}.webp"))->toBeFile();
+    }
+
+    foreach ([400, 550, 700] as $width) {
+        expect(public_path("img/landing/relecture-{$width}.webp"))->toBeFile();
+    }
+
+    expect(public_path('img/landing/relecture.webp'))->toBeFile();
+});

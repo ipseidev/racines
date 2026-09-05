@@ -17,6 +17,16 @@ declare(strict_types=1);
 
 return [
 
+    /*
+     * La description servie aux moteurs de recherche et aux aperçus de
+     * partage. Elle vit ici et non dans un `<Head>` Inertia : seul le rendu
+     * serveur la garantit aux robots qui n'exécutent pas de JavaScript.
+     * Cent soixante signes au plus, sinon Google la coupe.
+     */
+    'meta' => [
+        'description' => 'Une question par semaine, sa voix qui répond, et le livre relié de ses souvenirs. Sans application ni compte à créer. Rien n\'est partagé sans son accord.',
+    ],
+
     'vcard' => [
         'note' => 'Vos questions de la semaine arrivent de ce contact. Nous ne vous demanderons jamais de mot de passe ni de paiement par SMS.',
     ],

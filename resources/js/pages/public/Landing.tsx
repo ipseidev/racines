@@ -6,6 +6,7 @@ import Wave from '@/components/Wave';
 import WelcomeOffer from '@/components/WelcomeOffer';
 import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
+import { photo } from '@/lib/photo';
 
 type Props = {
     /** `pilot`, `prevente` ou `core`. */
@@ -227,7 +228,8 @@ function BookMockup() {
                 </div>
                 <div className="absolute inset-x-[22%] bottom-[16%] aspect-[4/3] overflow-hidden rounded-sm">
                     <img
-                        src="/img/landing/etape-1.jpg"
+                        {...photo('etape-1')}
+                        sizes="25vw"
                         alt=""
                         width="1400"
                         height="930"
@@ -342,10 +344,12 @@ export default function Landing({
                  */}
                 <div className="relative order-first mb-11 lg:order-none lg:mb-0">
                     <img
-                        src="/img/landing/hero.jpg"
+                        {...photo('hero')}
+                        sizes="(min-width: 1024px) 34rem, 100vw"
                         alt={t('public.landing.hero.photo_alt')}
                         width="1400"
                         height="933"
+                        fetchPriority="high"
                         className="aspect-[4/3] w-full rounded-2xl object-cover object-[60%_25%] lg:aspect-[5/4]"
                     />
                     <figure
@@ -440,7 +444,8 @@ export default function Landing({
                     {STEPS.map((step, index) => (
                         <li key={step} className="flex flex-col gap-4">
                             <img
-                                src={`/img/landing/etape-${index + 1}.jpg`}
+                                {...photo(`etape-${index + 1}`)}
+                                sizes="(min-width: 1024px) 17rem, (min-width: 640px) 45vw, 100vw"
                                 alt={t(`public.landing.how.${step}.alt`)}
                                 width="1400"
                                 height="933"
@@ -610,7 +615,8 @@ export default function Landing({
                                 )}
                             </div>
                             <img
-                                src="/img/landing/livre.jpg"
+                                {...photo('livre')}
+                                sizes="(min-width: 1024px) 32rem, 100vw"
                                 alt={t('public.landing.book.photo_alt')}
                                 width="1400"
                                 height="875"
@@ -660,7 +666,8 @@ export default function Landing({
                 className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-2xl lg:grid-cols-2"
             >
                 <img
-                    src="/img/landing/etape-2.jpg"
+                    {...photo('etape-2')}
+                    sizes="(min-width: 1024px) 36rem, 100vw"
                     alt={t('public.landing.tested.photo_alt')}
                     width="1400"
                     height="933"
@@ -720,7 +727,8 @@ export default function Landing({
 
                     <figure className="bg-brand-surface grid w-full max-w-4xl overflow-hidden rounded-xl shadow-[0_30px_70px_rgba(38,33,28,0.22)] sm:grid-cols-2">
                         <img
-                            src="/img/landing/livre.jpg"
+                            {...photo('livre')}
+                            sizes="(min-width: 640px) 28rem, 100vw"
                             alt=""
                             width="1400"
                             height="875"
@@ -796,8 +804,12 @@ export default function Landing({
 
                 <div className="mx-auto w-full max-w-[380px]">
                     <div className="bg-brand-deep rounded-[2.2rem] p-3 shadow-[0_30px_70px_rgba(38,33,28,0.28)]">
+                        {/* Le cadre la plafonne à 380 px moins ses 12 px de
+                            marge : sa largeur ne dépend pas de l'écran, et une
+                            requête média n'aurait rien à y départager. */}
                         <img
-                            src="/img/landing/relecture.png"
+                            {...photo('relecture', 780)}
+                            sizes="356px"
                             alt={t('public.landing.review.screenshot_alt')}
                             width="780"
                             height="1600"

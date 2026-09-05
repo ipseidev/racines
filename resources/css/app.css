@@ -43,6 +43,57 @@
     src: url('/fonts/fraunces-var-italic.woff2') format('woff2');
 }
 
+/*
+ * Inter, en graisses fixes auto-hébergées (T-40, T-132).
+ *
+ * Déclarée ici et non par le greffon de polices : celui-ci émettait deux
+ * `@font-face` par graisse, woff2 puis woff, avec la même famille et le même
+ * intervalle. Le second gagnait la cascade — le navigateur téléchargeait les
+ * 92 Ko de woff et jetait les 73 Ko de woff2 préchargés (audit Lighthouse du
+ * 5 septembre 2026). Le greffon n'expose aucune option de format ; la
+ * déclaration à la main coûte trois blocs et rend les préchargements de
+ * `app.blade.php` exacts. Les fichiers viennent de Bunny Fonts (sous-ensemble
+ * latin, licence OFL) et vivent dans public/fonts, comme Fraunces.
+ *
+ * Le woff2 suffit : les cibles du dossier — Safari iOS N-2, Chrome Android
+ * N-2, Samsung Internet — le lisent toutes depuis 2016.
+ */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/inter-400.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/fonts/inter-500.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('/fonts/inter-600.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @theme {
     /*
      * Typographie et couleurs de marque. Les variables --brand-* sont écrites

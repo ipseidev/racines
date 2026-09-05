@@ -635,7 +635,7 @@ export default function Checkout({
                                         </p>
 
                                         <OptionCard
-                                            image="/img/landing/livre.jpg"
+                                            image="/img/landing/livre-700.webp"
                                             imageAlt={t(
                                                 'public.checkout.options.copies.alt',
                                             )}
@@ -694,7 +694,7 @@ export default function Checkout({
                                         </OptionCard>
 
                                         <OptionCard
-                                            image="/img/landing/relecture.png"
+                                            image="/img/landing/relecture.webp"
                                             imageFit="contain"
                                             imageAlt={t(
                                                 'public.checkout.options.ebook.alt',
@@ -738,7 +738,7 @@ export default function Checkout({
                                         />
 
                                         <OptionCard
-                                            image="/img/landing/hero.jpg"
+                                            image="/img/landing/hero-700.webp"
                                             imageAlt={t(
                                                 'public.checkout.options.phone.alt',
                                             )}

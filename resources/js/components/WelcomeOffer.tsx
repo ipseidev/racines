@@ -12,6 +12,7 @@ import { SubmitButton } from '@/components/form/SubmitButton';
 import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
 import { formatPercent } from '@/lib/format';
+import { photo } from '@/lib/photo';
 import {
     readWelcomeOfferMemory,
     rememberWelcomeOffer,
@@ -320,7 +321,8 @@ export default function WelcomeOffer({
                     </div>
 
                     <img
-                        src="/img/landing/hero.jpg"
+                        {...photo('hero')}
+                        sizes="(min-width: 640px) 28rem, 100vw"
                         alt=""
                         width="1400"
                         height="933"

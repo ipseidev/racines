@@ -4,7 +4,6 @@ import babel from '@rolldown/plugin-babel';
 import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 export default defineConfig({
@@ -15,13 +14,13 @@ export default defineConfig({
             // JavaScript et indexables. Construit par `npm run build:ssr`.
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
-            // Polices auto-hébergées : aucune requête vers un tiers depuis les
-            // pages narrateur. La liste doit rester alignée sur les options du
-            // sélecteur de ManageBrand. Fraunces n'est pas ici : le greffon
-            // sert des graisses fixes, et la direction artistique repose sur
-            // ses axes variables (SOFT, WONK). Elle est déclarée à la main dans
-            // app.css, depuis public/fonts (T-132).
-            fonts: [bunny('Inter', { weights: [400, 500, 600] })],
+            // Polices auto-hébergées : aucune requête vers un tiers depuis
+            // les pages narrateur. Inter et Fraunces sont déclarées à la main
+            // dans app.css, depuis public/fonts, et préchargées dans
+            // app.blade.php (T-132). Le greffon de polices émettait un repli
+            // woff qui gagnait la cascade sur le woff2 préchargé, et n'expose
+            // aucune option de format : nous gardons la main. La liste doit
+            // rester alignée sur les options du sélecteur de ManageBrand.
         }),
         inertia(),
         react(),
