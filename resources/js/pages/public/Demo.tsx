@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import AudioPlayer from '@/components/AudioPlayer';
@@ -371,6 +371,21 @@ export default function Demo({ limits }: Props) {
                         aria-label={t('public.landing.proof.aria')}
                         className="card overflow-hidden"
                     >
+                        {/*
+                         * La question d'Odette, en tête de son exemple.
+                         * L'essai n'est plus posé sur la même : sans cette
+                         * ligne, la page a l'air de répondre à celle qu'on
+                         * vient de poser au visiteur, et l'exemple ment.
+                         */}
+                        <div className="border-brand-sand flex flex-col gap-1.5 border-b px-5 py-4">
+                            <span className="text-brand-muted text-[0.75rem] font-semibold tracking-[0.08em] uppercase">
+                                {t('public.demo.result_question_label')}
+                            </span>
+                            <p className="font-display text-[1.15rem] leading-[1.3] font-medium">
+                                {t('public.landing.hero.card.question')}
+                            </p>
+                        </div>
+
                         <div className="border-brand-sand grid border-b sm:grid-cols-2">
                             <div className="text-brand-muted px-5 py-3 text-[0.75rem] font-semibold tracking-[0.08em] uppercase">
                                 {t('public.landing.proof.verbatim')}
@@ -403,12 +418,17 @@ export default function Demo({ limits }: Props) {
                 {t('public.demo.nothing_sent')}
             </p>
 
-            <Link
+            {/*
+             * Lien ordinaire lui aussi : cette page est la seule du site
+             * public à qui le micro est ouvert, et une navigation Inertia
+             * emporterait cette permission sur toutes les suivantes.
+             */}
+            <a
                 href="/acheter"
                 className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press mt-4 inline-block min-h-[3rem] rounded-md px-8 py-3.5 text-lg font-semibold"
             >
                 {t('public.demo.cta')}
-            </Link>
+            </a>
         </div>
     );
 }

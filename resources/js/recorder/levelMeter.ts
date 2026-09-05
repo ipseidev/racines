@@ -26,6 +26,16 @@ export function createLevelMeter(stream: MediaStream): LevelMeter {
     }
 
     const context = new AudioContextClass();
+
+    // Safari iOS ouvre un contexte audio « suspendu » dès qu'il n'est pas créé
+    // pendant un geste — et celui-ci naît après la boîte de dialogue du micro.
+    // Suspendu, l'analyseur ne rend que des zéros : les douze barres restent
+    // plates, et le narrateur en conclut que son téléphone ne l'écoute pas.
+    // La reprise échoue sans conséquence là où elle n'est pas permise.
+    if (context.state === 'suspended') {
+        context.resume().catch(() => {});
+    }
+
     const analyser = context.createAnalyser();
     analyser.fftSize = 256;
     analyser.smoothingTimeConstant = 0.7;

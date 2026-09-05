@@ -61,6 +61,11 @@ test('la page d’accueil annonce ses sections dans l’ordre du dossier', async
     // L'ordre est celui de Remento, adapté à notre univers (décision du
     // fondateur, 4 septembre 2026, T-134). On le lit sur les identifiants des
     // titres de section, pas sur leur libellé.
+    //
+    // `tested` — « Pensé pour les grands-parents » et l'essai — est remonté
+    // juste après « comment ça marche » : c'est là que naît la seule objection
+    // qui compte, « est-ce que ma mère va y arriver ? », et l'essai y répond
+    // en soixante secondes. Huitième, elle arrivait après le prix.
     const order = await page
         .getByRole('heading', { level: 2 })
         .evaluateAll((nodes) => nodes.map((node) => node.id));
@@ -69,11 +74,11 @@ test('la page d’accueil annonce ses sections dans l’ordre du dossier', async
         'promises',
         'what',
         'how',
+        'tested',
         'story',
         'product',
         'forever',
         'guarantee',
-        'tested',
         'book',
         'review',
         'gift',

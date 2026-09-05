@@ -23,8 +23,8 @@ use Symfony\Component\HttpFoundation\Response;
  *    panneau ne fonctionne pas. C'est un panneau réservé au personnel, à
  *    revoir au bloc 16 si Filament expose un jour un mode compatible.
  *
- * Le micro n'est autorisé que sur les pages d'enregistrement. Partout
- * ailleurs, `microphone=()` : une page compromise ne peut pas écouter.
+ * Le micro n'est autorisé que là où l'on enregistre. Partout ailleurs,
+ * `microphone=()` : une page compromise ne peut pas écouter.
  */
 final class SecurityHeaders
 {
@@ -101,14 +101,35 @@ final class SecurityHeaders
     }
 
     /**
-     * Le micro reste autorisé sur les pages d'enregistrement du narrateur, et
-     * nulle part ailleurs (convention §9).
+     * Le micro reste autorisé sur les pages d'enregistrement du narrateur et
+     * sur l'essai public, et nulle part ailleurs (convention §9).
      */
     private function permissionsPolicy(Request $request): string
     {
-        $microphone = $request->is('r/*') ? 'microphone=(self)' : 'microphone=()';
+        $microphone = $this->records($request) ? 'microphone=(self)' : 'microphone=()';
 
         return implode(', ', [$microphone, 'camera=()', 'geolocation=()']);
+    }
+
+    /**
+     * Les pages qui prennent la parole : l'enregistrement du narrateur, sur le
+     * domaine des liens, et l'essai en soixante secondes de la page d'accueil.
+     *
+     * L'essai manquait ici, et le défaut n'était pas visible depuis le serveur :
+     * une politique de permissions vaut pour le **document**, et un navigateur
+     * qui la voit refuser le micro rejette `getUserMedia` **sans rien
+     * demander**. Le visiteur voyait donc « le micro n'a pas été autorisé »
+     * sans qu'aucune autorisation ne lui ait été proposée.
+     *
+     * Le corollaire tient au site public, qui est une seule application
+     * Inertia : c'est la page chargée en premier qui décide pour toute la
+     * visite. L'essai s'ouvre pour cette raison par un lien ordinaire, qui
+     * recharge le document — voir `Landing.tsx`, et le test bout en bout qui
+     * part de l'accueil plutôt que de l'URL.
+     */
+    private function records(Request $request): bool
+    {
+        return $request->is('r/*') || $request->routeIs('demo');
     }
 
     /**

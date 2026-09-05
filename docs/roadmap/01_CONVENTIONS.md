@@ -256,7 +256,7 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 - Toute route par jeton passe par le middleware de masquage des journaux (bloc 03) et par le limiteur `tokens` (60 requêtes/minute/IP).
 - Tout webhook vérifie sa signature avant de lire le corps ; un test couvre la signature invalide.
 - Les secrets vivent dans l'environnement Forge, jamais dans le code ni dans les tests.
-- En-têtes HTTP : `Content-Security-Policy` stricte (nonce pour Inertia), `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy: microphone=(self)` (le micro doit rester autorisé sur les pages narrateur).
+- En-têtes HTTP : `Content-Security-Policy` stricte (nonce pour Inertia), `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy: microphone=(self)` (le micro doit rester autorisé sur les pages narrateur **et sur l'essai public `/essai`**, et nulle part ailleurs). Cette politique vaut pour le **document**, pas pour l'URL : sur le site public, qui est une seule application Inertia, la page chargée en premier décide pour toute la visite. Une page qui a besoin du micro s'ouvre donc par un lien ordinaire, jamais par un `<Link>` Inertia.
 - Tout accès en lecture à une donnée sensible depuis le back-office est journalisé (bloc 11).
 
 ## 10. Internationalisation

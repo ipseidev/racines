@@ -40,7 +40,21 @@ return [
      * les courriels.
      */
     'landing' => [
-        'promise' => 'Le livre de leurs souvenirs, avec leur voix à chaque page.',
+        /*
+         * Le titre du héros, et il ne s'adresse pas au narrateur.
+         *
+         * Il disait le produit — « Le livre de leurs souvenirs, avec leur voix
+         * à chaque page » (T-134) — et un produit ne fait pleurer personne.
+         * Celui qui paie ne le fait pas pour sa mère : il le fait pour lui, et
+         * ce qu'il achète est le jour où il voudra la réentendre. La phrase le
+         * dit, sans culpabiliser ni rien promettre, et « sa voix » n'a pas
+         * d'antécédent parce que chacun met la sienne.
+         *
+         * La phrase de produit n'est pas perdue : elle devient le titre servi
+         * aux moteurs, où ce sont les mots du produit qui comptent.
+         */
+        'promise' => 'Un jour, vous voudrez réentendre sa voix.',
+        'seo_title' => 'Le livre de leurs souvenirs, avec leur voix à chaque page',
         'cta' => 'J’offre ce livre',
         'cta_start' => 'Je commence son livre',
         'cta_how' => 'Comment ça marche',
@@ -59,11 +73,19 @@ return [
         ],
 
         'hero' => [
-            // Qui parle, qui fait quoi, ce qu'on reçoit : dans cet ordre, comme le
-            // leader. Un prospect n'avait pas compris le produit avant « Comment ça
-            // marche » (T-142) ; le héros doit se suffire.
-            'lede' => 'Votre proche parle, c’est tout. Chaque semaine, :brand lui envoie une question, enregistre sa réponse, retranscrit et la relie dans un livre où sa voix se réécoute à chaque page.',
-            'lede_two' => 'Rien à écrire, rien à installer. Ses histoires, dans ses mots et avec sa voix, dans un livre que votre famille gardera.',
+            /*
+             * Qui parle, qui fait quoi, ce qu'on reçoit : dans cet ordre,
+             * comme le leader. Un prospect n'avait pas compris le produit
+             * avant « Comment ça marche » (T-142) ; le héros doit se suffire.
+             *
+             * Il se suffisait en soixante-six mots et deux paragraphes, et
+             * sous un titre qui émeut, un pavé se saute. Les trois temps
+             * disent la même chose en trente : la question, la personne qui
+             * parle, le livre au bout. Le second paragraphe est retiré — il
+             * redisait « rien à écrire, rien à installer » et « ses mots, sa
+             * voix », que les quatre repères juste dessous portent déjà.
+             */
+            'lede' => 'Chaque semaine, une question. Votre proche y répond en parlant, depuis son téléphone. Au bout d’un an, le livre relié de ses histoires, et sa voix à chaque page.',
             'note' => 'Un seul paiement sécurisé, pas d’abonnement. Ses souvenirs restent privés.',
             'checks' => [
                 'voice' => 'Sa voix se réécoute à chaque page du livre.',
@@ -433,10 +455,25 @@ return [
         'body' => 'Répondez à une vraie question de la semaine. Vous verrez l’écran que votre proche verra, et vous saurez si c’est à sa portée.',
         'nothing_sent' => 'Cet essai reste sur votre téléphone et disparaît quand vous fermez la page.',
         'question_label' => 'Question de la semaine',
-        // La même question que la carte de la page d'accueil, et le même
-        // exemple plus bas : le site raconte une seule histoire d'un bout à
-        // l'autre. Un test le vérifie.
-        'question' => 'Quelle odeur vous ramène à votre enfance ?',
+        /*
+         * La question de l'essai, et elle n'est plus celle de la carte du
+         * héros (T-151).
+         *
+         * Celle du héros — l'odeur d'enfance — est une question de difficulté
+         * 1 : celle qu'on envoie en premier à une personne de quatre-vingts
+         * ans, parce qu'elle se répond sans se mettre en danger. L'essai ne
+         * s'adresse pas à elle. Il s'adresse à celui qui achète, qui a
+         * quarante-cinq ans, qui est venu voir si sa mère saurait s'en servir,
+         * et qui repartira s'il n'a rien senti. On lui pose donc la question
+         * qui parle de ses parents à lui : il l'entend, il y répond à voix
+         * haute, et il comprend tout seul ce qu'il veut entendre sa mère
+         * répondre.
+         *
+         * Reprise mot pour mot du corpus (annexe A, `qualite-pere-mere`,
+         * thème love, difficulté 3) : la page promet « une vraie question de
+         * la semaine », et c'en est une.
+         */
+        'question' => 'Quelle qualité admiriez-vous le plus chez votre père ? Et chez votre mère ?',
         'start' => 'Commencer l’essai',
         'start_hint' => 'Touchez le bouton, puis parlez. L’essai s’arrête tout seul au bout d’une minute.',
         'recording' => 'Ça tourne. Parlez, on vous écoute.',
@@ -449,6 +486,11 @@ return [
         'again' => 'Recommencer',
         'result_title' => 'Et voici ce que ça devient.',
         'result_body' => 'Votre voix n’a pas quitté votre téléphone : nous ne l’avons pas entendue, et nous n’avons donc rien à en écrire. Voici, sur l’enregistrement d’Odette, ce que nous en faisons.',
+        // L'exemple répond à la question d'Odette, pas à celle qu'on vient de
+        // poser au visiteur. Il porte donc la sienne, écrite au-dessus : sans
+        // elle, la page semble mettre dans une bouche une réponse qui n'y
+        // était pas. Un test le garde.
+        'result_question_label' => 'La question d’Odette',
         'unsupported' => 'Ce navigateur ne sait pas enregistrer. Essayez depuis Safari sur iPhone, ou Chrome sur Android.',
         'refused' => 'Le micro n’a pas été autorisé. C’est réversible : dans les réglages de votre navigateur, autorisez le micro pour ce site, puis rechargez la page.',
         'cta' => 'Offrir à un proche',

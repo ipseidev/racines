@@ -105,6 +105,21 @@ it('n’autorise le micro que sur les pages d’enregistrement', function (): vo
 
     expect($this->get('/')->headers->get('Permissions-Policy'))
         ->toContain('microphone=()');
+
+    expect($this->get('/acheter')->headers->get('Permissions-Policy'))
+        ->toContain('microphone=()');
+});
+
+/**
+ * Défaut trouvé en usage, et invisible côté serveur : l'essai en soixante
+ * secondes recevait `microphone=()` comme le reste du site public. Un
+ * navigateur qui lit cette politique rejette `getUserMedia` **sans rien
+ * demander** — la page annonçait donc « le micro n'a pas été autorisé » à qui
+ * n'avait jamais eu la moindre autorisation à donner (T-151).
+ */
+it('autorise le micro sur l’essai, qui enregistre lui aussi', function (): void {
+    expect($this->get('/essai')->headers->get('Permissions-Policy'))
+        ->toContain('microphone=(self)');
 });
 
 it('interdit partout la caméra et la géolocalisation', function (): void {

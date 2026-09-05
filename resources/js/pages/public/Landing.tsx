@@ -271,7 +271,13 @@ export default function Landing({
 
     return (
         <>
-            <Head title={t('public.landing.promise')} />
+            {/*
+             * Le titre de l'onglet et celui des moteurs : les mots du produit,
+             * pas ceux du héros. « Un jour, vous voudrez réentendre sa voix »
+             * émeut celui qui est déjà là ; il ne dit pas à un moteur qu'on
+             * vend un livre de souvenirs.
+             */}
+            <Head title={t('public.landing.seo_title')} />
 
             {/* La réduction de bienvenue, après un délai (T-141) ============== */}
             <WelcomeOffer
@@ -287,18 +293,12 @@ export default function Landing({
                     </h1>
 
                     {/*
-                     * Le chapeau du héros descend d'un cran sous le LEDE commun
-                     * et se coupe en deux paragraphes : ce que le service
-                     * fait, puis ce que la famille garde.
+                     * Le chapeau du héros, en un seul paragraphe : sous un
+                     * titre qui émeut, un pavé de deux blocs se saute.
                      */}
-                    <div className="text-brand-muted flex max-w-[34em] flex-col gap-3 text-lg leading-snug">
-                        <p>
-                            {t('public.landing.hero.lede', {
-                                brand: brand.name,
-                            })}
-                        </p>
-                        <p>{t('public.landing.hero.lede_two')}</p>
-                    </div>
+                    <p className="text-brand-muted max-w-[34em] text-lg leading-snug">
+                        {t('public.landing.hero.lede')}
+                    </p>
 
                     <div className="flex flex-wrap items-center gap-3.5">
                         <Link
@@ -464,6 +464,61 @@ export default function Landing({
                         </li>
                     ))}
                 </ol>
+            </section>
+
+            {/* Pensé pour les grands-parents, et l'essai ======================== */}
+            <section
+                aria-labelledby="tested"
+                className="mx-auto mb-16 grid w-full max-w-6xl overflow-hidden rounded-2xl lg:mb-24 lg:grid-cols-2"
+            >
+                <img
+                    {...photo('etape-2')}
+                    sizes="(min-width: 1024px) 36rem, 100vw"
+                    alt={t('public.landing.tested.photo_alt')}
+                    width="1400"
+                    height="933"
+                    loading="lazy"
+                    className="aspect-[4/3] h-full w-full object-cover lg:aspect-auto"
+                />
+                <div className="bg-brand-deep flex flex-col gap-7 px-7 py-12 text-[#F7F1E6] lg:px-14 lg:py-16">
+                    <h2
+                        id="tested"
+                        className="font-display text-[2rem] leading-[1.1] font-medium text-[#F7F1E6] sm:text-4xl"
+                    >
+                        {t('public.landing.tested.title')}
+                    </h2>
+                    <p className="text-lg text-[#C9C0B2]">
+                        {t('public.landing.tested.lede')}
+                    </p>
+                    <ul className="grid gap-3 sm:grid-cols-3">
+                        {(['no_writing', 'no_app', 'no_password'] as const).map(
+                            (k) => (
+                                <li
+                                    key={k}
+                                    className="rounded-md bg-white/8 px-4 py-5 text-center text-[1.05rem] font-medium"
+                                >
+                                    {t(`public.landing.tested.${k}`)}
+                                </li>
+                            ),
+                        )}
+                    </ul>
+                    {/*
+                     * Un lien ordinaire, et non un `<Link>` Inertia, et c'est
+                     * la seule exception de la page. La politique de
+                     * permissions vaut pour le document : une navigation
+                     * Inertia garderait celui de l'accueil, où le micro est
+                     * interdit, et Safari refuserait l'essai **sans demander
+                     * l'autorisation**. Recharger le document est ce qui fait
+                     * apparaître la demande (T-151).
+                     */}
+                    <a
+                        href="/essai"
+                        className="bg-brand-surface text-brand hover:bg-brand-linen inline-flex min-h-[3.5rem] items-center justify-center gap-2 rounded-md px-7 text-[1.05rem] font-semibold"
+                    >
+                        <span className="bg-brand-accent size-2.5 rounded-full" />
+                        {t('public.landing.tested.cta')}
+                    </a>
+                </div>
             </section>
 
             {/* Notre histoire =================================================== */}
@@ -658,52 +713,6 @@ export default function Landing({
                     {t('public.landing.guarantee.headline')}
                 </h2>
                 <p className={LEDE}>{t('public.landing.guarantee.body')}</p>
-            </section>
-
-            {/* Pensé pour les grands-parents, et l'essai ======================== */}
-            <section
-                aria-labelledby="tested"
-                className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-2xl lg:grid-cols-2"
-            >
-                <img
-                    {...photo('etape-2')}
-                    sizes="(min-width: 1024px) 36rem, 100vw"
-                    alt={t('public.landing.tested.photo_alt')}
-                    width="1400"
-                    height="933"
-                    loading="lazy"
-                    className="aspect-[4/3] h-full w-full object-cover lg:aspect-auto"
-                />
-                <div className="bg-brand-deep flex flex-col gap-7 px-7 py-12 text-[#F7F1E6] lg:px-14 lg:py-16">
-                    <h2
-                        id="tested"
-                        className="font-display text-[2rem] leading-[1.1] font-medium text-[#F7F1E6] sm:text-4xl"
-                    >
-                        {t('public.landing.tested.title')}
-                    </h2>
-                    <p className="text-lg text-[#C9C0B2]">
-                        {t('public.landing.tested.lede')}
-                    </p>
-                    <ul className="grid gap-3 sm:grid-cols-3">
-                        {(['no_writing', 'no_app', 'no_password'] as const).map(
-                            (k) => (
-                                <li
-                                    key={k}
-                                    className="rounded-md bg-white/8 px-4 py-5 text-center text-[1.05rem] font-medium"
-                                >
-                                    {t(`public.landing.tested.${k}`)}
-                                </li>
-                            ),
-                        )}
-                    </ul>
-                    <Link
-                        href="/essai"
-                        className="bg-brand-surface text-brand hover:bg-brand-linen inline-flex min-h-[3.5rem] items-center justify-center gap-2 rounded-md px-7 text-[1.05rem] font-semibold"
-                    >
-                        <span className="bg-brand-accent size-2.5 rounded-full" />
-                        {t('public.landing.tested.cta')}
-                    </Link>
-                </div>
             </section>
 
             {/* La double page ================================================== */}

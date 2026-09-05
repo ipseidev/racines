@@ -42,15 +42,45 @@ it('s’ouvre sans compte', function (): void {
  * question, grand bouton, vu-mètre — puis montre ce que devient une voix. Rien
  * ne part toujours : les deux tests plus haut le gardent.
  */
-it('pose la question que la page d’accueil met en avant', function (): void {
+it('pose à l’acheteur une question sur ses parents, et non celle du héros', function (): void {
     $public = require base_path('lang/fr/public.php');
 
-    // Le site raconte une seule histoire : la carte du héros pose cette
-    // question, l'extrait audio y répond, la relecture montre ces mots-là.
-    // L'essai pose la même — sinon l'exemple montré au bout ne répond plus à
-    // la question qu'on vient de poser au visiteur.
+    // La carte du héros garde l'odeur d'enfance, et elle a ses raisons : c'est
+    // une question de difficulté 1, celle qu'on envoie en premier à une
+    // personne de quatre-vingts ans, et l'extrait audio y répond.
+    //
+    // L'essai ne s'adresse pas à elle. Celui qui l'ouvre a quarante-cinq ans,
+    // il vient voir si sa mère saurait s'en servir, et il repart s'il n'a rien
+    // senti. On lui pose donc la question qui parle de ses parents à lui.
     expect($public['demo']['question'])
-        ->toBe($public['landing']['hero']['card']['question']);
+        ->not->toBe($public['landing']['hero']['card']['question'])
+        ->and($public['demo']['question'])->toContain('père')
+        ->and($public['demo']['question'])->toContain('mère');
+});
+
+it('pose une vraie question du corpus, et non une phrase écrite pour la vitrine', function (): void {
+    $public = require base_path('lang/fr/public.php');
+    $corpus = (string) file_get_contents(base_path('docs/roadmap/annexes/A_corpus_questions_v1.md'));
+
+    // « Répondez à une vraie question de la semaine », promet la page. Alors
+    // c'en est une, mot pour mot : annexe A, `qualite-pere-mere`. Une question
+    // écrite pour la vitrine ferait de l'essai une démonstration truquée.
+    expect($corpus)->toContain($public['demo']['question']);
+});
+
+it('écrit sur l’exemple la question à laquelle il répond', function (): void {
+    $public = require base_path('lang/fr/public.php');
+
+    // Les deux questions cohabitent sur la page : celle qu'on vient de poser
+    // au visiteur, et celle d'Odette au-dessus de sa réponse. Sans la seconde,
+    // la page met dans sa bouche une réponse à une question qu'on ne lui a pas
+    // posée.
+    expect($public['demo']['result_question_label'])->not->toBe('');
+
+    $this->get('/essai')->assertInertia(fn (AssertableInertia $page) => $page
+        ->has('i18n.public.demo.result_question_label')
+        ->has('i18n.public.landing.hero.card.question'),
+    );
 });
 
 it('montre au bout de l’essai ce que devient une voix', function (): void {

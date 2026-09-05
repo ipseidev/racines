@@ -12,7 +12,8 @@ const catalogue = {
             body: 'Répondez à une vraie question de la semaine.',
             nothing_sent: 'Cet essai reste sur votre téléphone.',
             question_label: 'Question de la semaine',
-            question: 'Quelle odeur vous ramène à votre enfance ?',
+            question:
+                'Quelle qualité admiriez-vous le plus chez votre père ? Et chez votre mère ?',
             start: 'Commencer l’essai',
             start_hint: 'Touchez le bouton, puis parlez.',
             recording: 'Ça tourne. Parlez, on vous écoute.',
@@ -23,11 +24,17 @@ const catalogue = {
             again: 'Recommencer',
             result_title: 'Et voici ce que ça devient.',
             result_body: 'Votre voix n’a pas quitté votre téléphone.',
+            result_question_label: 'La question d’Odette',
             unsupported: 'Ce navigateur ne sait pas enregistrer.',
             refused: 'Le micro n’a pas été autorisé.',
             cta: 'Offrir à un proche',
         },
         landing: {
+            hero: {
+                card: {
+                    question: 'Quelle odeur vous ramène à votre enfance ?',
+                },
+            },
             proof: {
                 aria: 'Exemple',
                 verbatim: 'Mot à mot',
@@ -132,7 +139,9 @@ describe('Demo', () => {
         // L'acheteur doit reconnaître l'écran qu'il décrira au téléphone à sa
         // mère : la question d'abord, le bouton ensuite.
         expect(
-            screen.getByText('Quelle odeur vous ramène à votre enfance ?'),
+            screen.getByText(
+                'Quelle qualité admiriez-vous le plus chez votre père ? Et chez votre mère ?',
+            ),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: /Commencer l’essai/ }),
@@ -181,6 +190,14 @@ describe('Demo', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText('Ma grand-mère, elle habitait'),
+        ).toBeInTheDocument();
+
+        // Et l'exemple porte la question à laquelle il répond, qui n'est pas
+        // celle qu'on vient de poser : sans elle, la page fait dire à Odette
+        // une réponse qu'elle n'a pas donnée.
+        expect(screen.getByText('La question d’Odette')).toBeInTheDocument();
+        expect(
+            screen.getByText('Quelle odeur vous ramène à votre enfance ?'),
         ).toBeInTheDocument();
 
         // Et le micro est rendu : une page qui garde la main dessus laisse la

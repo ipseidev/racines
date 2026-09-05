@@ -148,3 +148,49 @@ test('l’essai n’envoie rien sur le réseau', async ({ page }) => {
 
     expect(uploads).toEqual([]);
 });
+
+/**
+ * L'essai depuis l'accueil, parce que c'est de là qu'on y arrive.
+ *
+ * Le test partait jusqu'ici d'une URL tapée, et s'arrêtait au bouton. Il
+ * laissait donc passer le défaut : la politique de permissions du document
+ * interdisait le micro sur `/essai`, `getUserMedia` était rejeté **sans que
+ * le navigateur demande quoi que ce soit**, et le visiteur lisait « le micro
+ * n'a pas été autorisé » sans avoir rien refusé. Deux causes, une seule
+ * conséquence, et ce chemin les couvre toutes les deux : l'en-tête servi sur
+ * `/essai`, et le fait que le lien de l'accueil recharge bien le document —
+ * une navigation Inertia garderait la politique de l'accueil, où le micro
+ * reste interdit.
+ */
+test('l’essai obtient le micro en venant de l’accueil', async ({ page }) => {
+    const uploads: string[] = [];
+
+    page.on('request', (request) => {
+        if (/\/recordings|\/r\//.test(request.url())) {
+            uploads.push(request.url());
+        }
+    });
+
+    await page.goto('/');
+    await page
+        .getByRole('link', { name: 'Essayer : ça prend 60 secondes' })
+        .click();
+    await page.waitForURL('**/essai');
+
+    await page.getByRole('button', { name: 'Commencer l’essai' }).click();
+
+    // Le micro a bien été obtenu : l'écran d'enregistrement, et le minuteur
+    // qui avance. Un refus afficherait la phrase d'aide à la place.
+    await expect(
+        page.getByText('Ça tourne. Parlez, on vous écoute.'),
+    ).toBeVisible();
+    await expect(page.getByText('0:01', { exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'J’ai terminé' }).click();
+    await expect(
+        page.getByRole('heading', { name: 'Réécoutez-vous.' }),
+    ).toBeVisible();
+
+    // Et rien n'est parti, micro accordé ou non.
+    expect(uploads).toEqual([]);
+});
