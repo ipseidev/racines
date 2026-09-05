@@ -404,16 +404,41 @@ return [
         'version' => 'Version :version, en vigueur depuis le :date.',
     ],
 
+    /*
+     * L'essai en soixante secondes (T-151).
+     *
+     * Il ne faisait que réécouter : un dictaphone, alors que le produit n'est
+     * pas un dictaphone. Il fait maintenant deux choses. Il donne à l'acheteur
+     * l'écran que son proche verra — la question, le grand bouton, le vu-mètre
+     * — pour répondre à la seule question qu'il se pose vraiment, « est-ce
+     * qu'elle va y arriver ». Puis il montre ce que devient une voix.
+     *
+     * Rien ne part toujours de l'appareil, et c'est justement pour ça que
+     * l'exemple est celui d'Odette et le dit franchement : nous n'avons pas
+     * entendu l'essai, nous n'avons donc rien à en transcrire.
+     */
     'demo' => [
+        'eyebrow' => 'L’essai',
         'title' => 'Essayez en 60 secondes',
-        'body' => 'Parlez, puis réécoutez-vous. Rien ne part de votre appareil.',
+        'body' => 'Répondez à une vraie question de la semaine. Vous verrez l’écran que votre proche verra, et vous saurez si c’est à sa portée.',
         'nothing_sent' => 'Cet essai reste sur votre téléphone et disparaît quand vous fermez la page.',
+        'question_label' => 'Question de la semaine',
+        // La même question que la carte de la page d'accueil, et le même
+        // exemple plus bas : le site raconte une seule histoire d'un bout à
+        // l'autre. Un test le vérifie.
+        'question' => 'Quelle odeur vous ramène à votre enfance ?',
         'start' => 'Commencer l’essai',
-        'recording' => 'C’est parti. Il reste :seconds secondes.',
+        'start_hint' => 'Touchez le bouton, puis parlez. L’essai s’arrête tout seul au bout d’une minute.',
+        'recording' => 'Ça tourne. Parlez, on vous écoute.',
+        // Le temps écoulé, jamais un compte à rebours (PRD US-06) : voir les
+        // secondes fondre coupe la parole de qui cherche ses mots.
+        'elapsed' => 'Vous parlez depuis :time.',
         'stop' => 'J’ai terminé',
         'ready' => 'Réécoutez-vous.',
         'playback' => 'Votre essai',
         'again' => 'Recommencer',
+        'result_title' => 'Et voici ce que ça devient.',
+        'result_body' => 'Votre voix n’a pas quitté votre téléphone : nous ne l’avons pas entendue, et nous n’avons donc rien à en écrire. Voici, sur l’enregistrement d’Odette, ce que nous en faisons.',
         'unsupported' => 'Ce navigateur ne sait pas enregistrer. Essayez depuis Safari sur iPhone, ou Chrome sur Android.',
         'refused' => 'Le micro n’a pas été autorisé. C’est réversible : dans les réglages de votre navigateur, autorisez le micro pour ce site, puis rechargez la page.',
         'cta' => 'Offrir à un proche',
