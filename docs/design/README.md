@@ -160,6 +160,43 @@ d'écran : une seule chose à la fois, la question en carte blanche sous un file
 d'or, puis un seul geste. Une confirmation est une coche qui apparaît
 (`animate-pop-in`) et une phrase qui dit ce qui vient.
 
+## L'espace Initiateur·rice (passe du 5 septembre, T-149)
+
+Le checkpoint du bloc 10 l'a dit sans détour : l'espace avait la palette mais
+ni le socle ni le mouvement du tunnel, « tout faisait formulaire basique ». La
+passe applique une règle avant toute autre : **chaque geste répond là où il
+est fait.** Le lien de la semaine apparaît dans la carte où l'on a cliqué, avec
+« Copier » qui devient « Copié » ; « Écouter comme un proche » ouvre la page
+d'écoute dans un nouvel onglet au lieu de remplir une boîte ailleurs ; l'ordre
+des questions part tout seul ; ce que le serveur répond arrive en **toast**,
+en bas et au centre, là où l'œil revient sur un téléphone tenu d'une main.
+
+Les pièces vivent dans `resources/js/components/space` et ne dépendent
+d'aucune bibliothèque :
+
+| Composant | Rôle |
+|---|---|
+| `PageHeader` | l'œillet qui dit où l'on est, le titre en Fraunces, une ligne d'intention ; le même sur les cinq pages |
+| `Pill` | une pastille d'état : sauge pour ce qui va, or pour ce qui attend un geste, marque pour l'acquis, sable pour ce qui dort |
+| `IconButton` | un rond de 44 px pour un seul geste (monter, descendre, retirer), libellé lu et montré au survol |
+| `ConfirmDialog` | avant un geste qui engage : retirer un accès, se rétracter ; le focus va sur « Annuler » |
+| `ShareSheet` | le lien, « Copier » puis « Copié », WhatsApp, SMS prérempli |
+| `Avatar` | les initiales d'un proche, sur lin |
+| `Toasts` | les retours du serveur, trois secondes et demie, un message identique remplace le précédent |
+
+Les onglets de la barre portent un soulignement d'or qui glisse (`.tab`), et la
+barre défile au doigt sous 640 px avec un fondu à droite. Les sections entrent
+en fondu décalées de quatre-vingts millisecondes (`lib/motion.ts`). La page des
+questions montre **les cinq prochaines dans l'ordre du moteur**, avec des
+flèches et « Poser en premier » plutôt qu'un glisser-déposer, qui coûte au
+clavier et au doigt plus qu'il ne rend ; « Voir 10 de plus » déroule le reste,
+« Écartées » et « Déjà posées » se replient dessous.
+
+Deux leçons : une bibliothèque qui injecte sa feuille de style en JavaScript
+(`sonner`) arrive nue sous une politique `style-src` à nonce, d'où des toasts
+maison ; et une date française s'écrit « 1er septembre », ce qu'`Intl` ne sait
+pas, d'où `lib/dates.ts` pour tout l'espace.
+
 ## La fenêtre de bienvenue (passe du 4 septembre au soir, T-141)
 
 Demande du fondateur, captures de Remento à l'appui : « donner une réduction

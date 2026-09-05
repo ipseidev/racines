@@ -320,7 +320,7 @@ Le seul endroit à tenir à jour.
 | 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | **en cours** — points 1 et 2 validés le 2026-09-03, deux écarts déjà corrigés (T-130, T-131) |
 | 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☐ |
 | 12ter | Relire le ton des onze messages du moteur | bloc 09 | ☐ |
-| 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | **en cours** — point 5 joué le 2026-09-05 : fonctionnel, mais l'espace est jugé « brut » (bouton d'écoute illisible, page des questions lourde, aucun mouvement) ; passe de design à décider, points 3 et 4 restent à jouer |
+| 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | **en cours** — point 5 joué le 2026-09-05 : fonctionnel mais « brut » ; passe de design faite le jour même (T-149) ; **à rejouer**, puis points 3 et 4 |
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil, et leur soumettre la garantie « satisfait ou remboursé pendant trente jours, sans justification » affichée sur la page d'accueil (T-134) | bloc 10 | ☐ |
 | 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☐ |
 | 12octies | 15 min pour le checkpoint du bloc 12 (+ `sail up -d clamav`, une photo iPhone) | bloc 12 | ☐ |
