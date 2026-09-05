@@ -80,6 +80,8 @@ final class AppServiceProvider extends ServiceProvider
             ]);
         });
 
+        self::guardWebhookSecret();
+
         $this->configureDefaults();
 
         /*
@@ -397,6 +399,42 @@ final class AppServiceProvider extends ServiceProvider
     /**
      * Configure default behaviors for production-ready applications.
      */
+    /**
+     * En production, l'endpoint de paiement n'est jamais ouvert.
+     *
+     * Cashier n'installe `VerifyWebhookSignature` **que si un secret est
+     * configuré** (`WebhookController::__construct`). Un secret vide ne
+     * dégrade donc pas la vérification : il la supprime. N'importe qui
+     * connaissant l'adresse pourrait forger un `checkout.session.completed`,
+     * faire naître une commande payée et un projet, et déclencher une
+     * invitation vers un numéro de son choix.
+     *
+     * Le runbook le disait en prose. La prose ne défend rien : une variable
+     * oubliée dans l'environnement de production passerait inaperçue, puisque
+     * tout continuerait de fonctionner. On échoue donc au démarrage, au moment
+     * du déploiement, là où la faute se corrige en une ligne (T-171).
+     *
+     * Hors production, le secret reste facultatif : `stripe listen` en fournit
+     * un qui change de session en session, et l'exiger rendrait l'application
+     * indémarrable pour qui ne travaille pas sur le paiement.
+     */
+    public static function guardWebhookSecret(): void
+    {
+        if (! app()->isProduction()) {
+            return;
+        }
+
+        if ((string) config('cashier.webhook.secret') !== '') {
+            return;
+        }
+
+        throw new RuntimeException(
+            'STRIPE_WEBHOOK_SECRET est vide : sans lui, Cashier n’installe pas la vérification '
+            .'de signature et l’endpoint de paiement accepte n’importe quel appel. Le secret se '
+            .'prend dans le tableau de bord Stripe, sur l’endpoint (Développeurs → Webhooks).'
+        );
+    }
+
     protected function configureDefaults(): void
     {
         // Les relations polymorphes stockent un alias court et stable plutôt

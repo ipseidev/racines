@@ -77,7 +77,9 @@ stripe listen --api-key "$(grep '^STRIPE_SECRET=' .env | cut -d= -f2-)" \
 
 La commande affiche un secret `whsec_…` : le mettre dans `STRIPE_WEBHOOK_SECRET`. Il est stable pour un couple compte + machine, mais **le vérifier au début de chaque session** — celui du fichier et celui qu'affiche l'écouteur doivent être le même, caractère pour caractère.
 
-Sans ce secret, Cashier **n'installe pas** la vérification de signature et accepte n'importe quel appel. Acceptable en local, jamais ailleurs : en production le secret vient du tableau de bord (Développeurs → Webhooks → l'endpoint), et il est fixe.
+Sans ce secret, Cashier **n'installe pas** la vérification de signature et accepte n'importe quel appel : `WebhookController::__construct` n'ajoute `VerifyWebhookSignature` que si `cashier.webhook.secret` est renseigné. Un secret vide ne dégrade donc pas la vérification, **il la supprime** — n'importe qui connaissant l'adresse pourrait forger un `checkout.session.completed`, faire naître une commande payée et un projet, et déclencher une invitation vers un numéro de son choix.
+
+Acceptable en local, jamais ailleurs — et ce n'est plus une consigne mais une garde : **en production, l'application refuse de démarrer** si le secret est vide (T-171). La faute tombe au déploiement, où elle se corrige en une ligne, plutôt qu'en silence sur un endpoint ouvert.
 
 Quatre événements nous intéressent :
 
@@ -89,6 +91,32 @@ Quatre événements nous intéressent :
 **Pourquoi les trois premiers et pas un seul** (T-167) : le tunnel ne passe pas `payment_method_types`, donc Stripe propose la méthode qui convertit le mieux — et le compte a Klarna, Pix et BLIK actifs. Pour ces méthodes à notification différée, `completed` arrive **pendant que la session est encore impayée**. Exécuter dessus seul enverrait le cadeau chez un parent pour une commande qui échoue, et n'enverrait rien pour celle qui aboutit une heure plus tard.
 
 Tout le reste est ignoré **sans broncher**. Stripe envoie des dizaines de types d'événements, et une erreur sur un type inconnu ferait retenter le webhook indéfiniment.
+
+## 2bis. Le webhook en production
+
+**À faire au déploiement, pas avant.** Stripe réessaie un endpoint qui échoue, puis **le désactive** après des échecs prolongés : créer l'endpoint avant que le site réponde, c'est le programmer pour être désactivé avant le lancement.
+
+Le jour du déploiement, dans le tableau de bord **en mode live** :
+
+1. **Développeurs → Webhooks → Ajouter un endpoint.**
+2. **L'adresse** : `https://<domaine de production>/stripe/webhook`. C'est la route de Cashier (`cashier.webhook`), servie sur le domaine de l'application — **pas** sur le domaine court des liens, qui ne porte que les espaces narrateur et famille.
+3. **Les événements à sélectionner**, et ceux-là seulement :
+
+   | Événement | Ce qu'il déclenche |
+   |---|---|
+   | `checkout.session.completed` | exécute la commande, si la session n'est pas `unpaid` |
+   | `checkout.session.async_payment_succeeded` | l'exécute quand un paiement différé aboutit |
+   | `checkout.session.async_payment_failed` | le consigne pour le support |
+   | `charge.refunded` | enregistre le remboursement, annule le projet si total et non accepté |
+
+   Ne pas cocher « tous les événements » : Stripe en envoie des dizaines de types, tous seraient signés, reçus et ignorés, pour rien — et le journal de livraison deviendrait illisible le jour où il faudra y chercher quelque chose.
+
+4. **Le secret** apparaît sur la page de l'endpoint une fois créé, sous « Signing secret » → *Reveal*. Il commence par `whsec_` et, contrairement à celui de la CLI, **il est fixe** : il ne change pas d'une session à l'autre.
+5. Le reporter dans **`STRIPE_WEBHOOK_SECRET` de l'environnement de production**, jamais dans le `.env` local.
+
+**Un endpoint par environnement.** Une préproduction a le sien, avec son propre secret : deux environnements derrière un même secret finissent par exécuter la même commande deux fois.
+
+**Vérifier après le premier paiement réel** : le tableau de bord montre, sur la page de l'endpoint, chaque tentative et sa réponse. Un `200` sur `checkout.session.completed` et la commande existe. Un `400` est une signature qui ne correspond pas ; un `500`, une erreur de traitement, que Stripe réessaiera.
 
 ## 3. Jouer un achat de bout en bout
 
