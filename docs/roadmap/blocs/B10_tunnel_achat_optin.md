@@ -1,6 +1,6 @@
 # Bloc 10 — Tunnel d'achat, Stripe, cadeau, onboarding Initiateur·rice, opt-in narrateur
 
-Statut : ◐ en cours · Dépend de : 09 · Tag de fin : `bloc-10-done`
+Statut : ☑ terminé (2026-09-05) — checkpoint §7 joué par un humain avec un vrai paiement, trois défauts de paiement trouvés et corrigés · Dépend de : 09 · Tag de fin : `bloc-10-done`
 **⛔ En attente de toi** — le checkpoint §7 demande un compte Stripe en mode test. Le code est livré, testé et poussé. Détail dans [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md).
 
 Références dossier : PRD P0-1, P0-2, §5.1 (happy path), H0 (R-5), R-2 (offre pilote), R-3 (prix), doc 04 §2 (invitation : 2 + 1, suppression des coordonnées, consentements distincts), §2bis (rétractation, option téléphone), §6 (directives post-mortem), §9 (anti-phishing) ; décisions T-16, T-17, T-26, T-28 ; flags `prevente-price`, `gift-experience`, `phone-option-offer`.
@@ -57,7 +57,7 @@ Inertia SSR : `sail npm run build` doit produire `bootstrap/ssr/ssr.js` (`vite.c
 
 ### 6.1 Réglages du pilote et prix
 - [x] `App\Settings\PilotSettings` : `mode` (`pilot|prevente|core`), `phone_option_cap` (10), `pilot_price_cents` (4900), `prevente_prices_cents` (`[9900, 12900]`), `extra_copy_price_cents` (4500, `[À CONFIRMER devis 0A]`), `phone_option_price_cents` (2500), `gift_send_hour` (9), `cohort_id` courant. Page Filament « Pilote » (bloc 11 la complète).
-- [ ] Créer dans Stripe (mode test puis live) les produits et prix, renseigner `STRIPE_PRICE_*`. **Attend un compte Stripe** → [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md). Le runbook `docs/runbooks/stripe.md` est écrit et attend les identifiants.
+- [x] Créer dans Stripe les produits et prix, renseigner `STRIPE_PRICE_*`. Fait le 2026-09-05 par API sur le compte de test `acct_1UBU3n…` : six produits, le coupon de bienvenue, le secret de webhook (T-167). Les prix live restent à créer avant le go-live.
 - [x] `App\Features\PreventePrice` (portée : cookie anonyme `pv` posé 90 jours ; hachage stable → `99|129`), `App\Features\GiftExperience` (défaut `ecard`), `App\Features\PhoneOptionOffer` (global ; désactivé automatiquement quand le plafond est atteint, via un écouteur sur `PhoneOption`).
 
 ### 6.2 Landing et pages publiques (SSR)
@@ -106,7 +106,7 @@ Inertia SSR : `sail npm run build` doit produire `bootstrap/ssr/ssr.js` (`vite.c
 - [x] Annexe B (`orders`, `order_items`, `phone_options`, `invitations`, `post_mortem_directives`, `checkout_drafts`), glossaire §5, `01_CONVENTIONS.md` §15.
 - [x] `04_VERSIONS.md` : cashier.
 - [x] `sail composer check`, `sail npm run check`, Playwright depuis le Mac (écart T-110), CI verts.
-- [ ] Commit `chore(bloc-10): terminé`, tag `bloc-10-done` — après le checkpoint §7, qui demande un compte Stripe.
+- [x] Commit `chore(bloc-10): terminé`, tag `bloc-10-done` — checkpoint §7 joué le 2026-09-05 avec un vrai paiement de test (T-167 à T-169).
 
 ## 7. Checkpoint démontrable
 
@@ -126,6 +126,45 @@ Inertia SSR : `sail npm run build` doit produire `bootstrap/ssr/ssr.js` (`vite.c
 ## 9. Règle de décision par défaut
 
 Le mode par défaut de `PilotSettings` est `pilot`. Les préventes ne s'activent qu'en passant `mode = prevente` dans l'admin, et ne créent jamais de projet actif : elles créent une commande `core_prevente` et un projet `draft` gelé jusqu'à la Gate Phase 1.
+
+## 10. Note de checkpoint
+
+_Date, exécutant, résultat, écarts :_
+
+**2026-09-05 — Nicolas Serra (humain) + Claude (agent) — checkpoint §7 joué avec un vrai paiement, cinq points sur cinq, trois défauts de paiement trouvés et corrigés.**
+
+### Ce que le checkpoint a donné
+
+| Point | Résultat |
+|---|---|
+| 1. Payer 89 € | Session réelle `cs_test_a1jmsQ…`, `pi_3UCPvq…`. **L'option téléphone n'a pas été cochée** : cette branche reste couverte par ses tests, pas par ce checkpoint |
+| 2. Webhook | `checkout.session.completed` en **200**. Commande `paid` à 89 €, rétractation au 2026-09-19 (J+14), projet **`draft`** — rien ne part avant l'acceptation —, narratrice Marie, une fiche de proche pour l'Initiateur·rice, courriel « Votre commande est confirmée » dans Mailpit |
+| 3. Le cadeau et l'acceptation | Projet passé **`active`**, **sept consentements** horodatés, prochain envoi lundi 7 à 09:00. Ce n'est pas « le lendemain » : le créneau choisi était lundi matin et nous étions samedi. La formule du §7 est un raccourci, la règle est la prochaine occurrence du jour choisi |
+| 4. Le refus | `refused_at` posé, `contact_deletion_due_at` à **J+30**, ticket `refund_offer` ouvert. Le message à l'Initiateur·rice ne dit ni « refus » ni « échec » : « C'est son choix, et nous le respectons. Cela arrive, et ce n'est pas un échec : proposer était déjà une attention. » Et surtout : **le moteur ne relancera pas** — `InvitationNotAccepted` exclut `refused_at` au niveau de la requête, pas d'une intention |
+| 5. L'espace Initiateur·rice | Les quatre gestes ont laissé leur trace : 65 réglages de questions réordonnés, un proche invité avec son jeton d'écoute, le lien WhatsApp, et le ticket `withdrawal_requested`. Reprise après la passe de design T-149 |
+
+### Écarts consignés
+
+- **T-167 — la commande était exécutée avant d'être payée.** Le tunnel ne passe pas `payment_method_types`, ce qui est juste ; mais le compte a Klarna, Pix et BLIK actifs, et pour ces méthodes à notification différée `checkout.session.completed` arrive **pendant que la session est encore impayée**. L'écouteur ne regardait pas `payment_status` : le cadeau serait parti chez un parent pour une commande qui échoue, et celle qui aboutit une heure plus tard ne serait jamais partie.
+- **T-168 — « Payer » ne faisait rien.** `redirect()->away()` renvoie un 302 qu'Inertia reçoit en XHR et ne peut pas suivre. Le test voisin vérifiait `assertRedirect()`, qui passait ; la suite bout en bout s'arrête au récapitulatif par construction. Il ne restait que le clic, et il a fallu un humain.
+- **T-169 — un paiement étranger faisait répondre 500.** Une session sans nos métadonnées — tableau de bord, lien de paiement, `stripe trigger` — partait chercher le brouillon avec une chaîne vide en guise d'uuid. Stripe réessaie les 500 sans fin puis **désactive l'endpoint** : un paiement qui n'est pas le nôtre emportait ceux qui suivaient.
+
+### Trois pièges de mise en place, tous consignés dans le runbook
+
+1. **`stripe listen` sans `--api-key`** signe avec le secret du compte auquel la CLI est connectée, qui n'est pas forcément celui du `.env`. Cashier rejette **dans son intergiciel** : pas une ligne dans le journal, un paiement qui disparaît.
+2. **La commande semée** porte un identifiant de session court là où Stripe en produit un de soixante. Une commande à 89 € en base ne prouve rien à elle seule.
+3. **Le lien d'opt-in du décor est à usage unique**, et la suite bout en bout le consomme : le refus n'est jouable qu'une fois par semis. Contourné en fabriquant un projet neuf ; à corriger comme `demo:moteur` l'a été (T-155).
+
+### Ce qui reste dû
+
+- **Les prix en mode live**, avant le go-live, ainsi qu'une **clé restreinte** (`rk_`) plutôt qu'une clé secrète — recommandation de Stripe, sans enjeu en test.
+- **L'option téléphone au paiement**, non exercée par ce checkpoint.
+
+### Portail qualité
+
+`sail composer check` vert : Pint, Larastan niveau 8 à zéro erreur, **1 275 tests** Pest. Vitest 173. **71 tests bout en bout sur 71**, `--workers=1`.
+
+---
 
 ## 10. Note de checkpoint
 

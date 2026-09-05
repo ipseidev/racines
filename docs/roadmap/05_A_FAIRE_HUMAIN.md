@@ -320,13 +320,13 @@ Le seul endroit à tenir à jour.
 | 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | ☑ **fait le 2026-09-05** — sept points sur sept, joué sur un vrai iPhone ; quatre écarts trouvés et corrigés (T-156 à T-158, T-160, T-164, T-166), bloc tagué |
 | 12bis | 20 min pour le checkpoint du bloc 09 | bloc 09 | ☑ **fait le 2026-09-05** — cinq points sur cinq, trois écarts trouvés et corrigés (T-153 à T-155), bloc tagué |
 | 12ter | Relire le ton des onze messages du moteur | bloc 09 | **en cours** — les onze textes lus le 2026-09-05, rien de culpabilisant ; deux formulations pointent une absence (`react_suggestion`, `initiator_alert`), toutes deux adressées à l'Initiateur·rice. Verdict du fondateur en attente |
-| 12quater | 20 min pour le checkpoint du bloc 10, points 3 à 5 (sans Stripe) | bloc 10 | **en cours** — point 5 joué le 2026-09-05 : fonctionnel mais « brut » ; passe de design faite le jour même (T-149) ; **à rejouer**, puis points 3 et 4 |
+| 12quater | 20 min pour le checkpoint du bloc 10 | bloc 10 | ☑ **fait le 2026-09-05** — cinq points sur cinq avec un vrai paiement ; trois défauts de paiement trouvés et corrigés (T-167 à T-169), bloc tagué |
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil, et leur soumettre la garantie « satisfait ou remboursé pendant trente jours, sans justification » affichée sur la page d'accueil (T-134) | bloc 10 | ☐ |
 | 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☐ |
 | 12octies | 15 min pour le checkpoint du bloc 12 (+ `sail up -d clamav`, une photo iPhone) | bloc 12 | ☐ |
 | 12septies | Relire les six playbooks du support (`resources/playbooks/`) | bloc 11 | ☐ |
 | 13 | Cloudflare R2 : 3 compartiments UE + CORS | bloc 16 | ☐ |
-| 14 | Stripe : compte, clés de test, 5 prix (`price_…`), CLI pour le webhook | **bloc 10, livré et bloqué** | ☐ |
+| 14 | Stripe : compte, clés de test, 6 prix (`price_…`), coupon, CLI pour le webhook | bloc 10 | ☑ **fait le 2026-09-05** — compte `acct_1UBU3n…`, produits et prix créés par API, paiement réel joué de bout en bout, bloc tagué. **Restent les prix en mode live et une clé restreinte avant le go-live** |
 | 15 | Polices OFL déposées | bloc 13 | ☐ |
 | 16 | Devis imprimeur | bloc 13 | ☐ |
 | 17 | PostHog UE | bloc 15 | ☐ |
