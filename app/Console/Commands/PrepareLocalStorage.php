@@ -99,7 +99,60 @@ final class PrepareLocalStorage extends Command
         }
 
         /** @var array{CORSRules: list<array<string, mixed>>} $decoded */
+        $decoded['CORSRules'] = array_map(self::withAppOrigin(...), $decoded['CORSRules']);
+
         return $decoded;
+    }
+
+    /**
+     * L'origine de l'application rejoint les origines autorisées.
+     *
+     * Le fichier `docker/minio/cors.json` est suivi par git et figé sur
+     * `http://localhost:8001`. Dès que l'application est servie ailleurs —
+     * l'IP de la machine pour un téléphone du même réseau, un tunnel pour le
+     * spike du bloc 04, une préproduction — le navigateur refuse le `PUT`
+     * présigné et l'audio reste muet **sans message** : un refus CORS ne dit
+     * rien à l'application, seulement à la console du navigateur. Trois blocs
+     * butaient sur cet obstacle, et le contourner demandait de modifier un
+     * fichier suivi à chaque changement d'adresse.
+     *
+     * @param  array<string, mixed>  $rule
+     * @return array<string, mixed>
+     */
+    private static function withAppOrigin(array $rule): array
+    {
+        $origin = self::appOrigin();
+
+        if ($origin === null) {
+            return $rule;
+        }
+
+        $origins = is_array($rule['AllowedOrigins'] ?? null) ? $rule['AllowedOrigins'] : [];
+        $origins[] = $origin;
+
+        $rule['AllowedOrigins'] = array_values(array_unique(array_filter(
+            $origins,
+            fn (mixed $value): bool => is_string($value) && $value !== '',
+        )));
+
+        return $rule;
+    }
+
+    /**
+     * `APP_URL` réduite à son origine : une règle CORS ne connaît ni chemin ni
+     * requête, et une origine qui en porte n'est jamais reconnue.
+     */
+    private static function appOrigin(): ?string
+    {
+        $parts = parse_url((string) config('app.url'));
+
+        if (! is_array($parts) || ! isset($parts['scheme'], $parts['host'])) {
+            return null;
+        }
+
+        $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+
+        return $parts['scheme'].'://'.$parts['host'].$port;
     }
 
     private function client(): S3Client
