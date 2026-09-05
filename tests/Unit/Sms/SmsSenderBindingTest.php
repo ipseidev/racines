@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Services\Sms\AllowlistSmsSender;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
@@ -17,7 +18,23 @@ it('lie l’expéditeur au fournisseur configuré', function (string $provider, 
     'log' => ['log', LogSmsSender::class],
 ]);
 
-it('construit l’expéditeur Twilio quand c’est le fournisseur configuré', function (): void {
+/*
+ * Hors production, Twilio arrive **enveloppé** dans la liste blanche : le
+ * décor sème des mobiles français plausibles, et un `engine:tick` sur un
+ * `.env` branché sur Twilio écrirait à des inconnus. Un SMS ne se décommande
+ * pas (T-174).
+ */
+it('enveloppe l’expéditeur Twilio dans la liste blanche hors production', function (): void {
+    config()->set('services.sms.provider', 'twilio');
+    config()->set('services.twilio.sid', 'AC'.str_repeat('0', 32));
+    config()->set('services.twilio.token', str_repeat('t', 32));
+    app()->forgetInstance(SmsSender::class);
+
+    expect(app(SmsSender::class))->toBeInstanceOf(AllowlistSmsSender::class);
+});
+
+it('n’enveloppe rien en production, où la liste n’a pas lieu d’être', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
     config()->set('services.sms.provider', 'twilio');
     config()->set('services.twilio.sid', 'AC'.str_repeat('0', 32));
     config()->set('services.twilio.token', str_repeat('t', 32));

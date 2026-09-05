@@ -14,6 +14,10 @@ return [
     */
 
     'sms' => [
+        // Les numéros autorisés à recevoir un vrai SMS **hors production**,
+        // séparés par des virgules. Vide, rien ne part : le décor sème des
+        // mobiles français plausibles, et un SMS ne se décommande pas (T-174).
+        'allowlist' => env('SMS_ALLOWLIST', ''),
         'provider' => env('SMS_PROVIDER', 'log'),
     ],
 

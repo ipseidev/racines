@@ -25,6 +25,7 @@ use App\Services\Payments\FakeRefunds;
 use App\Services\Payments\Refunds;
 use App\Services\Payments\StripeCheckoutSessions;
 use App\Services\Payments\StripeRefunds;
+use App\Services\Sms\AllowlistSmsSender;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
@@ -381,7 +382,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SmsSender::class, function (): SmsSender {
             $provider = (string) config('services.sms.provider');
 
-            return match ($provider) {
+            $sender = match ($provider) {
                 'fake' => new FakeSmsSender,
                 'log' => new LogSmsSender,
                 'twilio' => new TwilioSmsSender(
@@ -393,12 +394,40 @@ final class AppServiceProvider extends ServiceProvider
                 ),
                 default => throw new RuntimeException("Unknown SMS provider [{$provider}]."),
             };
+
+            // Hors production, un vrai fournisseur passe par la liste blanche.
+            // Le décor sème des mobiles français **plausibles** : un
+            // `engine:tick` sur un `.env` branché sur Twilio écrirait à des
+            // inconnus, et un SMS ne se décommande pas (T-174).
+            if ($provider === 'twilio' && ! app()->isProduction()) {
+                return new AllowlistSmsSender($sender, self::smsAllowlist());
+            }
+
+            return $sender;
         });
     }
 
     /**
      * Configure default behaviors for production-ready applications.
      */
+    /**
+     * Les numéros autorisés à recevoir un vrai SMS hors production.
+     *
+     * Vide par défaut, et c'est le point : rien ne part tant qu'on n'a pas
+     * nommé les numéros de l'équipe.
+     *
+     * @return list<string>
+     */
+    private static function smsAllowlist(): array
+    {
+        $brut = (string) config('services.sms.allowlist');
+
+        return array_values(array_filter(array_map(
+            trim(...),
+            explode(',', $brut),
+        ), fn (string $numero): bool => $numero !== ''));
+    }
+
     /**
      * En production, l'endpoint de paiement n'est jamais ouvert.
      *
