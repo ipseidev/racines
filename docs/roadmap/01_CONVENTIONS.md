@@ -170,6 +170,36 @@ prépare l'état, mais c'est `reactions:send-digests` — celle qui tournera à 
 en production — que la vérification doit exercer. Envelopper la commande réelle
 reviendrait à tester l'enveloppe.
 
+### Ce qu'on relance, et quand
+
+La porte complète coûte cher : la suite bout en bout demande deux à trois
+minutes et un semis propre, et la rejouer après avoir changé un mot ou une
+marge est du temps perdu — le nôtre et celui du modèle. **On la fait donc
+proportionnelle au changement** (T-165). L'intégration continue joue la suite
+entière sur `main` : elle est le filet, pas la première ligne.
+
+| Ce qu'on vient de changer | Ce qu'on relance |
+|---|---|
+| Un texte dans `lang/` | `sail npm run check` et le test qui cite la clé |
+| Un style, une marge, une couleur, **sans toucher au balisage** | `sail npm run check` et `sail npm run build` |
+| Le balisage d'une page : un élément ajouté ou déplacé, un rôle, un composant | En plus, la ou les spécifications **de cette page**, avec `--no-deps` |
+| Un composant partagé, une mise en page, un intergiciel, une route | La suite entière, `--workers=1` |
+| Avant un tag de bloc, ou avant de pousser | La suite entière, `--workers=1` |
+
+**Le balisage est la ligne de partage, et elle n'est pas cosmétique.** Trois
+défauts de cette journée sont nés d'un changement qui « n'était que du
+design » : un évitement clavier ajouté en tête de page a fait de
+`getByRole('link').first()` autre chose qu'une histoire (T-162), un sélecteur
+d'onglets a introduit des cibles de 40 px là où le dossier en exige 44 (T-164),
+et une entrée en fondu a rendu trois audits d'accessibilité intermittents
+(T-161). Aucun n'aurait été vu par `npm run check`.
+
+**Et on resème avant de conclure.** Trois échecs consécutifs ont été imputés à
+tort au code alors qu'ils venaient du décor vieilli entre deux exécutions —
+cent cinq secondes écoutées au lieu de trente-cinq, un jeton à usage unique
+déjà consommé. Un décor qui traîne fabrique des échecs qui ressemblent à des
+régressions, et on perd plus de temps à les disculper qu'à ressemer.
+
 **`--workers=1` n'est pas facultatif.** L'intégration continue joue la suite avec un seul ouvrier ; en parallèle, deux tests qui se disputent le même décor passent par chance et échouent en série (écart T-111). Une suite verte en parallèle et rouge en série ne prouve rien : c'est la version en série qui compte.
 
 **Playwright tourne depuis le Mac, pas depuis le conteneur** (`E2E_BASE_URL=http://localhost:8001 npx playwright test`). La raison est dans `R2_PUBLIC_ENDPOINT` : les URLs présignées d'envoi sont signées pour l'adresse **vue par le navigateur**, soit `http://localhost:9001` — le port que Docker publie sur l'hôte. Un navigateur lancé dans le conteneur y trouve une connexion refusée, et les trois tests qui enregistrent pour de vrai échouent sur un délai dépassé sans dire pourquoi (écart T-110). La CI, elle, sert l'application avec `php artisan serve` sur le runner : même situation qu'un Mac.
