@@ -1,5 +1,6 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+import { blockingViolations } from './support/a11y';
 
 /**
  * Les liens de démonstration sont semés par DemoProjectSeeder, qui refuse de
@@ -8,18 +9,6 @@ import { expect, test } from '@playwright/test';
  */
 const link = (name: string) =>
     `/r/${'demo-'.concat(name, '-link').padEnd(43, 'x')}`;
-
-const blockingViolations = async (
-    page: Parameters<typeof AxeBuilder>[0]['page'],
-) => {
-    const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-        .analyze();
-
-    return results.violations.filter((violation) =>
-        ['serious', 'critical'].includes(violation.impact ?? ''),
-    );
-};
 
 test('un lien valable ouvre la page du narrateur', async ({ page }) => {
     const response = await page.goto(link('a11y'));

@@ -25,7 +25,13 @@ describe('Toasts', () => {
             vi.advanceTimersByTime(1100);
         });
 
-        expect(screen.getByRole('status')).toHaveTextContent('');
+        // La région de statut disparaît avec son dernier message : deux
+        // régions de statut sur un même écran est une ambiguïté, et certaines
+        // pages en ont déjà une à elles.
+        expect(screen.queryByRole('status')).toBeNull();
+        expect(
+            screen.queryByText('L’ordre est enregistré.'),
+        ).not.toBeInTheDocument();
     });
 
     it('remplace un message identique au lieu de l’empiler', () => {

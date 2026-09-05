@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * Le dépôt d'une photo par un proche.
@@ -11,11 +11,23 @@ import { expect, test } from '@playwright/test';
 const AVEC = `/l/${'demo-listen-photo-link'.padEnd(43, 'x')}`;
 const SANS = `/l/${'demo-listen-link'.padEnd(43, 'x')}`;
 
+/*
+ * La première histoire de la liste, prise par son lien à elle.
+ *
+ * `getByRole('link').first()` visait le premier lien du document, ce qui a
+ * cessé d'être une histoire le jour où la mise en page a reçu son évitement
+ * clavier (T-158) : « Aller au contenu » est en tête, invisible mais premier.
+ * Un sélecteur qui dépend de l'ordre du document décrit la page d'hier.
+ */
+async function openFirstStory(page: Page): Promise<void> {
+    await page.getByRole('listitem').first().getByRole('link').click();
+}
+
 test('un proche sans droit de contribuer ne voit pas le bouton', async ({
     page,
 }) => {
     await page.goto(SANS);
-    await page.getByRole('link').first().click();
+    await openFirstStory(page);
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
@@ -27,7 +39,7 @@ test('un contributeur dépose une photo et la voit dans la galerie', async ({
     page,
 }) => {
     await page.goto(AVEC);
-    await page.getByRole('link').first().click();
+    await openFirstStory(page);
 
     const champ = page.locator('input[type="file"]');
     await expect(champ).toBeVisible();

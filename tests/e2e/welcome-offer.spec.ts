@@ -1,5 +1,6 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+import { blockingViolations } from './support/a11y';
 
 /**
  * La fenêtre de bienvenue de la page d'accueil (T-141).
@@ -33,12 +34,7 @@ test.describe('la fenêtre de bienvenue', () => {
 
         // Accessible, fenêtre ouverte : le reste de la page est inerte, la
         // fenêtre doit se suffire.
-        const results = await new AxeBuilder({ page })
-            .withTags(['wcag2a', 'wcag2aa'])
-            .analyze();
-        const blocking = results.violations.filter((violation) =>
-            ['serious', 'critical'].includes(violation.impact ?? ''),
-        );
+        const blocking = await blockingViolations(page, ['wcag2a', 'wcag2aa']);
         expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
 
         // Deux temps : d'abord la promesse, puis le champ, qui prend le focus.

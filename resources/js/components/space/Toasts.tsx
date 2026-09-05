@@ -55,7 +55,18 @@ export function Toasts({ duration = TOAST_DURATION }: { duration?: number }) {
 
     return (
         <div
-            role="status"
+            /*
+             * `role="status"` seulement quand il y a quelque chose à dire.
+             *
+             * La région vivante, c'est `aria-live` — présent en permanence,
+             * donc les annonces fonctionnent. `role="status"` n'ajoute qu'un
+             * `aria-atomic` implicite, mais il crée une **seconde** région de
+             * statut sur les pages qui en ont déjà une : la page de l'action
+             * en un tap affiche sa confirmation en `role="status"`, et deux
+             * régions de statut sur un écran est une ambiguïté pour qui écoute
+             * la page autant que pour qui l'automatise.
+             */
+            role={items.length > 0 ? 'status' : undefined}
             aria-live="polite"
             className="pointer-events-none fixed inset-x-0 bottom-5 z-50 flex flex-col items-center gap-2 px-4"
         >

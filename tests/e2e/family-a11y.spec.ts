@@ -1,5 +1,6 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+import { blockingViolations } from './support/a11y';
 
 /**
  * L'espace famille, passé au crible de l'accessibilité.
@@ -10,43 +11,10 @@ import { expect, test } from '@playwright/test';
  */
 const LISTEN = `/l/${'demo-listen-a11y-link'.padEnd(43, 'x')}`;
 
-/*
- * Le scan attend que la page soit posée.
- *
- * Les sections entrent en fondu (T-158). Axe mesuré en plein fondu rapporte
- * des contrastes que personne ne voit jamais : l'opacité intermédiaire n'est
- * pas un état de lecture, c'est une image d'un dixième de seconde. Sans cette
- * attente, les trois tests de ce fichier passent ou échouent selon la charge
- * de la machine — le pire état pour une garde d'accessibilité, parce qu'on
- * finit par la croire cassée plutôt que la lire.
- */
-async function settled(page: Parameters<typeof AxeBuilder>[0]['page']) {
-    await page.waitForFunction(() =>
-        document
-            .getAnimations()
-            .every((animation) => animation.playState !== 'running'),
-    );
-}
-
-async function blockingViolations(
-    page: Parameters<typeof AxeBuilder>[0]['page'],
-) {
-    await settled(page);
-
-    const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa'])
-        .analyze();
-
-    return results.violations.filter(
-        (violation) =>
-            violation.impact === 'critical' || violation.impact === 'serious',
-    );
-}
-
 test('aucune violation grave sur la liste des histoires', async ({ page }) => {
     await page.goto(LISTEN);
 
-    const violations = await blockingViolations(page);
+    const violations = await blockingViolations(page, ['wcag2a', 'wcag2aa']);
 
     expect(
         violations.map((one) => `${one.id}: ${one.help}`),
@@ -59,7 +27,7 @@ test('aucune violation grave sur la page d’écoute', async ({ page }) => {
     await page.getByText('L’odeur du pain').click();
     await expect(page.getByRole('button', { name: 'Écouter' })).toBeVisible();
 
-    const violations = await blockingViolations(page);
+    const violations = await blockingViolations(page, ['wcag2a', 'wcag2aa']);
 
     expect(
         violations.map((one) => `${one.id}: ${one.help}`),

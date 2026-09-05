@@ -1,26 +1,12 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
+import { blockingViolations } from './support/a11y';
 
 /**
  * Accessibilité de la page d'enregistrement (convention §11) : WCAG 2.2 AA,
  * texte de 18 px au moins, zones tactiles de 44 px au moins.
  */
 const RECORD_LINK = `/r/${'demo-a11y-link'.padEnd(43, 'x')}`;
-
-async function blockingViolations(page: Page) {
-    // Les écrans entrent en fondu (450 ms, T-138). Axe lit la couleur au
-    // moment où il passe : à mi-fondu, un texte gris paraît trop clair alors
-    // qu'au repos son contraste est bon. On mesure une fois le fondu fini.
-    await page.waitForTimeout(600);
-
-    const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-        .analyze();
-
-    return results.violations.filter((violation) =>
-        ['serious', 'critical'].includes(violation.impact ?? ''),
-    );
-}
 
 test('aucune violation grave sur les écrans d’enregistrement', async ({
     page,

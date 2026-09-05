@@ -1,5 +1,6 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+import { blockingViolations } from './support/a11y';
 
 /**
  * Les pages publiques, passées au crible de l'accessibilité.
@@ -8,19 +9,6 @@ import { expect, test } from '@playwright/test';
  * premières qu'un enfant de soixante ans lit sur son téléphone. Une violation
  * grave ici est une famille qui ne comprend pas ce qu'on vend.
  */
-async function blockingViolations(
-    page: Parameters<typeof AxeBuilder>[0]['page'],
-) {
-    const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa'])
-        .analyze();
-
-    return results.violations.filter(
-        (violation) =>
-            violation.impact === 'critical' || violation.impact === 'serious',
-    );
-}
-
 const PAGES = [
     ['/', 'la page d’accueil'],
     ['/essai', 'l’essai'],
@@ -43,7 +31,10 @@ for (const [path, label] of PAGES) {
         // reprocher à une page vide ne prouve rien.
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-        const violations = await blockingViolations(page);
+        const violations = await blockingViolations(page, [
+            'wcag2a',
+            'wcag2aa',
+        ]);
 
         expect(
             violations.map((one) => `${one.id}: ${one.help}`),

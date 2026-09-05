@@ -55,7 +55,13 @@ test('le bouton change la cadence, et le lien ne resert pas', async ({
 test('la page ne demande ni compte ni mot de passe', async ({ page }) => {
     await page.goto(ONE_TAP_READ);
 
-    const body = (await page.locator('body').textContent()) ?? '';
+    /*
+     * `innerText` et non `textContent` : le second renvoie aussi la charge
+     * Inertia sérialisée dans le document, où le dictionnaire de traduction
+     * contient le mot « connexion » sans que la page l'affiche nulle part.
+     * On mesure ce que la personne lit.
+     */
+    const shown = await page.locator('body').innerText();
 
-    expect(body).not.toMatch(/mot de passe|connexion|se connecter/i);
+    expect(shown).not.toMatch(/mot de passe|connexion|se connecter/i);
 });

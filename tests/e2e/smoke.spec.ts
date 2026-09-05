@@ -1,5 +1,6 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+import { blockingViolations } from './support/a11y';
 
 test('la page d’accueil répond et porte le nom du produit', async ({
     page,
@@ -15,13 +16,7 @@ test('la page d’accueil n’a aucune violation d’accessibilité grave', asyn
 }) => {
     await page.goto('/');
 
-    const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-        .analyze();
-
-    const blocking = results.violations.filter((violation) =>
-        ['serious', 'critical'].includes(violation.impact ?? ''),
-    );
+    const blocking = await blockingViolations(page);
 
     expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
 });
