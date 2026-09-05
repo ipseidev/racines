@@ -77,6 +77,7 @@ test('la page d’accueil annonce ses sections dans l’ordre du dossier', async
         'book',
         'review',
         'gift',
+        'commitments',
         'faq',
     ]);
 

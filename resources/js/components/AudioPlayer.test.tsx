@@ -124,6 +124,30 @@ describe('lecteur audio de l’espace famille', () => {
         expect(remaining.getAttribute('aria-live')).toBe('polite');
     });
 
+    it('lit la durée déjà connue au moment où il s’installe', () => {
+        // Fichier en cache, retour en arrière dans l'historique : les entêtes
+        // sont là avant que React ne s'abonne, et l'événement ne repassera
+        // pas. Sans relecture au montage, une histoire de trois minutes
+        // s'annonçait « Il reste 0:00 » jusqu'au premier clic.
+        Object.defineProperty(HTMLMediaElement.prototype, 'readyState', {
+            configurable: true,
+            get: () => HTMLMediaElement.prototype.HAVE_METADATA,
+        });
+        Object.defineProperty(HTMLMediaElement.prototype, 'duration', {
+            configurable: true,
+            get: () => 95,
+        });
+
+        render(<AudioPlayer src="/audio.mp3" />);
+
+        expect(screen.getByText(/Il reste/).textContent).toBe('Il reste 1:35');
+
+        // @ts-expect-error -- on rend à jsdom ses propriétés d'origine.
+        delete HTMLMediaElement.prototype.readyState;
+        // @ts-expect-error -- idem.
+        delete HTMLMediaElement.prototype.duration;
+    });
+
     it('rapporte les secondes jouées, par tranches', () => {
         const onProgress = vi.fn();
         const { container } = render(

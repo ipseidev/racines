@@ -52,7 +52,8 @@ return [
             // Qui parle, qui fait quoi, ce qu'on reçoit : dans cet ordre, comme le
             // leader. Un prospect n'avait pas compris le produit avant « Comment ça
             // marche » (T-142) ; le héros doit se suffire.
-            'lede' => 'Votre proche parle, c’est tout. Chaque semaine, :brand lui envoie une question, enregistre sa réponse, la met au propre et la relie dans un livre où sa voix se réécoute à chaque page. Rien à écrire, rien à installer. Ses histoires, dans ses mots et avec sa voix, dans un livre que votre famille gardera.',
+            'lede' => 'Votre proche parle, c’est tout. Chaque semaine, :brand lui envoie une question, enregistre sa réponse, retranscrit et la relie dans un livre où sa voix se réécoute à chaque page.',
+            'lede_two' => 'Rien à écrire, rien à installer. Ses histoires, dans ses mots et avec sa voix, dans un livre que votre famille gardera.',
             'note' => 'Un seul paiement sécurisé, pas d’abonnement. Ses souvenirs restent privés.',
             'checks' => [
                 'voice' => 'Sa voix se réécoute à chaque page du livre.',
@@ -69,16 +70,43 @@ return [
                 'question' => 'Quelle odeur vous ramène à votre enfance ?',
                 'answers' => 'Elle répond en parlant.',
                 'duration' => '2 min 14',
+                // La mention affichée sous le bouton quand la page la
+                // demande — `product.landing.hero_sample_disclosed`. Elle est
+                // décrochée depuis le 5 septembre 2026 ; le texte reste ici,
+                // prêt à resservir.
+                'synthetic' => 'Exemple : voix de synthèse. Les vraies histoires sont dites par de vraies voix.',
+                // La transcription, pour qui n'entend pas : WCAG 2.2 AA 1.2.1
+                // demande un équivalent à tout média sonore. Elle n'est pas
+                // affichée — la carte est posée sur la photo et n'a pas la
+                // place — mais elle est lue par les lecteurs d'écran, juste
+                // après le bouton. Elle doit suivre l'audio **au mot près**.
+                'transcript_label' => 'Ce qu’Odette raconte dans cet extrait',
+                'transcript' => 'Oh… l’odeur du pain. Sans hésiter. Le pain qui cuit. Alors euh… ma grand-mère elle habitait à Saint-Aubin, enfin Saint-Aubin-du-Cormier, et euh chaque dimanche on y allait, on y allait en voiture avec mon père, ça faisait… je sais plus, une heure de route peut-être. Et elle faisait le pain elle-même, dans le four, le four à bois derrière la maison. Et on le sentait avant d’arriver, hein. Enfin — moi je le sentais. Mon père il disait que je racontais des histoires, mais non. Non, non. Je le sentais, dès le tournant. Et elle nous en coupait un morceau tout de suite, encore chaud, avec du beurre salé. Et… voilà. C’est ça. C’est cette odeur-là.',
             ],
             'photo_alt' => 'Une femme assise à la table de sa cuisine, le téléphone à la main, songeuse.',
         ],
 
-        // Le bandeau sombre : trois engagements, en tête courte puis en formulation canonique.
+        /*
+         * Le bandeau vert sous le héros : trois raisons d'offrir, et rien
+         * d'autre.
+         *
+         * Il portait jusqu'au 5 septembre 2026 trois engagements — validation
+         * explicite, l'IA qui range, le retrait à tout moment. Vus à cet
+         * endroit, ils se lisaient comme une liste de choses à surveiller, et
+         * laissaient croire qu'on demandait beaucoup à une personne âgée. Ce
+         * qu'ils disaient n'a pas disparu de la page : les quatre repères du
+         * héros et les questions fréquentes le disent, là où on cherche une
+         * réponse plutôt qu'une raison d'offrir.
+         *
+         * Trois phrases, en nos propres mots. Pas de guillemets, pas
+         * d'étoiles, pas de nom dessous : nous n'avons ni presse ni avis, et
+         * une citation sans auteur en invente un.
+         */
         'promises' => [
-            'title' => 'Ce qui ne change pas',
-            'validation' => 'Rien n’est partagé sans son accord.',
-            'ai_arranges' => 'L’IA range, elle n’invente pas.',
-            'withdrawal' => 'Elle peut tout retirer, à tout moment.',
+            'title' => 'Pourquoi l’offrir',
+            'ask' => 'Le cadeau qu’on n’ose pas demander.',
+            'voice' => 'On offre un livre. On reçoit sa voix.',
+            'weekly' => 'Il s’ouvre chaque semaine, pendant un an.',
         ],
 
         'what' => [
@@ -89,8 +117,12 @@ return [
 
         'how' => [
             'title' => 'Comment ça marche',
-            'headline' => 'Les histoires sur la page. La voix, à un scan de là.',
-            'lede' => 'Rien à installer, rien à écrire. Une année de questions, à son rythme, et un livre au bout.',
+            'headline' => 'Sa voix, en un simple scan.',
+            // Le titre promet un scan sans dire de quoi : le chapeau nomme le
+            // QR code et ce qu'il fait. On dit ce qu'il joue, jamais qu'il
+            // vivrait sans nous — « QR autonomes » est interdit (R-11), et la
+            // durée d'engagement se publie ailleurs (R-10).
+            'lede' => 'Rien à installer, rien à écrire. Une année de questions, à son rythme, et un livre au bout : chaque chapitre porte un QR code qui rejoue sa voix.',
             'one' => [
                 'title' => 'Vous choisissez les questions',
                 'body' => 'Parmi soixante questions écrites pour faire remonter les histoires que la famille n’a jamais entendues. Ou vous nous laissez faire.',
@@ -180,9 +212,25 @@ return [
         ],
 
         // La bande de confiance : trois faits, tous déjà écrits dans nos engagements.
+        /*
+         * La bande de confiance, revue le 5 septembre 2026.
+         *
+         * Elle disait l'hébergement européen et l'absence d'entraînement de
+         * modèle. Deux engagements que nous tenons, mais qui ne rassurent pas
+         * qui achète : la peur, à cet endroit, n'est pas la donnée — c'est
+         * « est-ce que ma mère va y arriver » et « combien ça va me coûter en
+         * vrai ». Les trois lignes répondent maintenant à ça.
+         *
+         * Elles ne remplacent pas les engagements : ceux-ci gardent leur
+         * formulation canonique au catalogue, et attendent la page qui les
+         * portera.
+         */
         'trust' => [
-            'eu' => 'Hébergé dans l’Union européenne',
-            'no_training' => 'Aucune IA entraînée sur vos souvenirs',
+            // Le nom de la région, pour les lecteurs d'écran. La bande ne dit
+            // plus nos engagements : elle dit qu'il n'y a pas de piège.
+            'title' => 'Sans mauvaise surprise',
+            'no_app' => 'Ni application, ni mot de passe',
+            'one_payment' => 'Un seul paiement, pas d’abonnement',
             'refund' => 'Satisfait ou remboursé pendant 30 jours',
         ],
 
@@ -217,7 +265,7 @@ return [
         'review' => [
             'headline' => 'Regardez son récit prendre forme.',
             'body' => 'Le mot à mot d’un côté, le texte mis au propre de l’autre, et rien d’inventé entre les deux. Elle relit, corrige un mot si elle veut, puis décide de ce que la famille entendra.',
-            'screenshot_alt' => 'La page de relecture : le texte mis au propre, le mot à mot, et les trois choix de partage.',
+            'screenshot_alt' => 'La page de relecture sur un téléphone : l’enregistrement à réécouter, puis le texte mis au propre et le mot à mot, l’un à côté de l’autre.',
         ],
 
         'proof' => [
@@ -239,25 +287,25 @@ return [
             'card_name' => 'Odette',
         ],
 
-        'tiles' => [
-            'phone' => [
-                'title' => 'Option téléphone',
-                'body' => 'Elle préfère qu’on l’appelle ? Une personne de notre équipe lui pose la question de vive voix, chaque semaine, et enregistre l’histoire.',
-            ],
-            'copies' => [
-                'title' => 'Exemplaires supplémentaires',
-                'body' => 'Pour que chaque enfant, chaque petit-enfant, ait le sien.',
-                'each' => 'l’exemplaire',
-            ],
-        ],
-
         /*
          * R-10, en formulation canonique. Ce sont des phrases qu'on peut nous
          * opposer : elles doivent être identiques ici, dans les CGV et dans
          * les courriels.
          */
+        /*
+         * Les sept engagements, en formulation canonique (R-10, doc 04 §1).
+         *
+         * Ils ont pris le 5 septembre 2026 la place des deux tuiles d'options
+         * — téléphone et exemplaires — parties dans le tunnel, où elles se
+         * choisissent. Ces phrases-là ne se vendent pas : elles se tiennent.
+         * Elles étaient jusqu'ici au catalogue sans qu'aucune page ne les
+         * affiche, ce que le dossier n'admet pas.
+         *
+         * Un mot changé ici doit l'être dans les CGV et dans les courriels.
+         */
         'commitments' => [
             'title' => 'Nos engagements',
+            'lede' => 'Les mêmes mots ici, dans les conditions générales et dans nos courriels.',
             'validation' => 'La validation est explicite, jamais tacite : rien n’est visible des proches sans l’accord de la personne qui a raconté.',
             'no_cloning' => 'Pas de clonage vocal : nous n’imitons jamais une voix, et nous n’en fabriquons pas.',
             'ai_arranges' => 'L’IA range, elle n’invente pas : elle enlève les hésitations et ajoute la ponctuation. Elle n’ajoute aucun fait.',

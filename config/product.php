@@ -179,6 +179,24 @@ return [
         'admin_password' => env('ADMIN_PASSWORD', 'password'),
     ],
 
+    /*
+     * L'extrait écoutable de la page d'accueil (T-149).
+     *
+     * Le chemin est relatif à `public/`, et l'absence du fichier n'est pas une
+     * erreur : la carte du héros retombe alors sur sa frise décorative. C'est
+     * ce qui permet de déployer la page avant l'audio, et de retirer l'audio
+     * sans toucher au gabarit.
+     *
+     * La voix de l'extrait est générée. `hero_sample_disclosed` décide si la
+     * carte le dit : la mention a été retirée le 5 septembre 2026 sur décision
+     * du fondateur. La repasser à `true` la fait réapparaître, et rien d'autre
+     * ne bouge.
+     */
+    'landing' => [
+        'hero_sample' => 'audio/landing/hero.mp3',
+        'hero_sample_disclosed' => false,
+    ],
+
     // Photos (bloc 12)
     'photos' => [
         'max_bytes' => 20 * 1024 * 1024,

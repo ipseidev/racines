@@ -40,8 +40,6 @@ final class LandingController
         return inertia('public/Landing', [
             'mode' => $settings->mode,
             'price' => $settings->isPrevente() ? $variant : $settings->pilot_price_cents,
-            'phoneOptionPrice' => $settings->phone_option_price_cents,
-            'extraCopyPrice' => $settings->extra_copy_price_cents,
             'legalValidated' => $settings->legalValidated(),
             // La fenêtre de bienvenue (T-141). Pas à qui a déjà son code :
             // le cookie le dit, et proposer deux fois la même réduction à la
@@ -50,6 +48,7 @@ final class LandingController
                 'enabled' => $settings->welcomeOfferActive() && ! $request->hasCookie(WelcomeOffer::COOKIE),
                 'discountPercent' => $settings->welcome_offer_discount_percent,
             ],
+            'heroSample' => self::heroSample(),
         ]);
     }
 
@@ -62,6 +61,33 @@ final class LandingController
                 'acceptedMimes' => array_values((array) config('product.recording.accepted_mimes')),
             ],
         ]);
+    }
+
+    /**
+     * L'extrait qu'on peut écouter dans la carte du héros (T-149).
+     *
+     * Rendu seulement si le fichier est là : une page d'accueil qui affiche un
+     * bouton « Écouter » au-dessus d'un fichier absent est pire que pas de
+     * bouton du tout. Absent, la carte reprend sa frise décorative.
+     *
+     * `disclosed` voyage avec l'extrait : c'est un choix de page, et le
+     * composant ne doit pas avoir à deviner ce qu'on veut afficher sous le
+     * bouton.
+     *
+     * @return array{src: string, disclosed: bool}|null
+     */
+    private static function heroSample(): ?array
+    {
+        $path = (string) config('product.landing.hero_sample');
+
+        if ($path === '' || ! is_file(public_path($path))) {
+            return null;
+        }
+
+        return [
+            'src' => '/'.ltrim($path, '/'),
+            'disclosed' => (bool) config('product.landing.hero_sample_disclosed'),
+        ];
     }
 
     /**

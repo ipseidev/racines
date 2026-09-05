@@ -1,6 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 
 import { useBrand } from '@/brand/BrandProvider';
+import HeroSample from '@/components/HeroSample';
+import Wave from '@/components/Wave';
 import WelcomeOffer from '@/components/WelcomeOffer';
 import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
@@ -10,20 +12,20 @@ type Props = {
     mode: string;
     /** Le prix vu par ce visiteur, en centimes. */
     price: number;
-    phoneOptionPrice: number;
-    extraCopyPrice: number;
     /** La fenêtre de bienvenue (T-141) : proposée ou non, et son pourcentage. */
     welcomeOffer: { enabled: boolean; discountPercent: number };
+    /** L'extrait écoutable du héros (T-149), absent tant que le fichier l'est. */
+    heroSample: { src: string; disclosed: boolean } | null;
 };
 
 /*
  * La page d'accueil suit la structure de Remento, le leader, adaptée à notre
  * univers (décision du fondateur, 4 septembre 2026, T-134). Section par
- * section : bandeau, héros, trois engagements en bandeau sombre, « qu'est-ce
- * que », comment ça marche, notre histoire, la fiche produit, ce que comprend
+ * section : bandeau, héros, trois raisons d'offrir en bandeau sombre,
+ * « qu'est-ce que », comment ça marche, notre histoire, la fiche produit, ce que comprend
  * l'achat et le prix, la bande de confiance, la garantie, « pensé pour les
- * grands-parents » et l'essai, la double page, la relecture, le cadeau, les
- * options, les questions.
+ * grands-parents » et l'essai, la double page, la relecture, le cadeau, nos
+ * engagements, les questions.
  *
  * Ce qui n'existe pas chez nous n'y est pas : ni presse, ni avis, ni vidéo de
  * clients. Les emplacements viendront avec les premières familles. Les sept
@@ -43,7 +45,22 @@ type Props = {
  */
 const STEPS = ['one', 'two', 'three', 'four'] as const;
 
-const PROMISES = ['validation', 'ai_arranges', 'withdrawal'] as const;
+const PROMISES = ['ask', 'voice', 'weekly'] as const;
+
+/*
+ * Les sept engagements, dans l'ordre où on se les demande : qui décide, ce
+ * qu'on peut reprendre, ce qui est gardé, ce que la machine fait et ne fait
+ * pas, où tout cela dort.
+ */
+const COMMITMENTS = [
+    'validation',
+    'withdrawal',
+    'source_audio',
+    'ai_arranges',
+    'no_cloning',
+    'no_training',
+    'eu_hosting',
+] as const;
 
 const INCLUDES = [
     'questions',
@@ -122,20 +139,6 @@ function Lock() {
 }
 
 /** L'onde d'une voix : le seul mouvement de la page, et il s'arrête pour qui le demande. */
-function Wave({ bars = 22 }: { bars?: number }) {
-    return (
-        <div className="flex h-8 items-center gap-[3px]" aria-hidden="true">
-            {Array.from({ length: bars }, (_, i) => (
-                <i
-                    key={i}
-                    className="wave-bar"
-                    style={{ animationDelay: `${(i % 5) * -0.3}s` }}
-                />
-            ))}
-        </div>
-    );
-}
-
 /*
  * Un motif façon code à scanner, déterministe et décoratif : il ne mène nulle
  * part. Le vrai code viendra avec le livre (bloc 13).
@@ -258,9 +261,8 @@ function BookMockup() {
 export default function Landing({
     mode,
     price,
-    phoneOptionPrice,
-    extraCopyPrice,
     welcomeOffer,
+    heroSample,
 }: Props) {
     const t = useT();
     const brand = useBrand();
@@ -282,9 +284,19 @@ export default function Landing({
                         {t('public.landing.promise')}
                     </h1>
 
-                    <p className={`${LEDE} max-w-[34em]`}>
-                        {t('public.landing.hero.lede', { brand: brand.name })}
-                    </p>
+                    {/*
+                     * Le chapeau du héros descend d'un cran sous le LEDE commun
+                     * et se coupe en deux paragraphes : ce que le service
+                     * fait, puis ce que la famille garde.
+                     */}
+                    <div className="text-brand-muted flex max-w-[34em] flex-col gap-3 text-lg leading-snug">
+                        <p>
+                            {t('public.landing.hero.lede', {
+                                brand: brand.name,
+                            })}
+                        </p>
+                        <p>{t('public.landing.hero.lede_two')}</p>
+                    </div>
 
                     <div className="flex flex-wrap items-center gap-3.5">
                         <Link
@@ -347,20 +359,19 @@ export default function Landing({
                         <p className="font-display text-[1.35rem] leading-[1.3] font-medium">
                             {t('public.landing.hero.card.question')}
                         </p>
-                        <div className="text-brand-muted flex items-center gap-3.5 text-[0.9rem]">
-                            <Wave />
-                            <span>
-                                <b className="text-brand font-semibold">
-                                    {t('public.landing.hero.card.answers')}
-                                </b>{' '}
-                                {t('public.landing.hero.card.duration')}
-                            </span>
-                        </div>
+                        <HeroSample sample={heroSample} />
                     </figure>
                 </div>
             </section>
 
-            {/* Trois engagements, en bandeau sombre ============================ */}
+            {/*
+             * Trois raisons d'offrir, en bandeau sombre.
+             *
+             * Le filet d'or tient la place que le leader donne à ses cinq
+             * étoiles : il donne du rythme sans rien affirmer. Nous n'avons ni
+             * presse ni avis à citer, et une citation sans auteur en invente
+             * un — ces trois phrases sont donc les nôtres, sans guillemets.
+             */}
             <section
                 aria-labelledby="promises"
                 className="bg-brand-deep text-[#F7F1E6]"
@@ -371,12 +382,16 @@ export default function Landing({
                     </h2>
                     <ul className="grid gap-10 text-center sm:grid-cols-3 sm:gap-8">
                         {PROMISES.map((promise) => (
-                            <li key={promise} className="flex flex-col gap-3">
+                            <li
+                                key={promise}
+                                className="flex flex-col items-center gap-5"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className="bg-brand-gold h-0.5 w-7"
+                                />
                                 <p className="font-display text-[1.6rem] leading-tight font-medium text-[#F7F1E6] lg:text-[2rem]">
                                     {t(`public.landing.promises.${promise}`)}
-                                </p>
-                                <p className="text-[0.95rem] leading-relaxed text-[#C9C0B2]">
-                                    {t(`public.landing.commitments.${promise}`)}
                                 </p>
                             </li>
                         ))}
@@ -609,11 +624,11 @@ export default function Landing({
 
             {/* La bande de confiance ============================================ */}
             <section
-                aria-label={t('public.landing.commitments.title')}
+                aria-label={t('public.landing.trust.title')}
                 className="border-brand-sand border-y"
             >
                 <ul className="mx-auto flex w-full max-w-6xl flex-col gap-x-10 gap-y-3 px-6 py-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-                    {(['eu', 'no_training', 'refund'] as const).map((k) => (
+                    {(['no_app', 'one_payment', 'refund'] as const).map((k) => (
                         <li
                             key={k}
                             className="font-display text-brand flex items-center gap-2.5 text-[1.15rem]"
@@ -827,35 +842,41 @@ export default function Landing({
                 </div>
             </section>
 
-            {/* Les options ====================================================== */}
+            {/*
+             * Nos engagements ==================================================
+             *
+             * À la place des deux tuiles d'options — téléphone et exemplaires
+             * — parties dans le tunnel, où elles se choisissent (T-150). Une
+             * page d'accueil vend le produit ; les options se décident quand
+             * on a déjà décidé d'acheter.
+             *
+             * Les sept phrases sont en formulation canonique : les mêmes ici,
+             * dans les CGV et dans les courriels. C'est la première page qui
+             * les affiche, alors qu'elles étaient au catalogue depuis le début.
+             */}
             <section
-                aria-label={t('public.landing.price.title')}
-                className="mx-auto grid w-full max-w-6xl gap-4 px-6 pb-20 lg:grid-cols-2 lg:pb-24"
+                aria-labelledby="commitments"
+                className="mx-auto w-full max-w-6xl px-6 pb-20 lg:pb-24"
             >
-                <div className="bg-brand-deep flex flex-col gap-3 rounded-2xl px-8 py-10 text-[#F7F1E6]">
-                    <h3 className="font-display text-[1.75rem] leading-tight font-medium text-[#F7F1E6]">
-                        {t('public.landing.tiles.phone.title')}
-                    </h3>
-                    <p className="text-[#C9C0B2]">
-                        {t('public.landing.tiles.phone.body')}
+                <div className="bg-brand-linen rounded-2xl px-7 py-12 lg:px-14">
+                    <h2 id="commitments" className={H2}>
+                        {t('public.landing.commitments.title')}
+                    </h2>
+                    <p className="text-brand-muted mt-3 text-lg leading-snug">
+                        {t('public.landing.commitments.lede')}
                     </p>
-                    <p className="font-display text-brand-gold mt-auto pt-4 text-3xl tabular-nums">
-                        +{formatPrice(phoneOptionPrice)}
-                    </p>
-                </div>
-                <div className="card flex flex-col gap-3 px-8 py-10">
-                    <h3 className="font-display text-[1.75rem] leading-tight font-medium">
-                        {t('public.landing.tiles.copies.title')}
-                    </h3>
-                    <p className="text-brand-muted">
-                        {t('public.landing.tiles.copies.body')}
-                    </p>
-                    <p className="font-display text-brand mt-auto pt-4 text-3xl tabular-nums">
-                        {formatPrice(extraCopyPrice)}{' '}
-                        <span className="text-brand-muted text-base">
-                            {t('public.landing.tiles.copies.each')}
-                        </span>
-                    </p>
+                    <ul className="mt-9 grid gap-x-12 gap-y-5 lg:grid-cols-2">
+                        {COMMITMENTS.map((commitment) => (
+                            <li key={commitment} className="flex gap-3">
+                                <Check />
+                                <span className="text-brand-text leading-relaxed">
+                                    {t(
+                                        `public.landing.commitments.${commitment}`,
+                                    )}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </section>
 

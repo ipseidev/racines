@@ -106,6 +106,15 @@ export default function AudioPlayer({
         };
 
         const onLoaded = () => setDuration(element.duration);
+
+        // Les entêtes peuvent être arrivées avant que l'effet ne s'abonne —
+        // fichier déjà en cache, retour en arrière dans l'historique. Sans
+        // cette relecture, le lecteur annonce « Il reste 0:00 » sur une
+        // histoire de trois minutes, jusqu'au premier clic.
+        if (element.readyState >= HTMLMediaElement.HAVE_METADATA) {
+            onLoaded();
+        }
+
         const onEnded = () => {
             setPlaying(false);
             report();
