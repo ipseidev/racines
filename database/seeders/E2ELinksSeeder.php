@@ -10,6 +10,7 @@ use App\Actions\AddNarrator;
 use App\Actions\CreateProject;
 use App\Actions\ProposeStory;
 use App\Actions\RecordConsent;
+use App\Actions\ScheduleNextPrompt;
 use App\Actions\ValidateStoryAction;
 use App\Engine\Actions\OneTapRegistry;
 use App\Engine\Actions\SwitchBiweekly;
@@ -441,8 +442,11 @@ final class E2ELinksSeeder extends Seeder
     {
         $project = app(CreateProject::class)->handle($initiator, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
-        $project->next_prompt_at = now()->addDays(3);
         $project->save();
+
+        // Le prochain envoi est celui que le produit calculerait : le jour et
+        // le créneau du projet, pas « dans trois jours à l'heure qu'il est ».
+        app(ScheduleNextPrompt::class)->apply($project);
 
         $this->consentingNarrator($project, [
             'first_name' => 'Odette',

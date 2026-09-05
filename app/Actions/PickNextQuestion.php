@@ -8,6 +8,7 @@ use App\Enums\QuestionTheme;
 use App\Models\Project;
 use App\Models\Question;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 /**
  * Choisit la prochaine question à poser à un narrateur.
@@ -112,16 +113,62 @@ final class PickNextQuestion
     }
 
     /**
-     * @param  Builder<Question>  $base
+     * Les prochaines questions, dans l'ordre où elles partiront : celles que
+     * l'Initiateur·rice a avancées d'abord, puis le corpus du facile vers
+     * l'intime. C'est ce que son espace affiche, et c'est aussi ce que
+     * `handle()` lit, à une réserve près : la règle 5 (l'intime attend la
+     * sixième histoire validée) et la règle 4 (plus doux sur demande du moteur)
+     * s'appliquent au moment de l'envoi, pas à la liste.
+     *
+     * @return Collection<int, Question>
      */
-    private function firstAdvanced(Project $project, Builder $base): ?Question
+    public function queue(Project $project): Collection
     {
-        $ordered = $project->questionSettings()
+        $asked = $project->stories()->whereNotNull('question_id')->pluck('question_id');
+        $excluded = $project->questionSettings()->where('excluded', true)->pluck('question_id');
+
+        $available = Question::query()
+            ->active()
+            ->whereNotIn('id', $asked)
+            ->whereNotIn('id', $excluded)
+            ->orderBy('order_hint')
+            ->orderBy('slug')
+            ->get()
+            ->keyBy('id');
+
+        $advanced = collect($this->advancedIds($project))
+            ->map(fn (string $id): ?Question => $available->get($id))
+            ->filter()
+            ->values();
+
+        $rest = $available->reject(fn (Question $question): bool => $advanced->contains('id', $question->id))->values();
+
+        return $advanced->concat($rest)->values();
+    }
+
+    /**
+     * Les identifiants avancés par l'Initiateur·rice, dans son ordre.
+     *
+     * @return list<string>
+     */
+    private function advancedIds(Project $project): array
+    {
+        $ids = $project->questionSettings()
             ->whereNotNull('custom_order')
             ->where('excluded', false)
             ->orderBy('custom_order')
             ->pluck('question_id')
             ->all();
+
+        return array_values(array_map(static fn (mixed $id): string => (string) $id, $ids));
+    }
+
+    /**
+     * @param  Builder<Question>  $base
+     */
+    private function firstAdvanced(Project $project, Builder $base): ?Question
+    {
+        $ordered = $this->advancedIds($project);
 
         if ($ordered === []) {
             return null;

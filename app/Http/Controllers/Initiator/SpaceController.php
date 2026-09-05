@@ -13,6 +13,7 @@ use App\States\Story\InBook;
 use App\States\Story\Proposed;
 use App\States\Story\Shared;
 use App\Support\InitiatorProject;
+use App\Support\Options;
 use App\Support\PhotoPresenter;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -49,6 +50,7 @@ final class SpaceController
                 'status' => $project->status->value,
                 'statusLabel' => __('initiator.status.'.$project->status->value),
                 'cadence' => $project->cadence->value,
+                'cadenceLabel' => Options::label($project->cadence),
                 'promptDay' => $project->prompt_day,
                 'promptSlot' => $project->prompt_slot->value,
                 'nextPromptAt' => $project->next_prompt_at?->toIso8601String(),
@@ -64,6 +66,7 @@ final class SpaceController
             // et son envoi (invariant du bloc 03).
             'copiedLink' => session('copied_link'),
             'copiedWhatsapp' => session('copied_whatsapp'),
+            'copiedSms' => session('copied_sms'),
         ]);
     }
 

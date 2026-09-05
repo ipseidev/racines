@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Initiator;
 
+use App\Actions\PickNextQuestion;
 use App\Actions\ProposeStory;
 use App\Models\Question;
 use App\Support\InitiatorProject;
+use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -23,34 +25,40 @@ use Inertia\Response;
  */
 final readonly class QuestionsController
 {
-    public function __construct(private ProposeStory $stories) {}
+    public function __construct(
+        private ProposeStory $stories,
+        private PickNextQuestion $picker,
+    ) {}
 
+    /**
+     * Trois listes, pas une : ce qui va partir, dans l'ordre où ça partira ;
+     * ce qu'elle a écarté ; ce qui a déjà été posé. La première est celle du
+     * moteur (`PickNextQuestion::queue`), pour que l'écran ne promette jamais
+     * un ordre que l'envoi ne tiendrait pas.
+     */
     public function index(Request $request): Response
     {
         $user = $request->user();
         abort_if($user === null, 403);
 
         $project = InitiatorProject::forOrFail($user);
-        $settings = $project->questionSettings()->get()->keyBy('question_id');
-        $asked = $project->stories()->whereNotNull('question_id')->pluck('question_id')->all();
 
-        $questions = Question::query()
-            ->active()
-            ->orderBy('order_hint')
-            ->get()
-            ->map(fn (Question $question): array => [
-                'id' => $question->id,
-                'text' => $question->text,
-                'theme' => $question->theme->value,
-                'difficulty' => $question->difficulty,
-                'excluded' => (bool) ($settings[$question->id]->excluded ?? false),
-                'position' => $settings[$question->id]->custom_order ?? null,
-                'asked' => in_array($question->id, $asked, true),
-            ])
-            ->all();
+        $askedIds = $project->stories()->whereNotNull('question_id')->pluck('question_id')->all();
+        $excludedIds = $project->questionSettings()->where('excluded', true)->pluck('question_id')->all();
+
+        $present = fn (Question $question): array => [
+            'id' => $question->id,
+            'text' => $question->text,
+            'theme' => $question->theme->value,
+            'themeLabel' => Options::label($question->theme),
+        ];
 
         return inertia('initiator/Questions', [
-            'questions' => array_values($questions),
+            'queue' => $this->picker->queue($project)->map($present)->values()->all(),
+            'excluded' => Question::query()->active()->whereIn('id', $excludedIds)
+                ->orderBy('order_hint')->orderBy('slug')->get()->map($present)->values()->all(),
+            'asked' => Question::query()->whereIn('id', $askedIds)
+                ->orderBy('order_hint')->orderBy('slug')->get()->map($present)->values()->all(),
             'narratorFirstName' => $project->primaryNarrator?->first_name,
         ]);
     }

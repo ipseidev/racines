@@ -37,7 +37,12 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
         // Réémission : un lien en clair n'existe qu'entre son émission et
         // son envoi, il ne se relit pas en base (invariant du bloc 03).
         Route::post('/lien/question', [CopyLinkController::class, 'record'])->name('link.record');
-        Route::post('/lien/ecoute', [CopyLinkController::class, 'listen'])->name('link.listen');
+
+        // « Écouter comme un proche » ouvre la page d'écoute directement, dans
+        // un nouvel onglet : un lien à copier pour soi-même n'avait pas de
+        // sens, et le bouton passait pour cassé (T-149). Un GET qui réémet un
+        // jeton, mais le sien, et le précédent n'avait pas d'autre lecteur.
+        Route::get('/ecoute', [CopyLinkController::class, 'listen'])->name('listen');
 
         Route::get('/questions', [QuestionsController::class, 'index'])->name('questions');
         Route::post('/questions/ordre', [QuestionsController::class, 'reorder'])->name('questions.reorder');

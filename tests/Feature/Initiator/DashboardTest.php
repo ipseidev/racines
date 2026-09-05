@@ -134,7 +134,38 @@ it('ne rend pas le lien de la semaine, il le réémet', function (): void {
         ->assertRedirect();
 
     expect(session('copied_link'))->toBeString()
-        ->and(session('copied_whatsapp'))->toContain('wa.me');
+        ->and(session('copied_whatsapp'))->toContain('wa.me')
+        ->and(session('copied_sms'))->toStartWith('sms:')
+        ->and(session('copied_sms'))->toContain('body=');
+});
+
+it('ouvre l’écoute directement, avec un lien à soi', function (): void {
+    [$owner, $project] = initiator();
+
+    FamilyMember::factory()->create([
+        'project_id' => $project->id,
+        'invited_by_user_id' => $owner->id,
+        'display_name' => $owner->name,
+        'email' => $owner->email,
+    ]);
+
+    // Pas de lien à copier pour soi-même : la page d'écoute s'ouvre, et le
+    // jeton est réémis au passage (T-149).
+    $response = $this->actingAs($owner)->get('/espace/ecoute');
+
+    $response->assertRedirect();
+
+    expect($response->headers->get('Location'))->toContain('/l/');
+});
+
+it('dit le rythme en clair', function (): void {
+    [$owner] = initiator();
+
+    $this->actingAs($owner)
+        ->get('/espace')
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('project.cadenceLabel', fn (mixed $label): bool => is_string($label) && $label !== ''),
+        );
 });
 
 it('montre les alertes du moteur qui lui sont adressées', function (): void {
@@ -223,6 +254,24 @@ it('invite un proche et lui retire son accès', function (): void {
     // Retiré, pas supprimé : savoir qu'une personne a eu accès fait partie de
     // ce qu'on doit pouvoir répondre plus tard.
     expect($member->refresh()->removed_at)->not->toBeNull();
+});
+
+it('réémet le lien d’un proche et dit pour qui', function (): void {
+    [$owner, $project] = initiator();
+
+    $member = FamilyMember::factory()->create([
+        'project_id' => $project->id,
+        'invited_by_user_id' => $owner->id,
+        'display_name' => 'Claire',
+        'email' => 'claire@example.test',
+    ]);
+
+    $this->actingAs($owner)
+        ->post("/espace/proches/{$member->id}/renvoyer")
+        ->assertRedirect();
+
+    expect(session('copied_link'))->toContain('/l/')
+        ->and(session('copied_for'))->toBe($member->id);
 });
 
 it('masque les coordonnées des proches', function (): void {

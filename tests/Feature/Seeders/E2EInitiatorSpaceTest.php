@@ -101,7 +101,7 @@ it('garde les questions du décor hors du corpus proposé aux familles', functio
         ->get('/espace/questions')
         ->assertInertia(fn (Assert $page) => $page
             ->component('initiator/Questions')
-            ->where('questions', fn (Collection $questions): bool => $questions
+            ->where('queue', fn (Collection $questions): bool => $questions
                 ->pluck('text')
                 ->doesntContain('Quel était le métier de votre mère ?')));
 });

@@ -60,7 +60,18 @@ final readonly class CopyLinkController
         return back()
             ->with('copied_link', $url)
             ->with('copied_whatsapp', 'https://wa.me/?text='.rawurlencode($text))
+            ->with('copied_sms', self::smsLink($project->primaryNarrator?->phone_e164, $text))
             ->with('status', __('initiator.copy_link.ready'));
+    }
+
+    /**
+     * Un lien `sms:` prérempli. La forme `?&body=` est celle que lisent à la
+     * fois iOS et Android ; sans numéro, l'application de messages s'ouvre sur
+     * le message seul et la personne choisit le destinataire.
+     */
+    private static function smsLink(?string $phone, string $text): string
+    {
+        return 'sms:'.($phone ?? '').'?&body='.rawurlencode($text);
     }
 
     public function listen(Request $request): RedirectResponse
@@ -77,8 +88,6 @@ final readonly class CopyLinkController
 
         $issued = $this->listens->handle($member, TokenIssuedReason::ReissueSupport);
 
-        return back()
-            ->with('copied_link', Links::listen($issued->plain))
-            ->with('status', __('initiator.copy_link.ready'));
+        return redirect()->away(Links::listen($issued->plain));
     }
 }

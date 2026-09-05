@@ -55,6 +55,9 @@ final readonly class FamilyController
                 ])
                 ->all()),
             'copiedLink' => session('copied_link'),
+            // Le nouveau lien s'affiche dans la carte de la personne concernée,
+            // là où l'on a cliqué, pas en tête de page (T-149).
+            'copiedFor' => session('copied_for'),
         ]);
     }
 
@@ -86,6 +89,7 @@ final readonly class FamilyController
 
         return back()
             ->with('copied_link', Links::listen($issued->plain))
+            ->with('copied_for', $found->id)
             ->with('status', __('initiator.family.link_reissued'));
     }
 
