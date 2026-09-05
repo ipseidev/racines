@@ -1,5 +1,5 @@
 # NARRAE — PRD du MVP
-**v2.4 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
+**v2.5 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
 
 ## 1. Objectif du MVP
 Industrialiser ce que la Phase 0 aura prouvé : un narrateur senior clique, autorise le micro, s'enregistre, **valide explicitement** et recommence (H1) ; les proches écoutent et cette attention est associée à la production (H2) ; l'économie tient après acquisition (H3). Le MVP industrialise **le moteur de complétion** — pas un catalogue de fonctionnalités.
@@ -29,7 +29,7 @@ Téléphonie automatisée (build conditionné aux seuils D-9 mesurés en 0B ; l'
 | P0-15 | QR audio + pack hors-ligne | QR → page d'écoute (durée d'engagement D-8, accès doc 04 §7) ; pack hors-ligne : modalité décidée après test 0B (téléchargement confirmé vs clé USB, +6-9 € COGS) |
 | P0-16 | Export complet gratuit | PDF, MP3, ZIP + manifeste ; remise **proactive** à la finalisation du livre (R-10.2) |
 | P0-17 | Back-office support | Ré-émission de liens, replanification, édition transcription, gestes commerciaux, journalisation des actions (doc 04 §12), playbooks |
-| P0-18 | **Parcours de validation explicite à faible friction** | Fin d'enregistrement : « Partager avec mes proches / Garder privé / Décider plus tard » ; à la transcription : correction facultative ; **le texte n'est partagé qu'après accord explicite** ; relance dédiée aux histoires enregistrées non validées ; délégation à un proche uniquement par mandat explicite et révocable (test 0B, sinon Phase 2). **Jamais de validation tacite.** Deux variantes UX testées en 0A/0B (validation immédiate post-enregistrement vs différée après transcription) |
+| P0-18 | **Parcours de validation explicite à faible friction** | Fin d'enregistrement : « Partager avec mes proches / Garder privé / Décider plus tard » ; à la transcription : correction facultative ; **le texte n'est partagé qu'après accord explicite** ; relance dédiée aux histoires enregistrées non validées ; délégation à un proche uniquement par mandat explicite et révocable (test 0B, sinon Phase 2). **Jamais de validation tacite.** Deux variantes UX testées en 0A/0B (validation immédiate post-enregistrement vs différée après transcription). **Partage déclaré d'avance (D-10)** : le narrateur peut déclarer une fois, à l'acceptation, que ses histoires seront partagées dès qu'elles sont prêtes — case jamais pré-cochée, consentement tracé, révocable d'un geste, jamais donnée par un tiers. Un accord donné une fois n'est pas un silence |
 
 ## 4. Machine d'états (canonique R-4)
 PROPOSÉE → ENREGISTRÉE → TRANSCRITE → À RELIRE → **VALIDÉE (explicite)** → PARTAGÉE → INCLUSE AU LIVRE. Retraits : MASQUÉE (conservée, non partagée) / ARCHIVÉE / CORBEILLE (30 j) / SUPPRIMÉE (irréversible, purge sauvegardes ≤ 90 j, politique publiée). Le narrateur accède à MASQUER et CORBEILLE à tout moment ; SUPPRIMÉE est définitive et le dit clairement.

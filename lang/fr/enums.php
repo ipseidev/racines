@@ -205,6 +205,7 @@ return [
         'phone_call_recording' => 'Enregistrement de l’appel téléphonique',
         'photo_rights' => 'Droits sur les photos déposées',
         'post_mortem_directives' => 'Directives à appliquer après le décès',
+        'declared_sharing' => 'Partage de mes histoires dès qu’elles sont prêtes',
         'mandate_delegation' => 'Délégation de la validation à un proche',
         'early_service_start' => 'Démarrage immédiat du service numérique',
         'marketing_email' => 'Réception de nos nouvelles par courriel',

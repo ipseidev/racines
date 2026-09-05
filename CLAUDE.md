@@ -12,7 +12,7 @@ Block 03 added the link infrastructure every narrator and family page will lean 
 
 The domain is code-first and proven by tests only, with no UI: `app/Enums/` (nineteen string-backed enums, labels in `lang/fr/enums.php`), `app/Models/`, `app/States/Story/` (eleven states) and `app/States/Story/Transitions/` (thirteen transitions), `app/Actions/`, `app/Policies/`, `app/Exceptions/Domain/`. Two invariants are structural, not conventional: `Story::isVisibleToFamily()` is the only source of visibility truth, and `stories.state` is never written outside a transition — `tests/Unit/States/NoDirectStateWriteTest.php` fails if any file in `app/` or `database/seeders/` writes it.
 
-The repo root is the Laravel project. Alongside it: five French-language product documents at v2.4 in `docs/dossier/`, dated Remento screenshots in `docs/reference/` (git-ignored), and the execution roadmap in `docs/roadmap/`.
+The repo root is the Laravel project. Alongside it: five French-language product documents at v2.5 in `docs/dossier/`, dated Remento screenshots in `docs/reference/` (git-ignored), and the execution roadmap in `docs/roadmap/`.
 
 Blocks 08, 09 and 10 were closed on 2026-09-05 by human checkpoints, and each one found defects no test could see: two proches out of three never received their nudge because the outbound dedupe key ignored the recipient (T-154), « Payer » was inert because Inertia cannot follow an ordinary redirect (T-168), the order was fulfilled before payment on delayed-notification methods (T-167), and a foreign payment made the webhook answer 500 — which Stripe punishes by disabling the endpoint (T-169). The rule that came out of it is in `01_CONVENTIONS.md` §6: **verification is proportional to the change**, its dividing line is whether the markup moved, and the suite is never played while a human checkpoint is running.
 
@@ -47,7 +47,7 @@ Docs cite each other through stable identifiers. Preserve them and reuse them ra
 - `R-1` … `R-12` (plus `R-8b`, `R-10.1`…): canonical sections of doc 05 (roles, offer, prices, states, hypotheses, book-ready, KPIs, calendar, channel, durability commitments, forbidden vocabulary, open-decision register).
 - `H0` … `H3`: the four hypotheses with kill/go thresholds (R-5). `H0` = gift acceptance, `H1` = repetition at J70 measured ITT, `H2` = family loop, `H3` = contribution after CAC.
 - `P0-1` … `P0-18`: MVP scope items in doc 03 §3.
-- `D-7`, `D-8`, `D-9`: open decisions, all listed in R-12 (149 € tier economics; QR commitment duration; phone-recording demand test with pre-committed attach-rate thresholds). Add new ones as `D-10`, `D-11`… and register them in R-12.
+- `D-7` … `D-10`: open decisions, all listed in R-12 (149 € tier economics; QR commitment duration; phone-recording demand test with pre-committed attach-rate thresholds; declared-in-advance sharing). Add new ones as `D-11`, `D-12`… and register them in R-12.
 - `[S01]` … `[S16]`: source register in doc 05. New sources get the next number and an entry there; sources relayed by a competitor are marked as such and never carry a market decision alone.
 - "doc 0X §Y" references point at the section numbering of the target file; keep section numbers stable or update every citation.
 
@@ -55,10 +55,10 @@ Every quantitative or market claim carries one taxonomy tag (doc 02): `[FAIT SOU
 
 ## Editing rules specific to this dossier
 
-- **Version discipline**: all five docs share one version (`v2.4 — Septembre 2026`). A substantive change bumps the version everywhere and adds a "Changements vX.Y" sentence under the title of doc 01.
+- **Version discipline**: all five docs share one version (`v2.5 — Septembre 2026`). A substantive change bumps the version everywhere and adds a "Changements vX.Y" sentence under the title of doc 01.
 - **Strategy, decided 2026-09-02**: same product shape as Remento, different substance. Copy the proven UX patterns (link, one-button page, no account, verbatim + polished text, QR book, scheduled gift delivery, 60-second demo); differentiate on the completion engine, narrator sovereignty, French-native operations, honest promises and an own brand. Non-captivity is table stakes, not a selling point. On any conflict the dossier wins over the screenshots.
 - **Forbidden vocabulary (R-11)** in product, marketing and contract wording: « pour toujours », « illimité », « QR autonomes », « les contenus appartiennent à la famille », « validation tacite/automatique », « garanti à vie ». Use the replacements doc 05 gives (fair use chiffré, R-10.1 licence wording, etc.).
-- **Validation is explicit, never tacit.** The story state machine (R-4) is `PROPOSÉE → ENREGISTRÉE → TRANSCRITE → À RELIRE → VALIDÉE → PARTAGÉE → INCLUSE AU LIVRE`, with withdrawal states `MASQUÉE / ARCHIVÉE / CORBEILLE (30 j) / SUPPRIMÉE`. Do not invent states or imply that silence equals consent.
+- **Validation is explicit, never tacit.** What that forbids is a silence, an elapsed delay or a third party's setting moving a story to `validated`. It does not forbid the narrator **declaring in advance**, by an explicit and revocable act, that her next stories will be shared as soon as they are ready — an agreement given once is not a silence (D-10, R-4). Such a declaration is a consent: timestamped, traced, revocable in one gesture, never pre-ticked, and never given by anyone else. The story state machine (R-4) is `PROPOSÉE → ENREGISTRÉE → TRANSCRITE → À RELIRE → VALIDÉE → PARTAGÉE → INCLUSE AU LIVRE`, with withdrawal states `MASQUÉE / ARCHIVÉE / CORBEILLE (30 j) / SUPPRIMÉE`. Do not invent states or imply that silence equals consent.
 - **Roles are R-1 names.** "Claire" is a marketing persona, not a role. The narrator's veto always prevails over the initiator.
 - **Book-ready is R-6 criteria** (words / audio minutes / pages / themes), never a story count. "~25 histoires" is a marketing landmark only.
 - **Multi-narrators** stay out of P0 UI but in the data model, promoted only if ≥ 35 % of purchase intentions are conditioned on two narrators.

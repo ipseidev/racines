@@ -89,11 +89,15 @@ it('reprend les dix thèmes du corpus de questions', function (): void {
     ]);
 });
 
-it('reprend les huit consentements du dossier 04 §2, plus trois ajoutés en route', function (): void {
+it('reprend les neuf consentements du dossier 04 §2, plus trois ajoutés en route', function (): void {
     expect(EnumCheck::of(ConsentKind::class))->toBe([
         'voice_recording', 'transcription', 'ai_rendering', 'family_sharing',
         'sensitive_categories', 'phone_call_recording', 'photo_rights',
         'post_mortem_directives',
+        // Cinquième consentement de l'opt-in, ajouté en v2.5 : le partage
+        // déclaré d'avance (D-10). Il vit ici et non dans un réglage parce
+        // qu'il doit être horodaté, tracé et révocable comme les autres.
+        'declared_sharing',
         // Neuvième, bloc 07 (T-77) : le mandat exige un consentement
         // journalisé, et le dossier ne l'avait pas nommé parce qu'il ne
         // décrivait pas encore la délégation.

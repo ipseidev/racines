@@ -54,7 +54,14 @@ final readonly class ApplyShareDecision
             // Le narrateur a déjà répondu : on ne le relance pas.
             ShareDecision::KeepPrivate => null,
             ShareDecision::DecideLater => $this->askForReview($story, 'decide_later'),
-            null => $this->askForReview($story, 'ready'),
+            // Pas de décision pour cette histoire : la déclaration d'avance
+            // prend le relais si elle existe (D-10). Ce n'est pas un silence
+            // pris pour un accord — c'est un accord donné une fois, horodaté,
+            // tracé dans `consents` et révocable d'un geste. Sans elle, on
+            // demande, comme avant.
+            null => $story->project->declared_sharing_at !== null
+                ? $this->share($story)
+                : $this->askForReview($story, 'ready'),
         };
     }
 

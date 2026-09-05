@@ -48,6 +48,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $gift_send_at
  * @property CarbonImmutable|null $gift_sent_at
  * @property CarbonImmutable|null $accepted_at
+ * @property CarbonImmutable|null $declared_sharing_at
  * @property CarbonImmutable|null $refused_at
  * @property string|null $refusal_reason
  * @property string|null $family_code_hash
@@ -250,6 +251,7 @@ final class Project extends Model
             'gift_send_at' => 'immutable_datetime',
             'gift_sent_at' => 'immutable_datetime',
             'accepted_at' => 'immutable_datetime',
+            'declared_sharing_at' => 'immutable_datetime',
             'refused_at' => 'immutable_datetime',
         ];
     }

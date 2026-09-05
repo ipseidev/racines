@@ -21,6 +21,17 @@ enum ConsentKind: string
     case PhoneCallRecording = 'phone_call_recording';
     case PhotoRights = 'photo_rights';
     case PostMortemDirectives = 'post_mortem_directives';
+    /*
+     * Le partage déclaré d'avance (D-10). Un consentement à part entière, et
+     * non un réglage : le narrateur déclare une fois que ses histoires seront
+     * partagées dès qu'elles sont prêtes, sans qu'on le lui redemande.
+     *
+     * Ce n'est pas de la validation tacite — un silence ne vaut jamais accord,
+     * mais un accord donné une fois n'est pas un silence (R-4). D'où le
+     * consentement plutôt que la colonne : horodaté, tracé, révocable, et
+     * jamais donné par un tiers.
+     */
+    case DeclaredSharing = 'declared_sharing';
     // Déléguer sa validation à un proche (bloc 07 §6.7). Exception au
     // principe de souveraineté, et donc consentement à part entière.
     case MandateDelegation = 'mandate_delegation';

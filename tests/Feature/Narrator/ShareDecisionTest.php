@@ -7,6 +7,7 @@ use App\Enums\TokenType;
 use App\Models\Story;
 use App\Services\Tokens\TokenService;
 use App\States\Story\Recorded;
+use Inertia\Testing\AssertableInertia;
 
 function recordedLink(?Story $story = null): array
 {
@@ -96,4 +97,41 @@ it('ne rend jamais visible par la seule décision', function (): void {
     $this->post("/r/{$token}/share-decision", ['decision' => 'share'])->assertRedirect();
 
     expect($story->refresh()->isVisibleToFamily())->toBeFalse();
+});
+
+/*
+ * Ce que le geste renvoie à l'écran.
+ *
+ * Sur un vrai téléphone, « Partager avec mes proches » a paru ne rien faire :
+ * la décision était enregistrée — deux fois, parce que le narrateur a cliqué
+ * deux fois — mais l'écran ne bougeait pas. Le serveur répond `back()`, qu'une
+ * requête Inertia suit d'un GET ; encore faut-il que ce GET rende la page
+ * d'enregistrement **en connaissant la décision**, sinon l'écran redessine
+ * exactement ce qu'il montrait déjà (T-176).
+ */
+it('rend la page d’enregistrement en portant la décision prise', function (): void {
+    [$token, $story] = recordedLink();
+
+    $reponse = $this->withHeaders([
+        'X-Inertia' => 'true',
+        'X-Inertia-Version' => '',
+        'Referer' => "/r/{$token}",
+    ])->post("/r/{$token}/share-decision", ['decision' => 'share']);
+
+    $reponse->assertRedirect();
+
+    // `withHeaders` persiste d'une requête à l'autre : sans ce nettoyage, le
+    // GET repart en requête Inertia avec une version vide, et reçoit un 409.
+    $this->flushHeaders();
+
+    // La page qui suit est `AlreadyRecorded` — l'histoire **est** enregistrée
+    // — et c'est elle qui doit porter l'accusé de réception. Sans lui, la
+    // personne atterrit sur « vous avez déjà répondu » sans savoir que c'est
+    // elle qui vient de répondre.
+    $this->get($reponse->headers->get('Location'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('narrator/AlreadyRecorded')
+            ->where('shareDecision', 'share')
+            ->where('flash.status', __('narrator.share_decision.recorded.share')));
 });

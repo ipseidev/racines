@@ -92,7 +92,14 @@ final class ValidateStory extends Transition
             throw ForbiddenTransition::guardFailed($from, 'validated', "validated_via [{$via->value}] is not available from this state");
         }
 
-        if ($this->story->share_decision !== ShareDecision::Share) {
+        // Une décision par histoire, **ou** un partage déclaré d'avance (D-10).
+        // Cette seconde voie n'affaiblit pas la garde : la déclaration est un
+        // consentement horodaté et tracé, jamais pré-coché et jamais donné par
+        // un tiers. Ce que la garde refuse reste ce qu'elle a toujours refusé
+        // — qu'un silence fasse passer une histoire en validée.
+        $declare = $this->story->project->declared_sharing_at !== null;
+
+        if ($this->story->share_decision !== ShareDecision::Share && ! $declare) {
             throw ForbiddenTransition::guardFailed($from, 'validated', 'the narrator has not decided to share yet');
         }
     }

@@ -41,6 +41,10 @@
         <env name="ASR_PROVIDER" value="fake" force="true"/>
         <env name="LLM_PROVIDER" value="fake" force="true"/>
         <env name="STRIPE_DRIVER" value="fake" force="true"/>
+        <!-- Épinglée : sinon un tunnel ouvert sur le poste fait échouer tout
+             test qui compare une URL (T-177). -->
+        <env name="APP_URL" value="http://localhost" force="true"/>
+        <env name="LINKS_DOMAIN" value="localhost" force="true"/>
         <env name="ASR_CALLBACK_SECRET" value="secret-de-test-pour-les-rappels-asr"/>
         <env name="QUEUE_CONNECTION" value="sync" force="true"/>
         <!-- Le rendu serveur est un service : la suite ne se connecte à rien. -->

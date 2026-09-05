@@ -73,6 +73,15 @@ final readonly class AcceptInvitation
                 $this->consents->handle($narrator, $project, $kind, ConsentChannel::Web);
             }
 
+            // Le partage déclaré d'avance (D-10) : facultatif, jamais
+            // pré-coché, et tracé comme un consentement à part entière. Sans
+            // lui, chaque histoire posera la question — c'est le
+            // comportement d'origine, et il reste la valeur par défaut.
+            if (($preferences['declared_sharing'] ?? false) === true) {
+                $this->consents->handle($narrator, $project, ConsentKind::DeclaredSharing, ConsentChannel::Web);
+                $project->declared_sharing_at = now();
+            }
+
             $project->status = ProjectStatus::Active;
             $project->accepted_at = now();
             $project->collection_started_at = now();

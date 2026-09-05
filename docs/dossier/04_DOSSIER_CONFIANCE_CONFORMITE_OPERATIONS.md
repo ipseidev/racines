@@ -1,5 +1,5 @@
 # NARRAE — Dossier Confiance, Conformité, Sécurité & Opérations
-**v2.4 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
+**v2.5 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
 
 ## 1. Principes fondateurs
 1. **Le narrateur est souverain** : consentement préalable, **validation explicite — jamais tacite —**, veto par histoire, retrait à tout moment. L'Initiateur·rice organise et paie ; il/elle n'outrepasse jamais.
@@ -14,7 +14,7 @@
 - **Maximum 2 invitations + 1 relance** ; opposition en 1 clic dans chaque message.
 - Refus ou silence à J+14 : **suppression des coordonnées sous 30 jours**, aucune réutilisation, notification à l'Initiateur·rice avec tact.
 - Aucune réutilisation commerciale des coordonnées, jamais.
-À l'opt-in, consentements **distincts et journalisés** : (a) enregistrement de la voix, (b) transcription, (c) rendus IA, (d) partage aux proches désignés — révocables, la révocation stoppant immédiatement prompts et collecte. La page d'enregistrement rappelle avant chaque autorisation micro, en langage clair, ce qui est enregistré et pour qui.
+À l'opt-in, consentements **distincts et journalisés** : (a) enregistrement de la voix, (b) transcription, (c) rendus IA, (d) partage aux proches désignés — révocables, la révocation stoppant immédiatement prompts et collecte. **(e) Partage déclaré d'avance [v2.5, D-10]**, facultatif et jamais pré-coché : le narrateur peut demander que ses histoires soient partagées dès qu'elles sont prêtes, sans qu'on le lui redemande à chaque fois. Ce n'est pas une validation tacite — un silence ne vaut jamais accord, mais un accord donné une fois, horodaté et révocable d'un geste, n'est pas un silence (R-4). Un tiers ne peut jamais le donner à sa place, et chaque partage rappelle ce qui vient d'être partagé et comment le retirer. La page d'enregistrement rappelle avant chaque autorisation micro, en langage clair, ce qui est enregistré et pour qui.
 **Appels (option D-9) [v2.3]** : l'appel est annoncé par l'invitation et rappelé par SMS/email la veille ; en début d'appel, l'opérateur indique qu'il enregistre, pour qui, et recueille l'accord oral (journalisé, horodaté, conservé avec l'audio) ; les consentements distincts (a)-(d) sont recueillis à l'opt-in par le canal choisi, téléphone compris ; refus = fin d'appel sans enregistrement.
 
 ## 2bis. Socle juridique du PILOTE (préalable au lancement 0B)
