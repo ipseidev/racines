@@ -265,7 +265,19 @@ export default function Record({
     }, [snapshot.context.warningShown]);
 
     const askPermission = async () => {
-        send({ type: 'READY' });
+        // `RETRY_PERMISSION` depuis l'aide, `READY` depuis l'explication : ce
+        // sont deux entrées distinctes dans la demande de permission, et la
+        // machine refuse l'une depuis l'état de l'autre. Envoyer `READY`
+        // depuis `permission_denied` ne faisait donc rien — et le
+        // `PERMISSION_GRANTED` qui suivait était ignoré à son tour, faute
+        // d'être jamais entré en demande. L'aide restait à l'écran, pour
+        // toujours, alors que le micro venait d'être autorisé (T-178).
+        send({
+            type:
+                snapshot.state === 'permission_denied'
+                    ? 'RETRY_PERMISSION'
+                    : 'READY',
+        });
 
         const granted = await recorder.requestPermission();
 
