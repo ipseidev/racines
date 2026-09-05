@@ -34,6 +34,33 @@ Un seul coupon, en pourcentage, 10 % de toute la commande, le même que le régl
 
 Ne pas activer « Autoriser les codes promotionnels » sur la session : la vérification du code se fait chez nous, là où l'on sait à qui il appartient et s'il a servi.
 
+## 1bis. Le catalogue par commande, et le passage en live
+
+Le compte de test a été rempli à la main le 2026-09-05. Ça ne se refait pas à la main : `stripe:catalogue` lit les montants dans `PilotSettings`, les compare à ce que Stripe porte, et crée ce qui manque.
+
+```bash
+sail artisan stripe:catalogue                 # compare, n'écrit rien
+sail artisan stripe:catalogue --write         # crée ce qui manque
+sail artisan stripe:catalogue --ask --write   # demande la clé, masquée — le chemin du live
+```
+
+**Elle n'écrit jamais sans `--write`**, et sur un compte live elle confirme une seconde fois en nommant le compte. Les objets sont retrouvés par `metadata[catalogue_key]` et non par leur nom : un nom se retouche dans le tableau de bord, et une commande qui s'appuierait dessus recréerait un doublon au premier renommage.
+
+**Une divergence de montant fait échouer la commande, à dessein.** Un prix Stripe ne se modifie pas, il se remplace : créer un second prix laisserait deux prix vivants pour le même article, celui que la page affiche et celui que la caisse encaisse. Il faut archiver le prix périmé dans le tableau de bord, ou corriger le réglage si c'est lui qui a tort.
+
+### Le passage en live
+
+**La clé live n'entre pas dans le `.env` de cette machine.** Le tunnel y fonctionne : un clic sur « Payer » créerait une vraie session de paiement, capable de prendre une vraie carte, et `stripe listen` ou `stripe trigger` toucheraient le compte live. C'est pour cela que `--ask` existe : la clé est saisie masquée, le temps de la commande, et n'est écrite ni dans un fichier ni dans l'historique du terminal.
+
+Dans l'ordre :
+
+1. **Activer le compte** chez Stripe : profil d'entreprise, coordonnées bancaires, vérification d'identité. Sans cela, Stripe refuse de créer quoi que ce soit en live. C'est une démarche du fondateur, et elle prend des jours.
+2. `sail artisan stripe:catalogue --ask --write`, avec la clé live. Aucun mouvement d'argent : on crée des produits, des prix et un coupon.
+3. Recopier les lignes que la commande imprime dans **l'environnement de Forge**, jamais ici.
+4. Le webhook de production ne vient pas de la CLI : son secret se prend dans le tableau de bord (Développeurs → Webhooks → l'endpoint), et il est fixe.
+
+**Créer le catalogue live n'est pas un go-live.** `golive:check` (bloc 17) exige aussi `legal_validated_at`, un domaine de liens en HTTPS, un tirage de restauration daté de moins de quatre-vingt-dix jours, la chaîne d'audit intacte, le plafond téléphone, la cohorte, et trois projets de répétition. Rien de tout cela n'existe encore.
+
 ## 2. Brancher le webhook en local
 
 ```bash
