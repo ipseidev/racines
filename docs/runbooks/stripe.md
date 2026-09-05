@@ -8,15 +8,18 @@ Ce document sert deux fois : une fois pour brancher le compte (une heure, à fai
 
 1. Créer le compte sur `dashboard.stripe.com`, activer le mode **test** (l'interrupteur en haut à droite).
 2. Compléter le profil de l'entreprise plus tard : le mode test fonctionne sans.
-3. Créer **quatre produits**, chacun avec un prix **unique** (`one-time`), en euros, TTC :
+3. Créer **six produits**, chacun avec un prix **unique** (`one-time`), en euros, TTC :
 
 | Produit | Prix | Variable `.env` |
 |---|---|---|
-| Offre pilote | 49,00 € | `STRIPE_PRICE_PILOT` |
+| Le livre relié et l'année de questions | 89,00 € | `STRIPE_PRICE_PILOT` (le nom reste, T-136) |
 | Prévente — variante A | 99,00 € | `STRIPE_PRICE_PREVENTE_99` |
 | Prévente — variante B | 129,00 € | `STRIPE_PRICE_PREVENTE_129` |
 | Exemplaire supplémentaire | 45,00 € `[À CONFIRMER devis imprimeur]` | `STRIPE_PRICE_EXTRA_COPY` |
+| Livre numérique | 25,00 € | `STRIPE_PRICE_EBOOK` |
 | Enregistrement par téléphone | 25,00 € | `STRIPE_PRICE_PHONE_OPTION` |
+
+**Confronter chaque montant aux réglages du pilote avant de créer le prix.** Un prix Stripe qui diverge de celui qu'affiche la page ne se voit qu'au moment de payer, c'est-à-dire devant un client. Les réglages se lisent avec `sail artisan tinker --execute="dd(app(App\Settings\PilotSettings::class));"`.
 
 Copier l'identifiant de chaque prix — il commence par `price_`, **pas** `prod_` — dans `.env`.
 
@@ -49,10 +52,14 @@ La commande affiche un secret `whsec_…` : le mettre dans `STRIPE_WEBHOOK_SECRE
 
 Sans ce secret, Cashier **n'installe pas** la vérification de signature et accepte n'importe quel appel. Acceptable en local, jamais ailleurs : en production le secret vient du tableau de bord (Développeurs → Webhooks → l'endpoint), et il est fixe.
 
-Deux événements nous intéressent, et deux seulement :
+Quatre événements nous intéressent :
 
-- `checkout.session.completed` → exécute la commande (`FulfillOrder`) ;
+- `checkout.session.completed` → exécute la commande (`FulfillOrder`), **mais seulement si la session n'est pas `unpaid`** ;
+- `checkout.session.async_payment_succeeded` → l'exécute quand un paiement différé finit par aboutir ;
+- `checkout.session.async_payment_failed` → le consigne pour le support ;
 - `charge.refunded` → enregistre le remboursement, et annule le projet si le remboursement est total et que le narrateur n'a pas encore accepté.
+
+**Pourquoi les trois premiers et pas un seul** (T-167) : le tunnel ne passe pas `payment_method_types`, donc Stripe propose la méthode qui convertit le mieux — et le compte a Klarna, Pix et BLIK actifs. Pour ces méthodes à notification différée, `completed` arrive **pendant que la session est encore impayée**. Exécuter dessus seul enverrait le cadeau chez un parent pour une commande qui échoue, et n'enverrait rien pour celle qui aboutit une heure plus tard.
 
 Tout le reste est ignoré **sans broncher**. Stripe envoie des dizaines de types d'événements, et une erreur sur un type inconnu ferait retenter le webhook indéfiniment.
 
@@ -110,8 +117,9 @@ L'exécution est **idempotente par `stripe_checkout_session_id`** : rejouer troi
 | `RuntimeException: Aucun article vendable` au clic sur « Payer » | un `STRIPE_PRICE_*` est vide | remplir la variable, `sail artisan config:clear` |
 | Le paiement passe, aucune commande n'apparaît | le webhook n'arrive pas | vérifier que `stripe listen` tourne ; chercher `checkout.fulfilment_orphan` dans les journaux |
 | `checkout.fulfilment_orphan` dans les journaux | le brouillon a expiré (sept jours) ou l'utilisateur a été supprimé | rattacher la commande à la main ; **ne rien créer en devinant** |
-| Le webhook répond 403 | `STRIPE_WEBHOOK_SECRET` ne correspond pas à la session `stripe listen` en cours | recopier le `whsec_…` affiché par la commande |
-| Le webhook répond 500 sur un type inconnu | un handler de Cashier attend une charge utile complète | vérifier que l'événement est bien signé et complet ; nos deux types sont couverts par les tests |
+| Le webhook répond 400, et rien dans les journaux | `STRIPE_WEBHOOK_SECRET` ne correspond pas à l'écouteur en cours — souvent parce que `stripe listen` a été lancé **sans `--api-key`** et signe avec le secret d'un autre compte (T-169) | relancer l'écouteur avec `--api-key`, recopier le `whsec_…` qu'il affiche |
+| Le paiement aboutit chez Stripe, rien en base, et une commande à 89 € existe pourtant | c'est celle du décor : son identifiant de session est court | comparer `stripe_checkout_session_id` à celui de la session réelle |
+| Le webhook répond 500 | une session sans nos métadonnées (tableau de bord, lien de paiement, `stripe trigger`) — corrigé en T-169, la recherche du brouillon ne part plus que sur un uuid valide | si cela réapparaît, c'est un incident : Stripe réessaie les 500 sans fin, puis **désactive l'endpoint** |
 | Deux projets pour un achat | l'idempotence est cassée | incident : `orders.stripe_checkout_session_id` doit être unique, vérifier l'index |
 
 ## 6. Remboursement
