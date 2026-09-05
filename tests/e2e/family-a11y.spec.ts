@@ -78,8 +78,17 @@ test('aucun libellé ne se coupe en deux sur un écran étroit', async ({
     await page.getByText('L’odeur du pain').click();
     await expect(page.getByRole('button', { name: 'Écouter' })).toBeVisible();
 
-    for (const name of ['J’ai aimé', 'Merci']) {
-        const button = page.getByRole('button', { name });
+    // Les deux onglets portent `role="tab"`, pas `role="button"` : c'est le
+    // rôle qui dit « deux vues du même texte », et le sélecteur doit le suivre.
+    const cibles = [
+        ['button', 'J’ai aimé'],
+        ['button', 'Merci'],
+        ['tab', 'Texte'],
+        ['tab', 'Mot à mot'],
+    ] as const;
+
+    for (const [role, name] of cibles) {
+        const button = page.getByRole(role, { name });
         const box = await button.boundingBox();
         const lines = await button.evaluate((element) => {
             const style = window.getComputedStyle(element);

@@ -192,7 +192,16 @@ export default function Story({
                             role="tab"
                             aria-selected={tab === name}
                             onClick={() => setTab(name)}
-                            className={`relative z-10 min-h-[2.5rem] flex-1 rounded-full px-5 text-[0.9375rem] font-semibold transition-colors ${
+                            /*
+                             * `whitespace-nowrap` : `flex-1` part d'une base
+                             * de zéro, donc les deux onglets se serrent au
+                             * point de couper « Mot à mot » en deux. Le
+                             * conteneur étant `inline-flex`, il s'élargit
+                             * jusqu'au plus long des deux libellés au lieu de
+                             * le rompre — et les deux gardent la même largeur,
+                             * ce dont le curseur glissant a besoin.
+                             */
+                            className={`relative z-10 min-h-[2.75rem] flex-1 rounded-full px-4 text-[0.9375rem] font-semibold whitespace-nowrap transition-colors ${
                                 tab === name ? 'text-brand' : 'text-brand-muted'
                             }`}
                         >
