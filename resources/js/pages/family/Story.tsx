@@ -177,7 +177,7 @@ export default function Story({
                 >
                     <span
                         aria-hidden="true"
-                        className="bg-brand-linen absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-full transition-transform duration-300 ease-out"
+                        className="bg-brand-linen absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full transition-transform duration-300 ease-out"
                         style={{
                             transform:
                                 tab === 'text'
@@ -201,7 +201,7 @@ export default function Story({
                              * le rompre — et les deux gardent la même largeur,
                              * ce dont le curseur glissant a besoin.
                              */
-                            className={`relative z-10 min-h-[2.75rem] flex-1 rounded-full px-4 text-[0.9375rem] font-semibold whitespace-nowrap transition-colors ${
+                            className={`relative z-10 min-h-[2.75rem] flex-1 rounded-full px-5 text-[0.9375rem] font-semibold whitespace-nowrap transition-colors ${
                                 tab === name ? 'text-brand' : 'text-brand-muted'
                             }`}
                         >
