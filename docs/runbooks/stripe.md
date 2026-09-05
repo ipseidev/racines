@@ -38,11 +38,14 @@ Ne pas activer « Autoriser les codes promotionnels » sur la session : la véri
 brew install stripe/stripe-cli/stripe
 stripe login
 
-# À chaque session de test
-stripe listen --forward-to http://localhost:8001/stripe/webhook
+# À chaque session de test — **avec la clé du projet**
+stripe listen --api-key "$(grep '^STRIPE_SECRET=' .env | cut -d= -f2-)" \
+  --forward-to http://localhost:8001/stripe/webhook
 ```
 
-La commande affiche un secret `whsec_…` : le mettre dans `STRIPE_WEBHOOK_SECRET`. Il change à chaque `stripe listen`, donc à chaque session.
+**`--api-key` n'est pas facultatif** (T-169). `stripe login` connecte la CLI à *un* compte, qui n'est pas forcément celui des clés du `.env` — et la CLI garde **un secret de signature par compte**. Un écouteur lancé sans la clé signe alors avec le secret d'un autre compte : Cashier rejette la signature **dans son intergiciel**, donc sans une ligne dans le journal applicatif, et un vrai paiement disparaît sans laisser de trace. C'est exactement ce qui est arrivé au premier paiement de test.
+
+La commande affiche un secret `whsec_…` : le mettre dans `STRIPE_WEBHOOK_SECRET`. Il est stable pour un couple compte + machine, mais **le vérifier au début de chaque session** — celui du fichier et celui qu'affiche l'écouteur doivent être le même, caractère pour caractère.
 
 Sans ce secret, Cashier **n'installe pas** la vérification de signature et accepte n'importe quel appel. Acceptable en local, jamais ailleurs : en production le secret vient du tableau de bord (Développeurs → Webhooks → l'endpoint), et il est fixe.
 
@@ -57,9 +60,14 @@ Tout le reste est ignoré **sans broncher**. Stripe envoie des dizaines de types
 
 ```bash
 sail artisan migrate:fresh --seed
-# dans un second terminal
-stripe listen --forward-to http://localhost:8001/stripe/webhook
+# dans un second terminal, toujours avec la clé du projet
+stripe listen --api-key "$(grep '^STRIPE_SECRET=' .env | cut -d= -f2-)" \
+  --forward-to http://localhost:8001/stripe/webhook
 ```
+
+L'écouteur imprime chaque événement et **le code de réponse de l'application**. C'est le premier endroit à regarder : un `[400]` est une signature qui ne correspond pas, un `[500]` une erreur de traitement, et un paiement qui n'apparaît nulle part côté application se voit ici avant de se chercher ailleurs.
+
+Un repère utile : la commande semée par `E2ELinksSeeder` porte un identifiant de session court (`cs_test_c9p8…`), là où Stripe en produit un de soixante caractères. Une commande à 89 € en base ne prouve donc rien à elle seule.
 
 Puis dans le navigateur : `/` → `/essai` → `/acheter`. Carte de test `4242 4242 4242 4242`, n'importe quelle date future, n'importe quel CVC.
 

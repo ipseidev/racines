@@ -28,6 +28,7 @@ use App\Settings\PilotSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Ce qu'un paiement déclenche.
@@ -70,9 +71,17 @@ final readonly class FulfillOrder
             return $existing;
         }
 
-        $draft = CheckoutDraft::query()
-            ->whereKey((string) data_get($session, 'metadata.draft_id'))
-            ->first();
+        $draftId = (string) data_get($session, 'metadata.draft_id');
+
+        // La recherche ne part que sur un uuid. Une session créée ailleurs —
+        // le tableau de bord, un lien de paiement, un événement d'essai — n'a
+        // pas nos métadonnées, et Postgres refuse une chaîne vide comme uuid :
+        // le webhook répondait **500**, que Stripe réessaie sans fin avant de
+        // considérer l'endpoint défaillant et de le désactiver. Un paiement
+        // qui n'est pas le nôtre ne doit pas emporter ceux qui suivent (T-169).
+        $draft = Str::isUuid($draftId)
+            ? CheckoutDraft::query()->whereKey($draftId)->first()
+            : null;
 
         $buyer = User::query()->whereKey((int) data_get($session, 'metadata.user_id'))->first();
 

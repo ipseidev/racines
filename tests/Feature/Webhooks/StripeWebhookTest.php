@@ -200,6 +200,47 @@ it('ne crée rien pour un paiement orphelin', function (): void {
     Queue::assertNotPushed(SendGiftInvitation::class);
 });
 
+/*
+ * Un paiement qui ne vient pas de notre tunnel.
+ *
+ * Une session créée depuis le tableau de bord, un lien de paiement, un
+ * événement d'essai : rien de tout cela ne porte nos métadonnées. Le cas était
+ * prévu — « on ne devine pas une famille » — mais la recherche du brouillon
+ * partait quand même, avec une chaîne vide en guise d'uuid, et **Postgres
+ * refusait la requête**. Le webhook répondait 500.
+ *
+ * Ce n'est pas un détail : Stripe **réessaie** les 500, encore et encore, puis
+ * finit par considérer l'endpoint défaillant et le désactiver. Un événement
+ * malformé ne doit pas emporter ceux qui suivent (T-169).
+ */
+it('ne bronche pas sur un paiement sans nos métadonnées', function (): void {
+    Queue::fake();
+    Notification::fake();
+
+    postWebhook([
+        'type' => 'checkout.session.completed',
+        'data' => ['object' => ['id' => 'cs_test_sans_metadonnees']],
+    ])->assertSuccessful();
+
+    expect(Order::query()->count())->toBe(0)
+        ->and(Project::query()->count())->toBe(0);
+});
+
+it('ne bronche pas sur un identifiant de brouillon qui n’est pas un uuid', function (): void {
+    Queue::fake();
+    Notification::fake();
+
+    postWebhook([
+        'type' => 'checkout.session.completed',
+        'data' => ['object' => [
+            'id' => 'cs_test_brouillon_invalide',
+            'metadata' => ['draft_id' => 'pas-un-uuid', 'user_id' => '1'],
+        ]],
+    ])->assertSuccessful();
+
+    expect(Order::query()->count())->toBe(0);
+});
+
 it('refuse un événement mal signé', function (): void {
     $this->call('POST', '/stripe/webhook', [], [], [], [
         'HTTP_STRIPE_SIGNATURE' => 't=1,v1=faux',
