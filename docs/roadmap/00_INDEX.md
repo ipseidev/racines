@@ -43,7 +43,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 10 | [Tunnel d'achat, Stripe, cadeau, opt-in narrateur](blocs/B10_tunnel_achat_optin.md) | 09 | ☑ terminé (2026-09-05) — checkpoint §7 joué avec un vrai paiement, 3 défauts de paiement corrigés | `bloc-10-done` |
 | 11 | [Back-office support et journal d'audit](blocs/B11_backoffice_audit.md) | 10 | ✅ terminé — checkpoint joué le 2026-09-06 | `bloc-11-done` |
 | 12 | [Photos, réponse écrite, contributeurs](blocs/B12_photos_contributeurs.md) | 11 | ✅ terminé — checkpoint joué le 2026-09-06 | `bloc-12-done` |
-| 13 | [Livre : book-ready, BAT, PDF, QR, impression](blocs/B13_livre.md) | 12 | ◐ en cours — socle de maturité livré, PDF et QR à faire | `bloc-13-done` |
+| 13 | [Livre : book-ready, BAT, PDF, QR, impression](blocs/B13_livre.md) | 12 | ◐ en cours — code complet, ⏳ [checkpoint jouable](05_A_FAIRE_HUMAIN.md) en local | `bloc-13-done` |
 | 14 | [Export complet et droits RGPD](blocs/B14_export_rgpd.md) | 13 | ☐ non commencé | `bloc-14-done` |
 | 15 | [Instrumentation, KPIs, tableaux de bord](blocs/B15_instrumentation.md) | 14 | ☐ non commencé | `bloc-15-done` |
 | 16 | [Sécurité, SLO, sauvegardes, déploiement Forge](blocs/B16_securite_slo_deploiement.md) | 15 | ☐ non commencé | `bloc-16-done` |

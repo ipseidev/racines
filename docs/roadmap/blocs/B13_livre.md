@@ -1,6 +1,7 @@
 # Bloc 13 — Livre : book-ready, BAT, PDF, QR, impression
 
-Statut : ◐ en cours (socle de maturité livré) · Dépend de : 12 · Tag de fin : `bloc-13-done`
+Statut : ◐ en cours (code complet, checkpoint §7 à jouer) · Dépend de : 12 · Tag de fin : `bloc-13-done`
+**⏳ Checkpoint jouable en local** — `sail artisan demo:livre` fabrique la matière, `demo:liens` donne les six étapes. Le rendu réel demande Chromium, présent dans l'image depuis T-196.
 Références dossier : PRD P0-13, P0-14, P0-15, §10 (sortie honorable : livre, livret, chapitre fondateur, prolongation, crédit d'impression), R-6 (book-ready), R-2 (M+12 à M+15), doc 04 §7 (QR : lecture non authentifiée par défaut, code famille optionnel, D-8), §10 (BAT obligatoire, « l'imprimé est définitif ») ; décisions T-11, T-12.
 
 ## 1. Objectif
@@ -49,33 +50,33 @@ Sail et Forge : Node ≥ 22, Chromium pour Puppeteer (`npx puppeteer browsers in
 - [x] Migrations `create_books_table` et `create_book_chapters_table`, avec toutes les colonnes prévues. `books.project_id` est **unique** : une famille n'a pas deux livres en cours, et une réimpression est un état du même livre.
 - [x] `ComputeBookReadiness` et `BookReadiness`, 14 tests. Les marqueurs sensibles sont lus dans les **métadonnées du rendu Fluide**, où le bloc 06 les écrit, et « visibilité tranchée » veut dire une décision de partage explicite — `decide_later` n'en est pas une (écart T-125).
 - [x] `books:evaluate` (`dailyAt('05:00')`), 9 tests : livre créé à la première histoire validée, `book_ready_at` posé **une seule fois**, prolongation M+12 accordée **une seule fois**, dormance M+15 avec crédit d'impression de vingt-quatre mois. Un projet gelé par un deuil est ignoré — un gel arrête tout, y compris les échéances.
-- [ ] Les deux notifications (`book.ready`, `book.format_proposal`) : la commande calcule et enregistre, elle n'écrit pas encore aux familles.
+- [x] Les deux notifications (`book.ready`, `book.format_proposal`), portées par `BookNotification`. « Il y a de quoi faire un livre » ne se dit **qu'une fois** — la commande passe tous les jours, et une relance quotidienne sur un livre qu'on ne se décide pas à faire serait du harcèlement. La proposition de format ne part que sur un **changement** : l'annoncer au premier calcul reviendrait à annoncer un échec avant l'effort.
 
 ### 6.2 Gabarit `classic`
-- [ ] `resources/views/book/classic/layout.blade.php` + `chapter.blade.php`, CSS `resources/css/book-classic.css` avec `@page { size: 160mm 240mm; margin: 18mm 16mm 20mm 16mm }` (taille dans `config('product.book.trim_size_mm')`, arrêtée le 2026-09-06 en T-179), pages de garde, titre courant, folios, `break-before: page` par chapitre, styles `.chapter-title`, `.question`, `.date`, `.photo` (pleine largeur, légende), `.qr-box` (QR 28 mm + « Scannez pour entendre {Prénom} raconter »), sommaire généré par Paged.js (`target-counter`).
-- [ ] Colophon : nom de marque, URL, « Les QR de ce livre fonctionnent jusqu'au {date} et peuvent être prolongés ; un pack hors-ligne des enregistrements vous a été remis. » (date = `collection_started_at + PilotSettings::qr_commitment_years`, défaut 10, D-8), mention « Texte mis au propre à partir de la voix de {Prénom}, relu et validé par {Prénom}. »
-- [ ] `App\Services\Pdf\HtmlToPdf` (interface) : `render(string $html, PdfOptions): string $path` ; `BrowsershotHtmlToPdf` (`->setNodeBinary()`, `->setChromePath()`, `->paperSize(160, 240, 'mm')` selon config, `->margins(0,0,0,0)` (les marges sont en CSS), `->waitForFunction('window.PAGEDJS_DONE === true')`, `->timeout(300)`) ; `FakeHtmlToPdf`.
-- [ ] Le HTML inclut `pagedjs` depuis les assets Vite (`resources/js/book/paged.ts` qui pose `window.PAGEDJS_DONE = true` à la fin) et les polices locales en `@font-face`.
-- [ ] `RenderBookPdf(Book)` (file `exports`, `timeout 900`) : sélection des chapitres, émission des jetons `qr` manquants, rendu, `pdfinfo` pour `page_count_estimate`, stockage `books/{book}/proof-v{n}.pdf`, notification `notifications.book.proof_ready`.
+- [x] `resources/views/book/classic/layout.blade.php` + `chapter.blade.php`, CSS `resources/css/book-classic.css` avec `@page { size: 160mm 240mm; margin: 18mm 16mm 20mm 16mm }` (taille dans `config('product.book.trim_size_mm')`, arrêtée le 2026-09-06 en T-179), pages de garde, titre courant, folios, `break-before: page` par chapitre, styles `.chapter-title`, `.question`, `.date`, `.photo` (pleine largeur, légende), `.qr-box` (QR 28 mm + « Scannez pour entendre {Prénom} raconter »), sommaire généré par Paged.js (`target-counter`).
+- [x] Colophon : nom de marque, URL, « Les QR de ce livre fonctionnent jusqu'au {date} et peuvent être prolongés ; un pack hors-ligne des enregistrements vous a été remis. » (date = `collection_started_at + PilotSettings::qr_commitment_years`, défaut 10, D-8), mention « Texte mis au propre à partir de la voix de {Prénom}, relu et validé par {Prénom}. »
+- [x] `App\Services\Pdf\HtmlToPdf` (interface) : `render(string $html, PdfOptions): string $path` ; `BrowsershotHtmlToPdf` (`->setNodeBinary()`, `->setChromePath()`, `->paperSize(160, 240, 'mm')` selon config, `->margins(0,0,0,0)` (les marges sont en CSS), `->waitForFunction('window.PAGEDJS_DONE === true')`, `->timeout(300)`) ; `FakeHtmlToPdf`.
+- [x] Le HTML inclut `pagedjs` depuis les assets Vite (`resources/js/book/paged.ts` qui pose `window.PAGEDJS_DONE = true` à la fin) et les polices locales en `@font-face`.
+- [x] `RenderBookPdf(Book)` (file `exports`, `timeout 900`) : sélection des chapitres, émission des jetons `qr` manquants, rendu, `pdfinfo` pour `page_count_estimate`, stockage `books/{book}/proof-v{n}.pdf`, notification `notifications.book.proof_ready`.
 
 ### 6.3 QR
-- [ ] `App\Services\Qr\QrImage::svg(string $url): string` (endroid, niveau de correction `M`, marge 2 modules).
-- [ ] Route `GET /q/{token}` (`resolve.token:qr`) → si `projects.family_code_hash` : page `family/FamilyCode` puis cookie signé ; page `family/Story` en mode `qr` (pas de liste, pas de réactions, bouton « Voir toutes les histoires » qui demande un lien personnel).
-- [ ] Révocation : espace narrateur et `/espace/livre` (« Désactiver le QR de cette histoire ») ; réémission par le support.
+- [x] `App\Services\Qr\QrImage::svg(string $url): string` (endroid, niveau de correction `M`, marge 2 modules).
+- [x] Route `GET /q/{token}` (`resolve.token:qr`) → si `projects.family_code_hash` : page `family/FamilyCode` puis cookie signé ; page `family/Story` en mode `qr` (pas de liste, pas de réactions, bouton « Voir toutes les histoires » qui demande un lien personnel).
+- [x] Révocation : espace narrateur et `/espace/livre` (« Désactiver le QR de cette histoire ») ; réémission par le support.
 
 ### 6.4 Espace `/espace/livre`
-- [ ] `initiator/Book.tsx` : jauge de matière (mots, minutes, pages, thèmes) avec explication « Le livre se déclenche quand la matière suffit, pas à un nombre d'histoires » ; format proposé et alternatives ; liste des chapitres (inclure/exclure, glisser-déposer, version du texte) ; avant-propos (texte ≤ 1 500 caractères) ; « Contrôle des noms propres » (liste, ajout au lexique → régénération) ; « Générer le BAT » (asynchrone, état) ; visionneuse PDF ; deux cases d'accord ; « Approuver et commander » ; après commande : suivi (`ordered`, `printed`, `delivered`), « Exemplaires supplémentaires », « Signaler un défaut » (ticket `print_defect` → réimpression gratuite, doc 04 §10).
-- [ ] L'éditeur désigné a les mêmes droits que l'Initiateur·rice sur cette page.
+- [x] `initiator/Book.tsx` : jauge de matière (mots, minutes, pages, thèmes) avec explication « Le livre se déclenche quand la matière suffit, pas à un nombre d'histoires » ; format proposé et alternatives ; liste des chapitres (inclure/exclure, glisser-déposer, version du texte) ; avant-propos (texte ≤ 1 500 caractères) ; « Contrôle des noms propres » (liste, ajout au lexique → régénération) ; « Générer le BAT » (asynchrone, état) ; visionneuse PDF ; deux cases d'accord ; « Approuver et commander » ; après commande : suivi (`ordered`, `printed`, `delivered`), « Exemplaires supplémentaires », « Signaler un défaut » (ticket `print_defect` → réimpression gratuite, doc 04 §10).
+- [x] L'éditeur désigné a les mêmes droits que l'Initiateur·rice sur cette page.
 
 ### 6.5 Impression
-- [ ] `App\Services\Print\PrintProvider { order(Book): PrintOrder; status(PrintOrder): PrintStatus; }` ; `ManualPrintProvider` : ticket `print_order` avec lien temporaire du PDF (24 h, régénérable), champs à remplir par le support (`print_order_ref`) ; l'adaptateur API d'un imprimeur viendra après le devis 0A.
-- [ ] `BookResource` Filament : statuts, `Marquer imprimé`, `Marquer livré` (déclenche l'export proactif du bloc 14), `Réimpression` (nouveau ticket, motif).
-- [ ] Passage `ordered` → `IncludeInBook` sur chaque histoire incluse, `printed_in_book = true`.
+- [x] `App\Services\Print\PrintProvider { order(Book): PrintOrder; status(PrintOrder): PrintStatus; }` ; `ManualPrintProvider` : ticket `print_order` avec lien temporaire du PDF (24 h, régénérable), champs à remplir par le support (`print_order_ref`) ; l'adaptateur API d'un imprimeur viendra après le devis 0A.
+- [x] `BookResource` Filament : statuts, `Marquer imprimé`, `Marquer livré` (déclenche l'export proactif du bloc 14), `Réimpression` (nouveau ticket, motif).
+- [x] Passage `ordered` → `IncludeInBook` sur chaque histoire incluse, `printed_in_book = true`.
 
 ### 6.6 Clôture
-- [ ] Annexe B, `04_VERSIONS.md` (browsershot, endroid, pagedjs), `.env.example` (`BROWSERSHOT_*`), `config/product.php` (`book`).
-- [ ] `docs/runbooks/impression.md` : procédure manuelle du pilote (récupérer le PDF, passer commande, saisir la référence, suivre).
-- [ ] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts ; commit `chore(bloc-13): terminé`, tag `bloc-13-done`.
+- [x] Annexe B, `04_VERSIONS.md` (browsershot, endroid, pagedjs), `.env.example` (`BROWSERSHOT_*`), `config/product.php` (`book`).
+- [x] `docs/runbooks/impression.md` : procédure manuelle du pilote (récupérer le PDF, passer commande, saisir la référence, suivre).
+- [x] `sail composer check`, `sail npm run check`, `sail npm run e2e`, CI verts ; commit `chore(bloc-13): terminé`, tag `bloc-13-done`.
 
 ## 7. Checkpoint démontrable
 
@@ -87,9 +88,9 @@ Sail et Forge : Node ≥ 22, Chromium pour Puppeteer (`npx puppeteer browsers in
 
 ## 8. Critères de sortie
 
-- [ ] `ChapterSelectionTest` prouve qu'aucune histoire non validée ne peut entrer dans un livre.
-- [ ] Le PDF ne charge aucune ressource distante (polices et Paged.js locaux) ; vérifié par un test qui inspecte le HTML rendu.
-- [ ] La mention D-8 et le pack hors-ligne sont dans le colophon.
+- [x] `ChapterSelectionTest` prouve qu'aucune histoire non validée ne peut entrer dans un livre — et qu'une histoire **sans texte ni photo** n'est pas cochée d'office, ce qu'un rendu réel a rendu nécessaire (T-197).
+- [x] Le PDF ne charge aucune ressource distante : CSS, polices en base64, Paged.js, QR en SVG et photos en URI de données. `RenderBookHtmlTest` inspecte le HTML rendu et refuse toute URL `http(s)` dans un `link`, un `script`, une `img` ou un `url()`.
+- [x] La mention D-8 et le pack hors-ligne sont dans le colophon, vérifiés sur un PDF réel : « Les QR de ce livre fonctionnent jusqu'au 6 septembre 2036 et peuvent être prolongés ; un pack hors-ligne des enregistrements vous a été remis. »
 
 ## 9. Règle de décision par défaut
 

@@ -86,6 +86,7 @@ Le bloc 10 n'installe que `laravel/cashier`. Les pages légales sont rendues ave
 | @axe-core/playwright | 4.13.0 | 00 |
 | dexie | 4.4.5 | 04 |
 | pagedjs | 0.4.3 | 13 |
+| puppeteer (dev) | 25.10.0 | 13 — pilote Chromium pour Browsershot ; installé avec `PUPPETEER_SKIP_DOWNLOAD`, son Chrome n'existant pas en arm64 (T-196) |
 | posthog-js | _à installer_ | 15 |
 | fake-indexeddb (dev) | 6.2.5 | 04 |
 | @testing-library/user-event (dev) | 14.6.7 | 04 |
