@@ -49,6 +49,21 @@ final class PilotSettings extends Settings
     public int $gift_send_hour;
 
     /**
+     * La durée d'engagement des QR du livre, en années (D-8).
+     *
+     * Elle est **imprimée dans le colophon** : « Les QR de ce livre
+     * fonctionnent jusqu'au … et peuvent être prolongés ». C'est un réglage
+     * et non une constante parce que la décision D-8 n'est pas prise, et que
+     * la baisser un jour ne doit pas raccourcir l'engagement de livres déjà
+     * imprimés — la date part du début de collecte du projet, pas du réglage
+     * du moment.
+     *
+     * Jamais « pour toujours » ni « QR autonomes » : R-11 l'interdit, et une
+     * durée chiffrée est justement ce qui remplace ces mots.
+     */
+    public int $qr_commitment_years;
+
+    /**
      * L'offre de bienvenue de la page d'accueil (T-141) : proposée ou non, et
      * son pourcentage sur la commande. Il doit être celui du coupon Stripe
      * `STRIPE_COUPON_WELCOME` : ici comme pour les prix, c'est Stripe qui

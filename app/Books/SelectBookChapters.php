@@ -54,11 +54,12 @@ final readonly class SelectBookChapters
             foreach ($stories as $story) {
                 $position += self::STEP;
 
-                $book->chapters()->create([
-                    'story_id' => $story->getKey(),
-                    'position' => $position,
-                    'included' => true,
-                ]);
+                // `associate` et non un `story_id` rempli en masse : la
+                // colonne n'est pas remplissable, et c'est voulu — un
+                // chapitre ne change pas d'histoire, il se retire.
+                $chapter = new BookChapter(['position' => $position, 'included' => true]);
+                $chapter->story()->associate($story);
+                $book->chapters()->save($chapter);
             }
         });
     }
@@ -75,13 +76,19 @@ final readonly class SelectBookChapters
             throw StoryNotPrintable::otherProject();
         }
 
-        if (! in_array($story->state::$name, ComputeBookReadiness::countableStates(), true)) {
+        if (! in_array($story->state->getValue(), ComputeBookReadiness::countableStates(), true)) {
             throw StoryNotPrintable::notValidated();
         }
 
-        $chapter = $book->chapters()->firstOrNew(['story_id' => $story->getKey()]);
+        $chapter = $book->chapters()->where('story_id', $story->getKey())->first();
+
+        if (! $chapter instanceof BookChapter) {
+            $chapter = new BookChapter(['position' => (int) $book->chapters()->max('position') + self::STEP]);
+            $chapter->story()->associate($story);
+            $chapter->book()->associate($book);
+        }
+
         $chapter->included = true;
-        $chapter->position ??= (int) $book->chapters()->max('position') + self::STEP;
         $chapter->save();
 
         return $chapter;

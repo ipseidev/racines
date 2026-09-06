@@ -1,0 +1,249 @@
+/*
+ * Le gabarit « classic », 16 × 24 cm (T-179).
+ *
+ * Écrit pour Paged.js et pour lui seul : ce fichier n'est jamais servi au
+ * navigateur d'un visiteur, il est incrusté dans le HTML que Chromium
+ * transforme en PDF. D'où deux libertés qu'on ne prendrait pas ailleurs —
+ * les unités sont en millimètres, et rien n'est responsive : une page de
+ * papier ne change pas de largeur.
+ *
+ * Les tailles de corps sont plus généreuses que sur le web. Le lecteur de ce
+ * livre a quatre-vingts ans, et il le lira dans un fauteuil, pas à trente
+ * centimètres d'un écran.
+ */
+
+@page {
+    size: 160mm 240mm;
+    margin: 18mm 16mm 20mm 16mm;
+
+    @bottom-center {
+        content: counter(page);
+        font-family: 'BookBody', Georgia, serif;
+        font-size: 9pt;
+        color: #5a5049;
+    }
+}
+
+/* La couverture, les pages de garde et le colophon n'ont pas de folio. */
+@page :first {
+    margin: 0;
+
+    @bottom-center {
+        content: none;
+    }
+}
+
+@page cover {
+    margin: 0;
+
+    @bottom-center {
+        content: none;
+    }
+}
+
+@page blank {
+    @bottom-center {
+        content: none;
+    }
+}
+
+html {
+    font-size: 11pt;
+}
+
+body {
+    margin: 0;
+    font-family: 'BookBody', Georgia, 'Times New Roman', serif;
+    color: #26211c;
+    line-height: 1.55;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
+/* Couverture ============================================================= */
+
+.cover {
+    page: cover;
+    break-after: page;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 240mm;
+    padding: 0 22mm;
+    text-align: center;
+    background: #faf7f2;
+}
+
+.cover-title {
+    font-family: 'BookDisplay', Georgia, serif;
+    font-size: 30pt;
+    line-height: 1.15;
+    margin: 0 0 10mm;
+}
+
+.cover-subtitle {
+    font-size: 13pt;
+    color: #5a5049;
+    margin: 0;
+}
+
+.cover-brand {
+    position: absolute;
+    bottom: 20mm;
+    font-size: 9pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5a5049;
+}
+
+/* Avant-propos et sommaire ============================================== */
+
+.foreword,
+.toc {
+    break-before: page;
+}
+
+.section-title {
+    font-family: 'BookDisplay', Georgia, serif;
+    font-size: 18pt;
+    margin: 0 0 8mm;
+}
+
+.toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.toc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 3mm;
+    margin-bottom: 3.5mm;
+    font-size: 11pt;
+}
+
+.toc-item .toc-label {
+    flex: 0 1 auto;
+}
+
+/* Les points de conduite, faits par une bordure plutôt qu'une suite de
+   caractères : une ligne de points tapée à la main se casse au retour à la
+   ligne et n'imprime pas droit. */
+.toc-item .toc-dots {
+    flex: 1 1 auto;
+    border-bottom: 0.3mm dotted #b9ada1;
+    transform: translateY(-1mm);
+}
+
+/* `target-counter` : Paged.js résout la page réelle de l'ancre. */
+.toc-item .toc-page::after {
+    content: target-counter(attr(href), page);
+}
+
+/* Chapitres ============================================================== */
+
+.chapter {
+    break-before: page;
+}
+
+.chapter-number {
+    font-size: 9pt;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5a5049;
+    margin: 0 0 3mm;
+}
+
+.chapter-title {
+    font-family: 'BookDisplay', Georgia, serif;
+    font-size: 20pt;
+    line-height: 1.2;
+    margin: 0 0 4mm;
+}
+
+.question {
+    font-style: italic;
+    color: #5a5049;
+    margin: 0 0 2mm;
+}
+
+.date {
+    font-size: 9.5pt;
+    color: #5a5049;
+    margin: 0 0 8mm;
+}
+
+.chapter-text p {
+    margin: 0 0 4mm;
+    text-align: justify;
+    /* Deux lignes minimum de part et d'autre d'une coupure de page : une
+       ligne seule en haut ou en bas de page est ce qui distingue un livre
+       d'un document imprimé. */
+    orphans: 2;
+    widows: 2;
+}
+
+.chapter-text p:first-of-type::first-letter {
+    font-family: 'BookDisplay', Georgia, serif;
+    font-size: 24pt;
+    line-height: 1;
+    padding-right: 1mm;
+}
+
+/* Photos ================================================================= */
+
+.photo {
+    break-inside: avoid;
+    margin: 8mm 0;
+}
+
+.photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.photo figcaption {
+    margin-top: 2mm;
+    font-size: 9pt;
+    font-style: italic;
+    color: #5a5049;
+}
+
+/* Le QR ================================================================== */
+
+.qr-box {
+    break-inside: avoid;
+    display: flex;
+    align-items: center;
+    gap: 5mm;
+    margin-top: 10mm;
+    padding-top: 5mm;
+    border-top: 0.3mm solid #d9cfc4;
+}
+
+.qr-box svg {
+    width: 28mm;
+    height: 28mm;
+    flex: 0 0 28mm;
+}
+
+.qr-legend {
+    font-size: 9.5pt;
+    color: #5a5049;
+}
+
+/* Colophon =============================================================== */
+
+.colophon {
+    break-before: page;
+    page: blank;
+    font-size: 9.5pt;
+    color: #5a5049;
+}
+
+.colophon p {
+    margin: 0 0 4mm;
+}
