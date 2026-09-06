@@ -67,14 +67,14 @@ Flare : `spatie/laravel-ignition` est déjà présent ; renseigner `FLARE_KEY` e
 - [ ] Resend : domaine d'envoi vérifié (SPF, DKIM, DMARC `p=quarantine`), webhook enregistré ; Twilio : expéditeur alphanumérique testé en France, `statusCallback` en HTTPS ; Stripe : clés live et webhook live (activation au bloc 17 seulement).
 
 ### 6.2 Sauvegardes et restauration
-- [ ] `config/backup.php` : destination `r2_backups`, `db_dump_compressor gzip`, `encryption default`, notifications Flare + email admin en cas d'échec ; planification `backup:clean` 01:00 et `backup:run` 01:30.
+- [x] `config/backup.php` : destination `r2_backups`, chiffrement, rétention 90 jours, notifications ; `backup:clean` 01:00 puis `backup:run` 01:30 — on nettoie **avant**, l'inverse effacerait parfois l'archive de la nuit même. L'application **refuse de démarrer en production sans `BACKUP_ARCHIVE_PASSWORD`** : sans lui, l'archive part en clair et tout paraît normal.
 - [ ] `media:verify-replicas` (`hourly()`), `backup:monitor` quotidien.
-- [ ] `restore:drill` et `docs/runbooks/restauration.md` (RTO cible 72 h ; étapes DO PITR ; restauration `laravel-backup` ; vérifications ; qui décide). Exécuter le drill sur staging et archiver le rapport dans `docs/runbooks/drills/`.
+- [x] `restore:drill` — dump réel, base jetable, chaîne d'audit vérifiée par **le même vérificateur que `audit:verify`**, comptes comparés table par table, rapport daté dans `docs/runbooks/drills/`, base effacée. Reste `docs/runbooks/restauration.md` (RTO cible 72 h ; étapes DO PITR ; restauration `laravel-backup` ; vérifications ; qui décide). Exécuter le drill sur staging et archiver le rapport dans `docs/runbooks/drills/`.
 - [ ] Politique de rétention publiée (`confidentialite.md`) alignée : sauvegardes 90 jours.
 
 ### 6.3 Supervision et alertes
-- [ ] `spatie/laravel-health` : checks `DatabaseCheck`, `RedisCheck`, `HorizonCheck`, `ScheduleCheck`, `UsedDiskSpaceCheck`, `CacheCheck`, checks maison `R2ReachableCheck`, `ClamavCheck`, `AuditChainCheck`, `ReplicationLagCheck` ; endpoint `/health` protégé par `OH_DEAR_HEALTH_CHECK_SECRET`.
-- [ ] Oh Dear : uptime sur `/` et `/health`, certificats, page de statut publique (URL dans le pied de page), alertes vers l'email et le téléphone du fondateur.
+- [x] `spatie/laravel-health` : les six contrôles génériques et les quatre du produit — `R2ReachableCheck`, `ClamavCheck`, `AuditChainCheck`, `ReplicationLagCheck`. L'endpoint `/health` **n'existe que si** `OH_DEAR_HEALTH_CHECK_SECRET` est posé, et le secret voyage dans un en-tête : en paramètre d'URL il finirait dans les journaux. Les résultats vont au cache et non en base — une table qui grossit chaque minute pour une donnée que personne ne relit.
+- [x] ~~Oh Dear~~ **écarté sur son coût (T-201)**, remplacé en deux moitiés : « un contrôle est au rouge » part par courriel depuis le serveur (`laravel-health`, un message par heure, avertissements compris) ; « le serveur ne répond plus » demande un appel de l'extérieur sur `/up`, que fait une offre gratuite (UptimeRobot, Better Stack). Détail dans `docs/runbooks/supervision.md`. **Manque assumé** : la page de statut publique, reportée au bloc 17.
 - [ ] Flare : erreurs, `audit:verify` rupture, échec de sauvegarde, `ReplicationLag`.
 
 ### 6.4 Sécurité

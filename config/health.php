@@ -46,6 +46,23 @@ return [
      * You can get notified when specific events occur. Out of the box you can use 'mail' and 'slack'.
      * For Slack you need to install laravel/slack-notification-channel.
      */
+    /*
+     * L'alerte, sans service externe payant (T-201).
+     *
+     * Oh Dear était prévu par la feuille du bloc ; il est écarté sur son
+     * coût. Ce qu'il faisait se sépare en deux, et les deux moitiés se
+     * remplacent séparément :
+     *
+     *  - **« un contrôle est au rouge »** : c'est ici. Le planificateur passe
+     *    toutes les minutes, et un échec part par courriel au fondateur,
+     *    limité à un message par heure. Aucun service tiers, aucune donnée
+     *    qui sort.
+     *  - **« le serveur ne répond plus »** : cela ne peut pas venir du
+     *    serveur lui-même — s'il est tombé, il ne prévient personne. Il faut
+     *    un appel depuis l'extérieur sur `/up`, la route de Laravel, qui
+     *    n'expose rien. Un service gratuit suffit, c'est une ligne à
+     *    configurer et rien à écrire ici (voir `docs/runbooks/supervision.md`).
+     */
     'notifications' => [
         /*
          * Notifications will only get sent if this option is set to `true`.
@@ -76,10 +93,24 @@ return [
          * When set to true, notifications will only be sent when at least one
          * check has a 'failed' status. Warnings will be ignored.
          */
+        /*
+         * Les avertissements aussi, pas seulement les échecs.
+         *
+         * Un disque à 80 % et un stockage qui répond en trois secondes ne
+         * sont pas des pannes : ce sont les deux heures qu'on a pour agir
+         * avant d'en avoir une. Le courriel étant limité à un par heure, le
+         * risque de lassitude est faible.
+         */
         'only_on_failure' => false,
 
         'mail' => [
-            'to' => env('HEALTH_TO_ADDRESS', ''),
+            /*
+             * L'adresse du support à défaut d'une adresse dédiée : c'est
+             * celle que le fondateur relève, et une alerte envoyée à une
+             * boîte que personne n'ouvre est une alerte perdue. Le nom de
+             * marque n'apparaît pas en dur — il vient des réglages.
+             */
+            'to' => env('HEALTH_TO_ADDRESS') ?: env('BRAND_SUPPORT_EMAIL', ''),
 
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
