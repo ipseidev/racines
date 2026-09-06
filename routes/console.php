@@ -140,3 +140,12 @@ Schedule::command('exports:expire')->dailyAt('02:30');
  * où le service ferme, c'est-à-dire trop tard.
  */
 Schedule::command('exports:proactive')->dailyAt('06:00');
+
+/*
+ * Les métriques du pilote, chaque nuit (bloc 15).
+ *
+ * À 03:00, après les sauvegardes et avant que quiconque regarde un tableau
+ * de bord. La commande calcule **hier** : une journée en cours donne des
+ * chiffres qui bougent à chaque exécution.
+ */
+Schedule::command('metrics:compute')->dailyAt('03:00')->withoutOverlapping();
