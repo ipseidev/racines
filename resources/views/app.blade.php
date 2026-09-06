@@ -58,14 +58,11 @@
 
         {{-- Écran d'accueil et barre du navigateur. Le manifeste vient d'une
              route et non d'un fichier : il porte le nom et une couleur de la
-             marque, qui ne vivent que dans les réglages. Adresse relative,
-             pour rester de même origine sur le domaine court des liens.
-             Écarté des pages à jeton : proposer « ajouter à l'écran d'accueil »
-             à un narrateur venu enregistrer une histoire une fois n'a pas de
-             sens, et la fenêtre s'ouvrirait par-dessus le bouton. --}}
-@if (! str_starts_with($page['component'], 'narrator/') && ! str_starts_with($page['component'], 'family/'))
+             marque, qui ne vivent que dans les réglages. Adresse relative et
+             non `route('manifest')` : un manifeste d'une autre origine est
+             refusé par le navigateur, et les pages à jeton sont servies depuis
+             le domaine court des liens. --}}
         <link rel="manifest" href="/site.webmanifest">
-@endif
         <meta name="apple-mobile-web-app-title" content="{{ $brandShortName }}">
         <meta name="theme-color" content="{{ $brandCss['--brand-background'] }}">
 

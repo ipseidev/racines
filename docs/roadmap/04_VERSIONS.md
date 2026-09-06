@@ -50,8 +50,8 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | stripe/stripe-php | v21.3.1 | 10 (transitif de cashier) |
 | spatie/laravel-medialibrary | v11.23.6 | 12 |
 | ~~sunspikes/clamav-validator~~ | **non retenu** | 12 (décision T-118) |
-| spatie/browsershot | _à installer_ | 13 |
-| endroid/qr-code | _à installer_ | 13 |
+| spatie/browsershot | 5.4.0 | 13 |
+| endroid/qr-code | 6.1.3 | 13 |
 | maennchen/zipstream-php | _à installer_ | 14 |
 | posthog/posthog-php | _à installer_ | 15 |
 | spatie/laravel-backup, spatie/laravel-health | _à installer_ | 16 |
@@ -85,7 +85,7 @@ Le bloc 10 n'installe que `laravel/cashier`. Les pages légales sont rendues ave
 | wait-on | dernière | 00 (CI) |
 | @axe-core/playwright | 4.13.0 | 00 |
 | dexie | 4.4.5 | 04 |
-| pagedjs | _à installer_ | 13 |
+| pagedjs | 0.4.3 | 13 |
 | posthog-js | _à installer_ | 15 |
 | fake-indexeddb (dev) | 6.2.5 | 04 |
 | @testing-library/user-event (dev) | 14.6.7 | 04 |

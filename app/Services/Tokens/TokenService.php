@@ -83,6 +83,47 @@ final class TokenService
      * périmètre reste **déclaré**, jamais deviné : c'est ce qui le rend
      * vérifiable d'un coup d'œil sur le fichier de routes.
      */
+    /**
+     * Émettre — ou rallumer — un jeton dont le code est **dérivé**.
+     *
+     * Le cas du QR imprimé dans un livre (bloc 13), et le seul. Un QR est
+     * définitif : il doit survivre à une regénération du bon à tirer, à une
+     * réimpression, et au fait qu'un jeton porteur n'est jamais stocké en
+     * clair. Son code est donc calculé à partir d'un secret du serveur plutôt
+     * que tiré au sort, et l'appelant le redérive quand il en a besoin.
+     *
+     * Le calcul du code appartient à l'appelant ; l'**empreinte**, elle,
+     * reste ici : `token_hash` ne se lit et ne s'écrit que dans ce service,
+     * et un test le vérifie sur tout `app/`.
+     *
+     * @param  list<string>  $scope
+     */
+    public function issueDerived(
+        TokenType $type,
+        Model $subject,
+        string $plain,
+        array $scope = [],
+    ): AccessToken {
+        $hash = self::hash($plain);
+
+        $token = AccessToken::query()->where('token_hash', $hash)->first() ?? new AccessToken;
+
+        $token->token_hash = $hash;
+        $token->type = $type;
+        $token->scope = $scope === [] ? null : $scope;
+        $token->single_use = false;
+        // Aucune expiration technique : l'engagement de durée est **annoncé**
+        // dans le colophon du livre (D-8) et tenu par une révocation
+        // explicite, pas par une date qui ferait mourir un livre sans
+        // prévenir personne.
+        $token->expires_at = null;
+        $token->revoked_at = null;
+        $token->subject()->associate($subject);
+        $token->save();
+
+        return $token;
+    }
+
     public function resolve(string $plain, TokenType $expected, TokenType ...$alsoAccepted): AccessToken
     {
         $token = $this->peek($plain, $expected, ...$alsoAccepted);

@@ -102,6 +102,7 @@ export default function Book({
     const [rows, setRows] = useState<Chapter[]>(chapters);
     const [foreword, setForeword] = useState(book.foreword ?? '');
     const approval = useForm({ final_print: false, lexicon_reviewed: false });
+    const copies = useForm({ quantity: 1 });
 
     const save = (next: Chapter[], text: string) => {
         setRows(next);
@@ -606,15 +607,71 @@ export default function Book({
                             ))}
                     </ul>
 
-                    <p className="text-brand-muted mt-5 text-[0.9375rem]">
-                        {t('initiator.book.tracking.extra_copies')} —{' '}
-                        {t('initiator.book.tracking.extra_copies_price', {
-                            price: (extraCopyPriceCents / 100).toLocaleString(
-                                'fr-FR',
-                                { minimumFractionDigits: 2 },
-                            ),
-                        })}
-                    </p>
+                    {/*
+                     * Les exemplaires supplémentaires se commandent **après**
+                     * le livre : avant, on ne sait pas combien de pages il
+                     * fera, et un prix annoncé avant la pagination serait un
+                     * prix à reprendre.
+                     */}
+                    <form
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            copies.post('/espace/livre/exemplaires', {
+                                preserveScroll: true,
+                            });
+                        }}
+                        className="border-brand-line mt-6 border-t pt-5"
+                    >
+                        <label
+                            htmlFor="extra-copies"
+                            className="block text-[1rem] font-semibold"
+                        >
+                            {t('initiator.book.tracking.extra_copies')}
+                        </label>
+                        <p className="text-brand-muted mt-1 text-[0.9375rem]">
+                            {t('initiator.book.tracking.extra_copies_price', {
+                                price: (
+                                    extraCopyPriceCents / 100
+                                ).toLocaleString('fr-FR', {
+                                    minimumFractionDigits: 2,
+                                }),
+                            })}
+                        </p>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                            <input
+                                id="extra-copies"
+                                type="number"
+                                min={1}
+                                max={5}
+                                value={copies.data.quantity}
+                                onChange={(event) =>
+                                    copies.setData(
+                                        'quantity',
+                                        Number(event.target.value),
+                                    )
+                                }
+                                className="border-brand-line min-h-[2.75rem] w-24 rounded-xl border bg-white px-3 text-[1.0625rem]"
+                            />
+                            <SubmitButton
+                                processing={copies.processing}
+                                waitingLabel={t(
+                                    'initiator.book.approve.waiting',
+                                )}
+                            >
+                                {t('initiator.book.tracking.order_copies')}
+                            </SubmitButton>
+                        </div>
+
+                        {copies.errors.quantity !== undefined && (
+                            <p
+                                role="alert"
+                                className="mt-2 text-[0.9375rem] text-red-700"
+                            >
+                                {copies.errors.quantity}
+                            </p>
+                        )}
+                    </form>
                 </section>
             )}
         </>

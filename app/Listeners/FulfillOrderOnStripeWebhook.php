@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Actions\FulfillOrder;
 use App\Actions\FulfillOrderTopUp;
+use App\Books\FulfillExtraCopies;
 use App\Enums\OrderStatus;
 use App\Enums\ProjectStatus;
 use App\Models\Order;
@@ -39,6 +40,7 @@ final readonly class FulfillOrderOnStripeWebhook
     public function __construct(
         private FulfillOrder $fulfil,
         private FulfillOrderTopUp $topUps,
+        private FulfillExtraCopies $extraCopies,
     ) {}
 
     public function handle(WebhookReceived $event): void
@@ -60,6 +62,26 @@ final readonly class FulfillOrderOnStripeWebhook
     private function complete(array $payload): void
     {
         $session = (array) data_get($payload, 'data.object', []);
+
+        /*
+         * Des exemplaires supplémentaires (bloc 13) portent `book_id`.
+         *
+         * Ils ne passent ni par le tunnel ni par le complément de commande :
+         * le livre existe, la commande initiale aussi, et ce qui s'ouvre est
+         * un **second tirage**. Les confondre ferait réimprimer la première
+         * commande à la place de la nouvelle.
+         */
+        if (data_get($session, 'metadata.book_id') !== null) {
+            if (data_get($session, 'payment_status') === 'unpaid') {
+                Log::info('checkout.extra_copies_awaiting_payment', ['session_id' => data_get($session, 'id')]);
+
+                return;
+            }
+
+            $this->extraCopies->handle($session);
+
+            return;
+        }
 
         // Un complément de commande (T-184) porte `order_id` et `sku` là où le
         // tunnel porte `draft_id` : la commande existe déjà, et la rejouer

@@ -55,3 +55,32 @@ it('n’expose jamais l’expéditeur SMS ni les couleurs au front', function ()
             ->missing('brand.color_primary')
     );
 });
+
+it('sert le pictogramme livré tant que l’administration n’en téléverse pas', function (): void {
+    expect(Brand::markUrl())->toBe(asset('/img/brand/mark.svg'));
+
+    app(UpdateBrandSettings::class)->handle(['mark_path' => 'marque/pictogramme.svg']);
+
+    expect(Brand::markUrl())->toBe(asset('storage/marque/pictogramme.svg'));
+});
+
+it('rend le manifeste depuis les réglages, jamais depuis un fichier', function (): void {
+    app(UpdateBrandSettings::class)->handle([
+        'product_name' => 'Essai',
+        'short_name' => 'Essai',
+    ]);
+
+    $this->get('/site.webmanifest')
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/manifest+json')
+        ->assertJsonPath('name', 'Essai')
+        ->assertJsonPath('short_name', 'Essai')
+        ->assertJsonPath('theme_color', Brand::settings()->color_background);
+});
+
+it('cite le manifeste et le jeu complet d’icônes dans la vue racine', function (): void {
+    $this->get('/')
+        ->assertSee('<link rel="manifest" href="/site.webmanifest">', escape: false)
+        ->assertSee('<link rel="icon" href="/favicon.svg" type="image/svg+xml">', escape: false)
+        ->assertSee('rel="apple-touch-icon"', escape: false);
+});

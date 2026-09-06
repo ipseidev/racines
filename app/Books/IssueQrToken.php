@@ -31,6 +31,8 @@ use App\Services\Tokens\TokenService;
  */
 final readonly class IssueQrToken
 {
+    public function __construct(private TokenService $tokens) {}
+
     public function handle(BookChapter $chapter): AccessToken
     {
         $existing = $chapter->qrToken;
@@ -39,25 +41,15 @@ final readonly class IssueQrToken
             return $existing;
         }
 
-        $story = $chapter->story;
-        $plain = self::plainFor($chapter);
-
-        // L'empreinte s'écrit **hors** de l'affectation en masse : la colonne
-        // est protégée, et c'est ce qui garantit que rien n'écrit un jeton
-        // par mégarde (bloc 03).
-        $hash = TokenService::hash($plain);
-        $token = AccessToken::query()->where('token_hash', $hash)->first() ?? new AccessToken;
-        $token->token_hash = $hash;
-        $token->type = TokenType::Qr;
-        $token->scope = ['listen'];
-        $token->single_use = false;
-        // Aucune expiration technique : l'engagement de durée est **annoncé**
-        // dans le colophon (D-8) et tenu par une révocation explicite, pas par
-        // une date qui ferait mourir un livre sans prévenir personne.
-        $token->expires_at = null;
-        $token->revoked_at = null;
-        $token->subject()->associate($story);
-        $token->save();
+        // L'empreinte ne se manipule que dans le service de jetons : c'est un
+        // invariant du bloc 03, et un test le vérifie sur tout `app/`. Ici on
+        // ne fournit que le **code dérivé**.
+        $token = $this->tokens->issueDerived(
+            TokenType::Qr,
+            $chapter->story,
+            self::plainFor($chapter),
+            ['listen'],
+        );
 
         $chapter->qrToken()->associate($token);
         $chapter->save();

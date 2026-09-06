@@ -72,6 +72,8 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
         Route::post('/livre/bat', [BookController::class, 'render'])->name('book.render');
         Route::post('/livre/accord', [BookController::class, 'approve'])->name('book.approve');
 
+        Route::post('/livre/exemplaires', [BookController::class, 'extraCopies'])->name('book.extra_copies');
+
         Route::delete('/livre/histoires/{story}/qr', [QrRevocationController::class, 'initiatorDestroy'])->name('book.qr.revoke');
         Route::post('/livre/histoires/{story}/qr', [QrRevocationController::class, 'initiatorRestore'])->name('book.qr.restore');
 

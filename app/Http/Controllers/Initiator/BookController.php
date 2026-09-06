@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Initiator;
 use App\Books\ApproveBookProof;
 use App\Books\BookLexiconCheck;
 use App\Books\ComputeBookReadiness;
+use App\Books\OrderExtraCopies;
 use App\Books\SelectBookChapters;
 use App\Books\SelectedChaptersPresenter;
 use App\Enums\BookStatus;
@@ -19,7 +20,10 @@ use App\Support\InitiatorProject;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Le livre, vu par l'Initiateur·rice.
@@ -160,6 +164,30 @@ final readonly class BookController
         }
 
         return back()->with('status', __('initiator.book.ordered'));
+    }
+
+    /**
+     * Commander des exemplaires supplémentaires.
+     *
+     * `Inertia::location` et non une redirection ordinaire : Inertia ne sait
+     * pas suivre un `302` vers un domaine externe, et le bouton paraîtrait
+     * mort. C'est T-168, appliquée avant de la réapprendre.
+     */
+    public function extraCopies(Request $request, OrderExtraCopies $copies): SymfonyResponse|RedirectResponse
+    {
+        $book = $this->book($this->project($request));
+
+        $validated = $request->validate([
+            'quantity' => ['required', 'integer', 'min:1', 'max:'.OrderExtraCopies::MAX_AT_ONCE],
+        ]);
+
+        try {
+            $session = $copies->handle($book, (int) $validated['quantity']);
+        } catch (RuntimeException $exception) {
+            return back()->withErrors(['quantity' => $exception->getMessage()]);
+        }
+
+        return Inertia::location($session->url);
     }
 
     private function project(Request $request): Project
