@@ -10,14 +10,17 @@ use App\Actions\TrashStoryAction;
 use App\Audit\AuditLog;
 use App\Filament\Concerns\LogsViews;
 use App\Filament\Resources\Stories\StoryResource;
+use App\Models\Recording;
 use App\Models\Story;
 use App\Models\User;
+use App\Services\Storage\MediaStorage;
 use App\States\Story\Hidden;
 use App\States\Story\Trashed;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Icons\Heroicon;
 
 /**
  * La fiche d'une histoire, côté support.
@@ -40,9 +43,61 @@ final class ViewStory extends ViewRecord
     /**
      * @return array<Action>
      */
+    /**
+     * La clé de l'audio à écouter : le dérivé MP3 s'il existe, l'original
+     * sinon. Rien du tout si l'histoire n'a pas d'enregistrement — l'action
+     * est alors invisible plutôt que grisée : un bouton qui ne mène nulle
+     * part invite à demander pourquoi.
+     */
+    private static function audioKey(Story $story): ?string
+    {
+        $recording = $story->currentRecording()->first();
+
+        if (! $recording instanceof Recording) {
+            return null;
+        }
+
+        $key = $recording->derived_mp3_path ?? $recording->original_path;
+
+        return is_string($key) && $key !== '' ? $key : null;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
+            /*
+             * Écouter laisse une trace, et c'est le point.
+             *
+             * Le dossier exige la journalisation des **lectures** et pas
+             * seulement des écritures : un support qui écoute l'histoire de
+             * quelqu'un doit laisser une trace, faute de quoi le back-office
+             * n'est qu'un accès libre aux souvenirs d'une famille.
+             *
+             * L'action ouvre une URL temporaire de soixante secondes plutôt
+             * que d'incruster un lecteur : on journalise une **demande
+             * délibérée** d'écoute, pas un chargement de page (T-181).
+             */
+            Action::make('listen')
+                ->label(__('admin.stories.actions.listen'))
+                ->icon(Heroicon::OutlinedSpeakerWave)
+                ->visible(fn (Story $record): bool => self::audioKey($record) !== null)
+                ->action(function (Story $record): ?string {
+                    $key = self::audioKey($record);
+
+                    if ($key === null) {
+                        return null;
+                    }
+
+                    $recording = $record->currentRecording()->first();
+
+                    AuditLog::record('played Recording', $recording ?? $record, [
+                        'story_id' => $record->id,
+                    ], $record->project);
+
+                    return app(MediaStorage::class)->temporaryUrl($key, 60);
+                })
+                ->openUrlInNewTab(),
+
             $this->withReason(
                 'hide',
                 fn (Story $story): Story => app(HideStoryAction::class)->handle($story),

@@ -74,6 +74,7 @@ return [
         'validated_at' => 'Validée le',
         'shared_at' => 'Partagée le',
         'actions' => [
+            'listen' => 'Écouter l’enregistrement',
             'hide' => 'Masquer',
             'trash' => 'Mettre à la corbeille',
             'restore' => 'Remettre',
