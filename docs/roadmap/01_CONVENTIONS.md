@@ -164,6 +164,7 @@ plus cher que pas de feuille du tout.
 | `sail artisan demo:liens` | La feuille des vérifications : liens réels, comptes, codes, et en rouge ce qui attend encore une clé ou un appareil. `--bloc=07` n'en imprime qu'un |
 | `sail artisan demo:moteur` | Arme les trois signaux du checkpoint du moteur et efface la trace du tour précédent, pour qu'il se rejoue (bloc 09) |
 | `sail artisan demo:invitation` | Fabrique un projet neuf et imprime son lien d'opt-in : l'opt-in est définitif, donc le lien du décor ne sert qu'une fois (bloc 10) |
+| `sail artisan demo:cadeau` | Le parcours du cadeau bout à bout : l'annonce d'abord, puis `--question` pour la première question sans attendre la nuit que l'acceptation pose — jusqu'à la photo (blocs 10 → 04 → 12) |
 | `sail artisan demo:reaction-timing` | Affiche ou bascule le drapeau des réactions du projet d'essai ; `--veille` antidate une réaction pour que le résumé la voie (bloc 08) |
 | `sail artisan fluide:try --file=…` | Soumet un mot à mot au vrai modèle et imprime le rendu à côté, sans rien écrire en base (bloc 06, corpus dans `docs/corpus/`) |
 

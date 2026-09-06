@@ -311,6 +311,10 @@ final class DemoLinks extends Command
                         'url' => self::link(TokenType::Invitation, 'optin-refuse'),
                     ],
                     ['quoi' => 'Un lien d’invitation neuf, à volonté — chaque appel fabrique un projet, parce que l’opt-in ne se rejoue pas.', 'cmd' => 'demo:invitation'],
+                    [
+                        'quoi' => 'Le parcours entier vu par la personne à qui on offre le cadeau : l’annonce, l’acceptation, puis la première question — sans attendre la nuit que l’acceptation vient de poser — et la photo après la confirmation.',
+                        'cmd' => 'demo:cadeau  puis, une fois acceptée,  demo:cadeau --question',
+                    ],
                     ['quoi' => 'Son espace : réordonner deux questions, inviter un proche, copier le lien WhatsApp, demander la rétractation.', 'url' => rtrim((string) config('app.url'), '/').'/espace'],
                 ],
             ],

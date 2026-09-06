@@ -68,7 +68,44 @@ remonter, en plus des exceptions :
   pas et qu'on refuse donc tous les fichiers ;
 - l'échec d'une sauvegarde, par la notification de `laravel-backup`.
 
-## 4. Ce qu'on ne surveille pas, et pourquoi
+## 4. `prod:check` — « si quelqu'un achète maintenant, est-ce que ça marche ? »
+
+Les contrôles du §1 tournent en continu et surveillent des **pannes**.
+`prod:check` répond à une autre question, une seule fois, quand on la pose :
+la chaîne entre un paiement et une famille qui écoute une voix est-elle
+entière ?
+
+```bash
+php artisan prod:check            # avec les appels réels aux prestataires
+php artisan prod:check --rapide   # sans, quand on veut juste l'état interne
+```
+
+Elle contacte vraiment Twilio, Gladia et Anthropic. C'est le point : une clé
+présente dans l'environnement ne prouve pas qu'elle est valide, et on
+l'apprend sinon avec le premier client.
+
+Chaque ligne dit **ce que le client perd**, pas ce qui manque techniquement.
+« TWILIO_FROM est vide » ne se lit pas à trois heures du matin ; « aucun SMS
+ne part, les parents ne reçoivent pas leur invitation » se lit.
+
+| Verdict | Ce que ça veut dire |
+|---|---|
+| rouge | La chaîne est coupée. Quelqu'un peut payer et ne rien recevoir. Code de sortie 1. |
+| orange | Une fonction est dégradée, la chaîne tient. Code de sortie 0. |
+| vert | Rien à faire. |
+
+Hors production, ce qui serait rouge devient orange et le dit — un décor
+local est *censé* avoir une clé Stripe de test et un faux transcripteur, et
+les peindre en rouge apprendrait à ignorer le rouge. C'est aussi ce qui rend
+la répétition locale utile : on voit la ligne avant le jour où elle casse.
+
+**À lancer après chaque déploiement qui touche l'environnement**, et en
+premier réflexe quand quelque chose cloche sans qu'on sache quoi.
+
+Ce qu'elle ne regarde pas, volontairement : la mesure d'audience, le RGPD, le
+rendu du livre. Ce sont des sujets importants qui ne coupent pas la chaîne.
+
+## 5. Ce qu'on ne surveille pas, et pourquoi
 
 **Le temps de réponse des pages.** Un budget de performance existe
 (`lighthouserc.json`), mesuré au déploiement. Le surveiller en continu
