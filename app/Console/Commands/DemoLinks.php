@@ -345,6 +345,39 @@ final class DemoLinks extends Command
                     ['quoi' => 'Une photo de 800 px : « un peu petite pour l’impression », et elle n’est pas marquée prête pour le livre.'],
                 ],
             ],
+            [
+                'bloc' => '13',
+                'titre' => 'Le livre, et ce qu’il promet pour dix ans',
+                'avant' => [
+                    'La matière ne se fabrique pas à la main : `sail artisan demo:livre` ajoute dix histoires validées, `--riche` en fait assez pour un livre complet.',
+                    'Le rendu réel demande Chromium, présent dans l’image depuis T-195, et `PDF_DRIVER=browsershot`.',
+                ],
+                'etapes' => [
+                    [
+                        'quoi' => 'Matière intermédiaire : la jauge doit dire qu’il manque quelque chose, et proposer un livret.',
+                        'cmd' => 'demo:livre puis books:evaluate',
+                    ],
+                    [
+                        'quoi' => 'Assez de matière : la jauge passe au vert et la forme devient un livre. Les quatre mesures comptent, pas un pourcentage — le seuil qui manque en dernier est celui des pages.',
+                        'cmd' => 'demo:livre --riche puis books:evaluate',
+                    ],
+                    [
+                        'quoi' => 'Exclure une histoire, en remonter une autre, écrire un avant-propos, vérifier les noms propres, puis générer le bon à tirer. Le PDF s’ouvre : sommaire juste, un QR par chapitre, colophon avec la durée d’engagement.',
+                        'url' => url('/espace/livre'),
+                    ],
+                    [
+                        'quoi' => 'Scanner un QR du PDF avec un téléphone : la page d’écoute s’ouvre sans compte. Poser un code famille sur le projet, rescanner : le code est demandé.',
+                    ],
+                    [
+                        'quoi' => 'Approuver sans cocher les deux cases : refus. Cocher, approuver : la sélection se verrouille, les histoires entrent au livre, et un ticket d’impression apparaît avec le PDF.',
+                        'url' => url('/admin/books'),
+                    ],
+                    [
+                        'quoi' => 'Désactiver le QR d’une histoire depuis l’espace du narrateur : la page dit que le texte imprimé reste, sans dire pourquoi. Le réactiver redonne le **même** code.',
+                        'url' => self::link(TokenType::NarratorSpace, 'space'),
+                    ],
+                ],
+            ],
         ];
     }
 }
