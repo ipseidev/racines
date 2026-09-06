@@ -1,7 +1,7 @@
 # Bloc 13 — Livre : book-ready, BAT, PDF, QR, impression
 
-Statut : ◐ en cours (code complet, checkpoint §7 à jouer) · Dépend de : 12 · Tag de fin : `bloc-13-done`
-**⏳ Checkpoint jouable en local** — `sail artisan demo:livre` fabrique la matière, `demo:liens` donne les six étapes. Le rendu réel demande Chromium, présent dans l'image depuis T-196.
+Statut : ◐ **en pause** (code complet, checkpoint à moitié joué) · Dépend de : 12 · Tag de fin : `bloc-13-done`
+**⏸ Reporté sur décision du fondateur le 2026-09-06** — le livre est un livrable M+12, le pilote démarre sans lui. Le code est complet et éprouvé sur un rendu réel ; il reste quatre points de vérification humaine, détaillés en §10. Pour reprendre : `sail artisan demo:livre`, puis `demo:liens`.
 Références dossier : PRD P0-13, P0-14, P0-15, §10 (sortie honorable : livre, livret, chapitre fondateur, prolongation, crédit d'impression), R-6 (book-ready), R-2 (M+12 à M+15), doc 04 §7 (QR : lecture non authentifiée par défaut, code famille optionnel, D-8), §10 (BAT obligatoire, « l'imprimé est définitif ») ; décisions T-11, T-12.
 
 ## 1. Objectif
@@ -95,6 +95,15 @@ Sail et Forge : Node ≥ 22, Chromium pour Puppeteer (`npx puppeteer browsers in
 ## 9. Règle de décision par défaut
 
 Tant que l'imprimeur n'est pas connu, le PDF reste en RGB sans passe PDF/X. **Le format, lui, est arrêté** : 16 × 24 cm (T-179), parce qu'il se dessine dans le gabarit et qu'en changer plus tard ne serait pas éditer une constante mais refaire la mise en page. Aucune promesse de délai de livraison n'apparaît dans l'interface avant le devis (doc 03 P0-14).
+
+
+**2026-09-06 — checkpoint interrompu à mi-parcours, sur décision du fondateur.** « Ne perdons plus de temps à cette feature, elle ne sera utile que dans un an minimum. » C'est juste : le livre est un livrable M+12, et le pilote démarre sans lui.
+
+**Ce qui a été vérifié sur un rendu réel**, et qui tient : le bon à tirer se fabrique en deux secondes avec le Chromium de l'image ; la couverture, le sommaire aux vraies pages, les chapitres et le colophon avec la mention D-8 sont justes ; **un QR scanné avec un téléphone ouvre bien la page d'écoute**. Points 3 et 4 du §7, plus le premier temps du point 1 (matière intermédiaire → livret).
+
+**Ce qui reste à jouer, le jour où on y revient** : le second temps du point 1 (`demo:livre --riche` → la forme passe à « Livre »), le code famille posé puis redemandé au scan, l'accord à l'impression et son ticket, la révocation d'un QR. Tout est en place et testé ; il manque l'œil.
+
+**Ce que le passage a coûté et rapporté** : neuf défauts, dont six trouvés par le premier rendu réel (T-197) — parmi eux une **page blanche imprimée** pour un chapitre sans texte — et trois cases cochées sur des routes sans interface : la révocation du QR, le signalement d'un défaut, et le code famille qui était lu partout et posé nulle part (T-200).
 
 ## 10. Note de checkpoint
 

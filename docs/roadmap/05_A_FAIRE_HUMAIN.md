@@ -249,7 +249,7 @@ Tout le mode opératoire — jouer un achat, rejouer un événement, diagnostiqu
 - ~~**Bloc 08** — écoute famille et réactions.~~ **Fait le 2026-09-05**, sur un vrai iPhone.
 - ~~**Bloc 09** — moteur de complétion.~~ **Fait le 2026-09-05.** Le préalable ne se force plus à la main : `sail artisan demo:moteur` arme les trois signaux, dit ce qu'il a armé, et se rejoue (T-153).
 - **Bloc 12** — les photos. ~15 minutes, et deux préalables gratuits : `sail up -d clamav` une première fois (deux à trois minutes, un demi-gigaoctet de signatures, gardé ensuite), puis une **photo prise avec ton iPhone** — c'est le seul moyen d'éprouver la conversion HEIC, qu'aucun outil de cette image ne sait fabriquer. Vérifie avec `exiftool` sur l'original stocké qu'il ne reste aucune coordonnée GPS : c'est le point le plus important du bloc.
-- **Bloc 13, le livre** — ~25 minutes, tout en local. `sail artisan demo:livre` fabrique la matière, `demo:liens` donne les six étapes. Le rendu marche : Chromium est dans l'image depuis T-196, et un bon à tirer de 23 pages sort en deux secondes. **Ce qu'on te demande, c'est l'œil** — ouvrir le PDF et le lire comme un livre. Le premier rendu réel a trouvé six défauts qu'aucun test ne voyait (T-197), dont une page blanche imprimée ; ce qui reste ne se trouvera pas autrement.
+- ~~**Bloc 13, le livre**~~ — **en pause depuis le 2026-09-06**, sur décision : livrable M+12. Le PDF et le QR ont été vérifiés sur un rendu réel et fonctionnent. Quatre points de vérification restent, listés en §10 de la feuille du bloc.
 
 - ~~**Bloc 11** — le back-office.~~ **Fait le 2026-09-06**, les cinq points, remboursement partiel compris. Cinq défauts trouvés : T-182, T-186, T-188, T-189, T-195. Le second facteur du panneau est désormais éteint hors production (`ADMIN_2FA`, ignoré en production) ; pour rejouer le point 1, remettre la clé à `true`.
 - ~~**Bloc 10**~~ — **fait le 2026-09-05**, avec un vrai paiement de test. Trois défauts de paiement trouvés et corrigés (T-167 à T-169).
@@ -328,7 +328,7 @@ Le seul endroit à tenir à jour.
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil, et leur soumettre la garantie « satisfait ou remboursé pendant trente jours, sans justification » affichée sur la page d'accueil (T-134) | bloc 10 | ☐ |
 | 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☑ 2026-09-06 |
 | 12octies | 15 min pour le checkpoint du bloc 12 (+ `sail up -d clamav`, une photo iPhone) | bloc 12 | ☑ 2026-09-06 |
-| 12nonies | 25 min pour le checkpoint du bloc 13 : `demo:livre`, générer un bon à tirer, **ouvrir le PDF et le lire**, scanner un QR, approuver | bloc 13 | ☐ |
+| 12nonies | 15 min pour **finir** le checkpoint du bloc 13 : code famille, bascule de forme, accord à l'impression, révocation d'un QR | bloc 13 | ⏸ reporté le 2026-09-06, livrable M+12 |
 | 12septies | Relire les six playbooks du support (`resources/playbooks/`) | bloc 11 | ☐ |
 | 13 | Cloudflare R2 : 3 compartiments UE + CORS | bloc 16 | ☐ |
 | 14 | Stripe : compte, clés de test, 6 prix (`price_…`), coupon, CLI pour le webhook | bloc 10 | ☑ **fait le 2026-09-05** — compte `acct_1UBU3n…`, produits et prix créés par API, paiement réel joué de bout en bout, bloc tagué. **Restent les prix en mode live et une clé restreinte avant le go-live** |
