@@ -185,6 +185,8 @@ return [
         'transcription_failed' => 'Transcription échouée',
         'withdrawal_requested' => 'Rétractation demandée',
         'refund_offer' => 'Remboursement à proposer',
+        'print_order' => 'Livre à commander',
+        'print_defect' => 'Défaut d’impression signalé',
     ],
 
     'support_ticket_status' => [

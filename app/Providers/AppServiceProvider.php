@@ -25,6 +25,11 @@ use App\Services\Payments\FakeRefunds;
 use App\Services\Payments\Refunds;
 use App\Services\Payments\StripeCheckoutSessions;
 use App\Services\Payments\StripeRefunds;
+use App\Services\Pdf\BrowsershotHtmlToPdf;
+use App\Services\Pdf\FakeHtmlToPdf;
+use App\Services\Pdf\HtmlToPdf;
+use App\Services\Print\ManualPrintProvider;
+use App\Services\Print\PrintProvider;
 use App\Services\Sms\AllowlistSmsSender;
 use App\Services\Sms\FakeSmsSender;
 use App\Services\Sms\LogSmsSender;
@@ -114,6 +119,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiters();
         $this->configureSmsSender();
         $this->configureMediaStorage();
+        $this->configureBook();
         $this->configureTranscription();
         $this->configureStoryRenderer();
         $this->configureAnalytics();
@@ -357,6 +363,32 @@ final class AppServiceProvider extends ServiceProvider
      * en bout tourne avec `APP_ENV=testing`, et une liaison fondée sur
      * `runningUnitTests()` lui donnait un stockage en mémoire.
      */
+    /**
+     * Le rendu du BAT et l'impression (bloc 13).
+     *
+     * `HtmlToPdf` se choisit par une clé de configuration et **jamais** par
+     * l'environnement (leçon T-61) : un rendu déduit finit par être le faux
+     * en production, et une famille recevrait un PDF d'une page blanche.
+     *
+     * `PrintProvider` n'a qu'une implémentation, manuelle, et c'est la
+     * décision §9 du bloc 13 : l'imprimeur n'est pas choisi, le devis n'est
+     * pas fait, et une dizaine de familles ne justifie pas une intégration.
+     */
+    private function configureBook(): void
+    {
+        $this->app->singleton(HtmlToPdf::class, function (): HtmlToPdf {
+            $driver = (string) config('services.browsershot.driver');
+
+            return match ($driver) {
+                'fake' => new FakeHtmlToPdf,
+                'browsershot' => new BrowsershotHtmlToPdf,
+                default => throw new RuntimeException("Unknown pdf driver [{$driver}]."),
+            };
+        });
+
+        $this->app->bind(PrintProvider::class, ManualPrintProvider::class);
+    }
+
     private function configureMediaStorage(): void
     {
         $this->app->singleton(MediaStorage::class, function (): MediaStorage {

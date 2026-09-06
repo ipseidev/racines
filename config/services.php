@@ -72,6 +72,10 @@ return [
      * renseigner sert aux environnements où ils n'y sont pas.
      */
     'browsershot' => [
+        // `browsershot` ou `fake`, jamais déduit de l'environnement (T-61) :
+        // un rendu déduit finit par être le faux en production, et une famille
+        // recevrait un PDF d'une page blanche.
+        'driver' => env('PDF_DRIVER', 'browsershot'),
         'node_path' => env('BROWSERSHOT_NODE_PATH'),
         'npm_path' => env('BROWSERSHOT_NPM_PATH'),
         'chrome_path' => env('BROWSERSHOT_CHROME_PATH'),

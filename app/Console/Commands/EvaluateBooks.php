@@ -9,6 +9,7 @@ use App\Books\ProposeBookFormat;
 use App\Enums\ProjectStatus;
 use App\Models\Book;
 use App\Models\Project;
+use App\Notifications\BookNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -69,7 +70,9 @@ final class EvaluateBooks extends Command
             $book->proposed_format = ProposeBookFormat::for($measured);
             $book->page_count_estimate = $measured->estimatedPages;
 
-            if ($measured->isReady() && $book->book_ready_at === null) {
+            $devientPret = $measured->isReady() && $book->book_ready_at === null;
+
+            if ($devientPret) {
                 // Un fait, pas un état : le repousser chaque jour rendrait
                 // impossible de dire quand la famille est devenue prête.
                 $book->book_ready_at = now();
@@ -82,15 +85,51 @@ final class EvaluateBooks extends Command
                 $book->format = $book->proposed_format;
             }
 
+            $formatChange = $book->isDirty('proposed_format') && $book->getOriginal('proposed_format') !== null;
+
             $this->applyHonourableExit($project, $book);
 
             $book->save();
             $touched++;
+
+            /*
+             * Prévenir **après** l'enregistrement, et une seule fois.
+             *
+             * « Il y a de quoi faire un livre » se dit le jour où c'est vrai,
+             * jamais chaque matin : la commande passe tous les jours, et une
+             * relance quotidienne sur un livre qu'on ne se décide pas à faire
+             * serait du harcèlement — exactement ce que le moteur de
+             * complétion s'interdit ailleurs.
+             *
+             * La proposition de format ne part que sur un **changement**, et
+             * pas au premier calcul : annoncer « nous vous proposons un
+             * livret » à une famille qui vient d'enregistrer sa première
+             * histoire serait annoncer un échec avant l'effort.
+             */
+            if ($devientPret) {
+                $this->tell($book, 'ready');
+
+                continue;
+            }
+
+            if ($formatChange) {
+                $this->tell($book, 'format_proposal');
+            }
         }
 
         $this->components->info(sprintf('%d livre(s) évalué(s).', $touched));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Le message part à l'Initiateur·rice, propriétaire du projet.
+     *
+     * @param  'ready'|'format_proposal'  $reason
+     */
+    private function tell(Book $book, string $reason): void
+    {
+        $book->project->owner->notify(new BookNotification($book, $reason));
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Enums\BookFormat;
 use App\Enums\ProjectStatus;
 use App\Models\Book;
 use App\Models\Project;
+use App\Notifications\BookNotification;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Notification;
 
@@ -162,4 +163,64 @@ it('est planifiée quotidiennement', function (): void {
 
     expect($commands->contains(fn (string $c): bool => str_contains($c, 'books:evaluate')))
         ->toBeTrue();
+});
+
+/*
+ * Les deux messages du moteur d'évaluation (§6.1).
+ *
+ * La commande passe **tous les jours**. Ce qui compte n'est donc pas qu'elle
+ * sache écrire, c'est qu'elle sache se taire : une relance quotidienne sur un
+ * livre qu'une famille ne se décide pas à faire serait du harcèlement — ce que
+ * le moteur de complétion s'interdit partout ailleurs.
+ */
+it('annonce « il y a de quoi faire un livre » une seule fois', function (): void {
+    $project = Project::factory()->create([
+        'status' => ProjectStatus::Active,
+        'collection_started_at' => now()->subMonths(3),
+    ]);
+
+    // De quoi franchir les seuils R-6 : mots, pages, thèmes.
+    foreach (['childhood', 'work', 'love', 'places', 'beliefs_values', 'family_origins'] as $index => $theme) {
+        storyWithWords($project, 3_000, $theme, minutes: 20.0);
+    }
+
+    $this->artisan('books:evaluate')->assertSuccessful();
+    $this->artisan('books:evaluate')->assertSuccessful();
+
+    Notification::assertSentToTimes($project->owner, BookNotification::class, 1);
+});
+
+it('ne dit rien au premier calcul d’un projet qui débute', function (): void {
+    $project = Project::factory()->create([
+        'status' => ProjectStatus::Active,
+        'collection_started_at' => now()->subWeeks(2),
+    ]);
+    storyWithWords($project, 400, 'childhood');
+
+    $this->artisan('books:evaluate')->assertSuccessful();
+
+    // Annoncer « nous vous proposons un chapitre fondateur » à une famille qui
+    // vient d'enregistrer sa première histoire serait annoncer un échec avant
+    // même l'effort.
+    Notification::assertNothingSentTo($project->owner);
+});
+
+it('signale un changement de format, et lui seul', function (): void {
+    $project = Project::factory()->create([
+        'status' => ProjectStatus::Active,
+        'collection_started_at' => now()->subMonths(2),
+    ]);
+    storyWithWords($project, 400, 'childhood');
+
+    $this->artisan('books:evaluate')->assertSuccessful();
+    Notification::assertNothingSentTo($project->owner);
+
+    // La matière passe le seuil du livret : là, il y a quelque chose à dire.
+    storyWithWords($project, 4_000, 'work', minutes: 30.0);
+    $this->artisan('books:evaluate')->assertSuccessful();
+
+    Notification::assertSentTo(
+        $project->owner,
+        fn (BookNotification $notification): bool => $notification->reason === 'format_proposal',
+    );
 });

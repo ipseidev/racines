@@ -29,4 +29,13 @@ enum SupportTicketKind: string
      */
     case WithdrawalRequested = 'withdrawal_requested';
     case RefundOffer = 'refund_offer';
+    /*
+     * Bloc 13 : l'impression, entièrement manuelle au pilote (§9 du bloc).
+     * `print_order` porte le lien du bon à tirer approuvé ; `print_defect`
+     * ouvre une réimpression gratuite, que le dossier promet sans condition
+     * (doc 04 §10) — la juger au cas par cas coûterait plus en discussion
+     * qu'un exemplaire n'en coûte à réimprimer.
+     */
+    case PrintOrder = 'print_order';
+    case PrintDefect = 'print_defect';
 }

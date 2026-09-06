@@ -51,6 +51,8 @@
         <env name="INERTIA_SSR_ENABLED" value="false" force="true"/>
         <!-- Le démon ClamAV n’existe pas en intégration continue. -->
         <env name="ANTIVIRUS_SCANNER" value="fake" force="true"/>
+        <!-- Le rendu du BAT : le vrai demande Chromium et cinq minutes. -->
+        <env name="PDF_DRIVER" value="fake" force="true"/>
         <!-- Le second facteur du panneau : exigé ici quoi qu'en dise le `.env`
              d'une machine de développement, où il peut être éteint pour que
              les vérifications humaines ne butent pas dessus (T-189). C'est le
