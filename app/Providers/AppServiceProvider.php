@@ -89,7 +89,6 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         self::guardWebhookSecret();
-        self::guardBackupPassword();
 
         $this->configureDefaults();
 
@@ -508,16 +507,19 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Refuser de démarrer en production sans mot de passe d'archive.
+     * Refuser de **sauvegarder** en production sans mot de passe d'archive.
      *
-     * Même raisonnement que pour le secret Stripe (T-171), et le même défaut
-     * possible : sans `BACKUP_ARCHIVE_PASSWORD`, `laravel-backup` n'échoue
-     * pas — il écrit simplement une archive **en clair**. Une nuit de récits
-     * de famille, de consentements et du journal d'audit, déposée non
-     * chiffrée chez un hébergeur, et tout continue de paraître normal.
+     * La première version refusait de **démarrer**, par symétrie avec le
+     * secret Stripe (T-171). C'était disproportionné, et dangereux sur un
+     * site qui vend : sans le secret Stripe, l'endpoint de paiement est
+     * forgeable — la boutique doit s'arrêter. Sans mot de passe d'archive,
+     * le site fonctionne parfaitement ; c'est la sauvegarde de la nuit qui
+     * partirait en clair. Faire tomber une boutique en production pour une
+     * variable qui ne concerne qu'un travail nocturne, c'est transformer une
+     * précaution en panne (T-206).
      *
-     * La faute ne se verrait donc jamais, sauf le jour où quelqu'un accède
-     * au bucket. On échoue au déploiement, là où elle se corrige en une ligne.
+     * La garde vit donc dans la commande de sauvegarde : l'archive ne part
+     * pas, l'alerte part, et le site continue de vendre.
      *
      * Hors production, l'archive peut rester en clair : le décor ne contient
      * que des récits inventés par un seeder.
@@ -533,10 +535,10 @@ final class AppServiceProvider extends ServiceProvider
         }
 
         throw new RuntimeException(
-            'BACKUP_ARCHIVE_PASSWORD est vide : sans lui, la sauvegarde nocturne dépose une '
-            .'archive **en clair** contenant la base entière — récits, consentements, journal '
-            .'d’audit — sur le stockage objet. Posez une phrase longue et rangez-la dans le '
-            .'gestionnaire de secrets : sans elle, aucune archive ne se restaure.'
+            'BACKUP_ARCHIVE_PASSWORD est vide : la sauvegarde déposerait une archive **en '
+            .'clair** contenant la base entière — récits, consentements, journal d’audit — sur '
+            .'le stockage objet. Posez une phrase longue et rangez-la dans le gestionnaire de '
+            .'secrets : sans elle, aucune archive ne se restaure.'
         );
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Jobs\MeasureResumptions;
 use App\Jobs\PollTranscription;
+use App\Providers\AppServiceProvider;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -99,6 +100,17 @@ Schedule::command('books:evaluate')
 | même, quand la rétention tombe pile au moment du passage.
 |
 */
+
+/*
+ * La garde du mot de passe d'archive tourne **avant** la sauvegarde, pas au
+ * démarrage de l'application : sans elle l'archive partirait en clair, mais
+ * le site, lui, fonctionne très bien — le faire tomber pour une variable qui
+ * ne concerne qu'un travail nocturne transformerait une précaution en panne
+ * (T-206).
+ */
+Schedule::call(fn () => AppServiceProvider::guardBackupPassword())
+    ->dailyAt('01:25')
+    ->name('garde-mot-de-passe-archive');
 
 Schedule::command('backup:clean')->dailyAt('01:00')->withoutOverlapping();
 Schedule::command('backup:run')->dailyAt('01:30')->withoutOverlapping();

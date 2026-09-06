@@ -29,7 +29,7 @@ uses(RefreshDatabase::class);
  * c'est là qu'un chiffre s'embellit sans mentir — et **l'idempotence**, parce
  * qu'une commande planifiée finit toujours par tourner deux fois.
  */
-function projetAccepte(string $accepteIlYA, ?string $cohorte = null): Project
+function projetAccepteIlYA(string $accepteIlYA, ?string $cohorte = null): Project
 {
     return Project::factory()->create([
         'status' => ProjectStatus::Active,
@@ -54,8 +54,8 @@ it('écrit une ligne par métrique et par cohorte', function (): void {
     // `cohort_id` est une clé étrangère : deux vraies cohortes, comme en
     // production, plutôt que deux chaînes qui passeraient en SQLite et pas
     // en Postgres.
-    projetAccepte('-100 days', Cohort::factory()->create()->id);
-    projetAccepte('-100 days', Cohort::factory()->create()->id);
+    projetAccepteIlYA('-100 days', Cohort::factory()->create()->id);
+    projetAccepteIlYA('-100 days', Cohort::factory()->create()->id);
 
     $this->artisan('metrics:compute', ['--date' => now()->toDateString()])->assertSuccessful();
 
@@ -66,7 +66,7 @@ it('écrit une ligne par métrique et par cohorte', function (): void {
 });
 
 it('se rejoue sans rien doubler', function (): void {
-    projetAccepte('-100 days');
+    projetAccepteIlYA('-100 days');
 
     $this->artisan('metrics:compute', ['--date' => now()->toDateString()]);
     $avant = DB::table('daily_metrics')->count();
@@ -79,7 +79,7 @@ it('se rejoue sans rien doubler', function (): void {
 });
 
 it('recalcule une date passée', function (): void {
-    projetAccepte('-100 days');
+    projetAccepteIlYA('-100 days');
 
     $this->artisan('metrics:compute', ['--date' => '2026-08-01'])->assertSuccessful();
 
@@ -96,11 +96,11 @@ it('recalcule une date passée', function (): void {
  * produit a échoué le plus tôt.
  */
 it('compte les accepteurs jamais activés dans le dénominateur de H1', function (): void {
-    $actif = projetAccepte('-80 days');
+    $actif = projetAccepteIlYA('-80 days');
     histoiresValidees($actif, 8, now()->subDays(70)->toDateString());
 
     // Un accepteur qui n'a jamais rien enregistré : il **compte**.
-    projetAccepte('-80 days');
+    projetAccepteIlYA('-80 days');
 
     $itt = (new H1Itt8StoriesJ70)->compute(CarbonImmutable::now(), null);
 
@@ -110,9 +110,9 @@ it('compte les accepteurs jamais activés dans le dénominateur de H1', function
 });
 
 it('sort un chiffre plus flatteur pour les activés, et c’est le but de l’écart', function (): void {
-    $actif = projetAccepte('-80 days');
+    $actif = projetAccepteIlYA('-80 days');
     histoiresValidees($actif, 8, now()->subDays(70)->toDateString());
-    projetAccepte('-80 days');
+    projetAccepteIlYA('-80 days');
 
     $itt = (new H1Itt8StoriesJ70)->compute(CarbonImmutable::now(), null);
     $actives = (new H1Activated)->compute(CarbonImmutable::now(), null);
@@ -124,7 +124,7 @@ it('sort un chiffre plus flatteur pour les activés, et c’est le but de l’é
 });
 
 it('ignore les accepteurs trop récents pour avoir eu leurs soixante-dix jours', function (): void {
-    projetAccepte('-10 days');
+    projetAccepteIlYA('-10 days');
 
     // Les compter ferait baisser le taux à chaque vente, ce qui n'a aucun sens.
     expect((new H1Itt8StoriesJ70)->compute(CarbonImmutable::now(), null)->denominator)->toBe(0);
@@ -134,7 +134,7 @@ it('ignore les accepteurs trop récents pour avoir eu leurs soixante-dix jours',
  * La North Star : la boucle entière, ou rien.
  */
 it('ne compte pas vivant un projet qui produit sans être écouté', function (): void {
-    $project = projetAccepte('-40 days');
+    $project = projetAccepteIlYA('-40 days');
     histoiresValidees($project, 3, now()->subDays(5)->toDateString());
 
     // Trois histoires validées et personne pour les écouter : ce n'est pas
@@ -144,7 +144,7 @@ it('ne compte pas vivant un projet qui produit sans être écouté', function ()
 });
 
 it('compte vivant un projet écouté trente secondes par un proche', function (): void {
-    $project = projetAccepte('-40 days');
+    $project = projetAccepteIlYA('-40 days');
     histoiresValidees($project, 1, now()->subDays(5)->toDateString());
 
     $membre = FamilyMember::factory()->create(['project_id' => $project->id]);
@@ -166,7 +166,7 @@ it('compte vivant un projet écouté trente secondes par un proche', function ()
 });
 
 it('ne compte pas une écoute du narrateur qui se réécoute', function (): void {
-    $project = projetAccepte('-40 days');
+    $project = projetAccepteIlYA('-40 days');
     histoiresValidees($project, 1, now()->subDays(5)->toDateString());
 
     $event = new ListenEvent([
