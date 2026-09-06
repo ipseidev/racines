@@ -53,6 +53,9 @@
         <env name="ANTIVIRUS_SCANNER" value="fake" force="true"/>
         <!-- Le rendu du BAT : le vrai demande Chromium et cinq minutes. -->
         <env name="PDF_DRIVER" value="fake" force="true"/>
+        <!-- L'endpoint de santé n'existe que si un secret est posé : la suite
+             en pose un pour pouvoir vérifier qu'il refuse les autres. -->
+        <env name="OH_DEAR_HEALTH_CHECK_SECRET" value="secret-de-test" force="true"/>
         <!-- Le second facteur du panneau : exigé ici quoi qu'en dise le `.env`
              d'une machine de développement, où il peut être éteint pour que
              les vérifications humaines ne butent pas dessus (T-189). C'est le

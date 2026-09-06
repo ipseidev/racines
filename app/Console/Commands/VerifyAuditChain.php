@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Audit\AuditLog;
+use App\Audit\ChainVerifier;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use stdClass;
 
 /**
  * Recalcule la chaîne du journal d'audit et signale ce qui ne colle pas.
@@ -33,22 +31,25 @@ final class VerifyAuditChain extends Command
 
     protected $description = 'Vérifie l’intégrité de la chaîne du journal d’audit';
 
-    public function handle(): int
+    public function handle(ChainVerifier $verifier): int
     {
-        $rows = $this->rows();
+        $from = is_string($this->option('from')) ? $this->option('from') : null;
+        $to = is_string($this->option('to')) ? $this->option('to') : null;
 
-        if ($rows === []) {
+        $checked = $verifier->count(null, $from, $to);
+
+        if ($checked === 0) {
             $this->components->info('Journal vide : rien à vérifier.');
 
             return self::SUCCESS;
         }
 
-        $breaks = $this->breaks($rows);
+        $breaks = $verifier->breaks(null, $from, $to);
 
         if ($breaks === []) {
             $this->components->info(sprintf(
                 'Chaîne intacte : %d ligne(s) vérifiée(s).',
-                count($rows),
+                $checked,
             ));
 
             return self::SUCCESS;
@@ -67,7 +68,7 @@ final class VerifyAuditChain extends Command
         $this->components->error(sprintf(
             '%d rupture(s) sur %d ligne(s) vérifiée(s).',
             count($breaks),
-            count($rows),
+            $checked,
         ));
 
         // Journalisé en plus d'être affiché : la commande tourne dans le
@@ -75,80 +76,9 @@ final class VerifyAuditChain extends Command
         // les journaux (Flare au bloc 16).
         Log::critical('audit.chain_broken', [
             'breaks' => $breaks,
-            'checked' => count($rows),
+            'checked' => $checked,
         ]);
 
         return self::FAILURE;
-    }
-
-    /**
-     * @return list<stdClass>
-     */
-    private function rows(): array
-    {
-        $query = DB::table('audit_logs')->orderBy('id');
-
-        $from = $this->option('from');
-        $to = $this->option('to');
-
-        if (is_string($from) && $from !== '') {
-            $query->whereDate('occurred_at', '>=', $from);
-        }
-
-        if (is_string($to) && $to !== '') {
-            $query->whereDate('occurred_at', '<=', $to);
-        }
-
-        return array_values($query->get()->all());
-    }
-
-    /**
-     * @param  list<stdClass>  $rows
-     * @return list<string>
-     */
-    private function breaks(array $rows): array
-    {
-        $breaks = [];
-        $expected = null;
-
-        foreach ($rows as $index => $row) {
-            $previous = trim((string) $row->previous_hash);
-
-            /*
-             * Le premier maillon examiné doit s'accrocher à la racine — mais
-             * seulement si l'on a demandé le journal entier. Une période
-             * bornée commence légitimement au milieu de la chaîne, et exiger
-             * la racine y produirait une fausse alerte chaque jour.
-             */
-            if ($index === 0) {
-                $whole = ! is_string($this->option('from')) || $this->option('from') === '';
-
-                if ($whole && $previous !== AuditLog::GENESIS) {
-                    $breaks[] = sprintf(
-                        'Ligne %d : ne commence pas à la racine.',
-                        (int) $row->id,
-                    );
-                }
-            } elseif ($previous !== $expected) {
-                $breaks[] = sprintf('Ligne %d : chaînage rompu.', (int) $row->id);
-            }
-
-            $recomputed = AuditLog::hash([
-                'previous_hash' => $previous,
-                'occurred_at' => $row->occurred_at,
-                'action' => $row->action,
-                'subject_type' => $row->subject_type,
-                'subject_id' => $row->subject_id,
-                'payload' => $row->payload,
-            ]);
-
-            if ($recomputed !== trim((string) $row->hash)) {
-                $breaks[] = sprintf('Ligne %d : empreinte incohérente.', (int) $row->id);
-            }
-
-            $expected = trim((string) $row->hash);
-        }
-
-        return $breaks;
     }
 }

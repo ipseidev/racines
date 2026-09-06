@@ -52,6 +52,8 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | ~~sunspikes/clamav-validator~~ | **non retenu** | 12 (décision T-118) |
 | spatie/browsershot | 5.4.0 | 13 |
 | endroid/qr-code | 6.1.3 | 13 |
+| spatie/laravel-backup | 10.3 | 16 |
+| spatie/laravel-health | 1.40 | 16 |
 | maennchen/zipstream-php | _à installer_ | 14 |
 | posthog/posthog-php | _à installer_ | 15 |
 | spatie/laravel-backup, spatie/laravel-health | _à installer_ | 16 |

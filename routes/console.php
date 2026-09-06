@@ -88,3 +88,38 @@ Schedule::command('audit:verify')
 Schedule::command('books:evaluate')
     ->dailyAt('05:00')
     ->withoutOverlapping();
+
+/*
+|--------------------------------------------------------------------------
+| Sauvegardes et santé (bloc 16)
+|--------------------------------------------------------------------------
+|
+| L'ordre des deux tâches de sauvegarde n'est pas indifférent : on **nettoie
+| avant** de sauvegarder. L'inverse effacerait parfois l'archive de la nuit
+| même, quand la rétention tombe pile au moment du passage.
+|
+*/
+
+Schedule::command('backup:clean')->dailyAt('01:00')->withoutOverlapping();
+Schedule::command('backup:run')->dailyAt('01:30')->withoutOverlapping();
+
+/*
+ * `backup:monitor` répond à la question que `backup:run` ne pose pas : la
+ * dernière archive est-elle **récente et de taille plausible** ? Une
+ * sauvegarde qui réussit tous les soirs en écrivant trois kilo-octets est le
+ * pire des cas, et c'est le seul que ce contrôle attrape.
+ */
+Schedule::command('backup:monitor')->dailyAt('07:00');
+
+/*
+ * Les contrôles de santé, toutes les minutes.
+ *
+ * C'est ce qui alimente `/health`, interrogé par Oh Dear. Sans exécution
+ * planifiée, l'endpoint rendrait le dernier résultat connu — et une panne de
+ * cinq heures s'afficherait en vert.
+ */
+Schedule::command('health:check')->everyMinute();
+
+// `audit:verify` tourne déjà plus haut, à 04:30. Le contrôle de santé, lui,
+// ne regarde que la journée en cours : relire à chaque minute un journal qui
+// grossit finirait par faire désactiver le contrôle, ce qui est la vraie panne.

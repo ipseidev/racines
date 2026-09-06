@@ -88,6 +88,7 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         self::guardWebhookSecret();
+        self::guardBackupPassword();
 
         $this->configureDefaults();
 
@@ -494,6 +495,39 @@ final class AppServiceProvider extends ServiceProvider
             'STRIPE_WEBHOOK_SECRET est vide : sans lui, Cashier n’installe pas la vérification '
             .'de signature et l’endpoint de paiement accepte n’importe quel appel. Le secret se '
             .'prend dans le tableau de bord Stripe, sur l’endpoint (Développeurs → Webhooks).'
+        );
+    }
+
+    /**
+     * Refuser de démarrer en production sans mot de passe d'archive.
+     *
+     * Même raisonnement que pour le secret Stripe (T-171), et le même défaut
+     * possible : sans `BACKUP_ARCHIVE_PASSWORD`, `laravel-backup` n'échoue
+     * pas — il écrit simplement une archive **en clair**. Une nuit de récits
+     * de famille, de consentements et du journal d'audit, déposée non
+     * chiffrée chez un hébergeur, et tout continue de paraître normal.
+     *
+     * La faute ne se verrait donc jamais, sauf le jour où quelqu'un accède
+     * au bucket. On échoue au déploiement, là où elle se corrige en une ligne.
+     *
+     * Hors production, l'archive peut rester en clair : le décor ne contient
+     * que des récits inventés par un seeder.
+     */
+    public static function guardBackupPassword(): void
+    {
+        if (! app()->isProduction()) {
+            return;
+        }
+
+        if ((string) config('backup.backup.password') !== '') {
+            return;
+        }
+
+        throw new RuntimeException(
+            'BACKUP_ARCHIVE_PASSWORD est vide : sans lui, la sauvegarde nocturne dépose une '
+            .'archive **en clair** contenant la base entière — récits, consentements, journal '
+            .'d’audit — sur le stockage objet. Posez une phrase longue et rangez-la dans le '
+            .'gestionnaire de secrets : sans elle, aucune archive ne se restaure.'
         );
     }
 
