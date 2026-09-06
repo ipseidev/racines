@@ -249,7 +249,7 @@ Tout le mode opératoire — jouer un achat, rejouer un événement, diagnostiqu
 - ~~**Bloc 08** — écoute famille et réactions.~~ **Fait le 2026-09-05**, sur un vrai iPhone.
 - ~~**Bloc 09** — moteur de complétion.~~ **Fait le 2026-09-05.** Le préalable ne se force plus à la main : `sail artisan demo:moteur` arme les trois signaux, dit ce qu'il a armé, et se rejoue (T-153).
 - **Bloc 12** — les photos. ~15 minutes, et deux préalables gratuits : `sail up -d clamav` une première fois (deux à trois minutes, un demi-gigaoctet de signatures, gardé ensuite), puis une **photo prise avec ton iPhone** — c'est le seul moyen d'éprouver la conversion HEIC, qu'aucun outil de cette image ne sait fabriquer. Vérifie avec `exiftool` sur l'original stocké qu'il ne reste aucune coordonnée GPS : c'est le point le plus important du bloc.
-- **Bloc 11, points 1 à 4** — le back-office. ~20 minutes : configurer ta double authentification à la première connexion sur `/admin` (l'application d'authentification de ton téléphone suffit), ouvrir la fiche d'une histoire, corriger un mot, puis `sail artisan audit:verify` — et pour voir la garde fonctionner, tenter un `update audit_logs set action='x'` en base, qui doit échouer. Le point 5 demande Stripe.
+- ~~**Bloc 11** — le back-office.~~ **Fait le 2026-09-06**, les cinq points, remboursement partiel compris. Cinq défauts trouvés : T-182, T-186, T-188, T-189, T-190. Le second facteur du panneau est désormais éteint hors production (`ADMIN_2FA`, ignoré en production) ; pour rejouer le point 1, remettre la clé à `true`.
 - ~~**Bloc 10**~~ — **fait le 2026-09-05**, avec un vrai paiement de test. Trois défauts de paiement trouvés et corrigés (T-167 à T-169).
 
 Un piège vérifié : `RedactTokens` masque aussi **les codes à six chiffres** dans les journaux, donc `SMS_PROVIDER=log` ne te donnera pas le code OTP. Le chemin local passe par un narrateur dont le canal préféré est le courriel — le code arrive alors en clair dans Mailpit (`http://localhost:8027`).
@@ -324,7 +324,7 @@ Le seul endroit à tenir à jour.
 | 12ter | Relire le ton des onze messages du moteur | bloc 09 | **en cours** — les onze textes lus le 2026-09-05, rien de culpabilisant ; deux formulations pointent une absence (`react_suggestion`, `initiator_alert`), toutes deux adressées à l'Initiateur·rice. Verdict du fondateur en attente |
 | 12quater | 20 min pour le checkpoint du bloc 10 | bloc 10 | ☑ **fait le 2026-09-05** — cinq points sur cinq avec un vrai paiement ; trois défauts de paiement trouvés et corrigés (T-167 à T-169), bloc tagué |
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil, et leur soumettre la garantie « satisfait ou remboursé pendant trente jours, sans justification » affichée sur la page d'accueil (T-134) | bloc 10 | ☐ |
-| 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☐ |
+| 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☑ 2026-09-06 |
 | 12octies | 15 min pour le checkpoint du bloc 12 (+ `sail up -d clamav`, une photo iPhone) | bloc 12 | ☐ |
 | 12septies | Relire les six playbooks du support (`resources/playbooks/`) | bloc 11 | ☐ |
 | 13 | Cloudflare R2 : 3 compartiments UE + CORS | bloc 16 | ☐ |

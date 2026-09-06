@@ -1,7 +1,7 @@
 # Bloc 11 — Back-office support et journal d'audit
 
-Statut : ◐ en cours · Dépend de : 10 · Tag de fin : `bloc-11-done`
-**⛔ En attente de toi** — le point 5 du checkpoint §7 demande un compte Stripe en mode test ; les points 1 à 4 sont jouables en local dès maintenant. Détail dans [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md).
+Statut : ✅ terminé · Dépend de : 10 · Tag de fin : `bloc-11-done`
+Checkpoint §7 joué le 2026-09-06, les cinq points. Il a trouvé cinq défauts qu'aucun test ne voyait : un bouton d'écoute qui journalisait sans ouvrir (T-182), une fiche d'histoire sans son texte et sans chemin vers la correction (T-186), un code de second facteur imprimable nulle part (T-188), un second facteur exigé sur un décor où il ne protège rien (T-189), et un remboursement saisi en centimes là où tout le reste du panneau parle en euros (T-190).
 
 Références dossier : PRD P0-17, doc 04 §12 (MFA, rôles minimaux, journalisation inviolable lecture comprise, revue d'accès), §3 (conflits familiaux : neutralité), §10 (playbooks émotionnels) ; décision T-05, T-18.
 
