@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\FamilyMember;
 use App\Models\Story;
+use App\Services\Storage\MediaStorage;
 use App\States\Story\InBook;
 use App\States\Story\Shared;
 use Illuminate\Database\Eloquent\Model;
@@ -86,15 +87,43 @@ final class PhotoPresenter
      * L'URL d'une conversion, ou de l'original si elle n'est pas prête.
      *
      * Les conversions partent en file : une photo tout juste déposée n'a pas
-     * encore sa miniature. Servir l'original en attendant coûte de la bande
+     * encore sa version web. Servir l'original en attendant coûte de la bande
      * passante et évite une image cassée — ce qui, sur la page de quelqu'un
      * qui vient de déposer sa photo, vaut mieux.
+     *
+     * Elle passe par le **port de stockage** et non par la médiathèque.
+     * `Media::getTemporaryUrl()` signe sur l'endpoint que voit le serveur, et
+     * le navigateur ne le résout pas : hors production, où les deux adresses
+     * coïncident, aucune photo ne s'affichait — le carré restait vide (T-192).
+     * C'est mot pour mot la leçon T-56, apprise pour l'audio de la page
+     * famille, et `MediaStorage::temporaryUrl()` existe pour ça.
      */
     private static function url(Media $photo, string $conversion): string
     {
-        return $photo->hasGeneratedConversion($conversion)
-            ? $photo->getTemporaryUrl(now()->addHour(), $conversion)
-            : $photo->getTemporaryUrl(now()->addHour());
+        $key = $photo->hasGeneratedConversion($conversion)
+            ? self::relative($photo->getPath($conversion))
+            : self::relative($photo->getPath());
+
+        return app(MediaStorage::class)->temporaryUrl($key, 60);
+    }
+
+    /**
+     * Le chemin du fichier tel que le stockage le connaît.
+     *
+     * `getPath()` rend un chemin absolu pour un disque local et une clé pour
+     * un disque objet ; le port, lui, ne connaît que des clés. Le préfixe du
+     * disque local est donc retiré, sans quoi la clé porterait le chemin du
+     * conteneur — et la signature vaudrait pour un objet qui n'existe pas.
+     */
+    private static function relative(string $path): string
+    {
+        $root = (string) config('filesystems.disks.r2.root', '');
+
+        if ($root !== '' && str_starts_with($path, $root)) {
+            return ltrim(mb_substr($path, mb_strlen($root)), '/');
+        }
+
+        return ltrim($path, '/');
     }
 
     /**
