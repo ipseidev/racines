@@ -16,6 +16,7 @@ use App\Support\PhotoAccess;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -41,9 +42,21 @@ final readonly class PhotoController
         private UpdatePhotoCaption $captions,
     ) {}
 
-    public function store(Request $request, ?string $story = null): RedirectResponse
+    /*
+     * Aucun paramètre de route dans les signatures, et c'est délibéré.
+     *
+     * Laravel remplit les paramètres **scalaires** d'une méthode de
+     * contrôleur dans l'ordre de l'URL, sans regarder leur nom : sur
+     * `/l/{token}/stories/{story}/photos`, un `?string $story` recevait le
+     * jeton. Depuis l'espace de la narratrice comme depuis un lien famille,
+     * aucune photo n'a jamais pu être déposée — Postgres refusait un jeton
+     * là où il attend un UUID, et la personne voyait une erreur serveur
+     * (T-191). On les lit donc **par leur nom**, ce que l'ordre de l'URL ne
+     * peut plus démentir.
+     */
+    public function store(Request $request): RedirectResponse
     {
-        $target = self::storyFor($request, $story);
+        $target = self::storyFor($request);
         $actor = self::actorFor($request);
 
         if (! PhotoAccess::canAttach($target, $actor)) {
@@ -84,10 +97,10 @@ final readonly class PhotoController
             : __('common.photos.added_small'));
     }
 
-    public function updateCaption(Request $request, string $photo, ?string $story = null): RedirectResponse
+    public function updateCaption(Request $request): RedirectResponse
     {
-        $target = self::storyFor($request, $story);
-        $found = self::photoOf($target, $photo);
+        $target = self::storyFor($request);
+        $found = self::photoOf($target, self::routeKey($request, 'photo'));
 
         $validated = $request->validate([
             'caption' => ['nullable', 'string', 'max:'.AttachPhoto::MAX_CAPTION],
@@ -98,11 +111,11 @@ final readonly class PhotoController
         return back()->with('status', __('common.photos.caption_saved'));
     }
 
-    public function destroy(Request $request, string $photo, ?string $story = null): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
-        $target = self::storyFor($request, $story);
+        $target = self::storyFor($request);
 
-        $this->remove->handle($target, self::photoOf($target, $photo), self::actorFor($request));
+        $this->remove->handle($target, self::photoOf($target, self::routeKey($request, 'photo')), self::actorFor($request));
 
         return back()->with('status', __('common.photos.removed'));
     }
@@ -115,7 +128,7 @@ final readonly class PhotoController
      * espaces, elle est nommée dans l'URL, et on vérifie alors qu'elle
      * appartient bien au projet du porteur.
      */
-    private static function storyFor(Request $request, ?string $story): Story
+    private static function storyFor(Request $request): Story
     {
         $subject = $request->attributes->get('token_subject');
 
@@ -123,7 +136,9 @@ final readonly class PhotoController
             return $subject;
         }
 
-        abort_if($story === null, 404);
+        $story = $request->route('story');
+
+        abort_if(! is_string($story) || ! Str::isUuid($story), 404);
 
         $found = Story::query()->whereKey($story)->first();
 
@@ -135,6 +150,22 @@ final readonly class PhotoController
         abort_unless(self::belongsToActor($found, $request), 404);
 
         return $found;
+    }
+
+    /**
+     * Un paramètre de route, par son nom.
+     *
+     * `abort` plutôt qu'une valeur par défaut : une route qui déclare
+     * `{photo}` et n'en fournit pas n'existe pas, et deviner ferait chercher
+     * ailleurs le jour où quelqu'un renomme le segment.
+     */
+    private static function routeKey(Request $request, string $name): string
+    {
+        $value = $request->route($name);
+
+        abort_if(! is_string($value) || $value === '', 404);
+
+        return $value;
     }
 
     private static function belongsToActor(Story $story, Request $request): bool
