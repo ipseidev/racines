@@ -54,6 +54,8 @@ Relevé au bloc 00, le 2 septembre 2026. Mettre à jour à chaque ajout de dépe
 | endroid/qr-code | 6.1.3 | 13 |
 | spatie/laravel-backup | 10.3 | 16 |
 | spatie/laravel-health | 1.40 | 16 |
+| maennchen/zipstream-php | 3.2 | 14 |
+| posthog/posthog-php | 4.13 | 15 |
 | maennchen/zipstream-php | _à installer_ | 14 |
 | posthog/posthog-php | _à installer_ | 15 |
 | spatie/laravel-backup, spatie/laravel-health | _à installer_ | 16 |
@@ -89,7 +91,7 @@ Le bloc 10 n'installe que `laravel/cashier`. Les pages légales sont rendues ave
 | dexie | 4.4.5 | 04 |
 | pagedjs | 0.4.3 | 13 |
 | puppeteer (dev) | 25.10.0 | 13 — pilote Chromium pour Browsershot ; installé avec `PUPPETEER_SKIP_DOWNLOAD`, son Chrome n'existant pas en arm64 (T-196) |
-| posthog-js | _à installer_ | 15 |
+| posthog-js | 1.x | 15 — chargé par `import()` dynamique : une page à jeton ne télécharge pas le fragment (T-204) |
 | fake-indexeddb (dev) | 6.2.5 | 04 |
 | @testing-library/user-event (dev) | 14.6.7 | 04 |
 

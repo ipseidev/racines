@@ -71,6 +71,22 @@ return [
      * et Browsershot sait les trouver seul quand ils sont dans le `PATH`. Les
      * renseigner sert aux environnements où ils n'y sont pas.
      */
+    /*
+     * PostHog, cloud **UE** (bloc 15).
+     *
+     * Le pilote choisit son fournisseur, jamais son environnement : `driver`
+     * décide, et une clé présente ne suffit pas à activer l'envoi. La leçon
+     * T-61 vaut ici plus qu'ailleurs — une clé oubliée dans un `.env` de
+     * développement ferait partir les événements d'un décor vers le projet de
+     * production, et les chiffres du pilote mentiraient sans que rien ne le
+     * dise.
+     */
+    'posthog' => [
+        'driver' => env('ANALYTICS_DRIVER', 'log'),
+        'key' => env('POSTHOG_KEY'),
+        'host' => env('POSTHOG_HOST', 'https://eu.i.posthog.com'),
+    ],
+
     'browsershot' => [
         // `browsershot` ou `fake`, jamais déduit de l'environnement (T-61) :
         // un rendu déduit finit par être le faux en production, et une famille

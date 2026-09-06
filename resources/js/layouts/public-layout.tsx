@@ -3,6 +3,7 @@ import type { PropsWithChildren } from 'react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
 import { formatPrice, usePilot } from '@/hooks/usePilot';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
 
@@ -32,6 +33,10 @@ const NAV = [
  * colonne de lecture.
  */
 export default function PublicLayout({ children }: PropsWithChildren) {
+    // La mesure d'audience. Le serveur décide : sur une page à jeton, la prop
+    // `analytics` vaut `null` et il n'y a rien à démarrer.
+    useAnalytics();
+
     const t = useT();
     const brand = useBrand();
     const pilot = usePilot();

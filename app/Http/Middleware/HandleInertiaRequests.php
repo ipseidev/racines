@@ -60,7 +60,46 @@ final class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+
+            /*
+             * La clé de mesure d'audience, **et seulement hors des pages à
+             * jeton** (bloc 15).
+             *
+             * Elle est retirée de la réponse plutôt que laissée au front avec
+             * la consigne de ne pas s'en servir : une clé absente ne peut pas
+             * être utilisée par erreur, et la page d'un narrateur ne porte
+             * alors littéralement rien qui permette de le mesurer.
+             */
+            'analytics' => self::analytics($request),
         ];
+    }
+
+    /**
+     * De quoi démarrer la mesure d'audience, ou rien.
+     *
+     * Les pages à jeton reçoivent `null` : un narrateur n'a pas de compte,
+     * n'a rien accepté, et ne sait pas ce qu'est un traceur. Le préfixe
+     * d'URL suffit à les reconnaître, et c'est la même liste que le glossaire
+     * §8 — un espace ajouté sans être inscrit ici serait mesuré, ce qu'un
+     * test interdit.
+     *
+     * @return array{key: string, host: string}|null
+     */
+    private static function analytics(Request $request): ?array
+    {
+        $key = (string) config('services.posthog.key');
+
+        if ($key === '' || (string) config('services.posthog.driver') !== 'posthog') {
+            return null;
+        }
+
+        $premier = $request->segment(1);
+
+        if (in_array($premier, ['r', 'l', 'q', 'n', 'i', 'a', 'x', 's'], true)) {
+            return null;
+        }
+
+        return ['key' => $key, 'host' => (string) config('services.posthog.host')];
     }
 
     /**

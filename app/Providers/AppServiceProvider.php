@@ -11,6 +11,7 @@ use App\Models\Story;
 use App\Models\User;
 use App\Services\Analytics\Analytics;
 use App\Services\Analytics\LogAnalytics;
+use App\Services\Analytics\PostHogAnalytics;
 use App\Services\Antivirus\ClamavScanner;
 use App\Services\Antivirus\FakeScanner;
 use App\Services\Antivirus\Scanner;
@@ -188,7 +189,15 @@ final class AppServiceProvider extends ServiceProvider
      */
     private function configureAnalytics(): void
     {
-        $this->app->singleton(Analytics::class, LogAnalytics::class);
+        $this->app->singleton(Analytics::class, function (): Analytics {
+            $driver = (string) config('services.posthog.driver');
+
+            return match ($driver) {
+                'posthog' => new PostHogAnalytics,
+                'log' => new LogAnalytics,
+                default => throw new RuntimeException("Unknown analytics driver [{$driver}]."),
+            };
+        });
     }
 
     /**

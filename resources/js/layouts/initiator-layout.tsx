@@ -4,6 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { BrandLogo } from '@/brand/BrandProvider';
 import { Toasts } from '@/components/space/Toasts';
 import { useStatusToast } from '@/hooks/useStatusToast';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 
 const LINKS = [
@@ -31,6 +32,10 @@ const LINKS = [
  * de l'écran, là où l'œil revient après un geste (T-149).
  */
 export default function InitiatorLayout({ children }: PropsWithChildren) {
+    // La mesure d'audience. Le serveur décide : sur une page à jeton, la prop
+    // `analytics` vaut `null` et il n'y a rien à démarrer.
+    useAnalytics();
+
     const t = useT();
     const page = usePage();
     const path = page.url.split('?')[0];
