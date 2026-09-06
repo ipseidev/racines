@@ -349,7 +349,7 @@ final class DemoLinks extends Command
                 'bloc' => '13',
                 'titre' => 'Le livre, et ce qu’il promet pour dix ans',
                 'avant' => [
-                    'La matière ne se fabrique pas à la main : `sail artisan demo:livre` ajoute dix histoires validées, `--riche` en fait assez pour un livre complet.',
+                    'La matière ne se fabrique pas à la main : `sail artisan demo:livre` ajoute dix histoires validées au projet de **espace@example.test**, `--riche` en fait assez pour un livre complet. La page du livre montre le projet du compte connecté : en `admin@example.test`, qui n’en a aucun, elle répond 404 (T-198).',
                     'Le rendu réel demande Chromium, présent dans l’image depuis T-196, et `PDF_DRIVER=browsershot`.',
                 ],
                 'etapes' => [

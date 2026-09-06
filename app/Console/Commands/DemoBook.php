@@ -19,6 +19,7 @@ use App\States\Story\Recorded;
 use App\States\Story\Shared;
 use App\States\Story\Transcribed;
 use App\States\Story\Validated;
+use Database\Seeders\E2ELinksSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -37,7 +38,9 @@ use Illuminate\Support\Str;
  */
 final class DemoBook extends Command
 {
-    protected $signature = 'demo:livre {--riche : assez de matière pour un livre complet}';
+    protected $signature = 'demo:livre
+        {--riche : assez de matière pour un livre complet}
+        {--proprietaire= : le courriel de l’Initiateur·rice ; celui de l’espace sinon}';
 
     protected $description = 'Enrichit le projet de démonstration pour le checkpoint du livre';
 
@@ -67,16 +70,30 @@ final class DemoBook extends Command
             return self::FAILURE;
         }
 
+        /*
+         * Le projet de **l'espace**, pas celui de la démonstration.
+         *
+         * Les deux existent et n'ont pas le même propriétaire : `/espace` se
+         * joue avec `espace@example.test`, et le premier essai a enrichi le
+         * projet de `demo@example.test` — la page du livre restait donc vide
+         * quoi qu'on lance, et le checkpoint était injouable (T-198). C'est le
+         * quatrième décor de la semaine qui vise à côté de ce qu'un humain
+         * ouvre (T-173, T-180, T-183, T-188).
+         */
+        $email = (string) ($this->option('proprietaire') ?: E2ELinksSeeder::INITIATOR_EMAIL);
+
         $project = Project::query()
-            ->whereHas('owner', fn ($query) => $query->where('email', 'demo@example.test'))
+            ->whereHas('owner', fn ($query) => $query->where('email', $email))
             ->latest()
             ->first();
 
         if (! $project instanceof Project) {
-            $this->components->error('Projet de démonstration introuvable. Passez `sail artisan migrate:fresh --seed`.');
+            $this->components->error("Aucun projet pour [{$email}]. Passez `sail artisan migrate:fresh --seed`.");
 
             return self::FAILURE;
         }
+
+        $this->components->twoColumnDetail('Projet enrichi', $email);
 
         $narrator = $project->primaryNarrator;
 
@@ -176,7 +193,10 @@ final class DemoBook extends Command
             $riche ? 'assez pour un livre' : 'intermédiaire (livret)',
         ));
 
-        $this->components->info('Passez ensuite `sail artisan books:evaluate`, puis ouvrez /espace/livre.');
+        $this->components->info(sprintf(
+            'Passez ensuite `sail artisan books:evaluate`, puis ouvrez /espace/livre en %s.',
+            $email,
+        ));
 
         return self::SUCCESS;
     }
