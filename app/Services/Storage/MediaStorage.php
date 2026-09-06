@@ -45,4 +45,14 @@ interface MediaStorage
     public function get(string $key): string;
 
     public function put(string $key, string $contents, ?string $mime = null): void;
+
+    /**
+     * Déposer un **fichier**, sans le charger en mémoire.
+     *
+     * `put()` prend une chaîne : parfait pour un PDF de deux mégaoctets,
+     * ruineux pour une archive d'export de cinq gigaoctets — le processus
+     * mourrait avant d'avoir fini de lire (bloc 14). Ici le flux passe
+     * directement du disque au stockage.
+     */
+    public function putFile(string $key, string $path, ?string $mime = null): void;
 }

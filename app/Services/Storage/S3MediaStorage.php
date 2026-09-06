@@ -8,6 +8,7 @@ use App\Exceptions\Domain\ObjectNotStored;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 /**
  * Stockage sur R2, en envoi multipart présigné.
@@ -138,6 +139,26 @@ final class S3MediaStorage implements MediaStorage
     public function put(string $key, string $contents, ?string $mime = null): void
     {
         Storage::disk($this->disk)->put($key, $contents, $mime === null ? [] : ['ContentType' => $mime]);
+    }
+
+    public function putFile(string $key, string $path, ?string $mime = null): void
+    {
+        $stream = fopen($path, 'rb');
+
+        if ($stream === false) {
+            throw new RuntimeException("Fichier illisible : {$path}.");
+        }
+
+        try {
+            // `writeStream` et non `put` : l'archive d'un export peut peser
+            // plusieurs gigaoctets, et la charger en mémoire tuerait le
+            // processus avant la fin de la lecture.
+            Storage::disk($this->disk)->writeStream($key, $stream);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
     }
 
     private function client(bool $public = false): S3Client

@@ -70,6 +70,10 @@ if (Reflect.get(window, MOUNTED) !== true) {
                 // l'espace famille, et personne n'est identifié derrière.
                 case name.startsWith('qr/'):
                     return FamilyLayout;
+                // Les pages d'export : ouvertes depuis un courriel, sans
+                // compte, même sobriété que les autres espaces à jeton.
+                case name.startsWith('exports/'):
+                    return FamilyLayout;
                 // Le tunnel d'achat a sa propre mise en page : sans la
                 // navigation ni le bouton d'achat de l'accueil, qui
                 // concurrenceraient « Continuer » (T-135).

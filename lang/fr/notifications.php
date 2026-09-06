@@ -43,6 +43,36 @@ return [
         ],
     ],
 
+    /*
+     * L'export (bloc 14). La non-captivité se dit dans le ton autant que dans
+     * le contenu : ces fichiers sont à la famille, elle n'a pas à nous
+     * remercier de les lui rendre.
+     */
+    'export' => [
+        'greeting' => 'Bonjour :name,',
+        'button' => 'Télécharger mes données',
+        'signature' => 'À bientôt, l’équipe :brand.',
+        'sms' => ':brand : vos données sont prêtes. Le lien vous a été envoyé par courriel.',
+        'expiry' => 'Ce lien fonctionne pendant :days jours. Passé ce délai, vous pouvez en demander un nouveau depuis votre espace, sans frais et autant de fois que vous le voulez.',
+        'keep' => 'Conservez ce dossier ailleurs que sur un seul ordinateur : une clé USB rangée chez quelqu’un d’autre vaut mieux qu’une sauvegarde dont on oublie le mot de passe.',
+        'ready' => [
+            'subject' => 'Vos histoires sont prêtes à télécharger',
+            'line' => 'Voici l’ensemble de ce que vous avez enregistré : les voix, les textes, les photos. Tout s’ouvre avec les logiciels que vous avez déjà, sans passer par notre site.',
+        ],
+        'access' => [
+            'subject' => 'Votre demande d’accès à vos données',
+            'line' => 'Voici l’ensemble des données qui vous concernent : vos histoires, vos consentements, et le journal de ce qui en a été fait.',
+        ],
+        'hosting_ending' => [
+            'subject' => 'Votre hébergement se termine dans deux mois',
+            'line' => 'Nous vous envoyons dès maintenant l’ensemble de vos enregistrements, pour que vous les ayez bien avant l’échéance. Rien ne sera supprimé sans que vous en soyez prévenu.',
+        ],
+        'book_delivered' => [
+            'subject' => 'Votre livre est livré, et voici tout le reste',
+            'line' => 'Avec le livre, voici l’ensemble de ce que :first_name a enregistré, et un pack qui joue les voix sans connexion. À conserver : ils resteront lisibles bien après la fin de notre service.',
+        ],
+    ],
+
     'prompt' => [
         'subject' => 'Votre question de la semaine',
         'greeting' => 'Bonjour :name,',

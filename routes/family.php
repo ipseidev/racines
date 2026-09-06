@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Exports\DownloadExportController;
 use App\Http\Controllers\Family\HomePageController;
 use App\Http\Controllers\Family\ListenProgressController;
 use App\Http\Controllers\Family\ReactionController;
@@ -46,6 +47,21 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
     Route::post('/a/{token}', [OneTapController::class, 'store'])
         ->middleware('resolve.token:action')
         ->name('initiator.one_tap.store');
+});
+
+/*
+ * Le téléchargement d'un export (bloc 14).
+ *
+ * Hors du groupe famille : le porteur du lien n'est ni un proche ni un
+ * narrateur — c'est la personne qui a demandé ses données, et le jeton ne
+ * donne accès qu'à une archive.
+ */
+Route::middleware([
+    'throttle:tokens',
+    'no-store',
+    'resolve.token:export',
+])->group(function (): void {
+    Route::get('/x/{token}', DownloadExportController::class)->name('exports.download');
 });
 
 /*

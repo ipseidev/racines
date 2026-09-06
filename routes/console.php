@@ -123,3 +123,12 @@ Schedule::command('health:check')->everyMinute();
 // `audit:verify` tourne déjà plus haut, à 04:30. Le contrôle de santé, lui,
 // ne regarde que la journée en cours : relire à chaque minute un journal qui
 // grossit finirait par faire désactiver le contrôle, ce qui est la vraie panne.
+
+/*
+ * Les archives d'export, effacées à l'expiration du lien (bloc 14).
+ *
+ * Une archive contenant l'intégralité des récits d'une famille, oubliée sur
+ * un stockage objet, est une fuite qui attend son heure. La ligne reste, sans
+ * son objet : elle prouve qu'un export a été remis.
+ */
+Schedule::command('exports:expire')->dailyAt('02:30');

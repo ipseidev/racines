@@ -140,4 +140,9 @@ final class FakeMediaStorage implements MediaStorage
     {
         return $this->deleted;
     }
+
+    public function putFile(string $key, string $path, ?string $mime = null): void
+    {
+        $this->put($key, (string) file_get_contents($path), $mime);
+    }
 }
