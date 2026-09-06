@@ -38,4 +38,10 @@ enum SupportTicketKind: string
      */
     case PrintOrder = 'print_order';
     case PrintDefect = 'print_defect';
+    /*
+     * Bloc 14 : une demande d'effacement. Elle ouvre un ticket et **n'exécute
+     * rien** : un humain confirme, parce que personne ne récupère ce qui part
+     * par erreur à deux heures du matin.
+     */
+    case ErasureRequested = 'erasure_requested';
 }

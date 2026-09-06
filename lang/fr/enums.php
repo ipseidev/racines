@@ -187,6 +187,7 @@ return [
         'refund_offer' => 'Remboursement à proposer',
         'print_order' => 'Livre à commander',
         'print_defect' => 'Défaut d’impression signalé',
+        'erasure_requested' => 'Effacement demandé',
     ],
 
     'support_ticket_status' => [
