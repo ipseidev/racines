@@ -61,6 +61,21 @@ function runCadenceRule(?CarbonImmutable $at = null): void
 
 beforeEach(function (): void {
     Notification::fake();
+
+    /*
+     * L'horloge est figée, et ce n'est pas du confort.
+     *
+     * `runCadenceRule()` fait battre le tick au **prochain lundi 7 h 07**.
+     * Lancée un lundi avant 7 h 07, `next(MONDAY)` renvoie le lundi suivant :
+     * l'événement naît alors à une semaine et une heure dans l'avenir, sort de
+     * la fenêtre de huit semaines que « mesure la rétention » interroge, et le
+     * test échoue. Il ne pouvait tomber que là — une nuit de dimanche à lundi
+     * (T-209).
+     *
+     * Un mercredi matin met le prochain lundi à quatre jours, loin de toute
+     * bordure.
+     */
+    $this->travelTo(CarbonImmutable::parse('2026-09-09 10:00:00'));
 });
 
 it('propose de ralentir quand le rythme est divisé par deux', function (): void {
