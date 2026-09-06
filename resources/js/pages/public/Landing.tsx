@@ -272,10 +272,10 @@ export default function Landing({
     return (
         <>
             {/*
-             * Le titre de l'onglet et celui des moteurs : les mots du produit,
-             * pas ceux du héros. « Un jour, vous voudrez réentendre sa voix »
-             * émeut celui qui est déjà là ; il ne dit pas à un moteur qu'on
-             * vend un livre de souvenirs.
+             * Le titre de l'onglet et celui des moteurs reste au pluriel, là
+             * où le héros parle d'une personne : un moteur répond à une
+             * recherche. Depuis T-190 les deux disent les mêmes mots, ceux du
+             * produit, et c'est assumé.
              */}
             <Head title={t('public.landing.seo_title')} />
 

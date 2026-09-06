@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use Illuminate\Console\Command;
 use Stripe\Exception\ApiErrorException;
@@ -73,10 +74,24 @@ final class DemoPayment extends Command
             return self::FAILURE;
         }
 
-        // `saveQuietly` : on répare une référence, on ne rejoue pas le cycle
-        // de vie de la commande, et un observateur qui renverrait un message
-        // de confirmation serait un faux positif de plus dans la vérification.
-        $order->forceFill(['stripe_payment_intent_id' => $intent->id])->saveQuietly();
+        /*
+         * La commande revient à « payée, rien remboursé ».
+         *
+         * Sans cela la commande ne se rembourse qu'une fois : le bouton
+         * disparaît dès que `refunded_cents` atteint le total, et le
+         * remboursement **partiel** — celui que le checkpoint demande, parce
+         * que c'est lui qui exerce l'arithmétique — n'est plus jouable sans
+         * repasser par un `migrate:fresh` qui coûte tout le reste du décor.
+         *
+         * `saveQuietly` : on remet un décor en place, on ne rejoue pas le
+         * cycle de vie de la commande, et un observateur qui enverrait une
+         * confirmation d'achat serait un faux positif de plus.
+         */
+        $order->forceFill([
+            'stripe_payment_intent_id' => $intent->id,
+            'status' => OrderStatus::Paid,
+            'refunded_cents' => 0,
+        ])->saveQuietly();
 
         $this->components->info(sprintf(
             'Commande %s équipée du paiement %s (%s €). Le remboursement partiel du bloc 11 peut se jouer.',
@@ -96,6 +111,8 @@ final class DemoPayment extends Command
             return Order::query()->find($id);
         }
 
+        // `paid_at` et non le statut : une commande déjà remboursée reste
+        // celle du décor, et c'est justement elle qu'il faut remettre debout.
         return Order::query()
             ->whereNotNull('paid_at')
             ->orderByDesc('paid_at')

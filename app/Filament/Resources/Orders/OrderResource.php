@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Support\Options;
 use BackedEnum;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -113,14 +114,46 @@ final class OrderResource extends Resource
                     ->authorize(fn (): bool => self::canRefund())
                     ->modalDescription(__('admin.orders.actions.refund_help'))
                     ->schema([
-                        TextInput::make('amount_cents')
+                        /*
+                         * En **euros**, comme partout ailleurs dans le
+                         * panneau.
+                         *
+                         * Le champ demandait des centimes, avec « 89,00 € »
+                         * affiché dans la ligne juste derrière. Le libellé le
+                         * disait, et vingt centimes sont quand même partis là
+                         * où vingt euros étaient voulus (T-190) : sur le seul
+                         * geste du back-office qui déplace de l'argent, une
+                         * unité qui n'est celle de nulle part ailleurs est un
+                         * piège, pas une information.
+                         *
+                         * La virgule est acceptée : c'est ce que tape une
+                         * personne en France, et la refuser ferait ressaisir
+                         * un montant sous la pression d'un client au
+                         * téléphone. La conversion en centiemes entiers se
+                         * fait ici, à la frontière ; `IssueRefund` n'a jamais
+                         * connu que des centimes.
+                         */
+                        TextInput::make('amount')
                             ->label(__('admin.orders.actions.amount'))
                             ->helperText(__('admin.orders.actions.amount_help'))
-                            ->numeric()
+                            ->suffix('€')
                             ->required()
-                            ->minValue(1)
-                            ->default(fn (Order $record): int => $record->total_cents - $record->refunded_cents)
-                            ->maxValue(fn (Order $record): int => $record->total_cents - $record->refunded_cents),
+                            ->default(fn (Order $record): string => self::euros(
+                                $record->total_cents - $record->refunded_cents,
+                            ))
+                            ->rule('regex:/^\\d+([.,]\\d{1,2})?$/')
+                            ->rules([
+                                fn (Order $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
+                                    $remaining = $record->total_cents - $record->refunded_cents;
+                                    $cents = self::cents((string) $value);
+
+                                    if ($cents < 1 || $cents > $remaining) {
+                                        $fail(__('admin.orders.actions.amount_out_of_range', [
+                                            'max' => self::euros($remaining),
+                                        ]));
+                                    }
+                                },
+                            ]),
                         Textarea::make('reason')
                             ->label(__('admin.orders.actions.reason'))
                             ->required()
@@ -131,7 +164,7 @@ final class OrderResource extends Resource
                         try {
                             app(IssueRefund::class)->handle(
                                 $record,
-                                (int) $data['amount_cents'],
+                                self::cents((string) $data['amount']),
                                 (string) $data['reason'],
                             );
                         } catch (Throwable $exception) {
@@ -162,6 +195,24 @@ final class OrderResource extends Resource
         return [
             'index' => ListOrders::route('/'),
         ];
+    }
+
+    /** Des centimes entiers vers ce qui s'affiche : « 89.00 ». */
+    private static function euros(int $cents): string
+    {
+        return number_format($cents / 100, 2, '.', '');
+    }
+
+    /**
+     * Ce qui a été tapé vers des centimes entiers.
+     *
+     * `round` et non un transtypage : `(int) (12.34 * 100)` rend 1233 sur une
+     * bonne partie des machines, et un remboursement d'un centime de moins
+     * est une réclamation.
+     */
+    private static function cents(string $amount): int
+    {
+        return (int) round(((float) str_replace([' ', ',', "\u{a0}"], ['', '.', ''], $amount)) * 100);
     }
 
     private static function canRefund(): bool

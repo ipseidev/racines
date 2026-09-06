@@ -200,8 +200,9 @@ return [
         'actions' => [
             'refund' => 'Rembourser',
             'refund_help' => 'Le remboursement est irréversible et déplace de l’argent. Le montant proposé est ce qui reste remboursable.',
-            'amount' => 'Montant en centimes',
-            'amount_help' => 'Au plus ce qui reste remboursable sur cette commande.',
+            'amount' => 'Montant à rembourser',
+            'amount_help' => 'En euros, au plus ce qui reste remboursable sur cette commande.',
+            'amount_out_of_range' => 'Le montant doit être compris entre 0,01 € et :max €.',
             'reason' => 'Pourquoi ce remboursement ?',
             'done' => 'Demande transmise.',
             'done_help' => 'L’état de la commande se mettra à jour à la réception de la confirmation du prestataire.',

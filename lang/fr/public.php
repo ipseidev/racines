@@ -41,19 +41,24 @@ return [
      */
     'landing' => [
         /*
-         * Le titre du héros, et il ne s'adresse pas au narrateur.
+         * Le titre du héros : l'objet, puis la voix, au présent.
          *
-         * Il disait le produit — « Le livre de leurs souvenirs, avec leur voix
-         * à chaque page » (T-134) — et un produit ne fait pleurer personne.
-         * Celui qui paie ne le fait pas pour sa mère : il le fait pour lui, et
-         * ce qu'il achète est le jour où il voudra la réentendre. La phrase le
-         * dit, sans culpabiliser ni rien promettre, et « sa voix » n'a pas
-         * d'antécédent parce que chacun met la sienne.
+         * Il a dit le produit (T-134), puis le jour où l'on voudrait
+         * réentendre cette voix (T-152). Cette seconde phrase datait le cadeau
+         * de la disparition : un futur posé sur la voix d'un parent âgé n'a
+         * qu'une lecture possible. Le fautif était le temps du verbe, pas
+         * « sa voix » (T-190).
          *
-         * La phrase de produit n'est pas perdue : elle devient le titre servi
-         * aux moteurs, où ce sont les mots du produit qui comptent.
+         * Remento écrit « A keepsake book that lets you hear their voice
+         * forever » : l'objet, la voix, au présent. Nous reprenons cet ordre
+         * sans la durée, « pour toujours » étant interdit par R-11.
+         *
+         * « ses souvenirs » et « sa voix » restent sans antécédent : chacun
+         * met les siens. Le singulier est celui du héros, qui parle d'une
+         * personne ; le titre servi aux moteurs garde le pluriel, un moteur
+         * répondant à une recherche et non à quelqu'un.
          */
-        'promise' => 'Un jour, vous voudrez réentendre sa voix.',
+        'promise' => 'Le livre de ses souvenirs, avec sa voix à chaque page.',
         'seo_title' => 'Le livre de leurs souvenirs, avec leur voix à chaque page',
         'cta' => 'J’offre ce livre',
         'cta_start' => 'Je commence son livre',
