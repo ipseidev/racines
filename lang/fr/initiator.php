@@ -368,6 +368,8 @@ return [
             'words' => ':count mots',
             'photos' => ':count photo|:count photos',
             'locked' => 'La sélection est arrêtée : le livre est parti à l’impression.',
+            'qr_revoke' => 'Désactiver le code de cette histoire',
+            'qr_restore' => 'Réactiver le code de cette histoire',
         ],
 
         'foreword' => [

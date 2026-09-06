@@ -28,7 +28,7 @@ final class SelectedChaptersPresenter
         $book->loadMissing('chapters.story.question');
 
         /** @var list<array<string, mixed>> $rows */
-        $rows = $book->chapters()->orderBy('position')->with('story')->get()
+        $rows = $book->chapters()->orderBy('position')->with(['story', 'qrToken'])->get()
             ->map(function (BookChapter $chapter): array {
                 $story = $chapter->story;
                 $text = SelectBookChapters::textOf($story);
@@ -44,6 +44,10 @@ final class SelectedChaptersPresenter
                     'excerpt' => Str::limit($text, self::EXCERPT),
                     'photos' => $story->getMedia($story::PHOTOS)->count(),
                     'hasQr' => $chapter->qr_token_id !== null,
+                    // Actif, ou éteint par le narrateur : le libellé du lien
+                    // en dépend, et proposer « désactiver » sur un code déjà
+                    // mort ferait douter de ce qu'on a déjà fait.
+                    'qrActive' => $chapter->qrToken !== null && $chapter->qrToken->revoked_at === null,
                 ];
             })
             ->values()

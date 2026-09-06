@@ -16,6 +16,7 @@ use App\Jobs\RenderBookPdf;
 use App\Models\Book;
 use App\Models\Project;
 use App\Services\Storage\MediaStorage;
+use App\Support\Brand;
 use App\Support\InitiatorProject;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
@@ -94,6 +95,11 @@ final readonly class BookController
             // graphie de ses noms.
             'lexicon' => $this->lexicon->handle($book),
             'extraCopyPriceCents' => (int) config('product.pilot.extra_copy_price_cents'),
+            // Le signalement d'un défaut passe par le support : la
+            // réimpression est gratuite et sans condition (doc 04 §10), et
+            // un formulaire de plus ferait croire à une instruction de
+            // dossier là où il n'y a qu'un livre abîmé à remplacer.
+            'supportEmail' => Brand::supportEmail(),
         ]);
     }
 

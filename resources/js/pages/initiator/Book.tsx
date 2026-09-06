@@ -27,6 +27,8 @@ type Chapter = {
     excerpt: string;
     photos: number;
     hasQr: boolean;
+    /** Faux quand le narrateur a éteint le code imprimé de cette histoire. */
+    qrActive: boolean;
 };
 
 type Gauge = {
@@ -63,6 +65,7 @@ type Props = {
     chapters: Chapter[];
     lexicon: string[];
     extraCopyPriceCents: number;
+    supportEmail: string;
 };
 
 const date = (iso: string | null) =>
@@ -96,6 +99,7 @@ export default function Book({
     chapters,
     lexicon,
     extraCopyPriceCents,
+    supportEmail,
 }: Props) {
     const t = useT();
 
@@ -308,6 +312,46 @@ export default function Book({
                                                 ? ` · ${t('initiator.book.chapters.photos', { count: chapter.photos })}`
                                                 : ''}
                                         </p>
+
+                                        {/*
+                                         * Le code imprimé, et de quoi
+                                         * l'éteindre. Un lien discret et non
+                                         * un bouton : c'est un geste rare,
+                                         * qui ne doit pas concurrencer la
+                                         * sélection des chapitres. Le
+                                         * narrateur a le même depuis son
+                                         * espace — c'est son récit.
+                                         */}
+                                        {chapter.hasQr && (
+                                            <p className="mt-2 text-[0.875rem]">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        chapter.qrActive
+                                                            ? router.delete(
+                                                                  `/espace/livre/histoires/${chapter.storyId}/qr`,
+                                                                  {
+                                                                      preserveScroll: true,
+                                                                  },
+                                                              )
+                                                            : router.post(
+                                                                  `/espace/livre/histoires/${chapter.storyId}/qr`,
+                                                                  {},
+                                                                  {
+                                                                      preserveScroll: true,
+                                                                  },
+                                                              )
+                                                    }
+                                                    className="text-brand-muted hover:text-brand press min-h-[2.75rem] underline underline-offset-4"
+                                                >
+                                                    {t(
+                                                        chapter.qrActive
+                                                            ? 'initiator.book.chapters.qr_revoke'
+                                                            : 'initiator.book.chapters.qr_restore',
+                                                    )}
+                                                </button>
+                                            </p>
+                                        )}
                                     </div>
 
                                     {book.editable && (
@@ -613,6 +657,16 @@ export default function Book({
                      * fera, et un prix annoncé avant la pagination serait un
                      * prix à reprendre.
                      */}
+                    <p className="text-brand-muted mt-4 text-[0.9375rem]">
+                        {t('initiator.book.tracking.defect_help')}{' '}
+                        <a
+                            href={`mailto:${supportEmail}?subject=${encodeURIComponent(t('initiator.book.tracking.defect'))}`}
+                            className="text-brand underline underline-offset-4"
+                        >
+                            {t('initiator.book.tracking.defect')}
+                        </a>
+                    </p>
+
                     <form
                         onSubmit={(event) => {
                             event.preventDefault();
