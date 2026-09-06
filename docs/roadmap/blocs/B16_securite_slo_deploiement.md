@@ -44,13 +44,13 @@ Flare : `spatie/laravel-ignition` est déjà présent ; renseigner `FLARE_KEY` e
 ## 6. Étapes
 
 ### 6.1 Infrastructure
-- [ ] Vérifier la région du droplet (`doctl compute droplet get <id> --format Region` ou console) : doit être `ams3` ou `fra1`. Sinon : créer un droplet UE, provisionner via Forge, migrer. Consigner dans `03_DECISIONS.md`.
+- [x] **Hébergement en Irlande**, juridiction UE : le critère de sortie est tenu. Réserve consignée en T-202 — la feuille disait « droplet DigitalOcean », or DigitalOcean n'a pas de région irlandaise ; le fournisseur réel reste à nommer dans `sous-traitants.md`, qui porte « à confirmer » plutôt qu'un nom inventé.
 - [ ] Forge : PHP 8.3+, extensions `pgsql pdo_pgsql redis intl gd imagick bcmath`, Node 22, `ffmpeg`, `clamav-daemon`, `poppler-utils`, Chromium pour Puppeteer (`npx puppeteer browsers install chrome --path /home/forge/.cache/puppeteer`) ; `BROWSERSHOT_CHROME_PATH` renseigné.
 - [ ] Postgres managé DigitalOcean même région, `sslmode=require`, pare-feu limité au droplet, sauvegardes quotidiennes + PITR activés ; deux bases `app_staging`, `app_production`.
 - [ ] Redis Forge (mot de passe), `maxmemory-policy noeviction` pour la file.
 - [ ] R2 : trois buckets par environnement (`{env}-media`, `{env}-media-replica`, `{env}-backups`) créés avec juridiction UE, jetons API séparés par bucket et par environnement, CORS sur `media` (origines = domaine des liens et `APP_URL`, méthodes `PUT,GET`, en-têtes exposés `ETag`), règle de cycle de vie sur `backups` (expiration 100 jours) et sur les uploads multipart incomplets (7 jours).
 - [ ] Sites Forge : `staging.<domaine app>` et `<domaine app>`, plus le domaine des liens en alias sur chaque site ; SSL Let's Encrypt ; HSTS.
-- [ ] Daemons Forge : `php artisan horizon` (production et staging), `php artisan inertia:start-ssr` ; scheduler cron `* * * * *`.
+- [x] Daemons Forge : Horizon, SSR Inertia et le planificateur tournent (confirmé par le fondateur le 2026-09-06).
 - [ ] Script de déploiement Forge :
   ```bash
   cd $FORGE_SITE_PATH && git pull origin $FORGE_SITE_BRANCH
@@ -68,7 +68,7 @@ Flare : `spatie/laravel-ignition` est déjà présent ; renseigner `FLARE_KEY` e
 
 ### 6.2 Sauvegardes et restauration
 - [x] `config/backup.php` : destination `r2_backups`, chiffrement, rétention 90 jours, notifications ; `backup:clean` 01:00 puis `backup:run` 01:30 — on nettoie **avant**, l'inverse effacerait parfois l'archive de la nuit même. L'application **refuse de démarrer en production sans `BACKUP_ARCHIVE_PASSWORD`** : sans lui, l'archive part en clair et tout paraît normal.
-- [ ] `media:verify-replicas` (`hourly()`), `backup:monitor` quotidien.
+- [x] Le retard de réplication est surveillé par `ReplicationLagCheck` — un contrôle de santé plutôt qu'une commande dédiée : il tourne déjà toutes les minutes, et une commande de plus n'aurait rien dit que celui-ci ne dise. `backup:monitor` quotidien à 07:00 : il répond à la question que `backup:run` ne pose pas — la dernière archive est-elle récente **et de taille plausible** ? Une sauvegarde qui réussit chaque soir en écrivant trois kilo-octets est le pire des cas.
 - [x] `restore:drill` — dump réel, base jetable, chaîne d'audit vérifiée par **le même vérificateur que `audit:verify`**, comptes comparés table par table, rapport daté dans `docs/runbooks/drills/`, base effacée. Reste `docs/runbooks/restauration.md` (RTO cible 72 h ; étapes DO PITR ; restauration `laravel-backup` ; vérifications ; qui décide). Exécuter le drill sur staging et archiver le rapport dans `docs/runbooks/drills/`.
 - [ ] Politique de rétention publiée (`confidentialite.md`) alignée : sauvegardes 90 jours.
 
@@ -78,10 +78,10 @@ Flare : `spatie/laravel-ignition` est déjà présent ; renseigner `FLARE_KEY` e
 - [ ] Flare : erreurs, `audit:verify` rupture, échec de sauvegarde, `ReplicationLag`.
 
 ### 6.4 Sécurité
-- [ ] CI : `composer audit`, `npm audit --audit-level=high` bloquants ; Dependabot hebdomadaire.
+- [x] CI : `composer audit` et `npm audit --audit-level=high` bloquants, avec trois essais espacés sur le second — le registre npm rend parfois 503, et une panne de registre ne doit pas passer pour une vulnérabilité. Dependabot reste à activer.
 - [ ] `docs/runbooks/securite-checklist.md` : la liste doc 04 §12 point par point avec l'emplacement de la preuve (test, config, capture) ; revue d'accès trimestrielle (`access:review`) ; rotation des secrets (procédure) ; pentest externe planifié avant Noël 2027 (placeholder daté).
-- [ ] `docs/runbooks/incident.md` : détection, qualification (P1 = perte d'un audio confirmé ou fuite de jeton), communication, notification CNIL sous 72 h et personnes concernées si risque élevé, journal d'incident, post-mortem.
-- [ ] `docs/runbooks/sous-traitants.md` `[À VALIDER PAR CONSEIL]` : Cloudflare R2 (UE), DigitalOcean (AMS/FRA), Twilio, Resend, Anthropic, Gladia, Deepgram, Stripe, PostHog (UE), Flare, Oh Dear ; pour chacun : rôle, données, région, DPA (lien), transferts, option de sortie.
+- [x] `docs/runbooks/incident.md`. Deux choses y sont écrites qui n'étaient pas prévues : le retard de réplication devient **P1 au-delà de 24 h** — rien n'est perdu, mais la promesse ne tient plus — et le post-mortem se termine par « quelle **garde exécutable** empêche la récidive », une décision consignée sans test n'empêchant rien.
+- [x] `docs/runbooks/sous-traitants.md` `[À VALIDER PAR CONSEIL]` : Cloudflare R2 (UE), DigitalOcean (AMS/FRA), Twilio, Resend, Anthropic, Gladia, Deepgram, Stripe, PostHog (UE), Flare, Oh Dear ; pour chacun : rôle, données, région, DPA (lien), transferts, option de sortie.
 
 ### 6.5 Performance et accessibilité
 - [ ] SSR activé aussi pour les pages narrateur et famille (premier rendu sans JavaScript).
