@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Http\Controllers\Admin\ListenToRecording;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\Brand;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -22,6 +23,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 final class AdminPanelProvider extends PanelProvider
@@ -93,6 +95,22 @@ final class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            /*
+             * L'écoute d'un enregistrement passe par une route et non par le
+             * retour d'une action : une action Filament qui **retourne** une
+             * URL ne navigue pas — `openUrlInNewTab()` ne vaut que pour
+             * `->url()`. La première version journalisait donc l'écoute sans
+             * rien ouvrir, et quatre clics ont laissé quatre traces pour rien
+             * (T-182).
+             *
+             * Déclarée ici plutôt que dans `routes/web.php` : elle hérite
+             * ainsi de toute la pile du panneau — session, authentification,
+             * second facteur, en-têtes — au lieu de la réassembler à la main.
+             */
+            ->routes(function (): void {
+                Route::get('histoires/{story}/ecouter', ListenToRecording::class)
+                    ->name('stories.listen');
+            });
     }
 }

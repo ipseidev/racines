@@ -40,19 +40,53 @@ it('n’offre pas d’écoute quand l’histoire n’a pas d’enregistrement', 
         ->assertActionHidden('listen');
 });
 
-it('inscrit « played Recording » quand le support demande l’écoute', function (): void {
+/*
+ * Le bouton **et** la route, parce que l'un sans l'autre ne prouve rien : la
+ * première version journalisait l'écoute sans jamais rien ouvrir, une action
+ * Filament qui retourne une URL ne naviguant pas (T-182).
+ */
+it('offre un bouton qui mène à la route d’écoute', function (): void {
     $story = Story::factory()->shared()->create();
     Recording::factory()->for($story)->confirmed()->create();
 
     Livewire::actingAs(supportUser())
         ->test(ViewStory::class, ['record' => $story->getKey()])
         ->assertActionVisible('listen')
-        ->callAction('listen');
+        ->assertActionHasUrl('listen', route('filament.admin.stories.listen', ['story' => $story]));
+});
+
+it('inscrit « played Recording » et redirige vers l’audio', function (): void {
+    $story = Story::factory()->shared()->create();
+    Recording::factory()->for($story)->confirmed()->create();
+
+    $reponse = $this->actingAs(supportUser())
+        ->get(route('filament.admin.stories.listen', ['story' => $story]));
+
+    $reponse->assertRedirect();
+
+    // L'assertion porte sur la clé de l'objet et non sur la forme de la
+    // signature : le double de stockage n'en produit pas, et un test qui
+    // exigerait `X-Amz-Signature` ne dirait que le pilote employé.
+    expect($reponse->headers->get('Location'))
+        ->toContain($story->currentRecording()->value('original_path'));
 
     $trace = DB::table('audit_logs')->where('action', 'played Recording')->first();
 
     expect($trace)->not->toBeNull()
         ->and($trace->subject_id)->not->toBeNull();
+});
+
+it('refuse l’écoute à qui n’a pas le droit de lire', function (): void {
+    $story = Story::factory()->shared()->create();
+    Recording::factory()->for($story)->confirmed()->create();
+
+    $etranger = User::factory()->create(['role' => UserRole::Initiator]);
+
+    $this->actingAs($etranger)
+        ->get(route('filament.admin.stories.listen', ['story' => $story]))
+        ->assertForbidden();
+
+    expect(DB::table('audit_logs')->where('action', 'played Recording')->count())->toBe(0);
 });
 
 /*
@@ -65,9 +99,9 @@ it('trace aussi l’écoute d’un compte en lecture seule', function (): void {
 
     $lecteur = User::factory()->create(['role' => UserRole::SupportReadonly]);
 
-    Livewire::actingAs($lecteur)
-        ->test(ViewStory::class, ['record' => $story->getKey()])
-        ->callAction('listen');
+    $this->actingAs($lecteur)
+        ->get(route('filament.admin.stories.listen', ['story' => $story]))
+        ->assertRedirect();
 
     expect(DB::table('audit_logs')->where('action', 'played Recording')->count())->toBe(1);
 });

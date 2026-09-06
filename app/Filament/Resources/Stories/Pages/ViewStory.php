@@ -13,7 +13,6 @@ use App\Filament\Resources\Stories\StoryResource;
 use App\Models\Recording;
 use App\Models\Story;
 use App\Models\User;
-use App\Services\Storage\MediaStorage;
 use App\States\Story\Hidden;
 use App\States\Story\Trashed;
 use Filament\Actions\Action;
@@ -81,21 +80,12 @@ final class ViewStory extends ViewRecord
                 ->label(__('admin.stories.actions.listen'))
                 ->icon(Heroicon::OutlinedSpeakerWave)
                 ->visible(fn (Story $record): bool => self::audioKey($record) !== null)
-                ->action(function (Story $record): ?string {
-                    $key = self::audioKey($record);
-
-                    if ($key === null) {
-                        return null;
-                    }
-
-                    $recording = $record->currentRecording()->first();
-
-                    AuditLog::record('played Recording', $recording ?? $record, [
-                        'story_id' => $record->id,
-                    ], $record->project);
-
-                    return app(MediaStorage::class)->temporaryUrl($key, 60);
-                })
+                // `->url()` et non `->action()` : une action qui **retourne**
+                // une URL ne navigue pas, et `openUrlInNewTab()` ne vaut que
+                // pour `url()`. La première version journalisait l'écoute sans
+                // rien ouvrir (T-182). La route porte la trace **et** la
+                // redirection : on ne peut pas obtenir l'une sans l'autre.
+                ->url(fn (Story $record): string => route('filament.admin.stories.listen', ['story' => $record]))
                 ->openUrlInNewTab(),
 
             $this->withReason(
