@@ -66,6 +66,8 @@ type Props = {
     lexicon: string[];
     extraCopyPriceCents: number;
     supportEmail: string;
+    /** Vrai quand un code protège déjà l'écoute. Jamais le code lui-même. */
+    familyCodeSet: boolean;
 };
 
 const date = (iso: string | null) =>
@@ -100,6 +102,7 @@ export default function Book({
     lexicon,
     extraCopyPriceCents,
     supportEmail,
+    familyCodeSet,
 }: Props) {
     const t = useT();
 
@@ -107,6 +110,7 @@ export default function Book({
     const [foreword, setForeword] = useState(book.foreword ?? '');
     const approval = useForm({ final_print: false, lexicon_reviewed: false });
     const copies = useForm({ quantity: 1 });
+    const codeForm = useForm({ code: '' });
 
     const save = (next: Chapter[], text: string) => {
         setRows(next);
@@ -468,6 +472,96 @@ export default function Book({
                             </li>
                         ))}
                     </ul>
+                )}
+            </section>
+
+            {/*
+             * Le code du livre, avant le bon à tirer : il s'imprime sur le
+             * rabat, donc il se décide **avant** d'imprimer. Le proposer après
+             * la commande arriverait trop tard.
+             */}
+            <section
+                aria-labelledby="book-code"
+                className="card enter mt-10 px-5 py-6"
+                style={stagger(6)}
+            >
+                <h2 id="book-code" className="text-[1.0625rem] font-semibold">
+                    {t('initiator.book.code.title')}
+                </h2>
+                <p className="text-brand-muted mt-2 text-base">
+                    {t('initiator.book.code.help')}
+                </p>
+
+                {familyCodeSet && (
+                    <p className="panel mt-4 text-base">
+                        {t('initiator.book.code.is_set')}
+                    </p>
+                )}
+
+                <form
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        codeForm.post('/espace/livre/code', {
+                            preserveScroll: true,
+                            onSuccess: () => codeForm.reset(),
+                        });
+                    }}
+                    className="mt-4"
+                >
+                    <label
+                        htmlFor="family-code"
+                        className="block text-[1rem] font-semibold"
+                    >
+                        {t('initiator.book.code.label')}
+                    </label>
+
+                    <div className="mt-2 flex flex-wrap items-start gap-3">
+                        <input
+                            id="family-code"
+                            type="text"
+                            autoComplete="off"
+                            value={codeForm.data.code}
+                            onChange={(event) =>
+                                codeForm.setData('code', event.target.value)
+                            }
+                            aria-invalid={codeForm.errors.code !== undefined}
+                            className="border-brand-line focus:border-brand min-h-[2.75rem] flex-1 rounded-xl border bg-white px-4 text-[1.0625rem] tracking-widest"
+                        />
+                        <SubmitButton
+                            processing={codeForm.processing}
+                            waitingLabel={t('initiator.book.approve.waiting')}
+                            disabled={codeForm.data.code.trim() === ''}
+                        >
+                            {t(
+                                familyCodeSet
+                                    ? 'initiator.book.code.change'
+                                    : 'initiator.book.code.submit',
+                            )}
+                        </SubmitButton>
+                    </div>
+
+                    {codeForm.errors.code !== undefined && (
+                        <p
+                            role="alert"
+                            className="mt-2 text-[0.9375rem] text-red-700"
+                        >
+                            {codeForm.errors.code}
+                        </p>
+                    )}
+                </form>
+
+                {familyCodeSet && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            router.delete('/espace/livre/code', {
+                                preserveScroll: true,
+                            })
+                        }
+                        className="text-brand-muted hover:text-brand press mt-4 min-h-[2.75rem] underline underline-offset-4"
+                    >
+                        {t('initiator.book.code.remove')}
+                    </button>
                 )}
             </section>
 
