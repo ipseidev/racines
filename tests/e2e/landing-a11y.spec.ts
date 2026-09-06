@@ -12,6 +12,7 @@ import { blockingViolations } from './support/a11y';
 const PAGES = [
     ['/', 'la page d’accueil'],
     ['/essai', 'l’essai'],
+    ['/comment-ca-marche', 'comment ça marche'],
     ['/acheter', 'le tunnel'],
     ['/cgv', 'les conditions générales'],
     ['/confidentialite', 'la politique de confidentialité'],

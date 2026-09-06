@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', LandingController::class)->name('home');
 
 Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
+Route::get('/comment-ca-marche', [LandingController::class, 'howItWorks'])->name('how_it_works');
 
 // Le manifeste d'installation, rendu depuis les réglages de marque. Sans
 // contrainte de domaine, pour rester de même origine que la page qui le cite.

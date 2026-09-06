@@ -120,7 +120,7 @@ return [
                 'transcript_label' => 'Ce qu’Odette raconte dans cet extrait',
                 'transcript' => 'Oh… l’odeur du pain. Sans hésiter. Le pain qui cuit. Alors euh… ma grand-mère elle habitait à Saint-Aubin, enfin Saint-Aubin-du-Cormier, et euh chaque dimanche on y allait, on y allait en voiture avec mon père, ça faisait… je sais plus, une heure de route peut-être. Et elle faisait le pain elle-même, dans le four, le four à bois derrière la maison. Et on le sentait avant d’arriver, hein. Enfin — moi je le sentais. Mon père il disait que je racontais des histoires, mais non. Non, non. Je le sentais, dès le tournant. Et elle nous en coupait un morceau tout de suite, encore chaud, avec du beurre salé. Et… voilà. C’est ça. C’est cette odeur-là.',
             ],
-            'photo_alt' => 'Une femme assise à la table de sa cuisine, le téléphone à la main, songeuse.',
+            'photo_alt' => 'Une femme âgée et sa fille, enlacées sur un canapé, tiennent le livre relié qu’elles viennent de déballer.',
         ],
 
         /*
@@ -168,18 +168,20 @@ return [
             'two' => [
                 'title' => 'Une question arrive. Elle parle.',
                 'body' => 'Chaque semaine, par SMS ou par courriel. Ni application, ni compte, ni mot de passe. Elle ouvre le lien et elle raconte, depuis son téléphone.',
-                'alt' => 'Une femme âgée sourit, en cardigan gris.',
+                'alt' => 'Une femme âgée, près d’une fenêtre, parle en souriant au téléphone qu’elle tient devant elle.',
             ],
             'three' => [
                 'title' => 'Ses mots deviennent un chapitre',
                 'body' => 'Les hésitations s’effacent, ses tournures restent. Le mot à mot est conservé à côté du texte mis au propre, et elle relit avant tout le monde.',
-                'alt' => 'Un livre ouvert, photographié de près.',
+                'alt' => 'Une femme âgée tient devant elle un livre relié vert, titré « Récits de ma vie ».',
             ],
             'four' => [
                 'title' => 'La famille l’entend aussitôt',
                 'body' => 'Chaque histoire qu’elle choisit de partager arrive à ses proches. Ils la lisent, l’écoutent, lui répondent d’un mot. Pour beaucoup de familles, c’est le meilleur moment de la semaine.',
-                'alt' => 'Une famille réunie autour d’une table, sur une photographie ancienne.',
+                'alt' => 'Deux personnes penchées sur un livre ouvert : l’une montre le code d’un chapitre, l’autre tient un téléphone où sourit la narratrice.',
             ],
+            // Vers la page qui déroule le parcours en six étapes (T-208).
+            'more' => 'Voir le parcours en détail',
         ],
 
         // Notre histoire : celle du fondateur, à la première personne, sans le nommer.
@@ -283,7 +285,7 @@ return [
             'no_app' => 'Rien à installer.',
             'no_password' => 'Aucun mot de passe.',
             'cta' => 'Essayer : ça prend 60 secondes',
-            'photo_alt' => 'Une femme âgée sourit, en cardigan gris.',
+            'photo_alt' => 'Une femme âgée parle à son téléphone, tenu à bout de bras, sans rien d’autre à manipuler.',
         ],
 
         'try' => [
@@ -296,7 +298,7 @@ return [
             'headline' => 'La photo, l’histoire et la voix, sur une même page.',
             'body' => 'Chaque chapitre porte un code à scanner qui rejoue l’enregistrement d’origine. On entend chaque histoire exactement comme elle a été racontée, avec sa voix.',
             'qr' => 'Les codes de votre livre mènent aux enregistrements aussi longtemps que le service existe. Si nous devions cesser notre activité, nous vous préviendrions et vous fournirions vos fichiers.',
-            'photo_alt' => 'Un homme âgé regarde deux photographies anciennes qu’il tient dans ses mains.',
+            'photo_alt' => 'Le livre relié vert, dressé sur une table de bois parmi de vieux ouvrages, un téléphone posé à côté.',
         ],
 
         'review' => [
@@ -399,6 +401,232 @@ return [
                 'q' => 'Que se passe-t-il si vous cessez votre activité ?',
                 'a' => 'Nous vous prévenons au moins trois mois à l’avance, nous vous fournissons l’intégralité de vos enregistrements et de vos textes dans un format lisible sans nous, et nous vous remboursons ce qui n’a pas été livré. Nous ne promettons pas une conservation à vie : nous promettons de ne jamais vous laisser sans vos fichiers.',
             ],
+        ],
+    ],
+
+    /*
+     * « Comment ça marche », la page (T-208).
+     *
+     * La structure est celle de la page du leader, relevée section par
+     * section sur son HTML et une capture du 7 septembre 2026 : un bandeau de
+     * titre avec la question « cadeau ou pour moi » et deux onglets ; une
+     * accroche avec un média à côté ; six étapes sur une frise verticale, le
+     * texte à gauche, l'image à droite, chacune avec un lien secondaire ;
+     * « Encore des questions ? » ; un bandeau d'appel avec le prix dans le
+     * bouton ; la technologie du texte ; une section sombre avec une citation
+     * et deux cartes ; « réunir les générations » ; l'adresse contre une
+     * réduction. Les onglets remplacent **tout** le contenu en dessous, pas
+     * seulement l'accroche : chaque variante a ses six étapes et ses appels.
+     *
+     * Les mots sont les nôtres. Ce qui n'existe pas chez nous n'y est pas :
+     * pas de vidéo (l'extrait d'Odette prend la place), pas d'avis de client
+     * (la citation est celle du fondateur, qui a un nom), pas de troisième
+     * rendu (P0-8 livre un double rendu), rien de « pour toujours » (R-11).
+     * Les six étapes suivent le parcours du dossier (doc 03 §5.1) : elle
+     * relit et décide **avant** que la famille écoute, et un test garde cet
+     * ordre. Les engagements cités sont lus dans `landing.commitments`.
+     */
+    'how_it_works' => [
+        'seo_title' => 'Comment ça marche',
+
+        // Le bandeau de titre : le titre, la question, les deux onglets.
+        'hero' => [
+            'title' => 'Comment ça marche',
+            'question' => 'Vous offrez ce livre, ou vous racontez vous-même ?',
+            'toggle_label' => 'Pour qui est le livre ?',
+            'gift' => 'Pour un proche',
+            'self' => 'Pour moi',
+        ],
+
+        // L'accroche, et le média à côté : là où le leader met sa vidéo, on fait écouter.
+        'intro' => [
+            'gift' => [
+                'headline' => 'Ses souvenirs, racontés avec sa voix.',
+                'lede' => 'Rien à écrire, rien à installer : une question par semaine, et elle répond en parlant.',
+            ],
+            'self' => [
+                'headline' => 'Votre vie, racontée avec votre voix.',
+                'lede' => 'Rien à écrire, rien à installer : une question par semaine, et vous répondez en parlant.',
+            ],
+            'listen' => 'Écoutez',
+            'caption' => 'Deux minutes avec Odette, telle qu’une famille la reçoit.',
+        ],
+
+        /*
+         * Les six étapes, chacune en deux voix : « elle » quand on offre,
+         * « vous » quand on raconte soi-même. L'ordre des clés est l'ordre
+         * affiché, et un test le garde.
+         */
+        'steps' => [
+            'title' => 'Les six étapes',
+            'label' => 'Étape :n',
+            'badge' => ':n sur 6',
+            'questions' => [
+                'gift' => [
+                    'title' => 'Vous choisissez les questions',
+                    'body' => 'Soixante questions, écrites en français pour faire remonter les histoires que la famille n’a jamais entendues : la maison d’enfance, le premier jour de travail, ce qu’on a voulu transmettre. Vous gardez celles qui lui ressemblent, vous ajoutez les vôtres, ou vous nous laissez faire. La première est toujours une question facile.',
+                    'link' => 'Voir quelques questions',
+                ],
+                'self' => [
+                    'title' => 'Vous choisissez ce que vous voulez raconter',
+                    'body' => 'Soixante questions, écrites en français pour faire remonter les histoires que vos proches n’ont jamais entendues : la maison d’enfance, le premier jour de travail, ce que vous avez voulu transmettre. Vous gardez celles qui vous parlent, vous écartez les autres, vous ajoutez les vôtres. La première est toujours une question facile.',
+                    'link' => 'Voir quelques questions',
+                ],
+                // Quatre questions du corpus (annexe A), mot pour mot : un test le vérifie.
+                'samples' => [
+                    'first_memory' => 'Quel est votre tout premier souvenir ?',
+                    'dish' => 'Quel plat de votre enfance aimeriez-vous goûter une dernière fois ?',
+                    'meeting' => 'Comment avez-vous rencontré la personne qui a partagé votre vie ?',
+                    'value' => 'Quelle est la valeur que vous avez essayé de transmettre avant toutes les autres ?',
+                ],
+                'alt' => 'Une main tient deux photographies anciennes de famille devant une porte en bois.',
+            ],
+            'record' => [
+                // « s'arrêter, souffler et reprendre » : la pause de l'enregistrement
+                // (P0-3). Pas la reprise après un appel ou une mise en veille, que
+                // le dossier interdit de promettre avant le spike navigateur.
+                'gift' => [
+                    'title' => 'Une question arrive. Elle parle.',
+                    'body' => 'Chaque semaine, au moment qu’elle a choisi, votre proche reçoit un SMS ou un courriel : une seule question, et un lien. Elle l’ouvre, elle touche un bouton, elle raconte. Ni application, ni compte, ni mot de passe. Elle peut s’arrêter, souffler et reprendre. Et si elle préfère écrire ce jour-là, elle écrit.',
+                    'link' => 'Essayer l’écran qu’elle verra',
+                ],
+                'self' => [
+                    'title' => 'Chaque semaine, une question. Vous parlez.',
+                    'body' => 'Au moment que vous avez choisi, vous recevez un SMS ou un courriel : une seule question, et un lien. Vous l’ouvrez, vous touchez un bouton, vous racontez. Ni application, ni compte, ni mot de passe. Vous pouvez vous arrêter, souffler et reprendre. Et si vous préférez écrire ce jour-là, vous écrivez.',
+                    'link' => 'Essayer l’écran que vous verrez',
+                ],
+                'alt' => 'Une femme âgée sourit en parlant à son téléphone, devant une fenêtre.',
+            ],
+            'text' => [
+                'gift' => [
+                    'title' => 'Ses mots deviennent un texte',
+                    'body' => 'En quelques minutes, l’enregistrement est transcrit, et il en sort deux textes, l’un à côté de l’autre : le mot à mot, tel qu’elle l’a dit, et le texte mis au propre, où les hésitations s’effacent et où ses tournures restent. L’IA range, elle n’invente pas. L’enregistrement d’origine est conservé, et le mot à mot n’est jamais supprimé.',
+                    'link' => 'Voir la différence',
+                ],
+                'self' => [
+                    'title' => 'Vos mots deviennent un texte',
+                    'body' => 'En quelques minutes, votre enregistrement est transcrit, et il en sort deux textes, l’un à côté de l’autre : le mot à mot, tel que vous l’avez dit, et le texte mis au propre, où les hésitations s’effacent et où vos tournures restent. L’IA range, elle n’invente pas. L’enregistrement d’origine est conservé, et le mot à mot n’est jamais supprimé.',
+                    'link' => 'Voir la différence',
+                ],
+                'alt' => 'La page de relecture sur un téléphone : l’enregistrement à réécouter, puis le texte mis au propre et le mot à mot, l’un à côté de l’autre.',
+            ],
+            'decide' => [
+                'gift' => [
+                    'title' => 'Elle relit, puis elle décide',
+                    'body' => 'Avant qui que ce soit, elle relit son histoire et corrige un mot si elle veut. Puis elle choisit : partager avec ses proches, garder pour elle, ou décider plus tard. Rien n’est visible de la famille sans son accord. Et elle peut changer d’avis à tout moment : masquer une histoire, la retirer, la supprimer.',
+                    'link' => 'Lire nos engagements',
+                ],
+                'self' => [
+                    'title' => 'Vous relisez, puis vous décidez',
+                    'body' => 'Avant qui que ce soit, vous relisez votre histoire et vous corrigez un mot si vous voulez. Puis vous choisissez : partager avec vos proches, garder pour vous, ou décider plus tard. Rien n’est visible de la famille sans votre accord. Et vous pouvez changer d’avis à tout moment : masquer une histoire, la retirer, la supprimer.',
+                    'link' => 'Lire nos engagements',
+                ],
+                'alt' => 'Une femme âgée tient devant elle le livre relié de ses récits.',
+            ],
+            'family' => [
+                'gift' => [
+                    'title' => 'La famille écoute et lui répond',
+                    'body' => 'Chaque histoire qu’elle a choisi de partager arrive à ses proches, sur une page privée qui rejoue sa voix et montre le texte. Ils l’écoutent, ajoutent une photo, lui répondent d’un mot. Elle sait qu’on l’a écoutée.',
+                    'link' => 'Qui peut écouter ?',
+                ],
+                'self' => [
+                    'title' => 'Vos proches écoutent et vous répondent',
+                    'body' => 'Chaque histoire que vous avez choisi de partager arrive à vos proches, sur une page privée qui rejoue votre voix et montre le texte. Ils l’écoutent, ajoutent une photo, vous répondent d’un mot. Vous savez qu’ils l’ont écoutée.',
+                    'link' => 'Qui peut écouter ?',
+                ],
+                'alt' => 'Deux proches suivent une page du livre, le téléphone à la main, la narratrice à l’écran.',
+            ],
+            'book' => [
+                // « de quoi faire un livre » : les critères R-6, jamais un nombre
+                // d'histoires. Rien sur le lieu d'impression tant que l'imprimeur
+                // n'est pas contractualisé (bloc 13).
+                'gift' => [
+                    'title' => 'Le livre relié, avec sa voix à chaque page',
+                    'body' => 'Au fil de l’année, les histoires s’assemblent en chapitres, avec les photos que la famille a ajoutées. Quand il y a de quoi faire un livre, vous relisez la maquette et vous donnez le bon à tirer. Seules les histoires qu’elle a validées y entrent. Le livre est imprimé et relié, en couleur, et chaque chapitre porte un code à scanner qui rejoue l’enregistrement d’origine. Avec le livre, vous recevez tout : les enregistrements et les textes, dans des fichiers lisibles sans nous.',
+                    'link' => 'Voir le livre',
+                ],
+                'self' => [
+                    'title' => 'Le livre relié, avec votre voix à chaque page',
+                    'body' => 'Au fil de l’année, vos histoires s’assemblent en chapitres, avec les photos que vos proches ont ajoutées. Quand il y a de quoi faire un livre, vous relisez la maquette et vous donnez le bon à tirer. Seules les histoires que vous avez validées y entrent. Le livre est imprimé et relié, en couleur, et chaque chapitre porte un code à scanner qui rejoue l’enregistrement d’origine. Avec le livre, vous recevez tout : les enregistrements et les textes, dans des fichiers lisibles sans nous.',
+                    'link' => 'Voir le livre',
+                ],
+                'alt' => 'Le livre relié, debout sur un bureau parmi des livres anciens.',
+            ],
+        ],
+
+        // « Encore des questions ? » : quatre réponses lues au catalogue de l'accueil.
+        'questions' => [
+            'title' => 'Encore des questions ?',
+            'all' => 'Toutes les questions',
+        ],
+
+        // Le bandeau d'appel, avec le prix dans le bouton comme chez le leader.
+        'cta' => [
+            'gift' => [
+                'headline' => 'Offrez-lui le livre de sa vie, avec sa voix pour le raconter.',
+                'body' => 'Une année de questions, le livre relié, et tous les enregistrements. Un seul paiement, rien à renouveler.',
+            ],
+            'self' => [
+                'headline' => 'Votre histoire, dans vos propres mots.',
+                'body' => 'Une année de questions, le livre relié de vos histoires, et tous les enregistrements. Un seul paiement, rien à renouveler.',
+                'button' => 'Je commence mon livre',
+            ],
+        ],
+
+        /*
+         * Le texte en deux versions, en onglets, sur l'exemple d'Odette. Deux
+         * et non trois : le MVP livre le mot à mot et le texte mis au propre,
+         * pas de récit à la troisième personne (doc 03 §2).
+         */
+        'rendering' => [
+            'eyebrow' => 'Le texte',
+            'headline' => 'Le même enregistrement, deux textes.',
+            'lede' => 'Le premier est ce qu’elle a dit, au mot près. Le second est ce qu’on lira dans le livre : les hésitations en moins, ses tournures intactes. Les deux restent accessibles, l’un à côté de l’autre, et elle corrige ce qu’elle veut dans le second.',
+            'tabs_label' => 'Les deux versions du texte',
+            'question_label' => 'La question d’Odette',
+        ],
+
+        // La section sombre : la citation, qui a un auteur, puis deux cartes.
+        'voice' => [
+            'title' => 'Pourquoi ce livre existe',
+            'author' => 'Le fondateur de :brand',
+            'cta' => 'Lire notre histoire',
+        ],
+        'more' => [
+            'faq' => [
+                'body' => 'Ce qui est compris, l’abonnement qu’il n’y a pas, le smartphone qui manque parfois, et ce qui se passe en cas de refus.',
+                'cta' => 'Lire les réponses',
+            ],
+            'try' => [
+                'title' => 'Essayez en 60 secondes',
+                'body' => 'L’écran de la personne qui raconte, avec une vraie question de la semaine. Rien ne quitte votre téléphone.',
+                'cta' => 'Faire l’essai',
+            ],
+        ],
+
+        'together' => [
+            'gift' => [
+                'headline' => 'Un livre qui se fait à plusieurs.',
+                'body' => 'Vous lancez le projet, elle raconte, la famille écoute et complète. Chacun y met quelque chose, et le livre en garde la trace.',
+            ],
+            'self' => [
+                'headline' => 'Un livre qui se fait avec les vôtres.',
+                'body' => 'Vous racontez, vos proches écoutent et complètent. Chacun y met quelque chose, et le livre en garde la trace.',
+                'button' => 'Je commence mon livre',
+            ],
+            'points' => [
+                'questions' => 'Choisir les questions',
+                'photos' => 'Ajouter des photos aux histoires',
+                'listen' => 'Écouter chaque histoire dès qu’elle est partagée',
+                'reply' => 'Répondre d’un mot à la personne qui raconte',
+            ],
+            'alt' => 'Une femme âgée et sa fille s’étreignent en riant, le livre relié entre elles.',
+        ],
+
+        // L'adresse contre une réduction, en bas de page : les mêmes règles que
+        // la fenêtre de bienvenue (T-141), dont elle reprend les textes.
+        'newsletter' => [
+            'title' => ':amount offerts pour commencer',
         ],
     ],
 
@@ -607,7 +835,7 @@ return [
                 'count' => 'Nombre d’exemplaires',
                 'fewer' => 'Un exemplaire de moins',
                 'more' => 'Un exemplaire de plus',
-                'alt' => 'Le livre relié, ouvert sur une double page',
+                'alt' => 'Le livre relié, dressé sur une table de bois',
             ],
             'instead' => 'au lieu de :amount',
             'ebook' => [
@@ -619,7 +847,7 @@ return [
                 'title' => 'Enregistrement par téléphone',
                 'body' => 'Un membre de notre équipe appelle :first_name chaque semaine au créneau choisi et enregistre l’histoire. Rien à manipuler de son côté.',
                 'remaining' => 'Places limitées : il en reste :remaining sur :cap.',
-                'alt' => 'Une femme âgée qui répond au téléphone',
+                'alt' => 'Une femme âgée qui parle à son téléphone',
             ],
         ],
 

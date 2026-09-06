@@ -2,6 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 
 import { useBrand } from '@/brand/BrandProvider';
 import HeroSample from '@/components/HeroSample';
+import { Check, Lock } from '@/components/marketing/Check';
+import { H2, LEDE, PRIMARY, SECONDARY } from '@/components/marketing/styles';
 import Wave from '@/components/Wave';
 import WelcomeOffer from '@/components/WelcomeOffer';
 import { formatPrice } from '@/hooks/usePilot';
@@ -85,59 +87,6 @@ const QUESTIONS = [
     'refund',
     'shutdown',
 ] as const;
-
-const H2 =
-    'font-display text-[2rem] leading-[1.1] font-medium sm:text-4xl lg:text-5xl';
-const LEDE = 'text-brand-muted text-xl leading-snug';
-const PRIMARY =
-    'bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep inline-flex min-h-[3.5rem] items-center justify-center rounded-md px-7 text-[1.05rem] font-semibold';
-const SECONDARY =
-    'border-brand text-brand hover:bg-brand/5 inline-flex min-h-[3.5rem] items-center justify-center rounded-md border-2 px-7 text-[1.05rem] font-semibold';
-
-/**
- * Une coche dans la couleur de marque, jamais dans celle de l'action.
- *
- * Décalée d'un cran vers le bas par défaut, pour s'aligner sur la première
- * ligne d'un texte ; dans une pastille, on lui retire ce décalage, sinon elle
- * n'est plus au centre.
- */
-function Check({
-    light = false,
-    className = 'mt-1',
-}: {
-    light?: boolean;
-    className?: string;
-}) {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden="true"
-            className={`${className} size-[22px] flex-none ${light ? 'text-brand-gold' : 'text-brand'}`}
-        >
-            <circle cx="12" cy="12" r="10" />
-            <path d="m8 12 3 3 5-6" />
-        </svg>
-    );
-}
-
-function Lock() {
-    return (
-        <svg
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            aria-hidden="true"
-            className="size-4 flex-none"
-        >
-            <rect x="3" y="7" width="10" height="7" rx="1.5" />
-            <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
-        </svg>
-    );
-}
 
 /** L'onde d'une voix : le seul mouvement de la page, et il s'arrête pour qui le demande. */
 /*
@@ -348,9 +297,9 @@ export default function Landing({
                         sizes="(min-width: 1024px) 34rem, 100vw"
                         alt={t('public.landing.hero.photo_alt')}
                         width="1400"
-                        height="933"
+                        height="1050"
                         fetchPriority="high"
-                        className="aspect-[4/3] w-full rounded-2xl object-cover object-[60%_25%] lg:aspect-[5/4]"
+                        className="aspect-[4/3] w-full rounded-2xl object-cover lg:aspect-[5/4]"
                     />
                     <figure
                         aria-label={t('public.landing.hero.card.aria')}
@@ -443,12 +392,19 @@ export default function Landing({
                 <ol className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     {STEPS.map((step, index) => (
                         <li key={step} className="flex flex-col gap-4">
+                            {/*
+                             * Les quatre photos partagent un seul jeu
+                             * d'attributs : les dimensions déclarées sont
+                             * celles de l'emplacement — le 4:3 que la classe
+                             * impose — et non celles du fichier, dont
+                             * l'étape 1 est la seule à s'écarter encore.
+                             */}
                             <img
                                 {...photo(`etape-${index + 1}`)}
                                 sizes="(min-width: 1024px) 17rem, (min-width: 640px) 45vw, 100vw"
                                 alt={t(`public.landing.how.${step}.alt`)}
                                 width="1400"
-                                height="933"
+                                height="1050"
                                 loading="lazy"
                                 className="aspect-[4/3] w-full rounded-lg object-cover"
                             />
@@ -464,6 +420,16 @@ export default function Landing({
                         </li>
                     ))}
                 </ol>
+
+                {/* Quatre étapes suffisent ici ; la page dédiée en déroule six (T-208). */}
+                <div className="mt-12 flex justify-start lg:justify-center">
+                    <Link
+                        href="/comment-ca-marche"
+                        className={`${SECONDARY} w-full sm:w-auto`}
+                    >
+                        {t('public.landing.how.more')} →
+                    </Link>
+                </div>
             </section>
 
             {/* Pensé pour les grands-parents, et l'essai ======================== */}
@@ -476,7 +442,7 @@ export default function Landing({
                     sizes="(min-width: 1024px) 36rem, 100vw"
                     alt={t('public.landing.tested.photo_alt')}
                     width="1400"
-                    height="933"
+                    height="1050"
                     loading="lazy"
                     className="aspect-[4/3] h-full w-full object-cover lg:aspect-auto"
                 />
@@ -674,7 +640,7 @@ export default function Landing({
                                 sizes="(min-width: 1024px) 32rem, 100vw"
                                 alt={t('public.landing.book.photo_alt')}
                                 width="1400"
-                                height="875"
+                                height="1050"
                                 loading="lazy"
                                 className="border-brand-gold aspect-[4/3] w-full rounded-xl border-2 object-cover"
                             />
@@ -740,7 +706,7 @@ export default function Landing({
                             sizes="(min-width: 640px) 28rem, 100vw"
                             alt=""
                             width="1400"
-                            height="875"
+                            height="1050"
                             loading="lazy"
                             className="aspect-[4/3] w-full object-cover sm:aspect-auto sm:h-full"
                         />

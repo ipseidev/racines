@@ -738,7 +738,7 @@ export default function Checkout({
                                         />
 
                                         <OptionCard
-                                            image="/img/landing/hero-700.webp"
+                                            image="/img/landing/etape-2-700.webp"
                                             imageAlt={t(
                                                 'public.checkout.options.phone.alt',
                                             )}

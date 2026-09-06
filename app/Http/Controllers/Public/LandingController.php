@@ -14,7 +14,7 @@ use Inertia\Response;
 use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
 
 /**
- * La page d'accueil, et la démonstration.
+ * La page d'accueil, la page « Comment ça marche » et la démonstration.
  *
  * L'ordre des sections vient du dossier 01 §4 et n'est pas négociable : la
  * promesse, comment ça marche, l'essai en soixante secondes, le livre, les
@@ -30,6 +30,30 @@ final class LandingController
 {
     public function __invoke(Request $request): Response
     {
+        return inertia('public/Landing', $this->storefront($request));
+    }
+
+    /**
+     * « Comment ça marche », en six étapes (T-208).
+     *
+     * Les mêmes props que l'accueil, et c'est voulu : la page affiche le prix,
+     * fait écouter le même extrait et propose la même réduction de bienvenue.
+     * Deux pages qui calculeraient le prix chacune de leur côté finiraient par
+     * en afficher deux.
+     */
+    public function howItWorks(Request $request): Response
+    {
+        return inertia('public/HowItWorks', $this->storefront($request));
+    }
+
+    /**
+     * Ce que toute page de vente reçoit : le mode, le prix vu par ce visiteur,
+     * la fenêtre de bienvenue et l'extrait du héros.
+     *
+     * @return array<string, mixed>
+     */
+    private function storefront(Request $request): array
+    {
         $settings = app(PilotSettings::class);
         $variant = PreventePrice::forRequest($request);
 
@@ -37,7 +61,7 @@ final class LandingController
         // ses en-têtes ici, et la file du framework les ajoute de toute façon.
         Cookie::queue(self::variantCookie($request));
 
-        return inertia('public/Landing', [
+        return [
             'mode' => $settings->mode,
             'price' => $settings->isPrevente() ? $variant : $settings->pilot_price_cents,
             'legalValidated' => $settings->legalValidated(),
@@ -49,7 +73,7 @@ final class LandingController
                 'discountPercent' => $settings->welcome_offer_discount_percent,
             ],
             'heroSample' => self::heroSample(),
-        ]);
+        ];
     }
 
     public function demo(): Response
