@@ -121,7 +121,7 @@ final class OrderResource extends Resource
                          * Le champ demandait des centimes, avec « 89,00 € »
                          * affiché dans la ligne juste derrière. Le libellé le
                          * disait, et vingt centimes sont quand même partis là
-                         * où vingt euros étaient voulus (T-190) : sur le seul
+                         * où vingt euros étaient voulus (T-195) : sur le seul
                          * geste du back-office qui déplace de l'argent, une
                          * unité qui n'est celle de nulle part ailleurs est un
                          * piège, pas une information.

@@ -54,10 +54,25 @@ final readonly class SelectBookChapters
             foreach ($stories as $story) {
                 $position += self::STEP;
 
+                /*
+                 * Cochée seulement s'il y a quelque chose à imprimer.
+                 *
+                 * Une histoire validée dont la transcription a échoué, ou une
+                 * réponse écrite restée vide, produit une page portant sa
+                 * question, sa date, son QR — et pas une ligne de récit.
+                 * Trouvé sur un rendu réel : une page blanche dans un livre
+                 * imprimé (T-197). Elle reste dans la liste, décochée : la
+                 * masquer ferait chercher pourquoi l'histoire n'y est pas.
+                 *
+                 * Une photo suffit : le récit n'est pas toujours du texte.
+                 */
+                $imprimable = trim(self::textOf($story)) !== ''
+                    || $story->getMedia(Story::PHOTOS)->isNotEmpty();
+
                 // `associate` et non un `story_id` rempli en masse : la
                 // colonne n'est pas remplissable, et c'est voulu — un
                 // chapitre ne change pas d'histoire, il se retire.
-                $chapter = new BookChapter(['position' => $position, 'included' => true]);
+                $chapter = new BookChapter(['position' => $position, 'included' => $imprimable]);
                 $chapter->story()->associate($story);
                 $book->chapters()->save($chapter);
             }

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Actions\RecordShareDecision;
 use App\Enums\AnswerType;
 use App\Enums\QuestionTheme;
+use App\Enums\ShareDecision;
 use App\Enums\TranscriptKind;
+use App\Enums\ValidatedVia;
 use App\Models\Project;
 use App\Models\Question;
 use App\Models\Recording;
@@ -95,7 +98,15 @@ final class DemoBook extends Command
             $theme = self::THEMES[$i % count(self::THEMES)];
             $titre = 'Souvenir '.($i + 1).' — '.$theme->value;
 
-            if ($project->stories()->where('title', $titre)->exists()) {
+            $existante = $project->stories()->where('title', $titre)->first();
+
+            if ($existante instanceof Story) {
+                // Réparer plutôt que sauter : un premier passage interrompu
+                // laisse des histoires à mi-chemin, et une commande de décor
+                // qui les ignore oblige à repartir d'un `migrate:fresh` qui
+                // coûte tout le reste (même leçon qu'en T-155).
+                $faits += $this->finish($existante) ? 1 : 0;
+
                 continue;
             }
 
@@ -144,12 +155,17 @@ final class DemoBook extends Command
                 ],
             ]);
 
-            // Par les transitions, jamais par une écriture directe : `state`
-            // ne s'écrit pas à la main dans ce dépôt, et un test le vérifie.
+            /*
+             * Par les transitions, jamais par une écriture directe : `state`
+             * ne s'écrit pas à la main dans ce dépôt, et un test le vérifie.
+             *
+             * La décision de partage précède la validation, et ce n'est pas
+             * une formalité de décor : la garde R-4 refuse qu'une histoire
+             * devienne validée sans qu'un narrateur l'ait décidé. Un décor qui
+             * la contournerait ne ressemblerait plus au produit.
+             */
             $story->state->transitionTo(Recorded::class, AnswerType::Audio);
-            $story->refresh()->state->transitionTo(Transcribed::class);
-            $story->refresh()->state->transitionTo(Validated::class);
-            $story->refresh()->state->transitionTo(Shared::class);
+            $this->finish($story->refresh());
 
             $faits++;
         }
@@ -163,6 +179,35 @@ final class DemoBook extends Command
         $this->components->info('Passez ensuite `sail artisan books:evaluate`, puis ouvrez /espace/livre.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Mener une histoire jusqu'à `PARTAGÉE`, d'où qu'elle parte.
+     *
+     * Rend `true` si quelque chose a bougé.
+     */
+    private function finish(Story $story): bool
+    {
+        if ($story->state instanceof Shared) {
+            return false;
+        }
+
+        if ($story->state instanceof Recorded) {
+            $story->state->transitionTo(Transcribed::class);
+            $story->refresh();
+        }
+
+        if ($story->state instanceof Transcribed) {
+            app(RecordShareDecision::class)->handle($story, ShareDecision::Share);
+            $story->refresh()->state->transitionTo(Validated::class, ValidatedVia::RecordingEnd);
+            $story->refresh();
+        }
+
+        if ($story->state instanceof Validated) {
+            $story->state->transitionTo(Shared::class);
+        }
+
+        return true;
     }
 
     /**

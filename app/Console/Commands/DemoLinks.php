@@ -350,7 +350,7 @@ final class DemoLinks extends Command
                 'titre' => 'Le livre, et ce qu’il promet pour dix ans',
                 'avant' => [
                     'La matière ne se fabrique pas à la main : `sail artisan demo:livre` ajoute dix histoires validées, `--riche` en fait assez pour un livre complet.',
-                    'Le rendu réel demande Chromium, présent dans l’image depuis T-195, et `PDF_DRIVER=browsershot`.',
+                    'Le rendu réel demande Chromium, présent dans l’image depuis T-196, et `PDF_DRIVER=browsershot`.',
                 ],
                 'etapes' => [
                     [

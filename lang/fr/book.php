@@ -19,6 +19,8 @@ return [
     'chapter_number' => 'Chapitre :number',
     'qr_legend' => 'Scannez pour entendre :first_name raconter.',
     'untitled' => 'Sans titre',
+    // Ce qu'on cherche sur un livre de famille trente ans plus tard.
+    'collected' => 'Récits recueillis en :year',
 
     'colophon' => [
         // La mention D-8 : une durée annoncée, jamais « pour toujours »

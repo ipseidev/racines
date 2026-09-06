@@ -63,6 +63,7 @@
         "babel-plugin-react-compiler": "^1.0.0",
         "fake-indexeddb": "^6.2.5",
         "jsdom": "^30.0.1",
+        "puppeteer": "^25.10.0",
         "vite-plus": "0.3.0",
         "wait-on": "^9.1.0"
     },

@@ -128,16 +128,36 @@ body {
     flex: 0 1 auto;
 }
 
-/* Les points de conduite, faits par une bordure plutôt qu'une suite de
-   caractères : une ligne de points tapée à la main se casse au retour à la
-   ligne et n'imprime pas droit. */
+/*
+ * Les points de conduite, par un dégradé répété.
+ *
+ * Une bordure `dotted` de 0,3 mm sort en **trait plein** à l'impression :
+ * vérifié sur un rendu réel, le pointillé disparaît sous cette épaisseur
+ * (T-197). Une suite de caractères « . » se casserait au retour à la ligne.
+ * Le dégradé, lui, imprime les points à la taille demandée.
+ */
 .toc-item .toc-dots {
     flex: 1 1 auto;
-    border-bottom: 0.3mm dotted #b9ada1;
-    transform: translateY(-1mm);
+    height: 0.6mm;
+    align-self: end;
+    margin-bottom: 1.2mm;
+    background-image: radial-gradient(circle, #b9ada1 0.3mm, transparent 0.3mm);
+    background-size: 1.8mm 0.6mm;
+    background-repeat: repeat-x;
 }
 
-/* `target-counter` : Paged.js résout la page réelle de l'ancre. */
+/*
+ * `target-counter` : Paged.js résout la page réelle de l'ancre.
+ *
+ * La couleur et le soulignement sont **remis à zéro** : un `<a>` garde sinon
+ * le style de lien du navigateur, et le sommaire sort avec des numéros bleus
+ * soulignés — ce qu'on ne voit qu'en regardant un PDF, jamais dans un test.
+ */
+.toc-item .toc-page {
+    color: inherit;
+    text-decoration: none;
+}
+
 .toc-item .toc-page::after {
     content: target-counter(attr(href), page);
 }
@@ -185,12 +205,15 @@ body {
     widows: 2;
 }
 
-.chapter-text p:first-of-type::first-letter {
-    font-family: 'BookDisplay', Georgia, serif;
-    font-size: 24pt;
-    line-height: 1;
-    padding-right: 1mm;
-}
+/*
+ * Pas de lettrine.
+ *
+ * La règle existait et ne produisait rien : vérifié sur un rendu réel, le
+ * premier caractère sort à la taille du corps. Plutôt que de chercher
+ * pourquoi Paged.js ne l'applique pas, on la retire — du CSS mort dans une
+ * feuille d'impression est pire qu'une absence : le prochain lecteur croira
+ * que la lettrine existe et cherchera ailleurs (T-197).
+ */
 
 /* Photos ================================================================= */
 

@@ -9,6 +9,9 @@ use App\Models\Project;
 use App\Models\Story;
 use App\Models\Transcript;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Imagick;
+use ImagickPixel;
 
 uses(RefreshDatabase::class);
 
@@ -112,4 +115,59 @@ it('prend la correction, sinon la mise au propre, sinon le mot à mot', function
 
     Transcript::factory()->for($story)->edited()->create(['text' => 'La correction.', 'version' => 2]);
     expect(SelectBookChapters::textOf($story->refresh()))->toBe('La correction.');
+});
+
+/*
+ * Une histoire sans texte ne s'imprime pas d'elle-même.
+ *
+ * Trouvé sur un **rendu réel** au checkpoint du bloc 13 : le bon à tirer
+ * portait un chapitre « Sans titre » avec sa question, sa date, son QR, et
+ * pas une ligne de récit — une page blanche dans un livre imprimé (T-197).
+ * Le cas existe : une histoire validée dont la transcription a échoué, ou
+ * une réponse écrite restée vide.
+ *
+ * Elle reste **dans la liste**, décochée : la masquer laisserait la famille
+ * chercher pourquoi son histoire n'est pas là. Ce qui change, c'est qu'il
+ * faut un geste pour l'imprimer.
+ */
+it('ne coche pas d’office une histoire sans texte ni photo', function (): void {
+    $project = projetAvecHistoires();
+    $muette = Story::factory()->validated()->create([
+        'project_id' => $project->id,
+        'recorded_at' => '2026-01-01',
+    ]);
+    $bavarde = histoireValidee($project, '2026-02-01', 'Le texte du fournil.');
+
+    $book = Book::factory()->for($project)->create();
+    app(SelectBookChapters::class)->handle($book);
+
+    expect($book->chapters()->where('story_id', $muette->id)->value('included'))->toBeFalse()
+        ->and($book->chapters()->where('story_id', $bavarde->id)->value('included'))->toBeTrue()
+        // Elle est là, visible, décochée : la masquer ferait chercher.
+        ->and($book->chapters()->count())->toBe(2);
+});
+
+it('coche une histoire sans texte mais avec une photo', function (): void {
+    Storage::fake('r2');
+
+    $project = projetAvecHistoires();
+    $story = Story::factory()->validated()->create([
+        'project_id' => $project->id,
+        'recorded_at' => '2026-01-01',
+    ]);
+
+    $image = new Imagick;
+    $image->newImage(1600, 1200, new ImagickPixel('#8B7355'));
+    $image->setImageFormat('jpeg');
+    $chemin = tempnam(sys_get_temp_dir(), 'ch').'.jpg';
+    $image->writeImage($chemin);
+    $image->clear();
+
+    $story->addMedia($chemin)->toMediaCollection(Story::PHOTOS);
+
+    $book = Book::factory()->for($project)->create();
+    app(SelectBookChapters::class)->handle($book);
+
+    // Une page de photo est une page : le récit n'est pas toujours du texte.
+    expect($book->chapters()->where('story_id', $story->id)->value('included'))->toBeTrue();
 });

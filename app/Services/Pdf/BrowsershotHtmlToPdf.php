@@ -34,10 +34,47 @@ final readonly class BrowsershotHtmlToPdf implements HtmlToPdf
     {
         $path = tempnam(sys_get_temp_dir(), 'bat').'.pdf';
 
-        $shot = Browsershot::html($html)
+        /*
+         * Le HTML passe par un **fichier**, pas par `Browsershot::html()`.
+         *
+         * Cette dernière refuse tout contenu où figure la chaîne `file:`,
+         * sans distinguer une URL d'un commentaire — et le paquet Paged.js
+         * que nous incrustons en contient un : « If the only part of the root
+         * that is left is the scheme (i.e. http://, file:///, etc.) ». Le
+         * rendu échouait donc sur une garde de sécurité que rien dans notre
+         * page ne déclenche vraiment (T-197).
+         *
+         * `setHtmlFromFilePath` est la voie prévue par le paquet pour ce cas,
+         * et c'est d'ailleurs ce qu'il fait lui-même en interne. Rien ne se
+         * perd au passage : la page n'a aucune ressource relative, tout y est
+         * incrusté.
+         */
+        $source = tempnam(sys_get_temp_dir(), 'bat').'.html';
+        file_put_contents($source, $html);
+
+        $shot = (new Browsershot)
+            ->setHtmlFromFilePath($source)
             ->paperSize($options->widthMm, $options->heightMm, 'mm')
             ->margins(0, 0, 0, 0)
             ->showBackground()
+            /*
+             * Deux réglages imposés par le conteneur, pas par le livre.
+             *
+             * `noSandbox` : le bac à sable de Chromium demande des espaces de
+             * noms utilisateur que l'image n'accorde pas à l'utilisateur
+             * `sail`, et le navigateur meurt au démarrage avec une trace de
+             * pile de deux cents lignes qui ne le dit pas (T-197). Le risque
+             * accepté est mesuré : la page rendue est **la nôtre**, sans
+             * aucune ressource distante, avec du texte échappé par Blade et
+             * des images déjà passées par l'antivirus puis réencodées.
+             *
+             * `disable-dev-shm-usage` : Docker alloue 64 Mo à `/dev/shm`, et
+             * un livre de soixante pages avec ses photos dépasse cela — le
+             * plantage arrive alors au milieu du rendu, pas au démarrage,
+             * donc au pire endroit pour être compris.
+             */
+            ->noSandbox()
+            ->addChromiumArguments(['disable-dev-shm-usage'])
             ->waitUntilNetworkIdle()
             ->waitForFunction($options->waitForFunction, timeout: $options->timeoutSeconds * 1000)
             ->timeout($options->timeoutSeconds);
@@ -58,7 +95,11 @@ final readonly class BrowsershotHtmlToPdf implements HtmlToPdf
             $shot->setChromePath($chrome);
         }
 
-        $shot->savePdf($path);
+        try {
+            $shot->savePdf($path);
+        } finally {
+            @unlink($source);
+        }
 
         if (! is_file($path) || filesize($path) === 0) {
             throw new RuntimeException('Le rendu du BAT n’a produit aucun fichier.');

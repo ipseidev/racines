@@ -23,21 +23,15 @@ RUN echo "Acquire::http::Pipeline-Depth 0;" > /etc/apt/apt.conf.d/99custom && \
     echo "Acquire::http::No-Cache true;" >> /etc/apt/apt.conf.d/99custom && \
     echo "Acquire::BrokenProxy    true;" >> /etc/apt/apt.conf.d/99custom
 
-# Chromium, pour le rendu du bon à tirer (bloc 13).
+# Les polices de repli, pour le rendu du bon à tirer (bloc 13).
 #
-# Le paquet de la distribution, et non le Chrome de Puppeteer que prévoyait la
-# feuille du bloc : **Chrome for Testing n'est pas publié pour Linux arm64**,
-# et la machine de développement du projet est un Apple Silicon — la commande
-# télécharge un binaire x86_64 qui ne démarre pas (T-195). Même piège que
-# l'image ClamAV (T-185), découvert au même endroit.
-#
-# Les polices ne servent pas au livre : il embarque les siennes, incrustées en
-# base64. Elles évitent que Chromium rende des rectangles vides sans rien dire
-# le jour où une page en demande une qu'il n'a pas.
+# Elles ne servent pas au livre : il embarque les siennes, incrustées en
+# base64 dans le HTML. Elles évitent que Chromium rende des rectangles vides
+# sans rien dire le jour où une page demande une police qu'il n'a pas.
 RUN apt-get update && apt-get upgrade -y \
     && mkdir -p /etc/apt/keyrings \
     && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python3 dnsutils librsvg2-bin fswatch ffmpeg nano \
-    && apt-get install -y chromium fonts-liberation fonts-noto-color-emoji \
+    && apt-get install -y fonts-liberation fonts-noto-color-emoji \
     && curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb \
     && dpkg -i /tmp/debsuryorg-archive-keyring.deb \
     && echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ noble main" > /etc/apt/sources.list.d/php.list \
@@ -88,6 +82,36 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Chromium, pour le rendu du bon à tirer (bloc 13).
+#
+# Celui de **Playwright**, et non celui d'Ubuntu ni celui de Puppeteer. Les
+# trois pistes évidentes échouent chacune à sa manière, et il a fallu les
+# essayer pour le savoir (T-196) :
+#
+#  - `npx puppeteer browsers install chrome` télécharge Chrome for Testing,
+#    **qui n'existe pas pour Linux arm64** — la machine de développement du
+#    projet est un Apple Silicon, et le binaire x86_64 ne démarre pas ;
+#  - le paquet `chromium` d'Ubuntu est un **leurre vers un snap** : il
+#    s'installe sans broncher, puis répond « requires the chromium snap to be
+#    installed » au premier lancement, ce qu'aucun conteneur ne peut fournir ;
+#  - Google ne publie pas de `.deb` Chrome pour arm64.
+#
+# Playwright, lui, construit Chromium pour linux-arm64 comme pour amd64, il
+# est déjà une dépendance de développement du projet, et l'image installe
+# déjà ses bibliothèques système juste au-dessus (`playwright install-deps`).
+#
+# `PLAYWRIGHT_BROWSERS_PATH` sort le binaire de `/root/.cache`, que
+# l'utilisateur `sail` ne peut pas lire, et le lien symbolique fige un chemin
+# stable : celui de Playwright porte un numéro de révision qui change à
+# chaque montée de version.
+# La variable est posée **sur la commande** et non dans l'image : Sail la fixe
+# à `0` plus haut, ce qui range les navigateurs dans `node_modules`, et changer
+# ce réglage pour toute l'image surprendrait quiconque lance Playwright dedans.
+RUN PLAYWRIGHT_BROWSERS_PATH=/opt/playwright npx -y playwright install chromium \
+    && ln -sf "$(find /opt/playwright -type f -name headless_shell -o -type f -name chrome | head -n1)" /usr/local/bin/chromium \
+    && chmod -R a+rX /opt/playwright \
+    && /usr/local/bin/chromium --version
 
 RUN if [ -n "$PHP_EXTENSIONS" ]; then \
     apt-get update \

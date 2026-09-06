@@ -20,7 +20,7 @@ uses(RefreshDatabase::class);
  *
  * Il demandait des centimes, avec « 89,00 € » affiché dans la ligne juste
  * derrière. Trouvé au point 5 du checkpoint du bloc 11 : le montant voulu
- * était vingt euros, vingt centimes sont partis (T-190). Le libellé disait
+ * était vingt euros, vingt centimes sont partis (T-195). Le libellé disait
  * bien « en centimes » — un libellé exact ne rachète pas une unité qui n'est
  * celle de nulle part ailleurs dans le panneau, sur le seul geste du
  * back-office qui déplace de l'argent.

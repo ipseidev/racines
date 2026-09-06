@@ -61,7 +61,7 @@ final readonly class RenderBookHtml
 
         return View::make('book.classic.layout', [
             'title' => $this->title($book),
-            'subtitle' => $firstName === '' ? null : $firstName,
+            'subtitle' => $this->subtitle($book),
             'brandName' => Brand::nameSafe(),
             'css' => $this->css(),
             'pagedJs' => $this->pagedJs(),
@@ -192,6 +192,25 @@ final readonly class RenderBookHtml
         $firstName = $book->project->primaryNarrator?->first_name;
 
         return $firstName === null || trim($firstName) === '' ? Brand::nameSafe() : $firstName;
+    }
+
+    /**
+     * Le sous-titre : la période de collecte, pas le prénom.
+     *
+     * Il portait le prénom, comme le titre — la couverture disait donc
+     * « Marie » deux fois, ce qu'un rendu réel a montré et qu'aucun test
+     * n'aurait vu (T-197). La période, elle, est ce qu'on cherche sur un
+     * livre de famille trente ans plus tard.
+     */
+    private function subtitle(Book $book): ?string
+    {
+        $start = $book->project->collection_started_at;
+
+        if ($start === null) {
+            return null;
+        }
+
+        return __('book.collected', ['year' => $start->format('Y')]);
     }
 
     /** Le CSS du gabarit, polices incrustées. */
