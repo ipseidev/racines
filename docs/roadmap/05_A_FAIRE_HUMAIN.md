@@ -325,7 +325,7 @@ Le seul endroit à tenir à jour.
 | 12quater | 20 min pour le checkpoint du bloc 10 | bloc 10 | ☑ **fait le 2026-09-05** — cinq points sur cinq avec un vrai paiement ; trois défauts de paiement trouvés et corrigés (T-167 à T-169), bloc tagué |
 | 12quinquies | Relire les trois textes légaux avant de les envoyer au conseil, et leur soumettre la garantie « satisfait ou remboursé pendant trente jours, sans justification » affichée sur la page d'accueil (T-134) | bloc 10 | ☐ |
 | 12sexies | 20 min pour le checkpoint du bloc 11, points 1 à 4 | bloc 11 | ☑ 2026-09-06 |
-| 12octies | 15 min pour le checkpoint du bloc 12 (+ `sail up -d clamav`, une photo iPhone) | bloc 12 | ☐ |
+| 12octies | 15 min pour le checkpoint du bloc 12 (+ `sail up -d clamav`, une photo iPhone) | bloc 12 | ☑ 2026-09-06 |
 | 12septies | Relire les six playbooks du support (`resources/playbooks/`) | bloc 11 | ☐ |
 | 13 | Cloudflare R2 : 3 compartiments UE + CORS | bloc 16 | ☐ |
 | 14 | Stripe : compte, clés de test, 6 prix (`price_…`), coupon, CLI pour le webhook | bloc 10 | ☑ **fait le 2026-09-05** — compte `acct_1UBU3n…`, produits et prix créés par API, paiement réel joué de bout en bout, bloc tagué. **Restent les prix en mode live et une clé restreinte avant le go-live** |
@@ -336,7 +336,7 @@ Le seul endroit à tenir à jour.
 | 19 | **Socle juridique validé par conseil** | bloc 17 | ☐ |
 | 20 | DPA signés (11 sous-traitants) | bloc 17 | ☐ |
 
-**Le chemin le plus court vers les tags restants** : les lignes 12sexies (bloc 11, vingt minutes) et 12octies (bloc 12, quinze minutes) — rien à acheter, et le chemin du téléphone est ouvert depuis le 2026-09-05. Ensuite 1 + 2 + 3 + 5 pour le bloc 06, dont le corpus de voix est la pièce la plus longue à réunir.
+**Le chemin le plus court vers les tags restants** : les blocs 11 et 12 sont clos depuis le 2026-09-06. Reste le bloc 06, dont le corpus de voix est la pièce la plus longue à réunir, puis le bloc 04 — son spike navigateur attend un second appareil, un Android. Ensuite 1 + 2 + 3 + 5 pour le bloc 06, dont le corpus de voix est la pièce la plus longue à réunir.
 
 **Ce qui ne dépend ni de Resend ni de Twilio, par ordre d'utilité** : la ligne 6 (une heure de lecture du Fluide, la clé Anthropic est déjà dans ton `.env`), la ligne 14 (Stripe, vingt minutes), puis les lignes 11 à 12octies (les checkpoints, deux heures de ton temps).
 

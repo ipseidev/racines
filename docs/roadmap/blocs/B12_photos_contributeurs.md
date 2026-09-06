@@ -1,7 +1,7 @@
 # Bloc 12 — Photos, réponse écrite, contributeurs
 
-Statut : ◐ en cours · Dépend de : 11 · Tag de fin : `bloc-12-done`
-**⏳ Checkpoint jouable en local** — il demande un téléphone pour la photo HEIC (point 1) et un premier démarrage du service ClamAV (point 3). Détail dans [`05_A_FAIRE_HUMAIN.md`](../05_A_FAIRE_HUMAIN.md).
+Statut : ✅ terminé · Dépend de : 11 · Tag de fin : `bloc-12-done`
+Checkpoint §7 joué le 2026-09-06, les quatre points, dont le premier depuis un iPhone. Il a trouvé quatre défauts qu'aucun test ne voyait — dont deux qui rendaient la fonctionnalité centrale du bloc inutilisable depuis le jour où elle a été écrite : l'image ClamAV n'existait pas en arm64 (T-185), le contrôle de type court-circuitait l'antivirus (T-187), **les paramètres de route étaient lus par position, donc aucune photo ne pouvait être déposée hors du lien d'enregistrement** (T-191), et l'URL des photos était signée sur l'adresse interne au conteneur, donc aucune ne s'affichait hors production (T-192). Le décodage HEIC reste non éprouvé : Safari iOS convertit avant l'envoi (T-194, dette D-g).
 
 Références dossier : PRD P0-5, P0-6, P0-12, doc 04 §3 (photos : le déposant garantit ses droits, licence limitée), §12 (contrôle antivirus et format). La réponse écrite existe depuis le bloc 04 ; ce bloc la complète.
 
