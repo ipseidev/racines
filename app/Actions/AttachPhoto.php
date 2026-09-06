@@ -101,6 +101,18 @@ final readonly class AttachPhoto
             ->withCustomProperties([
                 'caption' => self::trimCaption($caption),
                 'print_ready' => Sanitizer::isPrintReady($sanitized),
+                /*
+                 * Ce que le téléphone a envoyé, avant notre conversion.
+                 *
+                 * Le fichier stocké est toujours un JPEG : sans cette trace,
+                 * rien ne distingue un HEIC que nous avons converti d'un JPEG
+                 * que Safari avait déjà converti pour nous, et la question se
+                 * pose dès qu'on veut vérifier la chaîne (T-193). C'est aussi
+                 * une donnée du pilote : savoir ce que les téléphones de ce
+                 * public envoient ne se reconstitue pas après coup.
+                 */
+                'source_mime' => $file->getMimeType(),
+                'source_bytes' => $file->getSize(),
                 // L'alias de la carte polymorphe, jamais le nom de classe :
                 // renommer une classe ne doit pas casser l'attribution d'une
                 // photo déposée il y a deux ans (même règle que la base).

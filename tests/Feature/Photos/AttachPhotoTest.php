@@ -215,3 +215,27 @@ it('borne la taille acceptée', function (): void {
     expect(AttachPhoto::MAX_KILOBYTES)->toBe(20_480)
         ->and(Sanitizer::PRINT_READY_MIN_SIDE)->toBe(1_200);
 });
+
+/*
+ * Ce que le téléphone a réellement envoyé.
+ *
+ * Le point 1 du checkpoint demande une photo HEIC, et rien ne permettait de
+ * dire ce qui était arrivé : le fichier stocké est **toujours** un JPEG, et
+ * `IMG_1912.jpg` peut aussi bien être un HEIC converti par nous qu'un JPEG
+ * converti par Safari avant l'envoi. Deux tentatives ont été jugées à
+ * l'inférence, sur un nom de fichier et une résolution (T-193).
+ *
+ * Le format d'origine et la taille reçue sont donc conservés. Ce n'est pas
+ * qu'un outil de vérification : savoir ce que les téléphones d'un public de
+ * quatre-vingts ans envoient réellement est une donnée du pilote, et elle
+ * ne se reconstitue pas après coup.
+ */
+it('retient le format que le téléphone a envoyé', function (): void {
+    $story = Story::factory()->create();
+    $narrator = narratorOf($story);
+
+    $media = app(AttachPhoto::class)->handle($story, photoFile(), $narrator, null);
+
+    expect($media->getCustomProperty('source_mime'))->toBe('image/jpeg')
+        ->and($media->getCustomProperty('source_bytes'))->toBeGreaterThan(0);
+});
