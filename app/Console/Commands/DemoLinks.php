@@ -324,7 +324,7 @@ final class DemoLinks extends Command
                     ['quoi' => 'Avec le compte de lecture seule `lecture@example.test` (même mot de passe) : aucun bouton d’action, et 403 sur une tentative directe.'],
                     [
                         'quoi' => 'Rembourser partiellement une commande, écouteur allumé. La commande du décor porte une référence factice que Stripe refuserait : la ligne ci-dessous fabrique un vrai paiement de test et l’attache à la commande, sans repasser par le tunnel d’achat.',
-                        'commande' => 'sail artisan demo:paiement',
+                        'cmd' => 'demo:paiement',
                     ],
                 ],
             ],
