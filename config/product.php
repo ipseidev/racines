@@ -79,7 +79,12 @@ return [
 
     // Livre imprimé (bloc 13)
     'book' => [
-        'trim_size_mm' => [200, 250], // [À CONFIRMER devis 0A]
+        // 16 × 24 cm, arrêté le 2026-09-06 (T-179). Un format standard, imprimé
+        // partout — POD comme traditionnel — et un cran plus grand que le
+        // format roman : à pagination égale, le corps de texte respire, ce qui
+        // compte pour des lecteurs de quatre-vingts ans. Le placeholder
+        // 200 × 250 était non standard et n'aurait été fait par personne.
+        'trim_size_mm' => [160, 240],
         'booklet_min_words' => 3_000,
         'booklet_min_audio_minutes' => 25,
     ],

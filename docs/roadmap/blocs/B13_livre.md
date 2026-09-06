@@ -52,9 +52,9 @@ Sail et Forge : Node ≥ 22, Chromium pour Puppeteer (`npx puppeteer browsers in
 - [ ] Les deux notifications (`book.ready`, `book.format_proposal`) : la commande calcule et enregistre, elle n'écrit pas encore aux familles.
 
 ### 6.2 Gabarit `classic`
-- [ ] `resources/views/book/classic/layout.blade.php` + `chapter.blade.php`, CSS `resources/css/book-classic.css` avec `@page { size: 200mm 250mm; margin: 18mm 16mm 20mm 16mm }` (taille dans `config('product.book.trim_size')`, à confirmer avec le devis 0A), pages de garde, titre courant, folios, `break-before: page` par chapitre, styles `.chapter-title`, `.question`, `.date`, `.photo` (pleine largeur, légende), `.qr-box` (QR 28 mm + « Scannez pour entendre {Prénom} raconter »), sommaire généré par Paged.js (`target-counter`).
+- [ ] `resources/views/book/classic/layout.blade.php` + `chapter.blade.php`, CSS `resources/css/book-classic.css` avec `@page { size: 160mm 240mm; margin: 18mm 16mm 20mm 16mm }` (taille dans `config('product.book.trim_size_mm')`, arrêtée le 2026-09-06 en T-179), pages de garde, titre courant, folios, `break-before: page` par chapitre, styles `.chapter-title`, `.question`, `.date`, `.photo` (pleine largeur, légende), `.qr-box` (QR 28 mm + « Scannez pour entendre {Prénom} raconter »), sommaire généré par Paged.js (`target-counter`).
 - [ ] Colophon : nom de marque, URL, « Les QR de ce livre fonctionnent jusqu'au {date} et peuvent être prolongés ; un pack hors-ligne des enregistrements vous a été remis. » (date = `collection_started_at + PilotSettings::qr_commitment_years`, défaut 10, D-8), mention « Texte mis au propre à partir de la voix de {Prénom}, relu et validé par {Prénom}. »
-- [ ] `App\Services\Pdf\HtmlToPdf` (interface) : `render(string $html, PdfOptions): string $path` ; `BrowsershotHtmlToPdf` (`->setNodeBinary()`, `->setChromePath()`, `->paperSize(200, 250, 'mm')` selon config, `->margins(0,0,0,0)` (les marges sont en CSS), `->waitForFunction('window.PAGEDJS_DONE === true')`, `->timeout(300)`) ; `FakeHtmlToPdf`.
+- [ ] `App\Services\Pdf\HtmlToPdf` (interface) : `render(string $html, PdfOptions): string $path` ; `BrowsershotHtmlToPdf` (`->setNodeBinary()`, `->setChromePath()`, `->paperSize(160, 240, 'mm')` selon config, `->margins(0,0,0,0)` (les marges sont en CSS), `->waitForFunction('window.PAGEDJS_DONE === true')`, `->timeout(300)`) ; `FakeHtmlToPdf`.
 - [ ] Le HTML inclut `pagedjs` depuis les assets Vite (`resources/js/book/paged.ts` qui pose `window.PAGEDJS_DONE = true` à la fin) et les polices locales en `@font-face`.
 - [ ] `RenderBookPdf(Book)` (file `exports`, `timeout 900`) : sélection des chapitres, émission des jetons `qr` manquants, rendu, `pdfinfo` pour `page_count_estimate`, stockage `books/{book}/proof-v{n}.pdf`, notification `notifications.book.proof_ready`.
 
@@ -93,7 +93,7 @@ Sail et Forge : Node ≥ 22, Chromium pour Puppeteer (`npx puppeteer browsers in
 
 ## 9. Règle de décision par défaut
 
-Tant que l'imprimeur n'est pas connu, le PDF reste en RGB sans passe PDF/X ; le format 200 × 250 mm est un placeholder configurable. Aucune promesse de délai de livraison n'apparaît dans l'interface avant le devis (doc 03 P0-14).
+Tant que l'imprimeur n'est pas connu, le PDF reste en RGB sans passe PDF/X. **Le format, lui, est arrêté** : 16 × 24 cm (T-179), parce qu'il se dessine dans le gabarit et qu'en changer plus tard ne serait pas éditer une constante mais refaire la mise en page. Aucune promesse de délai de livraison n'apparaît dans l'interface avant le devis (doc 03 P0-14).
 
 ## 10. Note de checkpoint
 

@@ -276,8 +276,8 @@ Rien à faire maintenant. C'est ici pour que tu puisses grouper les démarches l
 
 | Quand | Quoi | Pourquoi maintenant le savoir |
 |---|---|---|
-| Bloc 13 | **Fichiers de polices OFL** des polices de marque, à déposer dans `resources/fonts/` | Le PDF ne doit charger aucune police depuis Internet au moment du rendu |
-| Bloc 13 | **Un devis d'imprimeur** | Tant qu'il est inconnu, le PDF reste en RGB et le format 200 × 250 mm est un placeholder. Aucune promesse de délai n'apparaît dans l'interface avant ce devis |
+| ~~Bloc 13~~ | ~~Fichiers de polices OFL~~ | **Fait** : Fraunces et Inter sont déjà servis localement depuis `public/fonts/`, sous licence SIL OFL qui autorise l'intégration au document imprimé. Le gabarit pointera dessus, et un test échouera si le HTML du livre référence un domaine extérieur |
+| Bloc 13 | **Un devis d'imprimeur** | Le format est arrêté (16 × 24 cm, T-179) et la commande se passera **à la main** au pilote (`ManualPrintProvider`) : le devis n'est donc plus bloquant pour construire. Il reste dû pour le passage en CMJN, le prix de l'exemplaire supplémentaire, et toute promesse de délai — aucune n'apparaît dans l'interface avant lui |
 | Bloc 15 | **PostHog, instance UE** (`POSTHOG_KEY`, `POSTHOG_HOST=https://eu.i.posthog.com`) | L'hôte UE est obligatoire |
 | Bloc 16 | **DigitalOcean** (région européenne : AMS ou FRA), **Forge**, **Flare**, **Oh Dear** | Le Postgres managé doit être créé en région européenne dès le départ |
 | Bloc 17 | **Le socle juridique validé par un conseil** : consentements, LIA, AIPD proportionnée, CGV, politique de confidentialité, contrat pilote, information sur l'enregistrement des appels | `golive:check` **refuse de passer** sans `legal_validated_at`. C'est la démarche la plus longue de toutes : à lancer bien avant le bloc 17 |
