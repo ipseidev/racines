@@ -43,6 +43,23 @@ final class AdminUserSeeder extends Seeder
             ],
         );
 
+        // Un second compte d'administration, **sans second facteur**.
+        //
+        // Le point 1 du checkpoint du bloc 11 demande de voir la configuration
+        // du second facteur forcée au premier accès. Or `E2ELinksSeeder` la
+        // configure d'avance sur le compte principal, pour que la suite bout en
+        // bout puisse se connecter : l'écran demande alors un code au lieu de
+        // la proposer, et le point devient injouable (T-180).
+        User::query()->updateOrCreate(
+            ['email' => 'premiere-connexion@example.test'],
+            [
+                'name' => 'Administration, première connexion',
+                'password' => Hash::make($password),
+                'email_verified_at' => now(),
+                'role' => UserRole::Admin,
+            ],
+        );
+
         // Même mot de passe : c'est un décor local, et deux mots de passe à
         // retenir feraient chercher dans un fichier au milieu d'une
         // vérification.

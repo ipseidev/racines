@@ -30,9 +30,38 @@ it('sème un compte en lecture seule à côté de l’administration', function 
 it('donne au lecteur strictement moins de droits qu’à l’administration', function (): void {
     $this->seed(AdminUserSeeder::class);
 
-    $admin = User::query()->where('role', UserRole::Admin)->sole();
+    $admin = User::query()->where('email', config('product.seeding.admin_email'))->sole();
     $lecteur = User::query()->where('role', UserRole::SupportReadonly)->sole();
 
     expect($lecteur->getAllPermissions()->count())
         ->toBeLessThan($admin->getAllPermissions()->count());
+});
+
+/*
+ * Le point 1 du bloc 11 demande de **voir** la configuration du second facteur
+ * forcée au premier accès. Or le décor la configure d'avance sur le compte
+ * d'administration, pour que la suite bout en bout puisse se connecter — et
+ * du coup ce point devient injouable : l'écran demande un code au lieu de
+ * proposer la configuration.
+ *
+ * Un second compte, sans second facteur, sert exactement à ça. Même famille
+ * que le lien d'opt-in à usage unique : un checkpoint dont le décor manque
+ * n'est pas un checkpoint (T-180).
+ */
+it('sème un compte d’administration vierge de second facteur', function (): void {
+    $this->seed(AdminUserSeeder::class);
+
+    $vierge = User::query()->where('email', 'premiere-connexion@example.test')->first();
+
+    expect($vierge)->not->toBeNull()
+        ->and($vierge->role)->toBe(UserRole::Admin)
+        ->and($vierge->two_factor_secret)->toBeNull();
+});
+
+it('garde le compte d’administration principal utilisable par la suite', function (): void {
+    $this->seed(AdminUserSeeder::class);
+
+    $admin = User::query()->where('email', config('product.seeding.admin_email'))->sole();
+
+    expect($admin->role)->toBe(UserRole::Admin);
 });
