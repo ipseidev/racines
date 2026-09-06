@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\TokenType;
+use App\Exceptions\Domain\NoInitiatorProject;
 use App\Exceptions\Domain\StoryUnavailable;
 use App\Exceptions\Domain\TokenUnavailable;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -84,6 +85,25 @@ return Application::configure(basePath: dirname(__DIR__))
                 'canRequestNewLink' => $exception->canRequestNewLink(),
                 'tokenType' => $exception->tokenType()?->value,
             ])->toResponse($request)->setStatusCode($status);
+        });
+
+        /*
+         * Pas encore de projet : une page, pas une erreur.
+         *
+         * Le tableau de bord savait déjà le dire ; les cinq autres onglets de
+         * l'espace répondaient par la page brute de Laravel (T-199). La
+         * réponse est **200** : la route existe, la personne y a droit, il n'y
+         * a simplement rien encore — un 404 dirait le contraire des trois.
+         *
+         * Sur une écriture, en revanche, il n'y a rien à montrer : un 404 sec,
+         * qui ne sera lu par personne puisque le bouton n'existait pas.
+         */
+        $exceptions->render(function (NoInitiatorProject $exception, Request $request) {
+            if (! $request->isMethod('GET')) {
+                return response('', 404);
+            }
+
+            return Inertia::render('initiator/NoProject')->toResponse($request);
         });
 
         // Une histoire hors de portée : même exigence. Le message ne dit pas

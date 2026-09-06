@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Exceptions\Domain\NoInitiatorProject;
 use App\Models\Project;
 use App\Models\User;
 
@@ -17,11 +18,22 @@ use App\Models\User;
  */
 final class InitiatorProject
 {
+    /**
+     * Le projet, ou une page qui explique qu'il n'y en a pas encore.
+     *
+     * `NoInitiatorProject` et non `abort(404)` : l'absence de projet n'est
+     * pas une erreur, et la trace technique de Laravel servie dans son propre
+     * espace laisse croire qu'on a cassé quelque chose (T-199). Le
+     * gestionnaire d'exceptions décide de la réponse une fois pour toutes les
+     * pages, présentes et à venir.
+     */
     public static function forOrFail(User $user): Project
     {
         $project = self::for($user);
 
-        abort_if($project === null, 404);
+        if ($project === null) {
+            throw NoInitiatorProject::make();
+        }
 
         return $project;
     }

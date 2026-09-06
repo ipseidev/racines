@@ -191,11 +191,16 @@ it('approuve, commande, et verrouille la page', function (): void {
     ])->assertForbidden();
 });
 
-it('n’ouvre pas la page à qui n’a pas de projet', function (): void {
+it('montre la page d’accueil de l’espace à qui n’a pas de projet', function (): void {
     $etranger = User::factory()->create();
     $etranger->markEmailAsVerified();
 
-    // 404 et non 403 : dire « interdit » confirmerait qu'un livre existe
-    // quelque part, ce qui n'est l'affaire de personne d'autre.
-    $this->actingAs($etranger)->get('/espace/livre')->assertNotFound();
+    /*
+     * Ni 403 ni 404 : la route existe, la personne y a droit, il n'y a
+     * simplement pas encore de projet. Elle voit donc la même page que sur
+     * les autres onglets de son espace, et non une trace technique (T-199).
+     */
+    $this->actingAs($etranger)->get('/espace/livre')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('initiator/NoProject'));
 });
