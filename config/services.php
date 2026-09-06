@@ -63,6 +63,20 @@ return [
      * `clamav` ou `fake`, jamais déduit de l'environnement (T-61) : un
      * fournisseur déduit finit par être le faux en production.
      */
+    /*
+     * Le rendu du BAT (bloc 13).
+     *
+     * Trois chemins, tous facultatifs : l'image de développement, l'intégration
+     * continue et le serveur ne placent pas Node et Chromium au même endroit,
+     * et Browsershot sait les trouver seul quand ils sont dans le `PATH`. Les
+     * renseigner sert aux environnements où ils n'y sont pas.
+     */
+    'browsershot' => [
+        'node_path' => env('BROWSERSHOT_NODE_PATH'),
+        'npm_path' => env('BROWSERSHOT_NPM_PATH'),
+        'chrome_path' => env('BROWSERSHOT_CHROME_PATH'),
+    ],
+
     'antivirus' => [
         'scanner' => env('ANTIVIRUS_SCANNER', 'clamav'),
         'host' => env('CLAMAV_HOST', 'clamav'),
