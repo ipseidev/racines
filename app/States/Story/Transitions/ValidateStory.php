@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\States\Story\Transitions;
 
+use App\Analytics\Track;
+use App\Enums\AnalyticsEvent;
 use App\Enums\ConsentKind;
 use App\Enums\ShareDecision;
 use App\Enums\ValidatedVia;
@@ -50,7 +52,46 @@ final class ValidateStory extends Transition
         $this->story->validated_via = $via;
         $this->story->save();
 
+        $this->measure();
+
         return $this->story;
+    }
+
+    /**
+     * Les paliers de H1, comptés à la validation.
+     *
+     * Le rang est recalculé plutôt que retenu : une histoire masquée puis
+     * remise, une corbeille vidée, et un compteur incrémental dériverait sans
+     * qu'on s'en aperçoive. Ce que le dossier veut savoir tient en trois
+     * seuils — la première, la troisième, la dixième — parce que ce sont les
+     * trois endroits où les familles s'arrêtent.
+     */
+    private function measure(): void
+    {
+        $rang = $this->story->project
+            ->stories()
+            ->whereNotNull('validated_at')
+            ->count();
+
+        $proprietes = [
+            'story_id' => $this->story->getKey(),
+            'story_sequence' => $this->story->sequence,
+            'validated_rank' => $rang,
+            'validated_via' => $this->story->validated_via?->value,
+        ];
+
+        Track::project(AnalyticsEvent::StoryValidated, $this->story->project, $proprietes);
+
+        $palier = match ($rang) {
+            1 => AnalyticsEvent::FirstStoryValidated,
+            3 => AnalyticsEvent::ThirdStoryValidated,
+            10 => AnalyticsEvent::TenthStoryValidated,
+            default => null,
+        };
+
+        if ($palier !== null) {
+            Track::project($palier, $this->story->project, $proprietes);
+        }
     }
 
     /**

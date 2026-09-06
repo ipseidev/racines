@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Analytics\Track;
 use App\Audit\AuditLog;
+use App\Enums\AnalyticsEvent;
 use App\Models\Order;
 use App\Services\Payments\Refund;
 use App\Services\Payments\Refunds;
@@ -52,6 +54,14 @@ final readonly class IssueRefund
             'reason' => $reason,
             'refund_id' => $refund->id,
         ], $order->project);
+
+        // Contre-métrique de H3 : le seuil du dossier est « remboursements
+        // ≤ 8 % ». Le montant part avec, parce qu'un remboursement partiel et
+        // un remboursement total ne disent pas la même chose.
+        Track::project(AnalyticsEvent::RefundIssued, $order->project, [
+            'amount_cents' => $refund->amountCents,
+            'partial' => $refund->amountCents < $order->total_cents,
+        ]);
 
         Log::warning('checkout.refund_issued', [
             'order_id' => $order->id,

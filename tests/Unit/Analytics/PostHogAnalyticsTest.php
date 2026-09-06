@@ -46,6 +46,32 @@ it('refuse d’envoyer une propriété qui contient une donnée personnelle', fu
     Queue::assertNothingPushed();
 });
 
+/*
+ * Les identifiants internes sont hachés **avant de partir**, et pas seulement
+ * celui du sujet.
+ *
+ * Sans cela, le hachage du `distinct_id` ne servirait à rien : un
+ * `project_id` en clair dans les propriétés permettrait de rejoindre les deux
+ * jeux de données et de désanonymiser tout le reste.
+ */
+it('rend opaques les identifiants passés en propriétés', function (): void {
+    (new PostHogAnalytics)->capture(
+        AnalyticsEvent::StoryPageOpened,
+        ['project_id' => 'projet-1', 'story_id' => 'histoire-1', 'story_sequence' => 3],
+    );
+
+    Queue::assertPushed(SendAnalyticsEvent::class, function (SendAnalyticsEvent $job): bool {
+        $envoye = (fn (): array => $this->properties)->call($job);
+
+        return ! array_key_exists('project_id', $envoye)
+            && $envoye['project_hash'] === PostHogAnalytics::pseudonym('projet-1')
+            && $envoye['story_hash'] === PostHogAnalytics::pseudonym('histoire-1')
+            // Ce qui n'identifie personne passe tel quel : c'est la matière
+            // même de l'analyse.
+            && $envoye['story_sequence'] === 3;
+    });
+});
+
 it('hache l’identifiant avec la clé de l’application', function (): void {
     $premier = PostHogAnalytics::pseudonym('projet-1');
 

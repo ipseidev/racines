@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Analytics\Track;
+use App\Enums\AnalyticsEvent;
 use App\Enums\DeletionRequestedBy;
 use App\Jobs\PurgeDeletedStory;
 use App\Models\Story;
@@ -40,6 +42,13 @@ final readonly class DeleteStoryAction
         $story->save();
 
         $story->state->transitionTo(Deleted::class);
+
+        // Contre-métrique, et la plus grave : une suppression est
+        // définitive, là où un masquage se défait.
+        Track::project(AnalyticsEvent::StoryDeleted, $story->project, [
+            'story_id' => $story->getKey(),
+            'reason_code' => $by->value,
+        ]);
 
         Log::warning('story.deleted', [
             'story_id' => $story->id,

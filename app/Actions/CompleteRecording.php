@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Analytics\Track;
+use App\Enums\AnalyticsEvent;
 use App\Enums\AnswerType;
 use App\Enums\UploadStatus;
 use App\Jobs\ConcatenateSegments;
@@ -133,6 +135,31 @@ final readonly class CompleteRecording
             count($confirmedSegments) > 1 ? new ConcatenateSegments($recording->id) : null,
             new TranscodeRecording($recording->id),
         ])))->dispatch();
+
+        /*
+         * Émis après le `HeadObject` de chaque segment, jamais avant : le
+         * bloc 04 interdit d'annoncer « votre histoire est enregistrée »
+         * tant que le stockage ne l'a pas confirmée, et une mesure qui
+         * compterait plus tôt gonflerait le taux de réussite du premier
+         * enregistrement — précisément le chiffre que le dossier surveille.
+         */
+        $rang = Recording::query()
+            ->whereIn('story_id', $story->project->stories()->select('id'))
+            ->whereNotNull('confirmed_at')
+            ->count();
+
+        Track::project(AnalyticsEvent::StoryRecorded, $story->project, [
+            'story_id' => $story->getKey(),
+            'story_sequence' => $story->sequence,
+            'recorded_rank' => $rang,
+            'segments' => count($confirmedSegments),
+        ]);
+
+        if ($rang === 1) {
+            Track::project(AnalyticsEvent::FirstStoryRecorded, $story->project, [
+                'story_id' => $story->getKey(),
+            ]);
+        }
 
         Log::info('recording.confirmed', [
             'recording_id' => $recording->id,

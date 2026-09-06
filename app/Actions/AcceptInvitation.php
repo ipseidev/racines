@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Analytics\Track;
 use App\Enums\AddressForm;
+use App\Enums\AnalyticsEvent;
 use App\Enums\Cadence;
 use App\Enums\Channel;
 use App\Enums\ConsentChannel;
@@ -104,6 +106,17 @@ final readonly class AcceptInvitation
                 ->first()
                 ?->forceFill(['accepted_at' => now(), 'opened_at' => now()])
                 ->save();
+
+            /*
+             * Le numérateur de H0. Le **rang de la tentative** part avec :
+             * un parent qui accepte à la troisième relance n'a pas la même
+             * histoire qu'un parent qui accepte du premier coup, et le seuil
+             * de 60 % masquerait la différence.
+             */
+            Track::project(AnalyticsEvent::InvitationAccepted, $project, [
+                'attempt' => Invitation::attemptsFor($narrator),
+                'declared_sharing' => $project->declared_sharing_at !== null,
+            ]);
 
             Log::info('invitation.accepted', [
                 'project_id' => $project->id,

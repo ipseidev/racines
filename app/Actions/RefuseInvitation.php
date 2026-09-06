@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Analytics\Track;
+use App\Enums\AnalyticsEvent;
 use App\Enums\ProjectStatus;
 use App\Enums\RefusalReason;
 use App\Enums\SupportTicketKind;
@@ -69,6 +71,16 @@ final readonly class RefuseInvitation
             // d'offrir quelque chose qui a été refusé.
             $this->tickets->handle($project, SupportTicketKind::RefundOffer, null, [
                 'reason' => $reason?->value,
+            ]);
+
+            /*
+             * Un refus **explicite**, à ne pas confondre avec un silence.
+             * R-5 les compte séparément : le premier dit que le cadeau est
+             * mal reçu, le second qu'il n'est pas arrivé ou pas compris — et
+             * les deux appellent des corrections opposées.
+             */
+            Track::project(AnalyticsEvent::InvitationRefused, $project, [
+                'reason_code' => $reason?->value,
             ]);
 
             Log::info('invitation.refused', [

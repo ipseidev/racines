@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Analytics\Track;
 use App\Enums\AddressForm;
+use App\Enums\AnalyticsEvent;
 use App\Enums\Cadence;
 use App\Enums\Channel;
 use App\Enums\ConsentChannel;
@@ -138,6 +140,17 @@ final readonly class FulfillOrder
             ->delay($project->gift_send_at ?? now());
 
         $buyer->notify(new OrderConfirmationNotification($order));
+
+        /*
+         * Le sommet de l'entonnoir H0, émis **ici** et pas à la réception du
+         * webhook : un paiement dont la commande n'aboutit pas n'est pas un
+         * achat, et le compter en ferait un. Le dénominateur de H0 serait
+         * alors plus grand que la réalité, et le taux d'acceptation plus bas.
+         */
+        Track::project(AnalyticsEvent::PurchaseCompleted, $project, [
+            'entry' => 'checkout',
+            'total_cents' => $order->total_cents,
+        ]);
 
         Log::info('checkout.fulfilled', [
             'order_id' => $order->id,

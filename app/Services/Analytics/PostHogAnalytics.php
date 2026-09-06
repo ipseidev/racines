@@ -33,6 +33,26 @@ final class PostHogAnalytics implements Analytics
     /**
      * @param  array<string, mixed>  $properties
      */
+    /**
+     * Les identifiants internes qui deviennent des hachés avant de partir.
+     *
+     * Sans cette table, le hachage du `distinct_id` ne servirait à rien :
+     * un `project_id` en clair dans les propriétés permettrait de rejoindre
+     * les deux jeux de données et de désanonymiser tout le reste. Le port
+     * promet « des identifiants opaques » — c'est ici que la promesse est
+     * tenue, une fois, plutôt qu'à trente points d'appel.
+     */
+    private const HASHED = [
+        'project_id' => 'project_hash',
+        'story_id' => 'story_hash',
+        'family_member_id' => 'family_member_hash',
+        'narrator_id' => 'narrator_hash',
+        'user_id' => 'user_hash',
+        'order_id' => 'order_hash',
+        'book_id' => 'book_hash',
+        'export_id' => 'export_hash',
+    ];
+
     public function capture(
         AnalyticsEvent $event,
         array $properties = [],
@@ -42,9 +62,32 @@ final class PostHogAnalytics implements Analytics
 
         SendAnalyticsEvent::dispatch(
             $event->value,
-            $properties,
+            self::opaque($properties),
             self::pseudonym($distinctId),
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $properties
+     * @return array<string, mixed>
+     */
+    private static function opaque(array $properties): array
+    {
+        $sortie = [];
+
+        foreach ($properties as $key => $value) {
+            $renomme = self::HASHED[$key] ?? null;
+
+            if ($renomme !== null && is_string($value)) {
+                $sortie[$renomme] = self::pseudonym($value);
+
+                continue;
+            }
+
+            $sortie[$key] = $value;
+        }
+
+        return $sortie;
     }
 
     /**
