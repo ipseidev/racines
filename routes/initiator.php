@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Initiator\BookController;
 use App\Http\Controllers\Initiator\CopyLinkController;
 use App\Http\Controllers\Initiator\FamilyController;
 use App\Http\Controllers\Initiator\OrdersController;
@@ -57,6 +58,18 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
         Route::post('/proches', [FamilyController::class, 'store'])->name('family.store');
         Route::post('/proches/{member}/renvoyer', [FamilyController::class, 'reissue'])->name('family.reissue');
         Route::delete('/proches/{member}', [FamilyController::class, 'destroy'])->name('family.destroy');
+
+        /*
+         * Le livre (bloc 13).
+         *
+         * L'éditeur désigné a les mêmes droits que l'Initiateur·rice ici :
+         * c'est souvent lui qui relit les noms propres, et le lui refuser
+         * obligerait à se passer un mot de passe.
+         */
+        Route::get('/livre', [BookController::class, 'index'])->name('book');
+        Route::post('/livre', [BookController::class, 'update'])->name('book.update');
+        Route::post('/livre/bat', [BookController::class, 'render'])->name('book.render');
+        Route::post('/livre/accord', [BookController::class, 'approve'])->name('book.approve');
 
         Route::get('/reglages', [ProjectSettingsController::class, 'index'])->name('settings');
         Route::post('/reglages', [ProjectSettingsController::class, 'update'])->name('settings.update');

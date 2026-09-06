@@ -131,6 +131,7 @@ return [
         'dashboard' => 'Le projet',
         'questions' => 'Les questions',
         'family' => 'Les proches',
+        'book' => 'Le livre',
         'settings' => 'Les réglages',
         'orders' => 'Ma commande',
     ],
@@ -318,5 +319,106 @@ return [
         'withdrawal_expired' => 'Le délai de quatorze jours est passé. Si la personne que vous avez invitée préfère ne pas participer, nous vous remboursons intégralement dans les trente jours : écrivez-nous à :email.',
         'phone_option' => 'Enregistrement par téléphone',
         'phone_option_slot' => 'Appel prévu le jour :day, :slot',
+    ],
+
+    /*
+     * Le livre (bloc 13).
+     *
+     * Le mot qui gouverne toute la page : « la matière ». R-6 interdit un
+     * seuil en nombre d'histoires, et la jauge doit le faire comprendre sans
+     * l'expliquer — quatre mesures visibles valent mieux qu'un pourcentage
+     * unique qui laisserait croire qu'il suffit d'en enregistrer une de plus.
+     *
+     * Aucun délai d'impression n'est annoncé : le devis n'est pas fait
+     * (doc 03 P0-14).
+     */
+    'book' => [
+        'eyebrow' => 'Le livre',
+        'title' => 'Le livre de :first_name',
+        'intro' => 'Le livre se déclenche quand la matière suffit, pas à un nombre d’histoires. Voici où vous en êtes.',
+
+        'gauge' => [
+            'title' => 'La matière recueillie',
+            'words' => 'Mots',
+            'audio' => 'Minutes de voix',
+            'pages' => 'Pages estimées',
+            'themes' => 'Thèmes abordés',
+            'ready' => 'Il y a de quoi faire un livre.',
+            'not_ready' => 'Il manque encore de la matière — et ce que vous avez déjà ne se perd pas.',
+            // Le verrou réel n'est pas celui des mots : à 280 mots la page,
+            // les 12 000 mots du référentiel ne font que 48 pages.
+            'pages_hint' => 'C’est le nombre de pages qui décide en dernier : un texte dense fait moins de pages qu’on ne croit, et les photos en ajoutent.',
+        ],
+
+        'format' => [
+            'title' => 'La forme proposée',
+            'current' => 'Forme retenue',
+            'proposed' => 'Forme proposée',
+            'help' => 'Nous proposons la forme que la matière permet. Rien ne vous oblige à la suivre, et rien ne presse.',
+        ],
+
+        'chapters' => [
+            'title' => 'Les chapitres',
+            'help' => 'Toutes les histoires validées, dans l’ordre où elles ont été racontées. Décochez ce que vous ne voulez pas imprimer, et remontez ce qui doit ouvrir le livre.',
+            'empty' => 'Aucune histoire validée pour l’instant.',
+            'include' => 'Inclure dans le livre',
+            'move_up' => 'Remonter',
+            'move_down' => 'Descendre',
+            'to_top' => 'Mettre en premier',
+            'words' => ':count mots',
+            'photos' => ':count photo|:count photos',
+            'locked' => 'La sélection est arrêtée : le livre est parti à l’impression.',
+        ],
+
+        'foreword' => [
+            'title' => 'Votre avant-propos',
+            'help' => 'Quelques lignes en ouverture, si vous le souhaitez. Facultatif.',
+            'label' => 'Avant-propos',
+        ],
+
+        'lexicon' => [
+            'title' => 'Les noms propres',
+            'help' => 'La transcription se trompe souvent sur les noms de lieux et de personnes. Vérifiez cette liste avant d’imprimer : une faute sur un nom est celle qui se remarque.',
+            'none' => 'Aucun nom à vérifier.',
+            'add' => 'Ajouter au lexique',
+        ],
+
+        'proof' => [
+            'title' => 'Le bon à tirer',
+            'help' => 'Le bon à tirer est le livre tel qu’il sera imprimé. Relisez-le tranquillement.',
+            'generate' => 'Générer le bon à tirer',
+            'regenerate' => 'Regénérer le bon à tirer',
+            'open' => 'Ouvrir le bon à tirer',
+            'version' => 'Version :number, générée le :date',
+            'pages' => ':count pages',
+            'pending' => 'Le bon à tirer est en cours de fabrication. Vous recevrez un message quand il sera prêt — quelques minutes suffisent en général.',
+            'none' => 'Aucun bon à tirer pour l’instant.',
+        ],
+
+        'approve' => [
+            'title' => 'Approuver et commander',
+            'final_print' => 'Je comprends que l’imprimé est définitif : une fois le livre imprimé, plus rien ne peut être corrigé.',
+            'lexicon_reviewed' => 'J’ai relu les noms propres et les dates.',
+            'submit' => 'Approuver et commander',
+            'waiting' => 'Un instant…',
+            'help' => 'Nous ne vous annonçons pas de délai tant que l’imprimeur n’est pas choisi. Vous serez prévenu à chaque étape.',
+        ],
+
+        'tracking' => [
+            'title' => 'Où en est votre livre',
+            'approved' => 'Approuvé le :date',
+            'ordered' => 'Commandé le :date',
+            'printed' => 'Imprimé le :date',
+            'delivered' => 'Livré le :date',
+            'extra_copies' => 'Exemplaires supplémentaires',
+            'extra_copies_price' => ':price € l’exemplaire',
+            'defect' => 'Signaler un défaut d’impression',
+            'defect_help' => 'Un livre abîmé, mal massicoté, aux pages inversées : nous le réimprimons sans condition.',
+        ],
+
+        'saved' => 'C’est enregistré.',
+        'rendering' => 'Le bon à tirer est en cours de fabrication. Vous recevrez un message quand il sera prêt.',
+        'ordered' => 'Votre livre est commandé. Nous vous tenons au courant à chaque étape.',
+        'no_chapter' => 'Il faut au moins un chapitre pour fabriquer un bon à tirer.',
     ],
 ];
