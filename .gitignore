@@ -13,6 +13,9 @@
 /storage/app/concat
 /storage/app/testing
 /storage/app/transcode
+# Les exercices de restauration : un dump amputé et un rapport horodaté,
+# écrits par la suite de tests. Rien à versionner (T-207).
+/storage/app/drills
 /resources/js/actions
 /resources/js/routes
 /resources/js/wayfinder

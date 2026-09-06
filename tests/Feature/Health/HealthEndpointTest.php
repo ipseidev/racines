@@ -8,6 +8,7 @@ use App\Health\R2ReachableCheck;
 use App\Health\ReplicationLagCheck;
 use App\Models\Recording;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Health\Facades\Health;
 
 uses(RefreshDatabase::class);
 
@@ -46,20 +47,34 @@ it('répond avec le secret', function (): void {
 });
 
 /*
- * Les quatre contrôles propres au produit doivent être **déclarés**. Un
+ * Les quatre contrôles propres au produit doivent être **enregistrés**. Un
  * contrôle qu'on retire « le temps de déboguer » et qu'on oublie de remettre
  * est la panne suivante.
+ *
+ * On lit le registre du paquet, jamais un tableau à nous. La version
+ * précédente de ce test interrogeait `config('health.checks')` — une clé que
+ * le paquet ne lit pas, et qui n'a donc jamais rien enregistré. Le test
+ * passait au vert en vérifiant ce que nous avions écrit, pas ce que le
+ * système exécute (T-207).
  */
 it('surveille le stockage, l’audit, l’antivirus et la réplication', function (): void {
-    $noms = array_map(
-        fn (object $check): string => $check::class,
-        config('health.checks'),
-    );
+    $noms = Health::registeredChecks()->map(fn (object $check): string => $check::class)->all();
 
     expect($noms)->toContain(R2ReachableCheck::class)
         ->toContain(AuditChainCheck::class)
         ->toContain(ClamavCheck::class)
         ->toContain(ReplicationLagCheck::class);
+});
+
+it('renvoie des résultats, et pas une liste vide', function (): void {
+    // La garde qui manquait. Un endpoint qui répond `200` avec zéro contrôle
+    // exécuté passe toutes les assertions de structure, et fait dormir.
+    $resultats = $this->getJson('/health', ['oh-dear-health-check-secret' => 'secret-de-test'])
+        ->assertOk()
+        ->json('checkResults');
+
+    expect($resultats)->toHaveCount(Health::registeredChecks()->count())
+        ->and($resultats)->not->toBeEmpty();
 });
 
 it('signale un enregistrement confirmé et non répliqué depuis une heure', function (): void {

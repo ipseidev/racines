@@ -1,1 +1,0 @@
-CREATE TABLE projects (id text); CREATE TABLE stories (id text);

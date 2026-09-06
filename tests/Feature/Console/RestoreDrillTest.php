@@ -31,6 +31,13 @@ beforeEach(function (): void {
     $this->rapports = storage_path('app/drills/rapports');
 });
 
+// Et on nettoie **après** aussi : un `beforeEach` seul laisse le dernier
+// rapport derrière lui, où le formateur du front le ramasse et fait échouer
+// la porte de qualité sur un fichier que personne n'a écrit à la main.
+afterEach(function (): void {
+    File::deleteDirectory(storage_path('app/drills'));
+});
+
 it('mène l’exercice de bout en bout et rend un rapport', function (): void {
     Project::factory()->count(2)->create();
     Story::factory()->count(3)->create();

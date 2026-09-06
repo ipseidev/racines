@@ -8,7 +8,9 @@ sépare en deux moitiés, et elles ne se remplacent pas de la même façon.
 C'est fait, et cela ne coûte rien.
 
 Le planificateur passe `health:check` toutes les minutes. Dix contrôles
-tournent, dont quatre écrits pour ce produit :
+tournent, déclarés dans `App\Providers\HealthServiceProvider` — **jamais dans
+`config/health.php`**, que le paquet ne lit pas pour cela et que `config:cache`
+refuse de sérialiser (T-207). Quatre sont écrits pour ce produit :
 
 | Contrôle | Ce qu'il protège |
 |---|---|
@@ -30,6 +32,13 @@ les journaux du serveur.
 
 ```bash
 curl -H 'oh-dear-health-check-secret: <secret>' https://<domaine>/health | jq
+```
+
+Le premier réflexe quand on doute de la supervision : compter les résultats.
+Une liste vide répond `200` comme une liste saine.
+
+```bash
+php artisan health:check   # doit afficher dix contrôles, pas « All done! » seul
 ```
 
 ## 2. « Le serveur ne répond plus » — depuis l'extérieur

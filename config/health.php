@@ -2,16 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Health\AuditChainCheck;
-use App\Health\ClamavCheck;
-use App\Health\R2ReachableCheck;
-use App\Health\ReplicationLagCheck;
-use Spatie\Health\Checks\Checks\CacheCheck;
-use Spatie\Health\Checks\Checks\DatabaseCheck;
-use Spatie\Health\Checks\Checks\HorizonCheck;
-use Spatie\Health\Checks\Checks\RedisCheck;
-use Spatie\Health\Checks\Checks\ScheduleCheck;
-use Spatie\Health\Checks\Checks\UsedDiskSpaceCheck;
 use Spatie\Health\Notifications\CheckFailedNotification;
 use Spatie\Health\Notifications\Notifiable;
 use Spatie\Health\ResultStores\CacheHealthResultStore;
@@ -214,37 +204,20 @@ return [
      */
     'secret_token' => env('HEALTH_SECRET_TOKEN'),
 
-    /**
-     * By default, conditionally skipped health checks are treated as failures.
-     * You can override this behavior by uncommenting the configuration below.
-     *
-     * @link https://spatie.be/docs/laravel-health/v1/basic-usage/conditionally-running-or-modifying-checks
-     */
+/**
+ * By default, conditionally skipped health checks are treated as failures.
+ * You can override this behavior by uncommenting the configuration below.
+ *
+ * @link https://spatie.be/docs/laravel-health/v1/basic-usage/conditionally-running-or-modifying-checks
+ */
     // 'treat_skipped_as_failure' => false
 
     /*
-     * Les contrôles, et l'ordre dans lequel on veut les lire.
+     * Il n'y a pas de clé `checks` ici, et ce n'est pas un oubli.
      *
-     * Les quatre derniers sont propres à ce produit et disent chacun une
-     * promesse du dossier : le stockage porte les voix, le journal d'audit
-     * porte la preuve, l'antivirus garde la porte des photos, et la
-     * réplication tient l'engagement de non-perte. Les contrôles génériques
-     * (base, cache, file, disque) disent seulement que la machine tourne.
+     * Le paquet ne la lit pas — le registre est `Health::checks()`, appelé
+     * par `App\Providers\HealthServiceProvider`. Et un objet ne survit pas à
+     * `config:cache`, qui écrit la configuration en PHP littéral : la poser
+     * ici fait échouer le déploiement (T-207).
      */
-    'checks' => [
-        DatabaseCheck::new(),
-        CacheCheck::new(),
-        RedisCheck::new(),
-        HorizonCheck::new(),
-        // Le planificateur bat toutes les minutes ; dix minutes de silence
-        // veulent dire que les relances, les envois et les sauvegardes se
-        // sont arrêtés sans que rien ne le dise.
-        ScheduleCheck::new()->heartbeatMaxAgeInMinutes(10),
-        UsedDiskSpaceCheck::new()->warnWhenUsedSpaceIsAbovePercentage(80),
-
-        R2ReachableCheck::new(),
-        AuditChainCheck::new(),
-        ClamavCheck::new(),
-        ReplicationLagCheck::new(),
-    ],
 ];
