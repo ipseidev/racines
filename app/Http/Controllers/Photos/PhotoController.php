@@ -50,15 +50,20 @@ final readonly class PhotoController
             throw new AccessDeniedHttpException;
         }
 
+        /*
+         * La taille seulement, et pas le type.
+         *
+         * La borne de taille protège le scanner : au-delà de vingt
+         * mégaoctets, ce n'est plus une photo de téléphone. Le **type**, lui,
+         * se vérifie plus loin, après l'antivirus — `AttachPhoto` l'annonce en
+         * tête de sa classe, « scanner d'abord », et cette règle-ci le
+         * contredisait. Un fichier hostile déguisé repartait avec « le fichier
+         * doit être une image », sans avoir été scanné et sans laisser de
+         * trace (T-187). `Sanitizer` refuse ensuite ce qui n'est pas une
+         * image qu'on sait lire, ce qu'il faisait déjà.
+         */
         $validated = $request->validate([
-            'photo' => [
-                'required',
-                'file',
-                'max:'.AttachPhoto::MAX_KILOBYTES,
-                // Les types du téléphone. `Sanitizer` convertit tout en JPEG
-                // ensuite ; cette liste est la porte d'entrée.
-                'mimetypes:image/jpeg,image/png,image/heic,image/heif,image/webp',
-            ],
+            'photo' => ['required', 'file', 'max:'.AttachPhoto::MAX_KILOBYTES],
             'caption' => ['nullable', 'string', 'max:'.AttachPhoto::MAX_CAPTION],
         ]);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Stories\Pages;
 
+use App\Actions\EditTranscript;
 use App\Actions\HideStoryAction;
 use App\Actions\RestoreStoryAction;
 use App\Actions\TrashStoryAction;
@@ -12,6 +13,7 @@ use App\Filament\Concerns\LogsViews;
 use App\Filament\Resources\Stories\StoryResource;
 use App\Models\Recording;
 use App\Models\Story;
+use App\Models\Transcript;
 use App\Models\User;
 use App\States\Story\Hidden;
 use App\States\Story\Trashed;
@@ -88,6 +90,58 @@ final class ViewStory extends ViewRecord
                 ->url(fn (Story $record): string => route('filament.admin.stories.listen', ['story' => $record]))
                 ->openUrlInNewTab(),
 
+            /*
+             * Corriger le texte, depuis l'histoire et non depuis une liste.
+             *
+             * L'action de la ressource `Transcripts` reste : elle sert au
+             * travail par lot. Celle-ci sert au geste réel du support, qui
+             * part toujours d'une histoire nommée (T-186). Les deux passent
+             * par `EditTranscript` et écrivent la même entrée d'audit — le
+             * jour où l'une divergerait, c'est l'historique des versions qui
+             * mentirait.
+             */
+            Action::make('edit_text')
+                ->label(__('admin.transcripts.actions.edit'))
+                ->icon(Heroicon::OutlinedPencilSquare)
+                ->modalDescription(__('admin.transcripts.actions.edit_help'))
+                ->visible(fn (Story $record): bool => StoryResource::currentText($record) instanceof Transcript)
+                ->authorize(fn (): bool => self::canEditText())
+                ->schema([
+                    Textarea::make('text')
+                        ->label(__('admin.transcripts.actions.text'))
+                        ->default(fn (Story $record): string => StoryResource::currentText($record)?->text ?: '')
+                        ->required()
+                        ->rows(14),
+                ])
+                ->action(function (Story $record, array $data): void {
+                    $editor = auth()->user();
+                    $base = StoryResource::currentText($record);
+
+                    if (! $editor instanceof User || ! $base instanceof Transcript) {
+                        return;
+                    }
+
+                    $before = $base->text;
+                    $edited = app(EditTranscript::class)->handle($base, (string) $data['text'], $editor);
+
+                    /*
+                     * La **taille** du changement, pas les deux textes : une
+                     * entrée d'audit ne se modifie plus après coup, et y
+                     * recopier le récit intime de quelqu'un en ferait un
+                     * second endroit où il vit, celui-là indélébile.
+                     */
+                    AuditLog::record('edited Transcript', $edited, [
+                        'version' => $edited->version,
+                        'characters_before' => mb_strlen($before),
+                        'characters_after' => mb_strlen($edited->text),
+                    ], $record->project);
+
+                    Notification::make()->success()
+                        ->title(__('admin.transcripts.actions.done'))
+                        ->body(__('admin.transcripts.actions.done_help'))
+                        ->send();
+                }),
+
             $this->withReason(
                 'hide',
                 fn (Story $story): Story => app(HideStoryAction::class)->handle($story),
@@ -150,6 +204,18 @@ final class ViewStory extends ViewRecord
                     ->title(__('admin.stories.actions.done'))
                     ->send();
             });
+    }
+
+    /**
+     * `transcripts.edit` et non `support.write` : corriger un texte est un
+     * droit à part, que la lecture seule n'a pas et que le support de premier
+     * niveau n'a pas non plus.
+     */
+    private static function canEditText(): bool
+    {
+        $user = auth()->user();
+
+        return $user instanceof User && $user->can('transcripts.edit');
     }
 
     private static function canWrite(): bool

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Stories;
 
+use App\Enums\TranscriptKind;
 use App\Filament\Resources\Stories\Pages\ListStories;
 use App\Filament\Resources\Stories\Pages\ViewStory;
 use App\Models\Story;
+use App\Models\Transcript;
 use App\Models\User;
 use App\States\Story\StoryState;
 use BackedEnum;
@@ -83,6 +85,31 @@ final class StoryResource extends Resource
                 ])
                 ->columns(3),
 
+            /*
+             * Le texte, sur la fiche de l'histoire.
+             *
+             * Il vivait ailleurs — dans une liste globale où l'on cherchait
+             * sa ligne parmi celles de toutes les familles. Or le geste du
+             * support est « on me signale une faute dans cette histoire-là »,
+             * et il n'avait pas de chemin (T-186).
+             *
+             * Les deux rendus côte à côte, et dans cet ordre : le mot à mot
+             * d'abord, parce que c'est lui la référence quand on se demande
+             * si une correction est fidèle.
+             */
+            Section::make(__('admin.stories.text'))
+                ->schema([
+                    TextEntry::make('verbatim')
+                        ->label(__('admin.stories.verbatim'))
+                        ->helperText(__('admin.stories.verbatim_help'))
+                        ->state(fn (Story $record): string => self::text($record, TranscriptKind::Verbatim)),
+                    TextEntry::make('fluide')
+                        ->label(__('admin.stories.fluide'))
+                        ->state(fn (Story $record): string => self::currentText($record)?->text
+                            ?: (string) __('admin.stories.no_text')),
+                ])
+                ->columns(2),
+
             Section::make(__('admin.stories.timeline'))
                 ->schema([
                     TextEntry::make('recorded_at')
@@ -146,6 +173,34 @@ final class StoryResource extends Resource
             'index' => ListStories::route('/'),
             'view' => ViewStory::route('/{record}'),
         ];
+    }
+
+    /**
+     * Le texte courant qui se corrige : jamais le mot à mot.
+     *
+     * Corriger le verbatim serait réécrire ce que quelqu'un a dit. La méthode
+     * est publique parce que la fiche s'en sert aussi pour décider si le
+     * bouton « Corriger » a lieu d'être.
+     */
+    public static function currentText(Story $story): ?Transcript
+    {
+        $transcript = $story->transcripts()
+            ->current()
+            ->where('kind', '!=', TranscriptKind::Verbatim->value)
+            ->orderByDesc('version')
+            ->first();
+
+        return $transcript instanceof Transcript ? $transcript : null;
+    }
+
+    private static function text(Story $story, TranscriptKind $kind): string
+    {
+        $text = $story->transcripts()
+            ->ofKind($kind)
+            ->current()
+            ->value('text');
+
+        return is_string($text) && $text !== '' ? $text : __('admin.stories.no_text');
     }
 
     private static function date(mixed $value): string

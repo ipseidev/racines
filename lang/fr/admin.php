@@ -73,6 +73,11 @@ return [
         'recorded_at' => 'Enregistrée le',
         'validated_at' => 'Validée le',
         'shared_at' => 'Partagée le',
+        'text' => 'Le texte',
+        'verbatim' => 'Le mot à mot',
+        'verbatim_help' => 'Ce que le narrateur a dit, mot pour mot. Ne se corrige pas.',
+        'fluide' => 'Le texte lu par la famille',
+        'no_text' => 'Pas encore de texte : l’histoire n’a pas été transcrite.',
         'actions' => [
             'listen' => 'Écouter l’enregistrement',
             'hide' => 'Masquer',

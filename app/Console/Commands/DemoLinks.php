@@ -322,7 +322,10 @@ final class DemoLinks extends Command
                     ['quoi' => 'Ouvrir une histoire partagée, écouter 5 secondes, corriger un mot : trois entrées d’audit, dont la correction avec son diff.'],
                     ['quoi' => 'Modifier une ligne d’audit à la main dans psql : le trigger refuse. Puis vérifier la chaîne.', 'cmd' => 'audit:verify'],
                     ['quoi' => 'Avec le compte de lecture seule `lecture@example.test` (même mot de passe) : aucun bouton d’action, et 403 sur une tentative directe.'],
-                    ['quoi' => 'Rembourser partiellement une commande. Demande une commande née d’un **vrai** paiement : celle du décor porte une référence factice que Stripe refusera. En faire une par `/acheter`, écouteur allumé.'],
+                    [
+                        'quoi' => 'Rembourser partiellement une commande, écouteur allumé. La commande du décor porte une référence factice que Stripe refuserait : la ligne ci-dessous fabrique un vrai paiement de test et l’attache à la commande, sans repasser par le tunnel d’achat.',
+                        'commande' => 'sail artisan demo:paiement',
+                    ],
                 ],
             ],
             [
@@ -335,7 +338,7 @@ final class DemoLinks extends Command
                         'url' => self::link(TokenType::ListenProject, 'listen-photo'),
                     ],
                     [
-                        'quoi' => 'Téléverser le fichier de test EICAR : refus avec message, rien dans le stockage, une ligne dans l’audit. Demande ANTIVIRUS_SCANNER=clamav, donc laradev --clamav.',
+                        'quoi' => 'Téléverser le fichier de test EICAR : refus avec message, rien dans le stockage, une ligne dans l’audit. Demande `ANTIVIRUS_SCANNER=clamav` et le conteneur démarré : `docker compose up -d clamav`, une minute jusqu’à `healthy` (T-185).',
                         'url' => self::record('variant-a'),
                     ],
                     ['quoi' => 'Une photo de 800 px : « un peu petite pour l’impression », et elle n’est pas marquée prête pour le livre.'],

@@ -145,7 +145,7 @@ services:
     # laissez pas ainsi : les tests le forcent déjà, et le mettre à `fake`
     # dans `.env` reviendrait à ne pas avoir d'antivirus là où il compte.
     clamav:
-        image: 'clamav/clamav:stable'
+        image: 'clamav/clamav:stable-debian'
         ports:
             - '${FORWARD_CLAMAV_PORT:-3310}:3310'
         volumes:

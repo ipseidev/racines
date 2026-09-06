@@ -64,6 +64,28 @@ final readonly class AttachPhoto
         ?string $caption,
     ): Media {
         if (! $this->scanner->isClean($file)) {
+            /*
+             * Le refus va au journal **inaltérable**, et pas seulement aux
+             * logs applicatifs.
+             *
+             * Un fichier signalé sur l'histoire de quelqu'un est un événement
+             * de sécurité : il faut pouvoir répondre, deux mois plus tard, à
+             * « qu'est-ce qui s'est passé le 6 septembre ». Les logs tournent
+             * et se purgent ; l'audit ne se réécrit pas.
+             *
+             * Le nom et l'empreinte, jamais le contenu — un journal
+             * inaltérable serait un mauvais endroit où déposer un fichier
+             * suspect, et le nom suffit à répondre à la famille.
+             */
+            $path = $file->getRealPath();
+
+            AuditLog::record('rejected Photo', $story, [
+                'reason' => 'antivirus',
+                'file_name' => mb_substr($file->getClientOriginalName(), 0, 120),
+                'size' => $path === false ? null : filesize($path),
+                'sha256' => $path === false ? null : hash_file('sha256', $path),
+            ], $story->project);
+
             throw InfectedUpload::make();
         }
 
