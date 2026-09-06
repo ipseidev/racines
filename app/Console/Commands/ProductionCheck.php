@@ -275,7 +275,7 @@ final class ProductionCheck extends Command
         $provider = (string) config('services.asr.provider');
 
         if ($provider === 'fake') {
-            $this->selonEnv('Transcription', 'fournisseur doublé : aucune histoire ne sera transcrite.');
+            $this->selonEnv('Transcription', 'fournisseur doublé : le texte serait inventé, pas transcrit. Posez ASR_PROVIDER=gladia.');
 
             return;
         }
@@ -313,7 +313,7 @@ final class ProductionCheck extends Command
         $cle = (string) config('services.anthropic.key');
 
         if ($provider === 'fake') {
-            $this->selonEnv('Mise au propre', 'fournisseur doublé : le texte lisible ne sera jamais produit.');
+            $this->selonEnv('Mise au propre', 'fournisseur doublé : le texte lisible ne sera jamais produit. Posez LLM_PROVIDER=claude.');
 
             return;
         }

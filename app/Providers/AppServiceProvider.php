@@ -328,6 +328,54 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * En production, un double ne se substitue pas au vrai fournisseur.
+     *
+     * `ASR_PROVIDER` et `LLM_PROVIDER` retombent sur `fake` quand la variable
+     * manque, et rien ne le disait : en production, la chaîne fonctionnait
+     * — elle produisait simplement du faux. Un texte dérivé d'un identifiant
+     * de base, relu par une famille comme la parole de son parent, validé,
+     * imprimé (T-208).
+     *
+     * La garde vit **ici**, dans la fabrique, et non au démarrage : la leçon
+     * de T-206 est qu'une précaution ne doit pas transformer une variable
+     * manquante en panne du site. Le conteneur ne résout ces liaisons que
+     * lorsqu'un travail de transcription ou de rendu s'exécute. Le travail
+     * échoue donc, bruyamment, dans `failed_jobs` — la boutique continue de
+     * vendre, l'enregistrement reste intact, et **aucun texte fabriqué n'est
+     * écrit**. Le danger est dans le chemin du travail ; la garde y est.
+     */
+    private static function doubleDeTranscription(): FakeTranscriptionProvider
+    {
+        self::refuseLeDoubleEnProduction(
+            'ASR_PROVIDER',
+            'un texte dérivé de l’identifiant de l’enregistrement serait présenté à une famille comme la parole de son parent',
+        );
+
+        return new FakeTranscriptionProvider;
+    }
+
+    private static function doubleDeMiseAuPropre(): FakeStoryRenderer
+    {
+        self::refuseLeDoubleEnProduction(
+            'LLM_PROVIDER',
+            'la mise au propre rendrait une ponctuation naïve au lieu du texte lisible promis',
+        );
+
+        return new FakeStoryRenderer;
+    }
+
+    private static function refuseLeDoubleEnProduction(string $variable, string $consequence): void
+    {
+        if (! app()->isProduction()) {
+            return;
+        }
+
+        throw new RuntimeException(
+            "Le fournisseur simulé est interdit en production : posez {$variable}. Sans quoi, {$consequence}."
+        );
+    }
+
+    /**
      * Transcription : Gladia par défaut (hébergement UE, T-07), Deepgram en
      * second adaptateur et point de comparaison du banc d'essai, `fake` dans
      * la suite de tests. Un fournisseur inconnu lève.
@@ -338,7 +386,7 @@ final class AppServiceProvider extends ServiceProvider
             $provider = (string) config('services.asr.provider');
 
             return match ($provider) {
-                'fake' => new FakeTranscriptionProvider,
+                'fake' => self::doubleDeTranscription(),
                 'gladia' => new GladiaProvider($this->app->make(HttpFactory::class), (string) config('services.asr.gladia_key')),
                 'deepgram' => new DeepgramProvider($this->app->make(HttpFactory::class), (string) config('services.asr.deepgram_key')),
                 default => throw new RuntimeException("Unknown ASR provider [{$provider}]."),
@@ -357,7 +405,7 @@ final class AppServiceProvider extends ServiceProvider
             $provider = (string) config('services.anthropic.provider');
 
             return match ($provider) {
-                'fake' => new FakeStoryRenderer,
+                'fake' => self::doubleDeMiseAuPropre(),
                 'claude' => new ClaudeStoryRenderer($this->app->make(AnthropicMessages::class)),
                 default => throw new RuntimeException("Unknown LLM provider [{$provider}]."),
             };
