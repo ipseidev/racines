@@ -156,6 +156,17 @@ return [
     // des médias. R2 en production, MinIO en local ; complété au bloc 04.
     'security' => [
         /*
+         * Le second facteur du panneau d'administration.
+         *
+         * Exigé partout, et **ignoré en production** : là-bas il est vrai quoi
+         * qu'on écrive dans l'environnement. Ce que la clé permet, c'est de
+         * l'éteindre sur un décor local dont le mot de passe est le mot
+         * « password » — où il ne protège rien et où il a arrêté net deux
+         * vérifications humaines (T-189).
+         */
+        'admin_2fa' => (bool) env('ADMIN_2FA', true),
+
+        /*
          * Bornes des routes à jeton. Celle par **jeton** protège du
          * balayage : c'est elle qui compte, et elle ne bouge pas. Celle par
          * **IP** protège l'infrastructure, mais elle punit le partage de

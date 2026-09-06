@@ -51,6 +51,11 @@
         <env name="INERTIA_SSR_ENABLED" value="false" force="true"/>
         <!-- Le démon ClamAV n’existe pas en intégration continue. -->
         <env name="ANTIVIRUS_SCANNER" value="fake" force="true"/>
+        <!-- Le second facteur du panneau : exigé ici quoi qu'en dise le `.env`
+             d'une machine de développement, où il peut être éteint pour que
+             les vérifications humaines ne butent pas dessus (T-189). C'est le
+             comportement de production que la suite doit décrire. -->
+        <env name="ADMIN_2FA" value="true" force="true"/>
         <env name="MEDIA_DISK" value="r2" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>

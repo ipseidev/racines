@@ -64,7 +64,19 @@ final class AdminPanelProvider extends PanelProvider
                 // chaque construction du panneau, et n'accepte pas de
                 // fermeture.
                 AppAuthentication::make()->recoverable(),
-                isRequired: true,
+                /*
+                 * Exigé partout, sauf si `ADMIN_2FA` dit le contraire — et
+                 * cette clé est ignorée en production, quoi qu'elle vaille.
+                 *
+                 * Le décor local protège des récits inventés derrière un mot
+                 * de passe qui est le mot « password » : le second facteur
+                 * n'y ajoute rien, et il a coûté deux vérifications humaines
+                 * arrêtées net sur un écran qui n'a rien à voir avec le
+                 * produit (T-189). Le geste lui-même reste vérifiable en
+                 * remettant la clé à `true`, ce que le point 1 du checkpoint
+                 * du bloc 11 demande.
+                 */
+                isRequired: app()->isProduction() || (bool) config('product.security.admin_2fa'),
             )
             ->brandName(fn (): string => Brand::nameSafe())
             ->colors(fn (): array => ['primary' => Color::hex(Brand::primaryColorSafe())])
