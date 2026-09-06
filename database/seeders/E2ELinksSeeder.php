@@ -727,16 +727,14 @@ final class E2ELinksSeeder extends Seeder
             return;
         }
 
-        $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
-        $recording->forceFill(['duration_seconds' => self::silentMp3Seconds()])->save();
+        $recording = $this->seedRecording($story);
 
         if (self::BLOCK_07[$scenario]['audio'] ?? false) {
             $recording->forceFill([
                 'derived_mp3_path' => ObjectKeys::recordingDerivative($recording, 'mp3'),
             ])->save();
 
-            // Un vrai objet sur le stockage : sans lui, l'URL présignée mène
-            // à un 404 et le lecteur de la page famille ne joue rien.
+            // Le dérivé aussi : c'est lui que la page famille sert.
             app(MediaStorage::class)->put(
                 (string) $recording->derived_mp3_path,
                 self::silentMp3(),
@@ -818,7 +816,7 @@ final class E2ELinksSeeder extends Seeder
         $question = self::question('e2e-'.$scenario, 'Quel métier rêviez-vous de faire ?');
 
         $story = app(ProposeStory::class)->handle($project->refresh(), $question);
-        Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+        $this->seedRecording($story);
         $story->state->transitionTo(Recorded::class, AnswerType::Audio);
         $story->state->transitionTo(Transcribed::class);
         $this->share($story);
@@ -896,6 +894,28 @@ final class E2ELinksSeeder extends Seeder
      * il a fallu écrire `demo:moteur` puis le déboguer pour s'en apercevoir
      * (T-153). `DecorConsistencyTest` échoue si un semis l'oublie.
      */
+    /**
+     * Un enregistrement confirmé **et** son objet sur le stockage.
+     *
+     * Trois endroits créaient des enregistrements, et un seul téléversait :
+     * partout ailleurs le chemin désignait le vide, et le bouton « Écouter »
+     * du back-office rendait un `NoSuchKey` qu'on prenait pour un défaut du
+     * produit (T-183). Un seul point d'entrée ferme la porte.
+     */
+    private function seedRecording(Story $story): Recording
+    {
+        $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+        $recording->forceFill(['duration_seconds' => self::silentMp3Seconds()])->save();
+
+        app(MediaStorage::class)->put(
+            (string) $recording->original_path,
+            self::silentMp3(),
+            'audio/mpeg',
+        );
+
+        return $recording;
+    }
+
     public static function token(string $scenario): string
     {
         return str_pad("demo-{$scenario}-link", 43, 'x');
