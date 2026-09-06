@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Books;
 
+use App\Actions\RequestExport;
 use App\Audit\AuditLog;
 use App\Enums\BookStatus;
+use App\Enums\ExportKind;
+use App\Enums\ExportScope;
 use App\Models\Book;
 use Illuminate\Support\Facades\Log;
 
@@ -44,6 +47,22 @@ final readonly class AdvanceBookPrinting
         AuditLog::record('advanced Book', $book, [
             'status' => $status->value,
         ], $book->project);
+
+        /*
+         * À la **livraison**, et pas avant : la famille a le livre en main,
+         * le projet se termine, et c'est le moment précis où tout le monde
+         * passe à autre chose. Lui envoyer alors l'intégralité de ce qu'elle
+         * a confié — plus un pack qui joue les voix sans nous — est ce que
+         * R-10.2 appelle la remise proactive.
+         *
+         * Pas à « imprimé » : le livre est encore chez l'imprimeur, et
+         * « voici votre livre » serait faux d'une semaine.
+         */
+        if ($status === BookStatus::Delivered) {
+            foreach ([ExportKind::Full, ExportKind::OfflinePack] as $kind) {
+                app(RequestExport::class)->handle($book->project, ExportScope::Initiator, $kind);
+            }
+        }
 
         Log::info('book.advanced', [
             'book_id' => $book->getKey(),

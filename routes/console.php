@@ -132,3 +132,11 @@ Schedule::command('health:check')->everyMinute();
  * son objet : elle prouve qu'un export a été remis.
  */
 Schedule::command('exports:expire')->dailyAt('02:30');
+
+/*
+ * La remise proactive (R-10.2) : soixante jours avant la fin d'hébergement.
+ *
+ * Une famille ne pense pas à télécharger ses données ; elle y pense le jour
+ * où le service ferme, c'est-à-dire trop tard.
+ */
+Schedule::command('exports:proactive')->dailyAt('06:00');

@@ -89,6 +89,10 @@ final readonly class ExportBuilder
                 $this->addConsents($zip, $export, $checksums);
             }
 
+            if ($export->kind === ExportKind::OfflinePack) {
+                $this->addOfflinePlayer($zip, $export, $entrees, $checksums);
+            }
+
             $manifest = $this->manifest($export, $entrees, $checksums);
             $this->addString($zip, 'manifest.json', $this->json($manifest), $checksums);
 
@@ -328,6 +332,106 @@ final readonly class ExportBuilder
     private function json(array $data): string
     {
         return (string) json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Le lecteur hors-ligne : une page qui joue les voix sans nous.
+     *
+     * C'est la **contrepartie de la durée d'engagement** annoncée dans le
+     * colophon du livre (D-8). Sans elle, « les QR fonctionnent jusqu'au … »
+     * serait une menace ; avec elle, c'est une information — le jour où nous
+     * nous arrêterons, une clé USB continuera de jouer.
+     *
+     * D'où la seule exigence, absolue : **aucune ressource distante**. Pas de
+     * police, pas de script, pas d'audio servi par une URL. Les chemins sont
+     * relatifs et remontent vers `histoires/`, ce qui marche quand on
+     * double-clique le fichier depuis une clé — et qu'aucun chemin absolu ne
+     * ferait.
+     *
+     * @param  list<array<string, mixed>>  $stories
+     * @param  array<string, string>  $checksums
+     */
+    private function addOfflinePlayer(ZipStream $zip, Export $export, array $stories, array &$checksums): void
+    {
+        $prenom = $export->project->primaryNarrator?->first_name ?: '';
+        $marque = Brand::nameSafe();
+
+        $items = '';
+
+        foreach ($stories as $story) {
+            $audio = $story['files']['audio_mp3'] ?? $story['files']['audio_original'] ?? null;
+            $titre = htmlspecialchars((string) ($story['title'] ?? __('book.untitled')), ENT_QUOTES);
+            $question = $story['question'] === null
+                ? ''
+                : '<p class="question">« '.htmlspecialchars((string) $story['question'], ENT_QUOTES).' »</p>';
+
+            $lecteur = $audio === null
+                ? '<p class="absent">Enregistrement non disponible.</p>'
+                : '<audio controls preload="none" src="../'.htmlspecialchars((string) $audio, ENT_QUOTES).'"></audio>';
+
+            $texte = ($story['files']['text'] ?? null) === null
+                ? ''
+                : '<p class="lire"><a href="../'.htmlspecialchars((string) $story['files']['text'], ENT_QUOTES).'">Lire le texte</a></p>';
+
+            $items .= <<<HTML
+                <article>
+                    <h2>{$titre}</h2>
+                    {$question}
+                    {$lecteur}
+                    {$texte}
+                </article>
+
+            HTML;
+        }
+
+        $intro = $prenom === ''
+            ? 'Les enregistrements de ce dossier.'
+            : 'Les enregistrements de '.htmlspecialchars($prenom, ENT_QUOTES).'.';
+
+        $html = <<<HTML
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Les histoires — {$marque}</title>
+        <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0 auto; max-width: 42rem; padding: 2rem 1.25rem;
+            background: #faf7f2; color: #26211c;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.0625rem; line-height: 1.6;
+        }
+        h1 { font-size: 1.875rem; line-height: 1.15; margin: 0 0 .5rem; }
+        .intro { color: #5a5049; margin: 0 0 2.5rem; }
+        article { border-top: 1px solid #d9cfc4; padding: 1.75rem 0; }
+        h2 { font-size: 1.25rem; margin: 0 0 .5rem; }
+        .question { font-style: italic; color: #5a5049; margin: 0 0 1rem; }
+        audio { width: 100%; margin: .5rem 0; }
+        .absent, .lire { color: #5a5049; font-size: .9375rem; }
+        a { color: #26211c; }
+        footer { border-top: 1px solid #d9cfc4; margin-top: 2rem; padding-top: 1.5rem;
+                 color: #5a5049; font-size: .9375rem; }
+        </style>
+        </head>
+        <body>
+        <h1>Les histoires</h1>
+        <p class="intro">{$intro}</p>
+
+        {$items}
+        <footer>
+        <p>Cette page fonctionne sans connexion et sans notre service. Gardez ce
+        dossier entier : les enregistrements sont dans le dossier voisin, et
+        déplacer cette page seule la couperait de ses voix.</p>
+        <p>{$marque}</p>
+        </footer>
+        </body>
+        </html>
+        HTML;
+
+        $this->addString($zip, 'hors-ligne/index.html', $html, $checksums);
     }
 
     /**

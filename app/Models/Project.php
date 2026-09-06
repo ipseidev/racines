@@ -42,6 +42,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $collection_started_at
  * @property CarbonImmutable|null $collection_ends_at
  * @property CarbonImmutable|null $finalization_ends_at
+ * @property CarbonImmutable|null $hosting_ends_at
+ * @property CarbonImmutable|null $erased_at
  * @property ValidationVariant $validation_variant
  * @property string|null $gift_message
  * @property string|null $gift_audio_recording_id
@@ -248,6 +250,8 @@ final class Project extends Model
             'collection_started_at' => 'immutable_datetime',
             'collection_ends_at' => 'immutable_datetime',
             'finalization_ends_at' => 'immutable_datetime',
+            'hosting_ends_at' => 'immutable_datetime',
+            'erased_at' => 'immutable_datetime',
             'gift_send_at' => 'immutable_datetime',
             'gift_sent_at' => 'immutable_datetime',
             'accepted_at' => 'immutable_datetime',
