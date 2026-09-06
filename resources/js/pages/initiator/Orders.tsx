@@ -34,6 +34,8 @@ type Order = {
         callDay: number | null;
         callSlot: string | null;
     } | null;
+    /** Ce qu'il reste possible d'ajouter à cette commande (T-184). */
+    topUps: { sku: string; priceCents: number }[];
 };
 
 type Props = {
@@ -62,6 +64,21 @@ export default function Orders({ orders, supportEmail }: Props) {
     const t = useT();
     const [withdrawing, setWithdrawing] = useState<Order | null>(null);
     const [processing, setProcessing] = useState(false);
+    const [adding, setAdding] = useState<string | null>(null);
+
+    /*
+     * `router.post` puis une navigation Inertia vers Stripe : le contrôleur
+     * répond `Inertia::location`, sans quoi le bouton paraîtrait mort — la
+     * leçon de « Payer » (T-168).
+     */
+    const addExtra = (orderId: string, sku: string) => {
+        setAdding(sku);
+        router.post(
+            `/espace/commandes/${orderId}/completer`,
+            { sku },
+            { onFinish: () => setAdding(null) },
+        );
+    };
 
     return (
         <>
@@ -166,6 +183,71 @@ export default function Orders({ orders, supportEmail }: Props) {
                                                 </>
                                             )}
                                     </p>
+                                )}
+
+                                {/*
+                                 * Compléter la commande (T-184).
+                                 *
+                                 * Discret, et après le récapitulatif : ce
+                                 * n'est pas une vente incitative, c'est un
+                                 * rattrapage pour qui a oublié une option au
+                                 * tunnel. La seule autre porte était l'alerte
+                                 * du moteur, trois semaines plus tard.
+                                 */}
+                                {order.topUps.length > 0 && (
+                                    <section className="border-brand-sand mt-6 border-t pt-5">
+                                        <p className="eyebrow">
+                                            {t('initiator.orders.top_up_title')}
+                                        </p>
+                                        <p className="text-brand-muted mt-2 text-[0.9375rem]">
+                                            {t('initiator.orders.top_up_body')}
+                                        </p>
+
+                                        <ul className="mt-4 flex flex-col gap-3">
+                                            {order.topUps.map((extra) => (
+                                                <li
+                                                    key={extra.sku}
+                                                    className="card flex flex-wrap items-center gap-4 px-4 py-4"
+                                                >
+                                                    <span className="min-w-0 flex-1">
+                                                        <span className="block font-semibold">
+                                                            {t(
+                                                                `initiator.orders.top_up_sku_${extra.sku}`,
+                                                            )}
+                                                        </span>
+                                                        <span className="text-brand-muted mt-1 block text-[0.9375rem]">
+                                                            {t(
+                                                                `initiator.orders.top_up_sku_${extra.sku}_hint`,
+                                                            )}
+                                                        </span>
+                                                    </span>
+
+                                                    <button
+                                                        type="button"
+                                                        className="btn-secondary press flex-none"
+                                                        disabled={
+                                                            adding !== null
+                                                        }
+                                                        onClick={() =>
+                                                            addExtra(
+                                                                order.id,
+                                                                extra.sku,
+                                                            )
+                                                        }
+                                                    >
+                                                        {t(
+                                                            'initiator.orders.top_up_add',
+                                                            {
+                                                                price: formatPrice(
+                                                                    extra.priceCents,
+                                                                ),
+                                                            },
+                                                        )}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </section>
                                 )}
 
                                 {order.invoiceUrl !== null && (

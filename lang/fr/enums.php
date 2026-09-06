@@ -156,6 +156,7 @@ return [
 
     'phone_option_entry' => [
         'checkout' => 'Achetée à la commande',
+        'complement' => 'Ajoutée après la commande',
         'rescue' => 'Proposée en rattrapage',
     ],
 

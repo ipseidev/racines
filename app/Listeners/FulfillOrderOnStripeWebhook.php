@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Actions\FulfillOrder;
+use App\Actions\FulfillOrderTopUp;
 use App\Enums\OrderStatus;
 use App\Enums\ProjectStatus;
 use App\Models\Order;
@@ -35,7 +36,10 @@ use Laravel\Cashier\Events\WebhookReceived;
  */
 final readonly class FulfillOrderOnStripeWebhook
 {
-    public function __construct(private FulfillOrder $fulfil) {}
+    public function __construct(
+        private FulfillOrder $fulfil,
+        private FulfillOrderTopUp $topUps,
+    ) {}
 
     public function handle(WebhookReceived $event): void
     {
@@ -56,6 +60,21 @@ final readonly class FulfillOrderOnStripeWebhook
     private function complete(array $payload): void
     {
         $session = (array) data_get($payload, 'data.object', []);
+
+        // Un complément de commande (T-184) porte `order_id` et `sku` là où le
+        // tunnel porte `draft_id` : la commande existe déjà, et la rejouer
+        // créerait un second projet et un second narrateur.
+        if (data_get($session, 'metadata.order_id') !== null) {
+            if (data_get($session, 'payment_status') === 'unpaid') {
+                Log::info('checkout.top_up_awaiting_payment', ['session_id' => data_get($session, 'id')]);
+
+                return;
+            }
+
+            $this->topUps->handle($session);
+
+            return;
+        }
 
         // « Pas impayée » plutôt que « payée » : une commande entièrement
         // remisée sort en `no_payment_required`, et une session ancienne peut

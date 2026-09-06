@@ -1,5 +1,5 @@
 # NARRAE — Référentiel canonique, Glossaire & Registre des sources
-**v2.5 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
+**v2.6 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
 
 ## R-1. Rôles (terminologie produit/juridique)
 - **Initiateur·rice** : achète, organise, prépare le BAT ; ne peut jamais outrepasser le veto du narrateur. *(« Claire », persona féminine = hypothèse marketing, pas le nom du rôle.)*
@@ -80,7 +80,7 @@ Lien d'enregistrement navigateur envoyé par **SMS/email** (1 lien par question,
 | **D-7** | Économie de l'offre accompagnée 149 € | 179-199 € · session 20-25 min · test d'appétence assumé non rentable (PRD §9) | Gate Phase 1 |
 | **D-8** | Durée d'engagement QR | Proposition : 10 ans renouvelables (R-10.4, doc 04 §7) | Comité (doc 01 §11) |
 | **D-10** | **Partage déclaré d'avance** | Le narrateur peut déclarer, à l'acceptation, que ses histoires seront partagées dès qu'elles sont prêtes, sans qu'on le lui redemande à chaque fois. **Motif** : chaque tap est une occasion d'abandonner, et l'abandon est la plainte n°1 de la catégorie (H1). **Garde-fous non négociables** : case jamais pré-cochée, consentement horodaté et tracé, révocable d'un geste depuis l'espace narrateur et depuis chaque lien d'histoire, mention à chaque partage de ce qui vient d'être partagé et comment le retirer. Un tiers ne peut jamais la donner à sa place. **À mesurer en 0A/0B** : part des narrateurs qui la déclarent, et surtout **part de ceux qui la révoquent ou masquent une histoire ensuite** — une révocation fréquente dirait que le choix a été donné trop tôt ou mal compris. Cadre : R-4, doc 04 §1, PRD P0-18. | Gate Phase 1 |
-| **D-9** | **Enregistrement par téléphone** | Test de demande en 0B : option 25 € dans le tunnel pilote + préventes, livraison humaine (appel hebdo ~15 min par un membre de l'équipe), plafond 10 familles, remboursable ; **taux d'attache** mesuré séparément à l'achat et en sauvetage (PRD §5.3, J+21). **Seuils pré-engagés** : ≥ 20 % → téléphonie automatisée en Phase 2 (build ou partenariat) ; 10-20 % → option humaine premium au prix réel, intégrée à D-7 ; < 10 % → retrait. Le téléphone n'est jamais le canal par défaut (R-9). Cadre : doc 03 §8.7, doc 04 §2, §2bis, §3, §9. | Gate Phase 1 |
+| **D-9** | **Enregistrement par téléphone** | Test de demande en 0B : option 25 € dans le tunnel pilote + préventes, livraison humaine (appel hebdo ~15 min par un membre de l'équipe), plafond 10 familles, remboursable ; **taux d'attache** mesuré séparément selon **trois** points d'entrée, qui ne mènent pas aux mêmes décisions : à l'achat (on peut la vendre), en complément depuis l'espace (l'acheteur y revient de lui-même, [v2.6]) et en sauvetage à J+21 sur alerte du moteur (elle sauve des projets). **Seuils pré-engagés** : ≥ 20 % → téléphonie automatisée en Phase 2 (build ou partenariat) ; 10-20 % → option humaine premium au prix réel, intégrée à D-7 ; < 10 % → retrait. Le téléphone n'est jamais le canal par défaut (R-9). Cadre : doc 03 §8.7, doc 04 §2, §2bis, §3, §9. | Gate Phase 1 |
 
 ---
 

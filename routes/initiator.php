@@ -30,6 +30,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function (): void {
     Route::get('/commandes', [OrdersController::class, 'index'])->name('orders');
     Route::post('/commandes/{order}/retractation', [OrdersController::class, 'withdraw'])->name('orders.withdraw');
+    // Compléter une commande déjà passée (T-184) : la seule autre porte vers
+    // l'option téléphone était l'alerte du moteur, après trois semaines de
+    // silence. Un acheteur qui réalise son oubli le lendemain n'avait rien.
+    Route::post('/commandes/{order}/completer', [OrdersController::class, 'topUp'])->name('orders.top_up');
 
     Route::middleware('verified')->group(function (): void {
         Route::get('/', SpaceController::class)->name('dashboard');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Initiator;
 
 use App\Actions\OpenSupportTicket;
+use App\Actions\StartOrderTopUp;
 use App\Enums\Sku;
 use App\Enums\SupportTicketKind;
 use App\Models\Order;
@@ -14,7 +15,10 @@ use App\Support\Brand;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Les commandes, et le droit de rétractation.
@@ -29,7 +33,10 @@ use Inertia\Response;
  */
 final readonly class OrdersController
 {
-    public function __construct(private OpenSupportTicket $tickets) {}
+    public function __construct(
+        private OpenSupportTicket $tickets,
+        private StartOrderTopUp $topUps,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -60,6 +67,17 @@ final readonly class OrdersController
                     ])
                     ->all()),
                 'phoneOption' => self::phoneOptionFor($order),
+                // Ce qu'il reste possible d'ajouter (T-184). Calculé ici et
+                // non deviné à l'écran : le plafond des dix familles se lit en
+                // base, et un bouton affiché sur une place déjà prise serait
+                // une promesse qu'on ne peut pas tenir.
+                'topUps' => array_map(
+                    fn (Sku $sku): array => [
+                        'sku' => $sku->value,
+                        'priceCents' => StartOrderTopUp::priceCentsOf($sku),
+                    ],
+                    StartOrderTopUp::availableOn($order),
+                ),
             ])
             ->all();
 
@@ -67,6 +85,42 @@ final readonly class OrdersController
             'orders' => array_values($orders),
             'supportEmail' => Brand::supportEmail(),
         ]);
+    }
+
+    /**
+     * Compléter une commande déjà payée (T-184).
+     *
+     * `Inertia::location` et non `redirect()->away` : la page est une page
+     * Inertia, et une redirection ordinaire y est suivie en XHR — le bouton
+     * paraîtrait mort, exactement comme « Payer » l'a été (T-168).
+     */
+    public function topUp(Request $request, string $order): SymfonyResponse
+    {
+        $user = $request->user();
+        abort_if($user === null, 403);
+
+        $found = Order::query()->where('user_id', $user->id)->whereKey($order)->first();
+
+        abort_unless($found instanceof Order, 404);
+
+        $validated = $request->validate([
+            'sku' => ['required', Rule::in(array_map(
+                fn (Sku $sku): string => $sku->value,
+                StartOrderTopUp::COMPLETABLE,
+            ))],
+        ]);
+
+        $sku = Sku::from((string) $validated['sku']);
+        $session = $this->topUps->handle($found, $sku);
+
+        if ($session === null) {
+            // Plafond atteint entre l'affichage et le clic, ou article déjà
+            // acheté depuis un autre appareil : on l'explique, on ne facture
+            // pas.
+            return back()->with('status', __('initiator.orders.top_up_unavailable'));
+        }
+
+        return Inertia::location($session->url);
     }
 
     public function withdraw(Request $request, string $order): RedirectResponse

@@ -29,7 +29,7 @@ final class OrderItem extends Model
     use HasFactory, StoresDatesWithOffset;
 
     /** @var list<string> */
-    protected $fillable = ['sku', 'quantity', 'unit_cents', 'stripe_price_id', 'metadata'];
+    protected $fillable = ['sku', 'quantity', 'unit_cents', 'stripe_price_id', 'metadata', 'stripe_checkout_session_id'];
 
     /** @return BelongsTo<Order, $this> */
     public function order(): BelongsTo

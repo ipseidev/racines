@@ -1,5 +1,5 @@
 # NARRAE — PRD du MVP
-**v2.5 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
+**v2.6 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
 
 ## 1. Objectif du MVP
 Industrialiser ce que la Phase 0 aura prouvé : un narrateur senior clique, autorise le micro, s'enregistre, **valide explicitement** et recommence (H1) ; les proches écoutent et cette attention est associée à la production (H2) ; l'économie tient après acquisition (H3). Le MVP industrialise **le moteur de complétion** — pas un catalogue de fonctionnalités.
@@ -76,7 +76,7 @@ North Star : **projets vivants** (30 j). KPI business : % projets → book-ready
 4. **Print** (0A) : 3 devis réels → COGS contractuels ; délais confirmés.
 5. **Audit concurrentiel FR** (0A) : doc 02 §6.
 6. **WhatsApp Business** (0B, documentaire) : décision Phase 2.
-7. **Test de demande « Enregistrement par téléphone » (0B) [v2.3, D-9]** : option à 25 € dans le tunnel pilote et préventes, plafonnée à 10 familles, remboursable ; livraison **humaine** : un membre de l'équipe appelle le narrateur au créneau choisi, une fois par semaine, ~15 min ; il annonce l'enregistrement en début d'appel, pose la question de la semaine, et demande en fin d'appel le choix de partage (P0-18, réponse journalisée) ; audio téléphonique versé au corpus ASR (spike 3) ; deux points d'entrée comptés séparément (achat, sauvetage J+21). Coût assumé déficitaire (§9). Décision à la Gate Phase 1 selon les seuils D-9 (doc 05 R-12).
+7. **Test de demande « Enregistrement par téléphone » (0B) [v2.3, D-9]** : option à 25 € dans le tunnel pilote et préventes, plafonnée à 10 familles, remboursable ; livraison **humaine** : un membre de l'équipe appelle le narrateur au créneau choisi, une fois par semaine, ~15 min ; il annonce l'enregistrement en début d'appel, pose la question de la semaine, et demande en fin d'appel le choix de partage (P0-18, réponse journalisée) ; audio téléphonique versé au corpus ASR (spike 3) ; **trois** points d'entrée comptés séparément (achat, complément depuis l'espace [v2.6], sauvetage J+21) : sans le deuxième, un acheteur qui réalise son oubli le lendemain n'a aucun recours avant trois semaines de silence, et le taux d'attache en sauvetage serait bas pour une raison d'interface et non de demande. Coût assumé déficitaire (§9). Décision à la Gate Phase 1 selon les seuils D-9 (doc 05 R-12).
 Architecture : ADR post-Gate Phase 1. Contraintes non négociables : hébergement UE, abstraction ASR/LLM/SMS, upload résumable, journalisation des consentements, exigences sécurité doc 04 §12, SLO doc 04 §11.
 
 ## 9. Pricing & unit economics [HYPOTHÈSES — prix testés R-3]

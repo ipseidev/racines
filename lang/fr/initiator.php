@@ -286,6 +286,15 @@ return [
     ],
 
     'orders' => [
+        'top_up_title' => 'Compléter ma commande',
+        'top_up_body' => 'Vous pouvez encore ajouter ceci. Le reste de votre commande ne change pas.',
+        'top_up_add' => 'Ajouter — :price',
+        'top_up_unavailable' => 'Cette option n’est plus disponible. Écrivez-nous si vous pensez qu’il s’agit d’une erreur.',
+        'top_up_done' => 'C’est ajouté à votre commande.',
+        'top_up_sku_phone_option' => 'L’enregistrement par téléphone',
+        'top_up_sku_phone_option_hint' => 'Un membre de l’équipe appelle chaque semaine, une quinzaine de minutes, et pose la question à votre place.',
+        'top_up_sku_ebook' => 'Le livre numérique',
+        'top_up_sku_ebook_hint' => 'La version numérique du livre, en plus de l’exemplaire relié.',
         'withdrawal_requested' => 'Votre demande est enregistrée. Nous vous répondons sous 48 heures.',
         // Ni refus sec ni silence : on explique la garantie et on donne le
         // contact. Le refus sec est l'occasion parfaite de perdre une famille
