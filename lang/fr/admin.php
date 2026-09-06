@@ -201,6 +201,14 @@ return [
         'status' => 'État',
         'opened_at' => 'Ouvert',
         'actions' => [
+            'confirm_erasure' => 'Confirmer l’effacement',
+            'confirm_erasure_help' => 'Cet effacement est définitif. Les enregistrements, les textes et les photos de cette famille seront supprimés du stockage, et aucune sauvegarde ne les rendra passé quatre-vingt-dix jours. Les factures et la preuve des consentements sont conservées, sans nom.',
+            'erasure_note' => 'Ce que la personne a demandé, et comment',
+            'erasure_note_help' => 'Par quel canal la demande est arrivée, et ce qui a été vérifié. C’est la trace de la demande : sans elle, l’effacement ressemblerait à une décision de notre part.',
+            'erasure_blocked' => 'Effacement impossible pour l’instant',
+            'erasure_done' => 'Effacement lancé.',
+            'erasure_done_help' => 'Les fichiers partent maintenant. Prévenez la personne : elle attend une réponse, pas un silence.',
+
             'close' => 'Clore',
             'note' => 'Qu’avez-vous fait ?',
             'note_help' => 'Cette note se relit si la même famille revient : elle évite de repartir de zéro.',

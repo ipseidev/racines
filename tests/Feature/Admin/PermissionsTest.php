@@ -7,13 +7,14 @@ use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-it('sème les trois rôles du personnel et les huit permissions', function (): void {
+it('sème les trois rôles du personnel et les neuf permissions', function (): void {
     expect(Role::query()->pluck('name')->sort()->values()->all())
         ->toBe(['admin', 'support', 'support_readonly'])
         ->and(Permission::query()->pluck('name')->sort()->values()->all())
         ->toBe([
             'admin.access', 'audit.read', 'brand.manage', 'refunds.issue',
-            'support.read', 'support.write', 'tokens.reissue', 'transcripts.edit',
+            'rgpd.erase', 'support.read', 'support.write', 'tokens.reissue',
+            'transcripts.edit',
         ]);
 });
 
@@ -30,6 +31,9 @@ it('refuse la marque et les remboursements au support', function (): void {
 
     expect($user->can('brand.manage'))->toBeFalse()
         ->and($user->can('refunds.issue'))->toBeFalse()
+        // L'effacement non plus : c'est le seul acte qu'aucune sauvegarde ne
+        // rattrape passé quatre-vingt-dix jours (bloc 14).
+        ->and($user->can('rgpd.erase'))->toBeFalse()
         ->and($user->can('support.write'))->toBeTrue()
         ->and($user->can('transcripts.edit'))->toBeTrue()
         ->and($user->can('tokens.reissue'))->toBeTrue();

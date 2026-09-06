@@ -148,6 +148,20 @@ final class Project extends Model
         return $this->hasMany(FamilyMember::class);
     }
 
+    /**
+     * Le livre du projet.
+     *
+     * `hasMany` bien qu'un index unique n'en permette qu'un : une réimpression
+     * est un état du même livre, pas un second livre, mais la relation reste
+     * plurielle pour que `whereIn` et `exists()` s'écrivent naturellement.
+     *
+     * @return HasMany<Book, $this>
+     */
+    public function books(): HasMany
+    {
+        return $this->hasMany(Book::class);
+    }
+
     /** @return HasMany<Story, $this> */
     public function stories(): HasMany
     {

@@ -30,6 +30,13 @@ final class RolesAndPermissionsSeeder extends Seeder
         'tokens.reissue',
         'transcripts.edit',
         'audit.read',
+        /*
+         * Bloc 14 : confirmer un effacement. Volontairement **hors** du rôle
+         * support — c'est le seul acte du back-office qu'aucune sauvegarde ne
+         * rattrape passé quatre-vingt-dix jours, et il mérite les mêmes deux
+         * paires d'yeux que le remboursement.
+         */
+        'rgpd.erase',
     ];
 
     /** @var array<string, list<string>> */

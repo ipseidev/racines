@@ -37,7 +37,15 @@ return new class extends Migration
              * narrateur, ou personne — les exports proactifs n'ont pas de
              * demandeur, et c'est justement ce qui les définit.
              */
-            $table->nullableUuidMorphs('requested_by');
+            /*
+             * Une **chaîne** et non un UUID : le demandeur est le plus
+             * souvent un `User`, dont l'identifiant est un entier, et parfois
+             * un narrateur, qui porte un UUID. Même raison que
+             * `consents.subject_id` (T-203).
+             */
+            $table->string('requested_by_type')->nullable();
+            $table->string('requested_by_id', 64)->nullable();
+            $table->index(['requested_by_type', 'requested_by_id']);
 
             // La portée décide de ce qui entre : l'Initiateur·rice ne reçoit
             // que ce que le narrateur a validé, lui reçoit tout sauf la

@@ -132,6 +132,7 @@ return [
         'questions' => 'Les questions',
         'family' => 'Les proches',
         'book' => 'Le livre',
+        'data' => 'Vos données',
         'settings' => 'Les réglages',
         'orders' => 'Ma commande',
     ],
@@ -440,5 +441,48 @@ return [
         'rendering' => 'Le bon à tirer est en cours de fabrication. Vous recevrez un message quand il sera prêt.',
         'ordered' => 'Votre livre est commandé. Nous vous tenons au courant à chaque étape.',
         'no_chapter' => 'Il faut au moins un chapitre pour fabriquer un bon à tirer.',
+    ],
+
+    /*
+     * « Mes données » (bloc 14).
+     *
+     * Le ton dit la non-captivité mieux qu'une promesse : ces fichiers sont à
+     * la famille, elle n'a pas à nous remercier de les lui rendre, et
+     * l'effacement s'explique sans être découragé.
+     */
+    'data' => [
+        'eyebrow' => 'Vos données',
+        'title' => 'Vos données vous appartiennent',
+        'intro' => 'Vous pouvez récupérer l’intégralité de ce que vous avez enregistré, à tout moment et sans frais. Les fichiers s’ouvrent avec les logiciels que vous avez déjà : nous ne sommes pas nécessaires pour les lire.',
+
+        'export' => [
+            'title' => 'Télécharger mes données',
+            'help' => 'Nous préparons un dossier complet — les voix, les textes, les photos, le livre s’il existe. Vous recevrez un courriel dès qu’il est prêt : cela prend quelques minutes.',
+            'full' => 'Tout ce que j’ai enregistré',
+            'offline' => 'Tout, avec un lecteur qui fonctionne sans connexion',
+            'gdpr' => 'Tout, plus mes consentements et le journal de mes données',
+            'submit' => 'Préparer mon dossier',
+            'waiting' => 'Un instant…',
+            'history' => 'Vos derniers dossiers',
+            'ready' => 'Prêt, valable jusqu’au :date',
+            'building' => 'En préparation',
+            'expired' => 'Lien expiré — vous pouvez en demander un nouveau',
+            'size' => ':size Mo',
+        ],
+
+        'erasure' => [
+            'title' => 'Effacer mon projet',
+            'help' => 'L’effacement supprime définitivement les enregistrements, les textes et les photos. Il est irréversible : nous ne pourrons rien récupérer, même à votre demande.',
+            'kept' => 'Ce que nous conservons malgré tout : les factures, pour la comptabilité, et la preuve des consentements donnés — sans votre nom. La loi nous y oblige.',
+            'narrator_first' => 'Si le narrateur demande lui-même l’effacement, sa demande passe avant la vôtre : ce sont ses récits.',
+            'delay' => 'Nous vous confirmons l’effacement sous trente jours au plus, et le plus souvent le jour même.',
+            'blocked' => 'Un livre de ce projet est en cours d’impression. L’effacement aura lieu dès sa livraison, ou tout de suite si vous annulez la commande — écrivez-nous.',
+            'requested' => 'Votre demande d’effacement est enregistrée. Nous revenons vers vous très vite.',
+            'confirm_label' => 'Pour confirmer, tapez EFFACER',
+            'submit' => 'Demander l’effacement',
+        ],
+
+        'export_queued' => 'Votre dossier est en préparation. Vous recevrez un courriel dès qu’il est prêt.',
+        'erasure_requested' => 'Votre demande est enregistrée. Nous vous répondons sous trente jours au plus.',
     ],
 ];

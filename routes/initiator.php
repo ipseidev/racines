@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Books\QrRevocationController;
 use App\Http\Controllers\Initiator\BookController;
 use App\Http\Controllers\Initiator\CopyLinkController;
+use App\Http\Controllers\Initiator\DataController;
 use App\Http\Controllers\Initiator\FamilyController;
 use App\Http\Controllers\Initiator\OrdersController;
 use App\Http\Controllers\Initiator\ProjectSettingsController;
@@ -79,6 +80,16 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
 
         Route::delete('/livre/histoires/{story}/qr', [QrRevocationController::class, 'initiatorDestroy'])->name('book.qr.revoke');
         Route::post('/livre/histoires/{story}/qr', [QrRevocationController::class, 'initiatorRestore'])->name('book.qr.restore');
+
+        /*
+         * « Mes données » (bloc 14).
+         *
+         * La page qui rend la non-captivité visible : un export possible mais
+         * caché dans un courriel de support ne vaut rien.
+         */
+        Route::get('/donnees', [DataController::class, 'index'])->name('data');
+        Route::post('/donnees/export', [DataController::class, 'export'])->name('data.export');
+        Route::post('/donnees/effacement', [DataController::class, 'erase'])->name('data.erase');
 
         Route::get('/reglages', [ProjectSettingsController::class, 'index'])->name('settings');
         Route::post('/reglages', [ProjectSettingsController::class, 'update'])->name('settings.update');

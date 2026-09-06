@@ -25,11 +25,19 @@ export default function Expired({ brandName, status }: Props) {
 
             <div className="card enter px-6 py-8">
                 <h1 className="font-display text-[1.75rem] leading-tight font-semibold sm:text-[2rem]">
-                    {t(enCours ? 'exports.building.title' : 'exports.expired.title')}
+                    {t(
+                        enCours
+                            ? 'exports.building.title'
+                            : 'exports.expired.title',
+                    )}
                 </h1>
 
                 <p className="text-brand-muted mt-4 text-[1.0625rem]">
-                    {t(enCours ? 'exports.building.body' : 'exports.expired.body')}
+                    {t(
+                        enCours
+                            ? 'exports.building.body'
+                            : 'exports.expired.body',
+                    )}
                 </p>
 
                 <p className="text-brand-muted mt-6 text-[0.9375rem]">

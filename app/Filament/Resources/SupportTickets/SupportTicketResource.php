@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\SupportTickets;
 
+use App\Actions\ConfirmErasure;
 use App\Audit\AuditLog;
 use App\Enums\SupportTicketKind;
 use App\Enums\SupportTicketStatus;
+use App\Exceptions\Domain\ErasureBlocked;
 use App\Filament\Resources\SupportTickets\Pages\ListSupportTickets;
 use App\Models\SupportTicket;
 use App\Models\User;
@@ -130,6 +132,68 @@ final class SupportTicketResource extends Resource
                         ->all()),
             ])
             ->recordActions([
+                /*
+                 * Confirmer un effacement.
+                 *
+                 * Le seul geste du back-office qui détruise du contenu, et le
+                 * seul qu'aucune sauvegarde ne rattrape après quatre-vingt-dix
+                 * jours. D'où trois gardes qui se cumulent : le droit
+                 * `rgpd.erase`, une confirmation, et un motif écrit — le même
+                 * dispositif que le remboursement, pour la même raison. Un
+                 * geste irréversible mérite deux paires d'yeux.
+                 *
+                 * L'action n'efface pas elle-même : elle appelle
+                 * `ConfirmErasure`, qui refuse si un livre est à
+                 * l'impression et rend une explication à montrer.
+                 */
+                Action::make('confirm_erasure')
+                    ->label(__('admin.tickets.actions.confirm_erasure'))
+                    ->color('danger')
+                    ->icon(Heroicon::OutlinedTrash)
+                    ->visible(fn (SupportTicket $record): bool => $record->isOpen()
+                        && $record->kind === SupportTicketKind::ErasureRequested)
+                    ->authorize(fn (): bool => self::canErase())
+                    ->requiresConfirmation()
+                    ->modalDescription(__('admin.tickets.actions.confirm_erasure_help'))
+                    ->schema([
+                        Textarea::make('note')
+                            ->label(__('admin.tickets.actions.erasure_note'))
+                            ->helperText(__('admin.tickets.actions.erasure_note_help'))
+                            ->required()
+                            ->minLength(10)
+                            ->maxLength(500),
+                    ])
+                    ->action(function (SupportTicket $record, array $data): void {
+                        $user = auth()->user();
+
+                        if (! $user instanceof User) {
+                            return;
+                        }
+
+                        try {
+                            app(ConfirmErasure::class)->handle($record, $user);
+                        } catch (ErasureBlocked $exception) {
+                            Notification::make()->danger()
+                                ->title(__('admin.tickets.actions.erasure_blocked'))
+                                ->body($exception->getMessage())
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
+
+                        $record->forceFill([
+                            'payload' => array_merge($record->payload ?? [], [
+                                'confirmation_note' => $data['note'] ?? null,
+                            ]),
+                        ])->save();
+
+                        Notification::make()->success()
+                            ->title(__('admin.tickets.actions.erasure_done'))
+                            ->body(__('admin.tickets.actions.erasure_done_help'))
+                            ->send();
+                    }),
+
                 Action::make('close')
                     ->label(__('admin.tickets.actions.close'))
                     ->visible(fn (SupportTicket $record): bool => $record->isOpen())
@@ -163,6 +227,20 @@ final class SupportTicketResource extends Resource
                             ->send();
                     }),
             ]);
+    }
+
+    /**
+     * `rgpd.erase` et non `support.write`.
+     *
+     * Effacer les récits d'une famille n'est pas un geste de support de
+     * premier niveau : c'est le seul acte du back-office qu'aucune sauvegarde
+     * ne rattrape passé quatre-vingt-dix jours.
+     */
+    private static function canErase(): bool
+    {
+        $user = auth()->user();
+
+        return $user instanceof User && $user->can('rgpd.erase');
     }
 
     /**

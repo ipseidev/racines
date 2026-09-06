@@ -11,6 +11,7 @@ const LINKS = [
     { href: '/espace/questions', key: 'questions' },
     { href: '/espace/proches', key: 'family' },
     { href: '/espace/livre', key: 'book' },
+    { href: '/espace/donnees', key: 'data' },
     { href: '/espace/reglages', key: 'settings' },
     { href: '/espace/commandes', key: 'orders' },
 ] as const;
@@ -18,7 +19,7 @@ const LINKS = [
 /**
  * Mise en page de l'espace de l'Initiateur·rice.
  *
- * Six onglets et rien de plus : c'est un espace d'organisation, consulté une
+ * Sept onglets et rien de plus : c'est un espace d'organisation, consulté une
  * fois par semaine depuis un téléphone, pas un tableau de bord
  * d'administration. Le soulignement d'or glisse sous l'onglet courant, la
  * barre défile au doigt quand l'écran est étroit.
