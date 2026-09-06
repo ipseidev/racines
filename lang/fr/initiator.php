@@ -419,6 +419,23 @@ return [
             'defect_help' => 'Un livre abîmé, mal massicoté, aux pages inversées : nous le réimprimons sans condition.',
         ],
 
+        /*
+         * Le code du livre (doc 04 §7). Le texte doit faire comprendre deux
+         * choses en trois lignes : c'est facultatif, et cela se décide une
+         * fois pour tous les exemplaires.
+         */
+        'code' => [
+            'title' => 'Protéger l’écoute par un code',
+            'help' => 'Par défaut, les codes imprimés dans le livre s’ouvrent sans rien demander : c’est ce qui permet de prêter le livre. Vous pouvez ajouter un code, à écrire sur le rabat ou à donner de vive voix — il sera demandé une fois, puis retenu un mois sur l’appareil.',
+            'label' => 'Le code, au moins quatre caractères',
+            'submit' => 'Poser ce code',
+            'change' => 'Changer le code',
+            'remove' => 'Retirer le code',
+            'is_set' => 'Un code protège l’écoute. Nous ne pouvons pas vous le rappeler : il est chiffré, comme un mot de passe.',
+            'saved' => 'Le code est posé. Il sera demandé au prochain scan.',
+            'removed' => 'Le code est retiré : les codes du livre s’ouvrent de nouveau sans rien demander.',
+        ],
+
         'saved' => 'C’est enregistré.',
         'rendering' => 'Le bon à tirer est en cours de fabrication. Vous recevrez un message quand il sera prêt.',
         'ordered' => 'Votre livre est commandé. Nous vous tenons au courant à chaque étape.',

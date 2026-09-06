@@ -19,8 +19,10 @@ use App\Services\Storage\MediaStorage;
 use App\Support\Brand;
 use App\Support\InitiatorProject;
 use App\Support\Options;
+use App\Support\QrFamilyCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 use RuntimeException;
@@ -100,6 +102,9 @@ final readonly class BookController
             // un formulaire de plus ferait croire à une instruction de
             // dossier là où il n'y a qu'un livre abîmé à remplacer.
             'supportEmail' => Brand::supportEmail(),
+            // Posé ou non, jamais le code lui-même : il est haché, et
+            // l'afficher pour « rappel » le sortirait de la base.
+            'familyCodeSet' => QrFamilyCode::required($project),
         ]);
     }
 
@@ -194,6 +199,42 @@ final readonly class BookController
         }
 
         return Inertia::location($session->url);
+    }
+
+    /**
+     * Poser ou changer le code du livre (doc 04 §7, D-8).
+     *
+     * **Facultatif, et posé par la famille.** Un livre se prête, se transmet,
+     * se lit chez quelqu'un d'autre : l'exiger par défaut ferait échouer le
+     * premier scan du premier lecteur. Ce que le code protège, c'est le livre
+     * perdu, revendu, retrouvé dans une brocante.
+     *
+     * Haché comme un mot de passe : il est imprimé sur le rabat de trente
+     * exemplaires, et la base n'a aucune raison de pouvoir le rendre.
+     */
+    public function setCode(Request $request): RedirectResponse
+    {
+        $project = $this->project($request);
+
+        $validated = $request->validate([
+            // Quatre caractères au moins : en dessous, il se devine plus vite
+            // que les cinq essais par heure ne le bloquent.
+            'code' => ['required', 'string', 'min:4', 'max:32'],
+        ]);
+
+        $project->forceFill([
+            'family_code_hash' => Hash::make(trim((string) $validated['code'])),
+        ])->save();
+
+        return back()->with('status', __('initiator.book.code.saved'));
+    }
+
+    /** Retirer le code : le livre se rouvre à qui le tient. */
+    public function removeCode(Request $request): RedirectResponse
+    {
+        $this->project($request)->forceFill(['family_code_hash' => null])->save();
+
+        return back()->with('status', __('initiator.book.code.removed'));
     }
 
     private function project(Request $request): Project
