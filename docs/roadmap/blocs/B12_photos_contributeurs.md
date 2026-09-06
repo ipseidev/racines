@@ -63,7 +63,7 @@ Sail : service `clamav` (`image: clamav/clamav:stable`, port 3310, volume pour l
 
 ## 7. Checkpoint démontrable
 
-1. Depuis un téléphone, après un enregistrement, ajouter une photo HEIC prise à l'instant : elle apparaît en JPEG, sans coordonnées GPS (vérifier avec `exiftool` sur l'original stocké), orientée correctement.
+1. Depuis un téléphone, après un enregistrement, ajouter une photo prise avec l'appareil : elle apparaît en JPEG, **sans une seule clé EXIF ni profil** sur l'original stocké, et orientée correctement — l'orientation corrigée dans les pixels, pas dans une étiquette. La propriété `source_mime` du média dit ce que le téléphone a réellement envoyé (T-193) : depuis un iPhone ce sera `image/jpeg`, **Safari convertissant le HEIC avant l'envoi** malgré l'`accept` qui le déclare. Le chemin HEIC n'est donc pas éprouvable ici (T-194, dette D-g) ; il se lèvera depuis un Android ou par un HEIC déposé depuis un ordinateur.
 2. Un proche avec `can_contribute` ajoute une photo depuis `/l/…` ; un autre proche ne voit pas le bouton et reçoit 403 en POST.
 3. Téléverser le fichier de test EICAR : refus avec message, rien dans R2, ligne dans l'audit.
 4. Une photo de 800 px : message « un peu petite pour l'impression », `print_ready = false`.
