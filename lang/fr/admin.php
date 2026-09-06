@@ -108,6 +108,30 @@ return [
         ],
     ],
 
+    /*
+     * Les chiffres du pilote (bloc 15).
+     *
+     * Les libellés disent l'hypothèse, pas le nom technique de la métrique :
+     * « Acceptation du cadeau » se lit, `h0_acceptance_14d` non — et ce
+     * tableau sera montré à un comité.
+     */
+    'metrics' => [
+        'heading' => 'Les hypothèses du pilote',
+        'living' => 'Projets vivants',
+        'h0_acceptance_14d' => 'H0 — Acceptation du cadeau',
+        'h1_itt_8_stories_j70' => 'H1 — Répétition (intention de traiter)',
+        'h1_activated_8_stories_j70' => 'H1 — Répétition (activés)',
+        'first_recording_unassisted' => 'Premier enregistrement réussi seul',
+        'initiator_requests_per_month' => 'Sollicitations de l’Initiateur·rice',
+        'over' => ':numerator sur :denominator',
+        'too_small' => 'échantillon trop petit pour conclure',
+        'not_computed' => 'pas encore calculé',
+        'counters' => 'Ce qui doit rester bas',
+        'counter' => 'Mesure',
+        'value' => 'Sur 30 jours',
+        'definition' => 'Ce qu’elle compte',
+    ],
+
     'playbooks' => [
         'title' => 'Les playbooks',
         'empty' => 'Aucun playbook pour l’instant.',
