@@ -22,7 +22,7 @@ final class UpdateBrandSettings
     private const HEX = 'regex:/^#[0-9a-fA-F]{6}$/';
 
     /** Propriétés du réglage qui acceptent réellement null. */
-    private const NULLABLE = ['support_phone', 'logo_path', 'favicon_path'];
+    private const NULLABLE = ['support_phone', 'mark_path', 'logo_path', 'favicon_path'];
 
     /**
      * @param  array<string, mixed>  $attributes
@@ -77,6 +77,7 @@ final class UpdateBrandSettings
             'sms_sender_id' => ['sometimes', 'string', 'regex:/^(?=.*[A-Za-z])[A-Za-z0-9]{3,11}$/'],
             'font_display' => ['sometimes', 'string', 'max:60'],
             'font_body' => ['sometimes', 'string', 'max:60'],
+            'mark_path' => ['sometimes', 'nullable', 'string', 'max:255'],
             'logo_path' => ['sometimes', 'nullable', 'string', 'max:255'],
             'favicon_path' => ['sometimes', 'nullable', 'string', 'max:255'],
             'legal_entity' => ['sometimes', 'nullable', 'string', 'max:120'],

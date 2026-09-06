@@ -46,10 +46,28 @@
 @if ($brandFavicon)
         <link rel="icon" href="{{ $brandFavicon }}">
 @else
+        {{-- Le .ico pour les anciens navigateurs et les favoris de bureau, le
+             SVG pour tous les autres — il pèse deux kilo-octets et reste net
+             sur un écran de 5K comme dans un onglet de 16 pixels. Le PNG de 96
+             est le repli de ceux qui ignorent le SVG. --}}
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="icon" href="/favicon-96x96.png" type="image/png" sizes="96x96">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 @endif
+
+        {{-- Écran d'accueil et barre du navigateur. Le manifeste vient d'une
+             route et non d'un fichier : il porte le nom et une couleur de la
+             marque, qui ne vivent que dans les réglages. Adresse relative,
+             pour rester de même origine sur le domaine court des liens.
+             Écarté des pages à jeton : proposer « ajouter à l'écran d'accueil »
+             à un narrateur venu enregistrer une histoire une fois n'a pas de
+             sens, et la fenêtre s'ouvrirait par-dessus le bouton. --}}
+@if (! str_starts_with($page['component'], 'narrator/') && ! str_starts_with($page['component'], 'family/'))
+        <link rel="manifest" href="/site.webmanifest">
+@endif
+        <meta name="apple-mobile-web-app-title" content="{{ $brandShortName }}">
+        <meta name="theme-color" content="{{ $brandCss['--brand-background'] }}">
 
         {{-- Polices : Inter et Fraunces sont déclarées dans app.css, depuis
              public/fonts. On ne précharge que les deux graisses d'Inter visibles

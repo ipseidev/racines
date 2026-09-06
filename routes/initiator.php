@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Books\QrRevocationController;
 use App\Http\Controllers\Initiator\BookController;
 use App\Http\Controllers\Initiator\CopyLinkController;
 use App\Http\Controllers\Initiator\FamilyController;
@@ -70,6 +71,9 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
         Route::post('/livre', [BookController::class, 'update'])->name('book.update');
         Route::post('/livre/bat', [BookController::class, 'render'])->name('book.render');
         Route::post('/livre/accord', [BookController::class, 'approve'])->name('book.approve');
+
+        Route::delete('/livre/histoires/{story}/qr', [QrRevocationController::class, 'initiatorDestroy'])->name('book.qr.revoke');
+        Route::post('/livre/histoires/{story}/qr', [QrRevocationController::class, 'initiatorRestore'])->name('book.qr.restore');
 
         Route::get('/reglages', [ProjectSettingsController::class, 'index'])->name('settings');
         Route::post('/reglages', [ProjectSettingsController::class, 'update'])->name('settings.update');

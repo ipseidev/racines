@@ -89,6 +89,25 @@ return [
         ],
     ],
 
+    'books' => [
+        'title' => 'Les livres',
+        'singular' => 'Livre',
+        'family' => 'La famille',
+        'status' => 'Où en est',
+        'format' => 'Forme',
+        'pages' => 'Pages',
+        'reference' => 'Référence imprimeur',
+        'ordered_at' => 'Commandé le',
+        'actions' => [
+            'proof' => 'Ouvrir le bon à tirer',
+            'mark_printed' => 'Marquer imprimé',
+            'mark_delivered' => 'Marquer livré',
+            'reprint' => 'Réimprimer',
+            'reason' => 'Quel défaut ?',
+            'reason_help' => 'La réimpression est gratuite et sans condition (doc 04 §10). Le motif sert à savoir ce qui s’est mal passé chez l’imprimeur, pas à juger la demande.',
+        ],
+    ],
+
     'playbooks' => [
         'title' => 'Les playbooks',
         'empty' => 'Aucun playbook pour l’instant.',

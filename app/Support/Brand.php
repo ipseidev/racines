@@ -52,6 +52,27 @@ final class Brand
         return self::name();
     }
 
+    /**
+     * Le pictogramme posé à côté du nom dans les en-têtes.
+     *
+     * Contrairement au logo, qui remplace le nom, la marque figurée
+     * l'accompagne. Le fichier livré dans public/ sert de repli, comme la
+     * palette de config/brand.php : l'administration peut le remplacer sans
+     * redéploiement.
+     */
+    public static function markUrl(): ?string
+    {
+        $path = self::settings()->mark_path;
+
+        if ($path !== null) {
+            return asset('storage/'.$path);
+        }
+
+        $shipped = (string) config('brand.mark');
+
+        return $shipped === '' ? null : asset($shipped);
+    }
+
     public static function logoUrl(): ?string
     {
         $path = self::settings()->logo_path;
@@ -138,6 +159,7 @@ final class Brand
             'links_domain' => $brand->links_domain,
             'support_email' => $brand->support_email,
             'support_phone' => $brand->support_phone,
+            'mark_url' => self::markUrl(),
             'logo_url' => self::logoUrl(),
         ];
     }

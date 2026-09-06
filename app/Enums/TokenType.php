@@ -85,7 +85,16 @@ enum TokenType: string
     {
         return match ($this) {
             self::Record, self::NarratorSpace, self::Invitation => 'narrator',
-            self::ListenProject, self::ListenStory, self::Qr, self::Action, self::Export => 'family',
+            /*
+             * Le QR a son propre espace, et ce n'est pas une coquetterie : la
+             * personne qui scanne tient un **livre imprimé**, n'a pas de
+             * compte, et n'a demandé aucun lien. « Ce lien n'est plus
+             * valable » lui suggérerait qu'elle s'y prend mal ; ce qu'il faut
+             * dire est que l'écoute en ligne a été retirée et que le texte
+             * imprimé reste le sien (bloc 13).
+             */
+            self::Qr => 'qr',
+            self::ListenProject, self::ListenStory, self::Action, self::Export => 'family',
             self::SensitiveGrant => null,
         };
     }

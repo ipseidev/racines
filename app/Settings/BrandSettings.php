@@ -49,6 +49,8 @@ final class BrandSettings extends Settings
 
     public string $font_body;
 
+    public ?string $mark_path;
+
     public ?string $logo_path;
 
     public ?string $favicon_path;

@@ -23,6 +23,14 @@ return [
     'sms_sender_id' => env('BRAND_SMS_SENDER_ID', 'PRODUCT'),
 
     /*
+     * La marque figurée : le pictogramme posé à côté du nom dans les en-têtes,
+     * et l'icône des onglets. Deux fichiers servis depuis public/, repli d'un
+     * `mark_path` téléversé dans l'administration — comme les couleurs, la
+     * configuration est le repli et la base la source de vérité.
+     */
+    'mark' => '/img/brand/mark.svg',
+
+    /*
      * Palette issue de l'analyse colorimétrique du fondateur (3 septembre 2026,
      * docs/design/README.md). Deux couleurs signature : le vert forêt, qui
      * porte la marque, et la terracotta, qui porte l'action — et rien d'autre.

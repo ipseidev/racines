@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Books\QrRevocationController;
 use App\Http\Controllers\Links\VcardController;
 use App\Http\Controllers\Narrator\ClientEventController;
 use App\Http\Controllers\Narrator\HideOwnStoryController;
@@ -198,6 +199,20 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
 
             Route::post('/n/{token}/stories/{story}/visibility', [WithdrawalController::class, 'visibility'])
                 ->name('narrator.space.stories.visibility');
+
+            /*
+             * Le QR imprimé (bloc 13).
+             *
+             * Éteindre la voix d'une histoire déjà sur du papier est un
+             * retrait comme un autre, donc un acte sensible : le jeton de
+             * l'espace ouvre toutes les histoires et a pu être ouvert il y a
+             * un moment.
+             */
+            Route::delete('/n/{token}/stories/{story}/qr', [QrRevocationController::class, 'destroy'])
+                ->name('narrator.space.stories.qr.revoke');
+
+            Route::post('/n/{token}/stories/{story}/qr', [QrRevocationController::class, 'restore'])
+                ->name('narrator.space.stories.qr.restore');
 
             Route::post('/n/{token}/pause', PauseController::class)
                 ->name('narrator.space.pause');

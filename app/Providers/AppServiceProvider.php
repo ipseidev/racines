@@ -82,6 +82,7 @@ final class AppServiceProvider extends ServiceProvider
             $view->with([
                 'brandCss' => Brand::cssVariables(),
                 'brandName' => Brand::nameSafe(),
+                'brandShortName' => Brand::shortName(),
                 'brandFavicon' => Brand::faviconUrl(),
             ]);
         });

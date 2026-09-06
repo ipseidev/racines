@@ -26,8 +26,8 @@ function panelResources(): array
     return array_values(Filament::getPanel('admin')->getResources());
 }
 
-it('déclare les seize ressources attendues', function (): void {
-    expect(panelResources())->toHaveCount(16);
+it('déclare les dix-sept ressources attendues', function (): void {
+    expect(panelResources())->toHaveCount(17);
 });
 
 it('ouvre chaque liste à qui a la permission', function (): void {

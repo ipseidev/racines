@@ -39,6 +39,7 @@ it('partage la marque et les traductions avec chaque page Inertia', function ():
                 ->has('tagline')
                 ->has('support_email')
                 ->has('support_phone')
+                ->has('mark_url')
                 ->has('logo_url')
             )
             ->has('i18n.public.landing.promise')

@@ -10,6 +10,7 @@ const brand: Brand = {
     links_domain: 'exemple.test',
     support_email: 'support@exemple.test',
     support_phone: null,
+    mark_url: null,
     logo_url: null,
 };
 
@@ -39,6 +40,33 @@ describe('BrandLogo', () => {
 
         expect(screen.getByText('Essai')).toBeInTheDocument();
         expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    });
+
+    it('pose le pictogramme à côté du nom, sans le répéter à la voix', () => {
+        page.props.brand = { ...brand, mark_url: '/img/brand/mark.svg' };
+        const { container } = render(<BrandLogo />);
+
+        const mark = container.querySelector('img');
+
+        expect(mark).toHaveAttribute('src', '/img/brand/mark.svg');
+        expect(mark).toHaveAttribute('aria-hidden', 'true');
+        expect(screen.getByText('Essai')).toBeInTheDocument();
+        expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    });
+
+    it('efface le pictogramme quand un logo complet remplace le nom', () => {
+        page.props.brand = {
+            ...brand,
+            mark_url: '/img/brand/mark.svg',
+            logo_url: '/storage/logo.svg',
+        };
+        render(<BrandLogo />);
+
+        expect(screen.getAllByRole('img')).toHaveLength(1);
+        expect(screen.getByRole('img')).toHaveAttribute(
+            'src',
+            '/storage/logo.svg',
+        );
     });
 
     it('affiche le logo avec le nom en texte alternatif', () => {

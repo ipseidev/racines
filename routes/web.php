@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Checkout\CheckoutController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalController;
+use App\Http\Controllers\Public\ManifestController;
 use App\Http\Controllers\Public\WelcomeOfferController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', LandingController::class)->name('home');
 
 Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
+
+// Le manifeste d'installation, rendu depuis les réglages de marque. Sans
+// contrainte de domaine, pour rester de même origine que la page qui le cite.
+Route::get('/site.webmanifest', ManifestController::class)->name('manifest');
 
 // La fenêtre de bienvenue : une adresse contre un code de réduction (T-141).
 // Bornée par adresse et par IP : une liste de contacts est une cible.

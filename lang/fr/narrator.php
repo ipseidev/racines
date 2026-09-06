@@ -306,6 +306,20 @@ return [
         'pause_weeks' => 'Pendant combien de semaines ?',
         'paused' => 'C’est noté : aucune question pendant :weeks semaines.',
         'paused_until' => 'Vos questions sont en pause jusqu’au :date.',
+        /*
+         * Le QR imprimé dans le livre (bloc 13). Le mot « désactiver » et non
+         * « supprimer » : le livre reste, c'est l'écoute en ligne qui s'arrête,
+         * et la distinction compte pour quelqu'un qui a le livre en main.
+         */
+        'qr' => [
+            'title' => 'Le code du livre',
+            'help' => 'Chaque histoire imprimée porte un code qui permet d’entendre votre voix. Vous pouvez l’éteindre : le livre reste, l’écoute en ligne s’arrête.',
+            'revoke' => 'Désactiver le code de cette histoire',
+            'restore' => 'Réactiver le code',
+            'revoked' => 'Le code est désactivé. Le texte imprimé reste inchangé.',
+            'restored' => 'Le code fonctionne de nouveau, le même qu’avant.',
+        ],
+
     ],
 
     /*
