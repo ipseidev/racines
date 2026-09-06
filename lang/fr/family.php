@@ -108,4 +108,23 @@ return [
     // Le lecteur audio vit dans `common.player` depuis T-138 : il sert aussi
     // à la narratrice qui se réécoute.
 
+    /*
+     * Les QR imprimés dans le livre (bloc 13).
+     *
+     * Le ton est celui d'un livre qu'on tient en main, pas celui d'un
+     * formulaire : la personne qui scanne n'a pas de compte, n'a rien demandé
+     * et ne sait pas forcément ce qu'est un code famille.
+     */
+    'qr' => [
+        'code_title' => 'Un code vous a été donné avec ce livre',
+        'code_help' => 'La famille de :first_name a choisi de protéger l’écoute. Le code figure sur le rabat du livre ou vous a été communiqué par la personne qui vous l’a offert.',
+        'code_label' => 'Le code',
+        'code_submit' => 'Écouter',
+        'wrong_code' => 'Ce code ne correspond pas. Vérifiez-le sur le rabat du livre.',
+        'too_many' => 'Trop d’essais. Réessayez dans une heure.',
+        'unavailable_title' => 'Cette histoire n’est plus disponible en ligne',
+        'unavailable_help' => 'Le texte imprimé reste le vôtre. L’écoute en ligne a été retirée à la demande du narrateur ou de sa famille.',
+        'all_stories' => 'Voir toutes les histoires',
+        'all_stories_help' => 'Il vous faut pour cela un lien personnel : demandez-le à la personne qui vous a offert ce livre.',
+    ],
 ];

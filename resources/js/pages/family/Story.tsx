@@ -32,6 +32,16 @@ type Props = {
     /** Vrai seulement si ce proche a le droit d'ajouter des photos. */
     canContribute: boolean;
     siblings: { previous: string | null; next: string | null };
+    /**
+     * `family` : un proche identifié, sur son lien d'écoute.
+     * `qr` : n'importe qui, depuis un code imprimé dans le livre.
+     *
+     * Le mode retire les gestes qui **ont un auteur** — réagir, déposer une
+     * photo — et la liste des autres histoires : un QR ouvre un chapitre, pas
+     * une bibliothèque. On ne sait pas qui tient le livre, et c'est le sens
+     * même d'une page lisible sans compte (doc 04 §7).
+     */
+    mode?: 'family' | 'qr';
 };
 
 const MAX_COMMENT = 280;
@@ -67,7 +77,9 @@ export default function Story({
     photos,
     canContribute,
     siblings,
+    mode = 'family',
 }: Props) {
+    const isQr = mode === 'qr';
     const t = useT();
 
     const [tab, setTab] = useState<'text' | 'verbatim'>('text');
@@ -91,6 +103,8 @@ export default function Story({
     };
 
     const reportProgress = (seconds: number) => {
+        // Les deux modes ont leur route d'écoute sous le même suffixe :
+        // `/l/{token}/stories/{id}/listen` et `/q/{token}/listen`.
         void fetch(`${base}/listen`, {
             method: 'POST',
             headers: {
@@ -224,95 +238,97 @@ export default function Story({
                 </div>
             </section>
 
-            <section
-                aria-labelledby="story-react"
-                className="card enter mt-12 px-5 py-6"
-                style={stagger(5)}
-            >
-                <p className="eyebrow">{t('family.reaction.eyebrow')}</p>
-
-                <h2
-                    id="story-react"
-                    className="font-display mt-3 text-[1.375rem] leading-snug font-semibold"
+            {isQr ? null : (
+                <section
+                    aria-labelledby="story-react"
+                    className="card enter mt-12 px-5 py-6"
+                    style={stagger(5)}
                 >
-                    {t('family.reaction.title', {
-                        first_name: narratorFirstName,
-                    })}
-                </h2>
+                    <p className="eyebrow">{t('family.reaction.eyebrow')}</p>
 
-                <p className="text-brand-muted mt-2 text-[0.9375rem]">
-                    {t('family.reaction.comment_help', {
-                        first_name: narratorFirstName,
-                    })}
-                </p>
+                    <h2
+                        id="story-react"
+                        className="font-display mt-3 text-[1.375rem] leading-snug font-semibold"
+                    >
+                        {t('family.reaction.title', {
+                            first_name: narratorFirstName,
+                        })}
+                    </h2>
 
-                <label htmlFor="comment" className="sr-only">
-                    {t('family.reaction.comment_label')}
-                </label>
-                <textarea
-                    id="comment"
-                    value={comment}
-                    maxLength={MAX_COMMENT}
-                    rows={3}
-                    onChange={(event) => setComment(event.target.value)}
-                    className="input mt-4 w-full resize-y text-[1.0625rem]"
-                />
-                <p className="text-brand-muted mt-1 text-[0.875rem]">
-                    {t('family.reaction.comment_counter', {
-                        count: String(comment.length),
-                        max: String(MAX_COMMENT),
-                    })}
-                </p>
+                    <p className="text-brand-muted mt-2 text-[0.9375rem]">
+                        {t('family.reaction.comment_help', {
+                            first_name: narratorFirstName,
+                        })}
+                    </p>
 
-                <div className="mt-4 flex flex-wrap gap-3">
-                    {(['heart', 'thanks'] as const).map((type) => {
-                        const done = yourReactions.includes(type);
+                    <label htmlFor="comment" className="sr-only">
+                        {t('family.reaction.comment_label')}
+                    </label>
+                    <textarea
+                        id="comment"
+                        value={comment}
+                        maxLength={MAX_COMMENT}
+                        rows={3}
+                        onChange={(event) => setComment(event.target.value)}
+                        className="input mt-4 w-full resize-y text-[1.0625rem]"
+                    />
+                    <p className="text-brand-muted mt-1 text-[0.875rem]">
+                        {t('family.reaction.comment_counter', {
+                            count: String(comment.length),
+                            max: String(MAX_COMMENT),
+                        })}
+                    </p>
 
-                        return (
-                            <button
-                                key={type}
-                                type="button"
-                                disabled={sending}
-                                aria-pressed={done}
-                                onClick={() => react(type)}
-                                /*
-                                 * `basis` plutôt qu'un simple `flex-1` : à
-                                 * deux par ligne, « J'ai aimé » se coupait en
-                                 * deux sur un téléphone étroit. En dessous de
-                                 * la largeur de base, la ligne se rompt et
-                                 * chaque bouton prend toute la largeur —
-                                 * plutôt qu'un mot coupé en deux.
-                                 */
-                                className={`press inline-flex min-h-[3.25rem] flex-1 basis-[9.5rem] items-center justify-center gap-2 rounded-md px-4 py-3 text-[1.0625rem] font-semibold whitespace-nowrap transition-colors disabled:opacity-60 ${
-                                    done
-                                        ? 'border-brand-sage text-brand bg-brand-sage/12 border-2'
-                                        : 'bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep'
-                                }`}
-                            >
-                                {done ? (
-                                    <Check
-                                        aria-hidden="true"
-                                        className="text-brand-sage size-5 flex-none"
-                                    />
-                                ) : type === 'heart' ? (
-                                    <Heart
-                                        aria-hidden="true"
-                                        className="size-5 flex-none"
-                                    />
-                                ) : (
-                                    <Send
-                                        aria-hidden="true"
-                                        className="size-5 flex-none"
-                                    />
-                                )}
-                                {t(`family.reaction.${type}`)}
-                            </button>
-                        );
-                    })}
-                </div>
-            </section>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                        {(['heart', 'thanks'] as const).map((type) => {
+                            const done = yourReactions.includes(type);
 
-            {reactions.length > 0 ? (
+                            return (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    disabled={sending}
+                                    aria-pressed={done}
+                                    onClick={() => react(type)}
+                                    /*
+                                     * `basis` plutôt qu'un simple `flex-1` : à
+                                     * deux par ligne, « J'ai aimé » se coupait en
+                                     * deux sur un téléphone étroit. En dessous de
+                                     * la largeur de base, la ligne se rompt et
+                                     * chaque bouton prend toute la largeur —
+                                     * plutôt qu'un mot coupé en deux.
+                                     */
+                                    className={`press inline-flex min-h-[3.25rem] flex-1 basis-[9.5rem] items-center justify-center gap-2 rounded-md px-4 py-3 text-[1.0625rem] font-semibold whitespace-nowrap transition-colors disabled:opacity-60 ${
+                                        done
+                                            ? 'border-brand-sage text-brand bg-brand-sage/12 border-2'
+                                            : 'bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep'
+                                    }`}
+                                >
+                                    {done ? (
+                                        <Check
+                                            aria-hidden="true"
+                                            className="text-brand-sage size-5 flex-none"
+                                        />
+                                    ) : type === 'heart' ? (
+                                        <Heart
+                                            aria-hidden="true"
+                                            className="size-5 flex-none"
+                                        />
+                                    ) : (
+                                        <Send
+                                            aria-hidden="true"
+                                            className="size-5 flex-none"
+                                        />
+                                    )}
+                                    {t(`family.reaction.${type}`)}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
+
+            {!isQr && reactions.length > 0 ? (
                 <section
                     aria-labelledby="story-reacted"
                     className="enter mt-10"
@@ -378,6 +394,22 @@ export default function Story({
             />
 
             {canContribute && <PhotoUploader action={`${base}/photos`} />}
+
+            {/*
+             * Depuis un QR, on n'offre pas la liste : il faudrait un lien
+             * personnel, et le dire vaut mieux qu'un bouton qui mènerait à
+             * une page « non disponible ».
+             */}
+            {isQr ? (
+                <section className="panel enter mt-12" style={stagger(7)}>
+                    <p className="text-[1.0625rem] font-semibold">
+                        {t('family.qr.all_stories')}
+                    </p>
+                    <p className="text-brand-muted mt-2 text-[1rem]">
+                        {t('family.qr.all_stories_help')}
+                    </p>
+                </section>
+            ) : null}
 
             <nav className="mt-12 flex flex-wrap gap-3">
                 {siblings.previous === null ? null : (

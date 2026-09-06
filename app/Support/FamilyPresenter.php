@@ -76,7 +76,37 @@ final class FamilyPresenter
     /**
      * @return array<string, mixed>
      */
-    public static function storyProps(Story $story, FamilyMember $member, MediaStorage $storage): array
+    /**
+     * Une histoire lue depuis un QR imprimé, sans personne derrière.
+     *
+     * Le lecteur d'un QR n'est pas un proche identifié : le livre circule, il
+     * se prête, il se lit chez quelqu'un d'autre. On ne sait donc **pas qui
+     * lit**, et c'est voulu — exiger un compte pour écouter la voix de sa
+     * grand-mère dans un livre qu'on tient entre les mains serait absurde.
+     *
+     * Ce que cela retire : les réactions (elles ont un auteur), le dépôt de
+     * photos (il en a un aussi) et la liste des autres histoires (le QR ouvre
+     * un chapitre, pas une bibliothèque). Ce qui reste est ce que la page
+     * imprimée promet : la voix, et le texte.
+     *
+     * @return array<string, mixed>
+     */
+    public static function qrStoryProps(Story $story, MediaStorage $storage): array
+    {
+        $props = self::storyProps($story, null, $storage);
+
+        return [
+            ...$props,
+            'yourReactions' => [],
+            'canContribute' => false,
+            'mode' => 'qr',
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function storyProps(Story $story, ?FamilyMember $member, MediaStorage $storage): array
     {
         $recording = $story->currentRecording()->first();
         $key = $recording === null
@@ -101,15 +131,16 @@ final class FamilyPresenter
                 'first_name' => $story->narrator->first_name,
             ]),
             'reactions' => self::reactions($story),
-            'yourReactions' => self::reactionTypesOf($story, $member),
+            'yourReactions' => $member === null ? [] : self::reactionTypesOf($story, $member),
             // Mise en forme une seule fois, dans `PhotoPresenter` : les
             // quatre espaces la partagent, et une seconde version
             // oublierait le texte alternatif ou servirait une URL
             // permanente là où elle doit être temporaire.
             'photos' => PhotoPresenter::forStory($story),
+            'mode' => 'family',
             // Le bouton d'ajout n'existe que pour qui peut contribuer : un
             // bouton grisé invite à demander pourquoi, un bouton absent non.
-            'canContribute' => PhotoAccess::canAttach($story, $member),
+            'canContribute' => $member !== null && PhotoAccess::canAttach($story, $member),
         ];
     }
 

@@ -15,6 +15,34 @@ declare(strict_types=1);
 
 return [
 
+    /*
+     * Le livre (bloc 13). Trois moments, et jamais de promesse de délai
+     * d'impression : le devis n'est pas fait, et une date annoncée qu'on ne
+     * tient pas coûte plus que l'attente elle-même (doc 03 P0-14).
+     */
+    'book' => [
+        'greeting' => 'Bonjour :name,',
+        'signature' => 'À bientôt, l’équipe :brand.',
+        'ready' => [
+            'subject' => 'Il y a de quoi faire un livre',
+            'sms' => ':brand : la matière recueillie suffit pour un livre. À voir quand vous voulez : :link',
+            'line' => 'Les histoires de :first_name représentent maintenant assez de matière pour un livre. Rien ne presse — le livre se fabrique quand vous le décidez.',
+            'button' => 'Voir où en est le livre',
+        ],
+        'format_proposal' => [
+            'subject' => 'Une autre forme est possible',
+            'sms' => ':brand : nous vous proposons une autre forme pour le livre de :first_name. À voir : :link',
+            'line' => 'La matière recueillie ne fait pas encore un livre complet, et elle fait déjà quelque chose : nous vous proposons :format.',
+            'button' => 'Voir la proposition',
+        ],
+        'proof_ready' => [
+            'subject' => 'Votre bon à tirer est prêt',
+            'sms' => ':brand : le bon à tirer du livre de :first_name est prêt à relire : :link',
+            'line' => 'Le bon à tirer est prêt. Relisez-le tranquillement : c’est la dernière étape avant l’impression, et l’imprimé est définitif.',
+            'button' => 'Relire le bon à tirer',
+        ],
+    ],
+
     'prompt' => [
         'subject' => 'Votre question de la semaine',
         'greeting' => 'Bonjour :name,',

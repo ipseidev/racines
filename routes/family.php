@@ -8,6 +8,9 @@ use App\Http\Controllers\Family\ReactionController;
 use App\Http\Controllers\Family\StoryPageController;
 use App\Http\Controllers\Initiator\OneTapController;
 use App\Http\Controllers\Photos\PhotoController;
+use App\Http\Controllers\Qr\FamilyCodeController;
+use App\Http\Controllers\Qr\QrListenController;
+use App\Http\Controllers\Qr\QrPageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,6 +46,31 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
     Route::post('/a/{token}', [OneTapController::class, 'store'])
         ->middleware('resolve.token:action')
         ->name('initiator.one_tap.store');
+});
+
+/*
+ * Les QR imprimés dans le livre (bloc 13).
+ *
+ * Un groupe à part, et non une entrée du groupe famille : le jeton n'est pas
+ * du même type, la page ne montre pas la même chose, et surtout **personne
+ * n'est identifié** — un livre se prête. Les mélanger aurait tôt fait de
+ * laisser passer une réaction ou une liste d'histoires sur une page publique.
+ */
+Route::middleware([
+    'throttle:tokens',
+    'no-store',
+    'resolve.token:qr',
+])->group(function (): void {
+    Route::get('/q/{token}', QrPageController::class)->name('family.qr');
+
+    Route::post('/q/{token}/code', FamilyCodeController::class)->name('family.qr.code');
+
+    // Son propre limiteur, comme côté famille : les vingt requêtes par minute
+    // qui protègent les pages étoufferaient la mesure d'écoute.
+    Route::post('/q/{token}/listen', QrListenController::class)
+        ->withoutMiddleware('throttle:tokens')
+        ->middleware('throttle:client-events')
+        ->name('family.qr.listen');
 });
 
 Route::middleware([

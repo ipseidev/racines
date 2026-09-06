@@ -66,6 +66,10 @@ if (Reflect.get(window, MOUNTED) !== true) {
                     return NarratorLayout;
                 case name.startsWith('family/'):
                     return FamilyLayout;
+                // Les pages ouvertes par un QR imprimé : même sobriété que
+                // l'espace famille, et personne n'est identifié derrière.
+                case name.startsWith('qr/'):
+                    return FamilyLayout;
                 // Le tunnel d'achat a sa propre mise en page : sans la
                 // navigation ni le bouton d'achat de l'accueil, qui
                 // concurrenceraient « Continuer » (T-135).
