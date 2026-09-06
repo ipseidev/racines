@@ -319,7 +319,8 @@ final class DemoLinks extends Command
                 'titre' => 'Le back-office, et ce qu’il laisse comme trace',
                 'etapes' => [
                     ['quoi' => 'Se connecter avec `premiere-connexion@example.test` : la configuration du second facteur est forcée, puis exigée ensuite. **Ce compte est là pour ça** — le compte d’administration principal a déjà son second facteur, semé pour la suite bout en bout, et demanderait un code au lieu de proposer la configuration (T-180).', 'url' => rtrim((string) config('app.url'), '/').'/admin'],
-                    ['quoi' => 'Ouvrir une histoire partagée, écouter 5 secondes, corriger un mot : trois entrées d’audit, dont la correction avec son diff.'],
+                    ['quoi' => 'Ouvrir une histoire partagée, écouter 5 secondes, corriger un mot depuis la fiche : trois entrées d’audit. Le compte principal a son second facteur semé pour la suite bout en bout ; son code s’imprime, il n’est pas perdu.',
+                        'cmd' => 'demo:totp'],
                     ['quoi' => 'Modifier une ligne d’audit à la main dans psql : le trigger refuse. Puis vérifier la chaîne.', 'cmd' => 'audit:verify'],
                     ['quoi' => 'Avec le compte de lecture seule `lecture@example.test` (même mot de passe) : aucun bouton d’action, et 403 sur une tentative directe.'],
                     [

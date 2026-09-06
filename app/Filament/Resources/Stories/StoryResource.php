@@ -184,13 +184,33 @@ final class StoryResource extends Resource
      */
     public static function currentText(Story $story): ?Transcript
     {
-        $transcript = $story->transcripts()
-            ->current()
-            ->where('kind', '!=', TranscriptKind::Verbatim->value)
-            ->orderByDesc('version')
-            ->first();
+        /*
+         * La correction d'abord, la mise au propre ensuite.
+         *
+         * Les deux restent `is_current` en base : `EditTranscript` dérive la
+         * correction du fluide sans éteindre celui-ci, et une requête qui
+         * demanderait « le courant qui n'est pas le mot à mot » en trouverait
+         * donc deux. Sans ordre explicite, laquelle revient dépend de la page
+         * disque — vert en isolation, rouge dans la suite.
+         *
+         * Trier par version marcherait aujourd'hui, la correction portant
+         * toujours un numéro plus grand que le texte dont elle part ; l'ordre
+         * de préférence, lui, dit ce qu'on veut et ne dépend d'aucune
+         * arithmétique.
+         */
+        foreach ([TranscriptKind::Edited, TranscriptKind::Fluide] as $kind) {
+            $transcript = $story->transcripts()
+                ->ofKind($kind)
+                ->current()
+                ->orderByDesc('version')
+                ->first();
 
-        return $transcript instanceof Transcript ? $transcript : null;
+            if ($transcript instanceof Transcript) {
+                return $transcript;
+            }
+        }
+
+        return null;
     }
 
     private static function text(Story $story, TranscriptKind $kind): string

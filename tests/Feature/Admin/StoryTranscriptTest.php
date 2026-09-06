@@ -63,7 +63,9 @@ it('corrige un mot, crée une version et inscrit « edited Transcript »', funct
         ->callAction('edit_text', ['text' => 'On cuisait le pain le vendredi.'])
         ->assertHasNoActionErrors();
 
-    $courant = $story->transcripts()->current()->whereNot('kind', 'verbatim')->firstOrFail();
+    // La correction, pas la mise au propre dont elle dérive : les deux restent
+    // `is_current`, et c'est la préférence explicite qui départage.
+    $courant = $story->transcripts()->where('kind', 'edited')->current()->firstOrFail();
 
     expect($courant->text)->toBe('On cuisait le pain le vendredi.')
         ->and($courant->version)->toBe(2);
