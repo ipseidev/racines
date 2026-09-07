@@ -7,12 +7,21 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
 
+/*
+ * Les entrées de la barre. Même règle qu'au pied de page : une vraie page se
+ * visite en Inertia, une ancre reste un `<a>` ordinaire.
+ *
+ * « Comment ça marche » était un `<a>` : le document se rechargeait, et comme
+ * les mises en page sont chargées à la demande derrière un `Suspense` sans
+ * contenu de repli, l'écran passait par le vide avant que React ne monte. Le
+ * clignotement venait de là, pas de la page.
+ */
 const NAV = [
     // La page dédiée depuis T-213 ; l'accueil garde son résumé en quatre étapes.
-    { href: '/comment-ca-marche', key: 'how' },
-    { href: '/#livre', key: 'book' },
-    { href: '/#histoire', key: 'story' },
-    { href: '/#questions', key: 'faq' },
+    { href: '/comment-ca-marche', key: 'how', inertia: true },
+    { href: '/#livre', key: 'book', inertia: false },
+    { href: '/#histoire', key: 'story', inertia: false },
+    { href: '/#questions', key: 'faq', inertia: false },
 ] as const;
 
 /**
@@ -61,15 +70,25 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                             aria-label="Sections"
                             className="hidden items-center gap-6 text-base lg:flex"
                         >
-                            {NAV.map((item) => (
-                                <a
-                                    key={item.key}
-                                    href={item.href}
-                                    className="hover:text-brand"
-                                >
-                                    {t(`public.landing.nav.${item.key}`)}
-                                </a>
-                            ))}
+                            {NAV.map((item) =>
+                                item.inertia ? (
+                                    <Link
+                                        key={item.key}
+                                        href={item.href}
+                                        className="hover:text-brand"
+                                    >
+                                        {t(`public.landing.nav.${item.key}`)}
+                                    </Link>
+                                ) : (
+                                    <a
+                                        key={item.key}
+                                        href={item.href}
+                                        className="hover:text-brand"
+                                    >
+                                        {t(`public.landing.nav.${item.key}`)}
+                                    </a>
+                                ),
+                            )}
                         </nav>
                     </div>
 

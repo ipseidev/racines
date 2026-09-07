@@ -99,6 +99,17 @@ test('la navigation mène à la page, et l’accueil aussi', async ({ page }) =>
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
+    /*
+     * Un marqueur posé sur la fenêtre : une navigation de document l'efface,
+     * une visite Inertia le garde. L'entrée du menu était un `<a>` ordinaire,
+     * et le rechargement passait par un écran vide — les mises en page sont
+     * chargées à la demande derrière un `Suspense` sans contenu de repli.
+     * C'était un clignotement bien visible au clic.
+     */
+    await page.evaluate(() => {
+        (window as unknown as Record<string, unknown>).__stillHere = true;
+    });
+
     // L'entrée de navigation ne pointe plus vers l'ancre de l'accueil.
     await page
         .getByRole('navigation', { name: 'Sections' })
@@ -106,6 +117,14 @@ test('la navigation mène à la page, et l’accueil aussi', async ({ page }) =>
         .click();
     await expect(page).toHaveURL(/\/comment-ca-marche$/);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    expect(
+        await page.evaluate(
+            () =>
+                (window as unknown as Record<string, unknown>).__stillHere ===
+                true,
+        ),
+    ).toBe(true);
 
     // Et, sous les quatre étapes de l'accueil, le lien vers les six.
     await page.goto('/');
