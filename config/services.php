@@ -87,6 +87,30 @@ return [
         'host' => env('POSTHOG_HOST', 'https://eu.i.posthog.com'),
     ],
 
+    /*
+     * Google Analytics 4, la mesure du **site marchand**.
+     *
+     * Elle ne remplace pas PostHog et ne la recoupe pas : PostHog mesure
+     * l'entonnoir du produit — trente points, par cohorte, avec le projet en
+     * propriété (`App\Analytics\Track`) — tandis que GA mesure l'audience
+     * des pages publiques, ce qui amène du monde et ce que ce monde devient.
+     * Les deux vivent aux mêmes endroits : les pages publiques et l'espace de
+     * l'Initiateur·rice, **jamais** un espace à jeton (`App\Analytics\Measured`).
+     *
+     * Le même verrou qu'ailleurs, et pour la même raison (T-61) : c'est
+     * `GA_ENABLED` qui décide, jamais la présence de l'identifiant. Un
+     * identifiant laissé dans un `.env` de développement enverrait les visites
+     * d'un décor dans la propriété de production, et le taux de conversion de
+     * la page d'accueil mentirait sans que rien ne le dise. L'identifiant
+     * n'est pas un secret — il est lisible dans la source de la page — mais
+     * il ne se code pas en dur : le site tourne sur plusieurs domaines, et
+     * une préproduction ne mesure pas dans la propriété du site.
+     */
+    'google_analytics' => [
+        'enabled' => env('GA_ENABLED', false),
+        'measurement_id' => env('GA_MEASUREMENT_ID'),
+    ],
+
     'browsershot' => [
         // `browsershot` ou `fake`, jamais déduit de l'environnement (T-61) :
         // un rendu déduit finit par être le faux en production, et une famille

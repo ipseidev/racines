@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
 
@@ -31,10 +32,20 @@ function Lock() {
  *
  * Le bandeau « à valider par conseil » reste : tant que le conseil n'a pas
  * relu, une page de vente qui le tairait mentirait par omission.
+ *
+ * Le tunnel est mesuré comme le reste du site public. Il l'était côté serveur
+ * seulement — les événements d'entonnoir de `App\Analytics\Track` — et cette
+ * moitié suffit à savoir qui achète, pas à savoir qui renonce : une mesure
+ * d'audience qui voit l'accueil et pas `/acheter` ne peut pas dire combien de
+ * visiteurs arrivent jusqu'au paiement. Les deux adresses du tunnel sont
+ * propres (`/acheter`, `/acheter/merci`), et la chaîne de requête — où Stripe
+ * range l'identifiant de session — est retirée avant d'être rapportée.
  */
 export default function CheckoutLayout({ children }: PropsWithChildren) {
     const t = useT();
     const brand = useBrand();
+
+    useAnalytics();
 
     return (
         <div className="bg-brand-background text-brand-text flex min-h-screen flex-col text-[1.125rem] leading-relaxed">

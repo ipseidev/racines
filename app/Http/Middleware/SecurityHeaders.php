@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Analytics\Measured;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
@@ -68,6 +69,10 @@ final class SecurityHeaders
         $media = trim(implode(' ', array_filter([...self::mediaHosts(), $devOrigin])));
         $connect = trim(implode(' ', array_filter([...self::mediaHosts(), $devOrigin, $devSocket])));
 
+        // Les origines de Google Analytics, quand la mesure tourne et là où
+        // elle a le droit de tourner. Voir `googleAnalytics()`.
+        $google = $this->googleAnalytics($request);
+
         if ($this->isBackOffice($request)) {
             return implode('; ', [
                 "default-src 'self'",
@@ -86,7 +91,7 @@ final class SecurityHeaders
 
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'nonce-{$nonce}'",
+            self::directive('script-src', ["'self'", "'nonce-{$nonce}'", $google['script']]),
             "style-src 'self' 'nonce-{$nonce}'",
             // Les styles posés en attribut par React ne peuvent pas porter de
             // nonce. Les autoriser en attribut seulement laisse `style-src`
@@ -94,14 +99,75 @@ final class SecurityHeaders
             "style-src-attr 'unsafe-inline'",
             // Les polices sont auto-hébergées (T-40) : aucune origine tierce.
             "font-src 'self' data:",
-            trim("img-src 'self' data: blob: {$media}"),
+            self::directive('img-src', ["'self'", 'data:', 'blob:', $media, $google['img']]),
             trim("media-src 'self' blob: {$media}"),
-            trim("connect-src 'self' {$connect}"),
+            self::directive('connect-src', ["'self'", $connect, $google['connect']]),
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'none'",
         ]);
+    }
+
+    /**
+     * Une directive, sans espace en trop.
+     *
+     * Le détail a son importance : une source absente au milieu d'une liste
+     * laissait deux espaces, qu'un navigateur pardonne mais qu'un test lit
+     * mal — et un test de politique de sécurité qui échoue pour une raison de
+     * mise en forme finit par être relâché.
+     *
+     * @param  list<string>  $sources
+     */
+    private static function directive(string $name, array $sources): string
+    {
+        $retenues = array_filter($sources, static fn (string $source): bool => $source !== '');
+
+        return $name.' '.implode(' ', $retenues);
+    }
+
+    /**
+     * Les origines que Google Analytics a besoin d'atteindre, ou trois chaînes
+     * vides.
+     *
+     * Deux gardes, et la seconde est le point du dossier : la politique
+     * n'ouvre ces origines **que sur les pages mesurées**. Une page de
+     * narrateur ne demande jamais `gtag.js` — ni le serveur ni le front ne
+     * lui en donnent l'identifiant — mais sa politique de contenu ne
+     * l'autorise pas non plus. Si un script tiers y apparaissait un jour, par
+     * une dépendance ou par une injection, le navigateur le refuserait.
+     *
+     * `www.googletagmanager.com` sert le script, et le sert seul :
+     * `gtag.js` en charge d'autres à son tour, qui ne portent pas le nonce du
+     * document — sans cette origine dans `script-src`, la mesure s'arrête à
+     * la première redirection interne de Google. Les points de collecte, eux,
+     * sont régionaux (`region1.google-analytics.com` pour l'Europe), d'où le
+     * joker de sous-domaine ; et `img-src` compte parce que GA retombe sur un
+     * pixel quand `fetch` échoue.
+     *
+     * @return array{script: string, img: string, connect: string}
+     */
+    private function googleAnalytics(Request $request): array
+    {
+        $vide = ['script' => '', 'img' => '', 'connect' => ''];
+
+        if (config('services.google_analytics.enabled') !== true) {
+            return $vide;
+        }
+
+        if ((string) config('services.google_analytics.measurement_id') === '') {
+            return $vide;
+        }
+
+        if (! Measured::allows($request)) {
+            return $vide;
+        }
+
+        return [
+            'script' => 'https://www.googletagmanager.com',
+            'img' => 'https://*.google-analytics.com https://www.googletagmanager.com',
+            'connect' => 'https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com',
+        ];
     }
 
     /**

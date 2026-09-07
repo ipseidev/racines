@@ -246,3 +246,53 @@ it('refuse d’assouplir la politique en production, même avec un fichier hot',
         $existing === null ? @unlink($hot) : file_put_contents($hot, $existing);
     }
 });
+
+/*
+ * Google Analytics et la politique de contenu.
+ *
+ * Deux façons d'ouvrir une origine tierce et une seule bonne : l'ouvrir là où
+ * le script est chargé, et nulle part ailleurs. La page d'un narrateur ne
+ * demande jamais `gtag.js` — elle n'en reçoit pas l'identifiant — mais sa
+ * politique ne l'autorise pas non plus. C'est ce qui fait la différence entre
+ * une règle et une intention.
+ */
+it('ouvre les origines de Google là où la mesure tourne', function (): void {
+    config()->set('services.google_analytics.enabled', true);
+    config()->set('services.google_analytics.measurement_id', 'G-DETEST0001');
+
+    $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+    expect($csp)->toMatch("/script-src 'self' 'nonce-[A-Za-z0-9+\\/=]+' https:\\/\\/www\\.googletagmanager\\.com/")
+        // Les points de collecte sont régionaux : `region1` pour l'Europe.
+        ->and($csp)->toMatch('/connect-src[^;]*https:\/\/\*\.google-analytics\.com/')
+        ->and($csp)->toMatch('/img-src[^;]*https:\/\/\*\.google-analytics\.com/')
+        // Le reste de la politique ne bouge pas d'un cran.
+        ->and($csp)->not->toContain('unsafe-eval')
+        ->and($csp)->not->toMatch('/script-src[^;]*unsafe-inline/');
+});
+
+it('n’ouvre aucune origine de Google sur une page à jeton', function (): void {
+    config()->set('services.google_analytics.enabled', true);
+    config()->set('services.google_analytics.measurement_id', 'G-DETEST0001');
+
+    $story = Story::factory()->proposed()->create();
+    $issued = app(TokenService::class)->issue(TokenType::Record, $story);
+
+    $csp = (string) $this->get("/r/{$issued->plain}")->headers->get('Content-Security-Policy');
+
+    expect($csp)->not->toContain('googletagmanager')
+        ->and($csp)->not->toContain('google-analytics');
+});
+
+it('n’ouvre aucune origine de Google quand la mesure est éteinte', function (): void {
+    config()->set('services.google_analytics.enabled', false);
+    config()->set('services.google_analytics.measurement_id', 'G-DETEST0001');
+
+    $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+    expect($csp)->not->toContain('googletagmanager')
+        ->and($csp)->not->toContain('google-analytics')
+        // Et la directive reste propre : pas d'espace laissé par la source
+        // absente.
+        ->and($csp)->toMatch("/script-src 'self' 'nonce-[A-Za-z0-9+\\/=]+';/");
+});

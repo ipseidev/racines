@@ -77,3 +77,64 @@ it('n’en donne à personne tant que le pilote n’est pas posé', function ():
     // pas à activer l'envoi (T-61).
     $this->get('/')->assertInertia(fn ($page) => $page->where('analytics', null));
 });
+
+/*
+ * Google Analytics : la même règle, le même verrou, les mêmes tests.
+ *
+ * Un second fournisseur est exactement le moment où une garde se perd : la
+ * première a été écrite en pensant à elle, la seconde arrive plus tard et
+ * personne ne relit la liste des espaces. `App\Analytics\Measured` porte
+ * désormais cette liste pour les deux, et ces cas le vérifient depuis
+ * l'extérieur.
+ */
+it('ne donne aucun identifiant Google à une page d’enregistrement', function (): void {
+    config()->set('services.google_analytics.enabled', true);
+    config()->set('services.google_analytics.measurement_id', 'G-DETEST0001');
+
+    $story = Story::factory()->toReview()->create();
+    $issued = app(IssueRecordToken::class)->handle($story, TokenIssuedReason::Rotation);
+
+    $reponse = $this->get("/r/{$issued->plain}")->assertOk();
+
+    $reponse->assertInertia(fn ($page) => $page->where('googleAnalytics', null));
+
+    // Ni dans les props, ni ailleurs dans la page : `gtag.js` ne peut pas
+    // être demandé sans identifiant, et l'identifiant n'est pas là.
+    expect($reponse->getContent())->not->toContain('G-DETEST0001')
+        ->and(mb_strtolower((string) $reponse->getContent()))->not->toContain('googletagmanager');
+});
+
+it('n’en donne à aucun des espaces à jeton', function (string $prefixe): void {
+    config()->set('services.google_analytics.enabled', true);
+    config()->set('services.google_analytics.measurement_id', 'G-DETEST0001');
+
+    $reponse = $this->get("/{$prefixe}/".str_repeat('a', 43));
+
+    expect($reponse->getContent())->not->toContain('G-DETEST0001');
+})->with(['r', 'l', 'q', 'n', 'i', 'a', 'x']);
+
+it('donne l’identifiant Google à la page d’accueil', function (): void {
+    config()->set('services.google_analytics.enabled', true);
+    config()->set('services.google_analytics.measurement_id', 'G-DETEST0001');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('googleAnalytics.measurementId', 'G-DETEST0001'));
+});
+
+it('n’en donne à personne tant que GA_ENABLED n’est pas posé', function (): void {
+    // L'identifiant peut vivre dans un `.env` de développement : il ne suffit
+    // pas à activer la mesure, sinon les visites d'un décor partiraient dans
+    // la propriété du site (T-61).
+    config()->set('services.google_analytics.enabled', false);
+    config()->set('services.google_analytics.measurement_id', 'G-DETEST0001');
+
+    $this->get('/')->assertInertia(fn ($page) => $page->where('googleAnalytics', null));
+});
+
+it('n’en donne pas non plus quand l’identifiant manque', function (): void {
+    config()->set('services.google_analytics.enabled', true);
+    config()->set('services.google_analytics.measurement_id', '');
+
+    $this->get('/')->assertInertia(fn ($page) => $page->where('googleAnalytics', null));
+});

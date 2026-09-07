@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Analytics\Measured;
 use App\Settings\PilotSettings;
 use App\Support\Brand;
 use App\Support\Translations;
@@ -71,6 +72,17 @@ final class HandleInertiaRequests extends Middleware
              * alors littéralement rien qui permette de le mesurer.
              */
             'analytics' => self::analytics($request),
+
+            /*
+             * L'identifiant de mesure du site marchand, sous la même règle et
+             * pour la même raison (bloc 15).
+             *
+             * Deux props plutôt qu'une : les deux mesures ne s'allument pas
+             * ensemble. `ANALYTICS_DRIVER=log` en local avec Google Analytics
+             * en production est le cas courant, et une prop unique forcerait
+             * le front à démêler deux absences différentes.
+             */
+            'googleAnalytics' => self::googleAnalytics($request),
         ];
     }
 
@@ -78,10 +90,9 @@ final class HandleInertiaRequests extends Middleware
      * De quoi démarrer la mesure d'audience, ou rien.
      *
      * Les pages à jeton reçoivent `null` : un narrateur n'a pas de compte,
-     * n'a rien accepté, et ne sait pas ce qu'est un traceur. Le préfixe
-     * d'URL suffit à les reconnaître, et c'est la même liste que le glossaire
-     * §8 — un espace ajouté sans être inscrit ici serait mesuré, ce qu'un
-     * test interdit.
+     * n'a rien accepté, et ne sait pas ce qu'est un traceur. `Measured` porte
+     * la liste des espaces concernés — un espace ajouté sans y être inscrit
+     * serait mesuré, ce qu'un test interdit.
      *
      * @return array{key: string, host: string}|null
      */
@@ -93,13 +104,37 @@ final class HandleInertiaRequests extends Middleware
             return null;
         }
 
-        $premier = $request->segment(1);
-
-        if (in_array($premier, ['r', 'l', 'q', 'n', 'i', 'a', 'x', 's'], true)) {
+        if (! Measured::allows($request)) {
             return null;
         }
 
         return ['key' => $key, 'host' => (string) config('services.posthog.host')];
+    }
+
+    /**
+     * De quoi démarrer Google Analytics, ou rien.
+     *
+     * La même garde que ci-dessus, littéralement la même fonction : la page
+     * d'un narrateur ne porte aucun identifiant de mesure, d'aucun
+     * fournisseur. Et le même verrou qu'ailleurs (T-61) : `GA_ENABLED`
+     * décide, jamais la présence de l'identifiant — sinon les visites d'un
+     * décor de développement partiraient dans la propriété du site.
+     *
+     * @return array{measurementId: string}|null
+     */
+    private static function googleAnalytics(Request $request): ?array
+    {
+        $id = (string) config('services.google_analytics.measurement_id');
+
+        if ($id === '' || config('services.google_analytics.enabled') !== true) {
+            return null;
+        }
+
+        if (! Measured::allows($request)) {
+            return null;
+        }
+
+        return ['measurementId' => $id];
     }
 
     /**
