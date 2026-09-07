@@ -229,6 +229,39 @@ return [
     'landing' => [
         'hero_sample' => 'audio/landing/hero.mp3',
         'hero_sample_disclosed' => false,
+
+        /*
+         * Les preuves de la variante de structure `/lp/histoire` (T-219).
+         *
+         * Cinq collections, **vides tant que la preuve n'existe pas**. Une
+         * collection vide n'affiche pas un emplacement en attente : elle
+         * active le repli rédigé de sa section, qui montre le produit au lieu
+         * de citer un client. C'est le seul mécanisme qui empêche la page de
+         * ressembler au concurrent qu'elle imite : chez lui, ces sections
+         * portent une émission de télévision, des logos de presse et des
+         * dizaines d'avis ; chez nous, elles ne portent rien de tout cela
+         * parce que rien de tout cela n'existe encore.
+         *
+         * Ce qu'une entrée doit contenir pour être légitime : une source, une
+         * autorisation de diffusion et une attribution validée. Une vidéo
+         * ajoute une URL de média réelle et son image d'attente. Ne jamais
+         * remplir ces listes avec un contenu écrit ici : ce serait un faux
+         * témoignage, et la page le présenterait comme un vrai.
+         *
+         * `press` : ['name' => …, 'quote' => …, 'url' => …]
+         * `quotes` : ['text' => …, 'author' => …, 'source' => …]
+         * `reviews` : ['text' => …, 'author' => …, 'source' => …, 'date' => …]
+         * `videos` : ['title' => …, 'author' => …, 'src' => …, 'poster' => …, 'duration' => …]
+         * `stories` : ['title' => …, 'body' => …, 'author' => …, 'photo' => …]
+         */
+        'structure' => [
+            'id' => 'narrae-structure-v1',
+            'press' => [],
+            'quotes' => [],
+            'reviews' => [],
+            'videos' => [],
+            'stories' => [],
+        ],
     ],
 
     // Photos (bloc 12)

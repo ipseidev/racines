@@ -27,6 +27,17 @@
         <meta name="twitter:card" content="summary_large_image">
 @endif
 
+@if (str_starts_with($page['component'], 'public/Landing') && $page['component'] !== 'public/Landing')
+        {{-- Les variantes de page de vente ne s'indexent pas (T-219). `follow`
+             et non `nofollow` : les liens qu'elles portent mènent au tunnel et
+             aux pages légales, qui doivent rester crawlables. La canonique
+             désigne l'accueil : c'est la même offre, et deux pages indexées
+             pour un seul produit se disputeraient leur propre trafic. Rendu par
+             le serveur, parce qu'un robot ne lit pas un `<Head>` Inertia. --}}
+        <meta name="robots" content="noindex, follow">
+        <link rel="canonical" href="{{ url('/') }}">
+@endif
+
         {{-- Marque : éditable dans l'administration, appliquée sans redéploiement.
              Le nonce vient de SecurityHeaders : sans lui, la politique de
              contenu stricte refuserait ce style. Thème clair seul, décision du
@@ -76,14 +87,14 @@
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400.woff2" crossorigin="anonymous">
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-600.woff2" crossorigin="anonymous">
 
-@if ($page['component'] === 'public/Landing')
+@if (str_starts_with($page['component'], 'public/Landing'))
         {{-- La photo du héros est l'élément le plus grand de la page d'accueil.
              Sans ce préchargement, le navigateur ne la découvre qu'une fois
              React monté : 890 ms d'attente mesurés le 5 septembre 2026. Les
              `imagesrcset` et `imagesizes` répètent mot pour mot ceux de la
              balise, faute de quoi le fichier est demandé deux fois — l'échelle
-             est celle de resources/js/lib/photo.ts, et un test de LandingTest
-             tombe si les deux divergent. --}}
+             est celle de resources/js/lib/photo.ts, et rien ne vérifie plus
+             que les deux concordent (T-218) : à relire ensemble. --}}
         <link rel="preload" as="image" href="/img/landing/hero.webp"
               imagesrcset="/img/landing/hero-400.webp 400w, /img/landing/hero-550.webp 550w, /img/landing/hero-700.webp 700w, /img/landing/hero-900.webp 900w, /img/landing/hero-1100.webp 1100w, /img/landing/hero.webp 1400w"
               imagesizes="(min-width: 1024px) 34rem, 100vw"

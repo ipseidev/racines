@@ -25,6 +25,17 @@ Route::get('/', LandingController::class)->name('home');
 Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
 Route::get('/comment-ca-marche', [LandingController::class, 'howItWorks'])->name('how_it_works');
 
+/*
+ * Les variantes de page de vente (T-219).
+ *
+ * Une route à part, et non un remplacement de `/` : l'accueil reste le témoin
+ * tant que la variante n'est pas mesurée. Elle est servie en `noindex, follow`
+ * avec une canonique vers l'accueil — deux pages de vente indexées pour le
+ * même produit se prendraient leur propre trafic —, et n'entre dans aucun plan
+ * de site.
+ */
+Route::get('/lp/histoire', [LandingController::class, 'structure'])->name('lp.structure');
+
 // Le manifeste d'installation, rendu depuis les réglages de marque. Sans
 // contrainte de domaine, pour rester de même origine que la page qui le cite.
 Route::get('/site.webmanifest', ManifestController::class)->name('manifest');

@@ -76,6 +76,70 @@ final class LandingController
         ];
     }
 
+    /**
+     * La variante de structure, à `/lp/histoire` (T-219).
+     *
+     * L'accueil reste le témoin : on ne remplace pas une page qui vend par une
+     * page qu'on n'a pas encore mesurée. Mêmes props que l'accueil, plus les
+     * cinq collections de preuves — vides par défaut, et c'est le vide qui
+     * choisit le repli de chaque section.
+     */
+    public function structure(Request $request): Response
+    {
+        return inertia('public/LandingStructure', [
+            ...$this->storefront($request),
+            'variant' => (string) config('product.landing.structure.id'),
+            'proof' => [
+                'press' => self::proof('press'),
+                'quotes' => self::proof('quotes'),
+                'reviews' => self::proof('reviews'),
+                'videos' => self::proof('videos'),
+                'stories' => self::proof('stories'),
+            ],
+        ]);
+    }
+
+    /**
+     * Une collection de preuves, réduite à des chaînes.
+     *
+     * Le réglage est du PHP libre : tout ce qui n'est pas une entrée en forme
+     * de tableau de chaînes est **écarté silencieusement**, et une collection
+     * qui se vide ainsi retombe sur son repli. Une preuve à demi lisible ne
+     * doit pas pouvoir s'afficher à demi.
+     *
+     * @return list<array<string, string>>
+     */
+    private static function proof(string $key): array
+    {
+        $items = config('product.landing.structure.'.$key);
+
+        if (! is_array($items)) {
+            return [];
+        }
+
+        $collection = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $entry = [];
+
+            foreach ($item as $field => $value) {
+                if (is_string($field) && (is_string($value) || is_int($value))) {
+                    $entry[$field] = (string) $value;
+                }
+            }
+
+            if ($entry !== []) {
+                $collection[] = $entry;
+            }
+        }
+
+        return $collection;
+    }
+
     public function demo(): Response
     {
         return inertia('public/Demo', [

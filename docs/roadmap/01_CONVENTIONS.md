@@ -231,6 +231,31 @@ entière sur `main` : elle est le filet, pas la première ligne.
 | Un composant partagé, une mise en page, un intergiciel, une route | La suite entière, `--workers=1` |
 | Avant un tag de bloc, ou avant de pousser | La suite entière, `--workers=1` |
 
+**Les pages de vente sont hors de la porte automatique (T-218).** L'accueil,
+« Comment ça marche » et les variantes de `/lp/*` n'ont plus de test Feature,
+de test de composant, d'audit d'accessibilité ni de scénario bout en bout qui
+lise leur balisage ou leur rédaction. La raison est un calcul, pas un
+relâchement : ces pages sont réécrites plusieurs fois par jour, chaque
+déplacement de section faisait tomber une dizaine d'assertions de texte, et
+aucun de ces échecs n'a jamais désigné un défaut — ils désignaient la
+modification qu'on venait de demander. Ce qui reste couvert :
+
+- que la page **réponde** (`tests/Feature/SmokeTest.php`, `tests/e2e/smoke.spec.ts` : un 200 et un titre, rien sur le contenu) ;
+- que le **vocabulaire interdit** R-11 n'entre pas dans `lang/fr/public.php` (`tests/Unit/ForbiddenVocabularyTest.php`, qui lit les valeurs traduites de tous les fichiers du produit) ;
+- que ce qui est **derrière** un bouton marche : `WelcomeOfferTest` pour la réduction contre une adresse, `DiscountCodeTest` pour son code, `checkout-pilot.spec.ts` pour le tunnel, `public-a11y.spec.ts` pour le tunnel et les pages légales.
+
+Conséquence assumée : **la relecture d'une page de vente est humaine.** On la
+regarde à 360, 390, 768 et 1440 px, on suit chaque bouton jusqu'à sa
+destination, on écoute l'extrait, on ouvre les questions au clavier. Ce que le
+filet attrapait — un contraste perdu, une cible sous 44 px, une ancre cachée
+sous la barre — se voit à l'œil sur une page qu'on a sous les yeux, et ne se
+voyait de toute façon pas sur celles qu'on ne regardait plus.
+
+Cette dispense ne s'étend à **rien d'autre**. Les pages narrateur, famille,
+d'export et le tunnel gardent leur protocole entier : elles s'ouvrent par un
+lien porteur, sur un vieux téléphone, chez quelqu'un qui n'a pas de compte, et
+personne ne les relit chaque jour.
+
 **Le balisage est la ligne de partage, et elle n'est pas cosmétique.** Trois
 défauts de cette journée sont nés d'un changement qui « n'était que du
 design » : un évitement clavier ajouté en tête de page a fait de

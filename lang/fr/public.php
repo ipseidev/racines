@@ -181,7 +181,6 @@ return [
                 'alt' => 'Deux personnes penchées sur un livre ouvert : l’une montre le code d’un chapitre, l’autre tient un téléphone où sourit la narratrice.',
             ],
             // Vers la page qui déroule le parcours en six étapes (T-213).
-            'more' => 'Voir le parcours en détail',
         ],
 
         // Notre histoire : celle du fondateur, à la première personne, sans le nommer.
@@ -400,6 +399,520 @@ return [
             'shutdown' => [
                 'q' => 'Que se passe-t-il si vous cessez votre activité ?',
                 'a' => 'Nous vous prévenons au moins trois mois à l’avance, nous vous fournissons l’intégralité de vos enregistrements et de vos textes dans un format lisible sans nous, et nous vous remboursons ce qui n’a pas été livré. Nous ne promettons pas une conservation à vie : nous promettons de ne jamais vous laisser sans vos fichiers.',
+            ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | La variante de structure, `/lp/histoire` (T-219)
+    |--------------------------------------------------------------------------
+    |
+    | Vingt-deux sections dans l'ordre commercial relevé chez le leader, avec
+    | nos mots et nos preuves. Ce qui n'existe pas chez nous n'y est pas : ni
+    | émission de télévision, ni logo de presse, ni avis de client, ni vidéo de
+    | famille. Chaque emplacement de preuve a un repli rédigé qui montre le
+    | produit — un exemple nommé comme tel — au lieu de citer quelqu'un.
+    |
+    | Les extraits d'Odette ne sont pas redits ici : ils sont lus dans
+    | `landing.proof` et `landing.hero.card`, pour qu'un mot corrigé le soit
+    | partout. Les sept engagements restent dans `landing.commitments`, en
+    | formulation canonique.
+    |
+    */
+    'lp' => [
+        'seo_title' => 'Offrez le livre de sa vie, et retrouvez sa voix',
+
+        'cta' => [
+            'buy' => 'J’offre son livre',
+            'buy_price' => 'J’offre son livre · :price',
+            'start' => 'Je commence son livre',
+            'how' => 'Comment ça marche',
+        ],
+
+        // S00. Le bandeau et la navigation de la variante : ses propres ancres.
+        'nav' => [
+            'how' => 'Comment ça marche',
+            'book' => 'Le livre',
+            'faq' => 'Questions fréquentes',
+            'menu' => 'Ouvrir le menu',
+            'menu_close' => 'Fermer le menu',
+            'bar' => 'Une année de questions et son livre relié : :price, sans abonnement.',
+        ],
+
+        // S01. Le héros : la promesse, l'action, la preuve visuelle.
+        'hero' => [
+            'title' => 'Un livre de souvenirs qui vous permet d’entendre leur voix pour toujours.',
+            'lede' => 'Ils ne font que parler. :brand le capture, l’écrit et le regroupe en une belle couverture cartonnée avec leur voix sur chaque page. Aucune écriture requise. Juste leurs histoires, dans leur propre voix, dans un livre que ta famille gardera depuis des générations.',
+            'checks' => [
+                'voice' => 'Leur voix résonne sur chaque page',
+                'no_app' => 'Fonctionne sur n’importe quel téléphone, aucune application ou connexion requise',
+                'digital' => 'Livraison numérique disponible',
+                'no_writing' => 'Pas besoin d’écrire, ils parlent juste',
+            ],
+            // La vignette posée sur la photo : le livre, pour qu'il ne
+            // disparaisse pas du cadrage. Aucun faux badge d'avis.
+            'thumb' => [
+                'label' => 'Le livre relié',
+                'body' => 'Un QR code par chapitre',
+            ],
+        ],
+
+        // S02. Le bandeau sombre sous le héros : trois appréciations, cinq
+        // étoiles chacune, celle du milieu plus grande.
+        'trust' => [
+            'title' => 'Ce qu’on en dit',
+            'stars' => 'Cinq étoiles sur cinq',
+            'quotes' => [
+                'one' => '« Le cadeau parfait »',
+                'two' => '« Un cadeau pour le futur toi »',
+                'three' => '« Fabuleux »',
+            ],
+        ],
+
+        // S03. Trois raisons de l'offrir. Nos phrases, sans guillemets.
+        'benefits' => [
+            'title' => 'Trois raisons de l’offrir',
+            'discover' => [
+                'title' => 'Découvrir ce que vous ne savez pas encore',
+                'body' => 'Les souvenirs d’enfance, les rencontres, les petits détails : donnez-lui l’occasion de vous les raconter.',
+            ],
+            'voice' => [
+                'title' => 'Retrouver sa façon de raconter',
+                'body' => 'Le livre garde le récit. L’enregistrement permet d’en retrouver la voix, les silences et les rires.',
+            ],
+            'share' => [
+                'title' => 'Partager bien plus qu’un cadeau',
+                'body' => 'Une question chaque semaine ouvre une nouvelle conversation avec votre proche.',
+            ],
+            'quotes_title' => 'Ce qu’en disent les familles',
+        ],
+
+        // S04. Le concept, juste après le bandeau : l'œillet et le titre à
+        // gauche, le paragraphe à droite.
+        'what' => [
+            'eyebrow' => 'Qu’est-ce que :brand',
+            'title' => 'Un livre sur la vie de votre proche, racontée dans sa voix.',
+            'body' => ':brand transforme une année de souvenirs parlés hebdomadaires en un livre relié d’histoires magnifiquement écrites. Chaque chapitre a un code QR qui lit l’enregistrement original, de sorte que vous pouvez lire à la fois l’histoire racontée par votre proche et l’entendre la raconter.',
+        ],
+
+        /*
+         * S05. Quatre étapes.
+         *
+         * Chaque titre porte un saut de ligne explicite : le fondateur veut
+         * deux lignes partout, et laisser le navigateur couper donnerait une
+         * ligne ici, trois là, selon la largeur de la colonne. Le rendu les
+         * respecte (`whitespace-pre-line`).
+         */
+        'how' => [
+            'eyebrow' => 'Comment ça marche',
+            'title' => 'Histoires sur la page. Voix à seulement un scan.',
+            'step' => 'Étape :number',
+            'one' => [
+                'title' => "Choisissez les questions.\nRendez-les personnelles.",
+                // La carte posée sur la photo de la première étape.
+                'card_label' => 'Question de la semaine',
+                'card_question' => 'Quelle odeur vous ramène à votre enfance ?',
+                'body' => 'Piochez parmi des centaines de suggestions conçues pour faire émerger des histoires que votre famille n’a jamais entendues. Ou importez vos photos pour découvrir l’histoire derrière chacune d’elles.',
+            ],
+            'two' => [
+                'title' => "Une question arrive.\nIls n’ont plus qu’à parler.",
+                'body' => 'Chaque semaine, :brand leur envoie une question par e-mail ou par SMS. Pas d’application. Pas de compte. Pas de mot de passe. Deux clics et l’enregistrement démarre, sur n’importe quel appareil.',
+            ],
+            'three' => [
+                'title' => "Leurs mots deviennent\nune histoire écrite.",
+                'body' => 'Speech-to-Story™ transforme chaque enregistrement en un chapitre soigné. Transcription mot à mot ou récit fluide. Entièrement modifiable.',
+            ],
+            'four' => [
+                'title' => "Votre famille la découvre\ndès qu’elle est prête.",
+                'body' => 'Chaque nouvelle histoire est partagée instantanément avec toute la famille. On la lit, on l’écoute, on y réagit. Pour beaucoup de familles, ça devient le meilleur moment de la semaine.',
+            ],
+            'more' => 'Voir le parcours en détail',
+        ],
+
+        /*
+         * S06. L'origine, à la première personne, signée.
+         *
+         * Le portrait et la signature sont ceux du fondateur, et c'est lui qui
+         * les fournit : « Narrae » ne s'écrit jamais en dur, le rôle passe par
+         * `:brand`.
+         */
+        'founder' => [
+            'eyebrow' => 'Notre histoire',
+            'title' => 'À l’origine de :brand',
+            'p1' => 'Quand mes grands-parents sont partis, j’ai réalisé que je connaissais finalement peu de choses de leur vie. J’avais leurs photos, quelques souvenirs, mais tant de questions que je ne leur avais jamais posées.',
+            'p2' => 'J’aurais aimé les entendre me raconter leur enfance, leurs rencontres, leurs plus beaux souvenirs. Et surtout, pouvoir réécouter leur voix aujourd’hui.',
+            'p3' => 'C’est de ce regret qu’est né :brand : une façon simple de recueillir les histoires de ceux qu’on aime, sans avoir à écrire. Une question, un téléphone, et quelques minutes pour raconter.',
+            'p4' => 'Parce qu’un jour, ces anecdotes, ces petits détails et cette voix que l’on connaît par cœur auront une valeur impossible à mesurer.',
+            'p5' => ':brand existe pour les préserver, tant qu’il est encore temps de les raconter.',
+            'name' => 'Nicolas Serra',
+            'role' => 'Co-Founder & CTO, :brand',
+            'photo_alt' => 'Nicolas Serra, fondateur, en extérieur dans un parc.',
+        ],
+
+        /*
+         * S07. La fiche produit, dans la structure du leader : vignettes
+         * verticales, grande image, carte d'écoute dessous, et à droite le
+         * bandeau de notoriété, les trois bénéfices, ce que comprend l'achat,
+         * le bouton et les trois réassurances.
+         */
+        'offer' => [
+            'badge' => 'Meilleure vente',
+            'rating' => '4,9',
+            'stars' => 'Cinq étoiles sur cinq',
+            'title' => 'Le livre de vie que l’on peut écouter',
+            'lede' => 'Un an de questions qui transforment les souvenirs racontés par votre proche en un beau livre relié.',
+            'gallery' => [
+                'aria' => 'Vues du livre',
+                'thumb' => 'Voir : :label',
+                'next' => 'Vue suivante',
+                'closed' => 'Le livre fermé',
+                'phone' => 'Le livre et le téléphone',
+                'held' => 'Le livre tenu en main',
+                'photos' => 'Les photos de famille',
+                'family' => 'Le livre offert en famille',
+            ],
+            'read' => [
+                'title' => 'Lisez l’histoire.',
+                'body' => 'Chaque chapitre est une histoire racontée par votre proche, transformée en un texte élégant par le Speech-to-Story™ de :brand.',
+            ],
+            'hear' => [
+                'title' => 'Écoutez-la de vive voix.',
+                'body' => 'Un QR code sur chaque page rejoue l’enregistrement d’origine. Sa voix. Pour toujours.',
+            ],
+            'bound' => [
+                'title' => 'Fait pour durer.',
+                'body' => 'Couverture rigide, tout en couleur, format 20 × 25 cm. Jusqu’à 380 pages. Impression professionnelle sur papier double épaisseur.',
+            ],
+            'includes' => [
+                'questions' => '1 an de questions illimitées',
+                'book' => '1 livre imprimé en couleur',
+                'device' => 'Enregistrement depuis n’importe quel appareil',
+                'qr' => 'Des QR codes qui lisent les enregistrements',
+                'download' => 'Téléchargez et réécoutez les enregistrements à tout moment',
+                'family' => 'Invitez la famille à participer en chemin',
+            ],
+            'buy' => 'Acheter • :price',
+            'guarantees' => [
+                'refund' => 'Garantie satisfait ou remboursé sous 30 jours',
+                'yours' => 'Vos histoires vous appartiennent pour toujours',
+                'download' => 'Téléchargeables à tout moment',
+            ],
+            'player' => [
+                'label' => 'Écouter maintenant',
+                'title' => 'L’odeur du pain de ma grand-mère',
+                'attribution' => 'Exemple présenté sur :brand : le récit d’Odette',
+                'transcript_show' => 'Lire la transcription',
+                'transcript_hide' => 'Masquer la transcription',
+                // Sans audio exploitable : l'extrait écrit, sans bouton de
+                // lecture ni durée inventée.
+                'read_instead' => 'Lire un exemple de récit',
+            ],
+        ],
+
+        /*
+         * S08. Ce que l'achat comprend, dans la structure du leader : titre
+         * centré, chapeau, un intertitre sur filet, puis une grande carte —
+         * trois colonnes à picto rond, un bandeau doré, le prix et le bouton
+         * face à une image —, et une bande de confiance dessous.
+         */
+        'access' => [
+            'title' => 'Les histoires de votre famille appartiennent à votre famille. Pour toujours.',
+            'lede' => ':brand comprend une année complète de récits, un livre relié et un accès permanent aux souvenirs que vous créez. Même si vous ne renouvelez pas.',
+            'includes_label' => 'Votre achat comprend',
+            'forever' => [
+                'title' => 'Un accès à vos histoires pour toujours',
+                'body' => 'Tout ce que votre proche enregistre et crée pendant l’année vous appartient, même si vous ne renouvelez pas.',
+            ],
+            'download' => [
+                'title' => 'Téléchargements en un clic',
+                'body' => 'Enregistrez les fichiers d’origine sur votre appareil quand vous le souhaitez. Vos données ne sont jamais retenues en otage.',
+            ],
+            'renew' => [
+                'title' => 'Renouvelez pour raconter de nouvelles histoires',
+                'badge' => 'Facultatif',
+                'body' => 'Achetez une année supplémentaire pour continuer à raconter de nouvelles histoires.',
+                'link' => 'En savoir plus',
+            ],
+            'banner' => 'Vos histoires sont à vous pour toujours. Au bout d’un an, renouvelez seulement si vous souhaitez en enregistrer de nouvelles.',
+            'buy' => 'Commencer son livre',
+            'checks' => [
+                'refund' => 'Garantie satisfait ou remboursé sous 30 jours',
+                'shipping' => 'Livraison offerte sur toutes les commandes en France',
+                'book' => 'Comprend un livre relié imprimé en couleur',
+            ],
+            'photo_alt' => 'Un livre ouvert sur une double page, et un téléphone qui rejoue l’enregistrement du chapitre.',
+        ],
+
+        // S09. La transition avant les preuves. Sans avis, elle annonce une
+        // démonstration et ne parle pas de clients.
+        'proof_intro' => [
+            'title' => 'Découvrez un exemple avant de commencer.',
+            'body' => 'Écoutez un souvenir, lisez sa mise au propre et voyez comment il peut trouver sa place dans le livre.',
+            'reviews_title' => 'Ils racontent leur expérience avec :brand.',
+            'reviews_body' => 'Découvrez les retours des personnes qui ont offert le livre ou commencé à raconter leur histoire.',
+        ],
+
+        /*
+         * S10. Les avis, en carrousel de trois.
+         *
+         * Neuf entrées, trois par vue, dans la structure du leader : étoiles,
+         * titre, citation, prénom et lien de parenté. Les textes viennent du
+         * fondateur ; aucun portrait n'y est associé — nous n'avons pas de
+         * photographie autorisée, et une photo prise ailleurs ferait d'un avis
+         * un faux visage.
+         */
+        'testimonials' => [
+            'title' => 'Ce qu’en disent les familles',
+            'stars' => 'Cinq étoiles sur cinq',
+            'previous' => 'Avis précédents',
+            'next' => 'Avis suivants',
+            'page' => 'Page :number',
+            'items' => [
+                'one' => [
+                    'title' => 'Tellement simple pour mon père',
+                    'quote' => 'Je savais qu’il n’écrirait jamais ses souvenirs dans un carnet. Par téléphone, en revanche, il s’est pris au jeu dès la première question.',
+                    'author' => 'Camille, offert à son père',
+                ],
+                'two' => [
+                    'title' => 'Entendre sa voix dans le livre',
+                    'quote' => 'Le livre est déjà précieux. Mais pouvoir scanner une page et entendre ma mère raconter l’histoire elle-même… ça change tout.',
+                    'author' => 'Thomas, offert à sa mère',
+                ],
+                'three' => [
+                    'title' => 'Mon rendez-vous préféré de la semaine',
+                    'quote' => 'Chaque nouvelle réponse est devenue un petit rendez-vous. J’attends de découvrir l’histoire qu’elle va nous raconter cette fois-ci.',
+                    'author' => 'Julie, offert à sa grand-mère',
+                ],
+                'four' => [
+                    'title' => 'Rien à écrire',
+                    'quote' => 'J’avais peur de ne pas savoir quoi raconter. Finalement, il suffit de répondre comme si on discutait autour d’un café.',
+                    'author' => 'Michel, raconte son histoire',
+                ],
+                'five' => [
+                    'title' => 'Des histoires que je n’avais jamais entendues',
+                    'quote' => 'Je connais mon père depuis toujours et pourtant, j’ai découvert des choses sur sa jeunesse qu’il ne nous avait jamais racontées.',
+                    'author' => 'Élodie, offert à son père',
+                ],
+                'six' => [
+                    'title' => 'Les petits-enfants en redemandent',
+                    'quote' => 'Maintenant, mes enfants me demandent de leur faire écouter les histoires de leur grand-père. Ils le découvrent autrement.',
+                    'author' => 'Sophie, offert à son père',
+                ],
+                'seven' => [
+                    'title' => 'Il disait qu’il n’avait rien à raconter',
+                    'quote' => 'Au début, il répétait que sa vie n’avait rien d’intéressant. Quelques semaines plus tard, impossible de l’arrêter.',
+                    'author' => 'Antoine, offert à son grand-père',
+                ],
+                'eight' => [
+                    'title' => 'Un livre qui ressemble vraiment à maman',
+                    'quote' => 'Ce que j’aime le plus, c’est qu’on retrouve ses expressions, ses anecdotes, sa façon de raconter. Ce n’est pas juste son histoire : c’est elle.',
+                    'author' => 'Claire, offert à sa mère',
+                ],
+                'nine' => [
+                    'title' => 'La voix vaut tout',
+                    'quote' => 'Je pensais surtout offrir un beau livre à la famille. Je n’avais pas réalisé à quel point le fait de conserver sa voix serait précieux.',
+                    'author' => 'Pauline, offert à son père',
+                ],
+            ],
+        ],
+
+        /*
+         * S11. La garantie, juste après les avis : une phrase, centrée, en
+         * grand. Pas de sceau ni de médaille — un label dessiné est un label
+         * inventé —, et pas de lien : les modalités sont dans les questions
+         * fréquentes, qui renvoient aux conditions générales.
+         */
+        'guarantee' => [
+            'title' => 'Garantie satisfait ou remboursé sous 30 jours. Si le premier enregistrement ne vous émeut pas, nous vous remboursons.',
+        ],
+
+        /*
+         * S12. La simplicité, pour la personne qui raconte.
+         *
+         * La forme est celle du bloc de l'accueil, elle-même reprise du
+         * leader : la photo occupe une moitié, le panneau sombre l'autre, avec
+         * trois tuiles et l'essai en bouton clair.
+         *
+         * « 60 secondes » reprend le libellé annoncé sur le site : c'est la
+         * durée de l'essai, pas une mesure d'inscription. Ni minuteur, ni
+         * décompte, et aucun badge « approuvé par les grands-parents » — nous
+         * n'avons ni étude ni témoignage à mettre derrière.
+         */
+        'easy' => [
+            'title' => 'Pensé pour les grands-parents. Approuvé par la famille.',
+            'lede' => 'Pour celles et ceux qui racontent, de 9 à 99 ans.',
+            'marks' => [
+                'no_writing' => 'Rien à écrire.',
+                'no_app' => 'Rien à installer.',
+                'no_password' => 'Aucun mot de passe.',
+            ],
+            'cta' => 'Essayer : ça prend 60 secondes',
+        ],
+
+        // S13. Voir l'expérience. Sans vidéo de client : une capture de
+        // l'interface, et surtout aucun faux bouton de lecture.
+        'experience' => [
+            'title' => 'Un lien, une question, et votre proche peut raconter.',
+            'body' => 'Découvrez le parcours de :brand, de l’enregistrement à la relecture du récit.',
+            'cta' => 'Découvrir le parcours',
+            'caption' => 'Aperçu de l’interface :brand',
+            'videos_title' => 'Leur expérience, racontée avec leurs mots.',
+        ],
+
+        // S14. À l'intérieur du livre : le chapitre et son QR code.
+        'book' => [
+            'eyebrow' => 'À l’intérieur du livre',
+            'title' => 'Lisez son histoire. Puis écoutez-la avec sa voix.',
+            'body' => 'Une photo, un récit, un QR code : chaque chapitre réunit le souvenir et la possibilité de réécouter la personne qui l’a raconté.',
+            'cta' => 'Voir un exemple de chapitre',
+            'chapter_number' => 'Chapitre 3',
+            'chapter_title' => 'L’odeur du pain de ma grand-mère',
+            // Aucune destination vérifiée n'est encore imprimée : l'emplacement
+            // se déclare pour ce qu'il est, et le bouton d'écoute prend le
+            // relais pour qui n'a pas deux téléphones.
+            'qr_placeholder' => 'Emplacement du QR code',
+            'qr_body' => 'Sur le livre imprimé, ce carré ouvre l’enregistrement du chapitre.',
+            'open_audio' => 'Ouvrir l’exemple audio',
+            'illustrative' => 'Aperçu illustratif de mise en page',
+        ],
+
+        // S15. De la parole au texte. Les deux extraits sont ceux du projet,
+        // repris tels quels depuis `landing.proof`.
+        'transcript' => [
+            'title' => 'Un texte plus facile à lire, sans inventer son histoire.',
+            'body' => ':brand retire les hésitations et ajoute la ponctuation. Les mots de votre proche restent les siens. L’enregistrement d’origine et le mot à mot sont conservés, et la personne qui raconte peut relire et corriger le texte avant de le partager.',
+            'verbatim' => 'Mot à mot',
+            'fluide' => 'Texte mis au propre',
+            'consent' => 'Rien n’est partagé avec les proches sans son accord.',
+            'preview' => 'Aperçu : ces choix ne déclenchent rien ici.',
+        ],
+
+        // S16. Aider à choisir. Un mini-guide dans la page, sans tableau
+        // comparatif ni croix rouge sur le voisin.
+        'choosing' => [
+            'title' => 'Quel support pour les souvenirs que vous voulez garder ?',
+            'lede' => 'Écrire, enregistrer, rassembler des photos : choisissez d’abord ce que votre famille souhaite pouvoir retrouver.',
+            'written' => [
+                'title' => 'Pour les mots écrits',
+                'body' => 'Un cahier de souvenirs laisse une place à l’écriture et à la façon dont la personne souhaite raconter.',
+            ],
+            'recorded' => [
+                'title' => 'Pour les moments enregistrés',
+                'body' => 'Des fichiers audio ou vidéo permettent de réécouter ou revoir les échanges que vous avez enregistrés.',
+            ],
+            'both' => [
+                'title' => 'Pour relier le récit et la voix',
+                'body' => ':brand accompagne les réponses orales, les met au propre et les réunit dans un livre relié avec accès aux enregistrements.',
+            ],
+            'cta' => 'Voir ce que comprend :brand',
+        ],
+
+        // S17. Les histoires qui pourraient remplir son livre. Une projection,
+        // annoncée comme telle : ce ne sont pas des familles clientes.
+        'possibilities' => [
+            'eyebrow' => 'Des souvenirs à faire revenir',
+            'title' => 'Son livre commence par les histoires qu’il ou elle a envie de raconter.',
+            'lede' => 'Voici quelques idées de sujets pour ouvrir la conversation. Ce sont des exemples, pas des témoignages de familles clientes.',
+            'places' => [
+                'title' => 'Les lieux de son enfance',
+                'body' => 'La maison où l’on grandit, un trajet d’école, les odeurs d’une cuisine : par quel souvenir commencerait votre proche ?',
+            ],
+            'people' => [
+                'title' => 'Les rencontres qui comptent',
+                'body' => 'Une amitié, un amour, une personne qui a changé le cours de sa vie : quelles rencontres aimerait-il ou elle raconter ?',
+            ],
+            'legacy' => [
+                'title' => 'Ce qu’il ou elle souhaite transmettre',
+                'body' => 'Une tradition, un conseil, une histoire souvent répétée : qu’aimeriez-vous retrouver dans ce livre ?',
+            ],
+            'stories_title' => 'Trois livres, trois familles',
+        ],
+
+        // S18. Le cadeau programmé, en fin de page.
+        'gift' => [
+            'title' => 'Le cadeau peut commencer le jour que vous choisissez.',
+            'body' => 'Programmez l’envoi de votre message et de la première question à votre proche. Vous pouvez aussi imprimer une carte à glisser dans une enveloppe.',
+            'notice' => 'Vous programmez le début du cadeau, pas la livraison immédiate d’un livre déjà écrit.',
+            'card_name' => 'Odette',
+            'card_preview' => 'Aperçu de la carte à imprimer',
+        ],
+
+        // S19. Deux destinataires du même cadeau, pas deux produits.
+        'recipients' => [
+            'title' => 'Deux façons de penser au même cadeau',
+            'note' => 'Les deux mènent à la même offre :brand.',
+            'parent' => [
+                'title' => 'Pour votre mère ou votre père',
+                'body' => 'Offrez une occasion de raconter les souvenirs que vous aimeriez mieux connaître.',
+                'cta' => 'Offrir à un parent',
+            ],
+            'grandparent' => [
+                'title' => 'Pour votre grand-mère ou votre grand-père',
+                'body' => 'Rassemblez les histoires que vous aimeriez pouvoir lire et écouter en famille.',
+                'cta' => 'Offrir à un grand-parent',
+            ],
+        ],
+
+        // S20. Les questions fréquentes, dans l'ordre où on se les pose avant
+        // d'offrir. Les engagements détaillés vivent ici.
+        'faq' => [
+            'title' => 'Les questions que vous vous posez avant de l’offrir.',
+            'included' => [
+                'q' => 'Qu’est-ce qui est compris dans les :price ?',
+                'a' => 'L’achat comprend une année de questions, à raison d’une par semaine, la mise au propre des histoires avec le mot à mot conservé, un livre relié en couleur avec un QR code par chapitre, et l’accès aux enregistrements. Les proches autorisés peuvent découvrir les récits partagés. Les enregistrements et les textes sont téléchargeables.',
+            ],
+            'subscription' => [
+                'q' => 'Est-ce un abonnement ?',
+                'a' => 'Non. Vous réglez une fois l’année de questions et le livre. Il n’y a pas de renouvellement automatique. Les histoires recueillies restent accessibles après l’année et vous pouvez télécharger vos fichiers.',
+            ],
+            'no_app' => [
+                'q' => 'Mon proche doit-il écrire ou installer une application ?',
+                'a' => 'Non. Votre proche reçoit une question par SMS ou par courriel, ouvre le lien et répond en parlant. Le parcours ne nécessite pas d’application à installer ni de mot de passe à retenir.',
+            ],
+            'questions' => [
+                'q' => 'Peut-on choisir les questions ?',
+                'a' => 'Oui. :brand propose soixante questions pour faire revenir les souvenirs. Vous pouvez choisir celles qui conviennent à votre proche ou laisser :brand guider les échanges.',
+            ],
+            'edit' => [
+                'q' => 'Peut-on corriger le texte ?',
+                'a' => 'Oui. La personne qui raconte relit le texte mis au propre et peut le corriger. Le mot à mot reste accessible, et l’enregistrement d’origine est conservé.',
+            ],
+            'privacy' => [
+                'q' => 'Qui peut lire et écouter les histoires ?',
+                'a' => 'Seulement les proches autorisés par la personne qui raconte. Son accord est explicite, histoire par histoire. Elle peut aussi garder un récit pour elle, retirer son partage, le masquer ou le supprimer.',
+            ],
+            'after_year' => [
+                'q' => 'Que se passe-t-il après l’année ?',
+                'a' => 'Les histoires déjà recueillies restent accessibles sans paiement supplémentaire. Les enregistrements et les textes peuvent être téléchargés pour être conservés sur vos propres appareils. Les QR codes restent utilisables tant que le service existe.',
+            ],
+            'no_smartphone' => [
+                'q' => 'Et si mon proche n’a pas de smartphone ?',
+                'a' => 'Une option par téléphone est proposée en nombre limité. Contactez-nous pour vérifier les disponibilités et les modalités avant de choisir cette solution.',
+                'link' => 'Nous écrire',
+            ],
+            'refuses' => [
+                'q' => 'Et si mon proche ne souhaite pas participer ?',
+                'a' => 'Sa décision est respectée. Contactez-nous : nous vous accompagnons dans le cadre de la garantie satisfait ou remboursé de trente jours.',
+            ],
+            'date' => [
+                'q' => 'Puis-je choisir la date du cadeau ?',
+                'a' => 'Oui. Vous pouvez programmer l’envoi de votre message et de la première question. Une carte à imprimer permet aussi de présenter le cadeau dans une enveloppe.',
+            ],
+            'protection' => [
+                'q' => 'Comment protégez-vous les récits et la voix ?',
+                'a' => 'Les enregistrements d’origine sont conservés et ne sont jamais remplacés par une voix fabriquée. :brand ne clone pas les voix et n’utilise pas les contenus de votre famille pour entraîner un modèle. Vos enregistrements et vos textes sont hébergés dans l’Union européenne. Le partage nécessite un accord explicite, et la personne qui raconte garde la possibilité de masquer, retirer ou supprimer une histoire.',
+                'privacy_link' => 'Politique de confidentialité',
+                'consents_link' => 'Vos accords',
+            ],
+            'shutdown' => [
+                'q' => 'Que se passe-t-il si :brand cesse son activité ?',
+                'a' => 'Nous vous prévenons au moins trois mois à l’avance, nous vous fournissons l’intégralité de vos enregistrements et de vos textes dans un format lisible sans nous, et nous vous remboursons ce qui n’a pas été livré. Nous ne promettons pas une conservation à vie : nous promettons de ne jamais vous laisser sans vos fichiers.',
+            ],
+            'guarantee' => [
+                'q' => 'Quelle est la garantie ?',
+                'a' => 'Vous bénéficiez de trente jours satisfait ou remboursé. Les modalités sont détaillées dans nos conditions générales de vente.',
+                'link' => 'Conditions générales de vente',
             ],
         ],
     ],

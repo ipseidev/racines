@@ -97,6 +97,27 @@ export async function initAnalytics(key: string, host: string): Promise<void> {
     pageview(window.location.pathname);
 }
 
+/**
+ * Un événement nommé, si la mesure tourne.
+ *
+ * Réservé aux **intentions** : un bouton d'achat touché, un extrait lancé.
+ * Rien de ce que la famille raconte ne passe par ici — ni enregistrement, ni
+ * texte de souvenir, ni prénom, ni adresse. Les propriétés se limitent donc à
+ * des identifiants de section et de variante, écrits dans le code.
+ */
+export function event(
+    name: string,
+    properties: Record<string, string | number | boolean> = {},
+): void {
+    if (!demarre) {
+        return;
+    }
+
+    void import('posthog-js').then(({ default: posthog }) => {
+        posthog.capture(name, properties);
+    });
+}
+
 /** Une page vue, si la mesure tourne. */
 export function pageview(pathname: string): void {
     if (!demarre || isTokenPage(pathname)) {

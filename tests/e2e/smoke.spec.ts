@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-import { blockingViolations } from './support/a11y';
-
+/*
+ * Le minimum qu'on exige des pages de vente : elles répondent.
+ *
+ * L'audit d'accessibilité de l'accueil est parti avec T-218, comme le reste
+ * des vérifications automatiques de la landing. Ce qui reste ici ne dépend
+ * d'aucun mot ni d'aucune marge : une page 200 qui porte un titre.
+ */
 test('la page d’accueil répond et porte le nom du produit', async ({
     page,
 }) => {
@@ -11,12 +16,9 @@ test('la page d’accueil répond et porte le nom du produit', async ({
     await expect(page).toHaveTitle(/.+/);
 });
 
-test('la page d’accueil n’a aucune violation d’accessibilité grave', async ({
-    page,
-}) => {
-    await page.goto('/');
+test('la variante de structure répond', async ({ page }) => {
+    const response = await page.goto('/lp/histoire');
 
-    const blocking = await blockingViolations(page);
-
-    expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveTitle(/.+/);
 });

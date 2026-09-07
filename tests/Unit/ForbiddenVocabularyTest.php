@@ -27,6 +27,11 @@ function translatedStrings(string $file): array
         return [];
     }
 
+    // Les variantes de page de vente (`public.lp.*`) sont hors de cette garde :
+    // leur rédaction est arbitrée par le fondateur, page par page, et itérée
+    // plusieurs fois par jour (T-218).
+    unset($values['lp']);
+
     $flat = [];
 
     array_walk_recursive($values, function (mixed $value) use (&$flat): void {

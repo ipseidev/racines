@@ -15,6 +15,7 @@ const FamilyLayout = lazy(() => import('@/layouts/family-layout'));
 const NarratorLayout = lazy(() => import('@/layouts/narrator-layout'));
 const InitiatorLayout = lazy(() => import('@/layouts/initiator-layout'));
 const PublicLayout = lazy(() => import('@/layouts/public-layout'));
+const LpLayout = lazy(() => import('@/layouts/lp-layout'));
 const CheckoutLayout = lazy(() => import('@/layouts/checkout-layout'));
 const SettingsLayout = lazy(() => import('@/layouts/settings/layout'));
 
@@ -79,6 +80,11 @@ if (Reflect.get(window, MOUNTED) !== true) {
                 // concurrenceraient « Continuer » (T-135).
                 case name.startsWith('public/Checkout'):
                     return CheckoutLayout;
+                // Les variantes de page de vente ont leur propre barre :
+                // leurs ancres pointent dans la page, et l'accueil — le
+                // témoin du test — n'a pas à apprendre à en changer (T-219).
+                case name === 'public/LandingStructure':
+                    return LpLayout;
                 // Les pages publiques portent le pied de page légal partout, y
                 // compris dans le tunnel : on doit pouvoir lire les conditions
                 // sans revenir en arrière et perdre sa saisie.

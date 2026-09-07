@@ -161,6 +161,25 @@ export function initGoogleAnalytics(measurementId: string): void {
 }
 
 /**
+ * Un événement nommé, si la mesure tourne.
+ *
+ * Mêmes règles que côté PostHog : des intentions, jamais un contenu de
+ * famille. GA n'accepte pas de propriété qu'on ne lui a pas déclarée dans
+ * l'interface, ce qui n'est pas notre affaire ici : l'événement compte, ses
+ * propriétés servent à le découper quand elles ont été déclarées.
+ */
+export function event(
+    name: string,
+    params: Record<string, string | number | boolean> = {},
+): void {
+    if (!demarre) {
+        return;
+    }
+
+    gtag('event', name, params);
+}
+
+/**
  * Une page vue, si la mesure tourne.
  *
  * Inertia navigue sans recharger le document : sans cet appel, une visite de

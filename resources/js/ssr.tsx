@@ -7,6 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import FamilyLayout from '@/layouts/family-layout';
 import InitiatorLayout from '@/layouts/initiator-layout';
+import LpLayout from '@/layouts/lp-layout';
 import NarratorLayout from '@/layouts/narrator-layout';
 import PublicLayout from '@/layouts/public-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -63,6 +64,11 @@ void createServer((page) =>
                     return NarratorLayout;
                 case name.startsWith('family/'):
                     return FamilyLayout;
+                // Avant `public/` : les variantes de page de vente ont leur
+                // propre barre, et un rendu serveur qui poserait celle de
+                // l'accueil ferait diverger l'hydratation (T-219).
+                case name === 'public/LandingStructure':
+                    return LpLayout;
                 case name.startsWith('public/'):
                     return PublicLayout;
                 case name === 'initiator/OneTapConfirm':

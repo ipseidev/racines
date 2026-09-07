@@ -3,6 +3,8 @@ import { Link } from '@inertiajs/react';
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
 import { useT } from '@/hooks/useT';
 
+type Item = { href: string; key: string; inertia: boolean };
+
 type Props = {
     /**
      * `full` sur les pages publiques : la marque, les pages du site, les
@@ -10,6 +12,14 @@ type Props = {
      * pages du site, qui concurrenceraient « Continuer » (T-135).
      */
     variant?: 'full' | 'compact';
+    /**
+     * Les pages du site, quand elles ne sont pas celles de l'accueil.
+     *
+     * Une variante de page de vente porte ses propres sections : ses ancres
+     * doivent rester dans la page, sinon « Le livre » renvoie le visiteur sur
+     * l'accueil, c'est-à-dire hors du test (T-219).
+     */
+    discover?: readonly Item[];
 };
 
 /** Le titre d'une colonne : une étiquette, pas un titre de section. */
@@ -49,14 +59,16 @@ const LEGAL = [
  * Quatre blocs sur lin : la marque et sa phrase, les pages du site, les
  * informations légales, le contact ; puis une ligne basse avec l'année et
  * l'hébergement. Les titres de colonne ne sont pas des titres de section :
- * les tests de l'accueil lisent l'ordre des `<h2>`, et le pied de page n'y a
- * rien à ajouter.
+ * une page se lit à ses `<h2>`, et le pied de page n'y a rien à ajouter.
  *
  * Les liens légaux sont sur **toutes** ces pages, tunnel compris : quelqu'un
  * qui s'apprête à payer doit pouvoir lire les conditions sans revenir en
  * arrière et perdre sa saisie.
  */
-export default function PublicFooter({ variant = 'full' }: Props) {
+export default function PublicFooter({
+    variant = 'full',
+    discover = DISCOVER,
+}: Props) {
     const t = useT();
     const brand = useBrand();
     const year = new Date().getFullYear();
@@ -89,7 +101,7 @@ export default function PublicFooter({ variant = 'full' }: Props) {
                                 {t('public.footer.discover')}
                             </span>
                             <ul className="flex flex-col">
-                                {DISCOVER.map((item) => (
+                                {discover.map((item) => (
                                     <li key={item.href}>
                                         {item.inertia ? (
                                             <Link

@@ -23,17 +23,25 @@ type Props = {
  * règles : le code part par courriel et jamais à l'écran, les nouvelles
  * sont une case à part, décochée, jamais requise, et un champ que personne
  * ne voit arrête les robots. Posé sur « Comment ça marche » et sur
- * l'accueil, comme chez le leader, juste avant le pied de page.
- *
- * Rien n'est affiché quand la réduction n'est pas proposée : un bandeau qui
- * promet un code qu'on ne peut pas donner est pire que pas de bandeau.
+ * l'accueil, comme chez le leader, juste avant le pied de page. Posé aussi sur
+ * la variante de structure (T-219).
  */
 export default function Newsletter({ enabled, discountPercent }: Props) {
     const t = useT();
     const [sent, setSent] = useState(false);
     const form = useForm({ email: '', news: false, website: '' });
 
-    if (!enabled) {
+    /*
+     * Rien quand la réduction n'est pas proposée — un bandeau qui promet un
+     * code qu'on ne peut pas donner est pire que pas de bandeau.
+     *
+     * `&& !sent` n'est pas une précaution en trop, c'est un défaut corrigé :
+     * réclamer le code pose le cookie côté serveur, donc la réponse Inertia
+     * rend `enabled` faux, et le bandeau disparaissait **avec** sa
+     * confirmation. Le courriel partait, l'écran ne disait rien, et on ne
+     * pouvait que réessayer. Une fois envoyé, la confirmation reste.
+     */
+    if (!enabled && !sent) {
         return null;
     }
 
