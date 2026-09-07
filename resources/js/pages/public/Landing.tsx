@@ -236,8 +236,20 @@ export default function Landing({
             />
 
             {/* Héros ============================================================ */}
-            <section className="mx-auto grid w-full max-w-6xl gap-8 px-6 pt-6 pb-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:pt-16 lg:pb-24">
-                <div className="flex flex-col gap-7">
+            {/*
+             * Trois blocs, dans un ordre qui change avec l'écran (demande du
+             * fondateur, 7 septembre 2026, T-209). Sur téléphone : la photo,
+             * le texte, puis la carte « question de la semaine » sous la ligne
+             * « paiement sécurisé ». Sur bureau : le texte à gauche, la photo à
+             * droite alignée en haut, et la carte sous la photo, remontée de
+             * trois rem pour la chevaucher un peu, sans plus. Elle la couvrait
+             * jusqu'ici par le bas et cachait le livre.
+             *
+             * La carte reste : le fondateur y tient (T-144). Ce qui change,
+             * c'est où elle se pose.
+             */}
+            <section className="mx-auto grid w-full max-w-6xl gap-8 px-6 pt-6 pb-20 lg:grid-cols-2 lg:grid-rows-[auto_auto] lg:items-start lg:gap-x-16 lg:gap-y-0 lg:pt-16 lg:pb-24">
+                <div className="order-2 flex flex-col gap-7 lg:order-none lg:col-start-1 lg:row-span-2 lg:self-center">
                     <h1 className="font-display text-[2.5rem] leading-[1.05] font-medium sm:text-5xl lg:text-[4rem]">
                         {t('public.landing.promise')}
                     </h1>
@@ -286,36 +298,33 @@ export default function Landing({
                 </div>
 
                 {/*
-                 * La photo d'abord sur téléphone, à droite sur bureau : ce qu'on
-                 * voit avant de lire doit déjà dire « une personne, sa voix ».
-                 * La carte « question de la semaine » est posée dessus, à cheval
-                 * sur le bord bas : le fondateur y tient (T-144). La marge basse
-                 * lui laisse la place qu'elle déborde.
+                 * La photo d'abord sur téléphone, à droite et en haut sur
+                 * bureau : ce qu'on voit avant de lire doit déjà dire « une
+                 * personne, sa voix ».
                  */}
-                <div className="relative order-first mb-11 lg:order-none lg:mb-0">
-                    <img
-                        {...photo('hero')}
-                        sizes="(min-width: 1024px) 34rem, 100vw"
-                        alt={t('public.landing.hero.photo_alt')}
-                        width="1400"
-                        height="1050"
-                        fetchPriority="high"
-                        className="aspect-[4/3] w-full rounded-2xl object-cover lg:aspect-[5/4]"
-                    />
-                    <figure
-                        aria-label={t('public.landing.hero.card.aria')}
-                        className="bg-brand-surface absolute bottom-[-2.25rem] left-3 flex w-[min(380px,calc(100%-1.5rem))] flex-col gap-3.5 rounded-2xl px-6 py-5 shadow-[0_24px_60px_rgba(38,33,28,0.18),0_2px_6px_rgba(38,33,28,0.08)] lg:bottom-[-1.75rem] lg:-left-6"
-                    >
-                        <div className="text-brand-muted flex justify-between text-[0.78rem] font-semibold tracking-[0.08em] uppercase">
-                            <span>{t('public.landing.hero.card.label')}</span>
-                            <span>{t('public.landing.hero.card.name')}</span>
-                        </div>
-                        <p className="font-display text-[1.35rem] leading-[1.3] font-medium">
-                            {t('public.landing.hero.card.question')}
-                        </p>
-                        <HeroSample sample={heroSample} />
-                    </figure>
-                </div>
+                <img
+                    {...photo('hero')}
+                    sizes="(min-width: 1024px) 34rem, 100vw"
+                    alt={t('public.landing.hero.photo_alt')}
+                    width="1400"
+                    height="1050"
+                    fetchPriority="high"
+                    className="order-1 aspect-[4/3] w-full rounded-2xl object-cover lg:order-none lg:col-start-2 lg:row-start-1 lg:aspect-[5/4]"
+                />
+
+                <figure
+                    aria-label={t('public.landing.hero.card.aria')}
+                    className="bg-brand-surface order-3 flex w-full flex-col gap-3.5 rounded-2xl px-6 py-5 shadow-[0_24px_60px_rgba(38,33,28,0.18),0_2px_6px_rgba(38,33,28,0.08)] lg:z-10 lg:order-none lg:col-start-2 lg:row-start-2 lg:-mt-12 lg:-ml-6 lg:w-[min(380px,100%)]"
+                >
+                    <div className="text-brand-muted flex justify-between text-[0.78rem] font-semibold tracking-[0.08em] uppercase">
+                        <span>{t('public.landing.hero.card.label')}</span>
+                        <span>{t('public.landing.hero.card.name')}</span>
+                    </div>
+                    <p className="font-display text-[1.35rem] leading-[1.3] font-medium">
+                        {t('public.landing.hero.card.question')}
+                    </p>
+                    <HeroSample sample={heroSample} />
+                </figure>
             </section>
 
             {/*

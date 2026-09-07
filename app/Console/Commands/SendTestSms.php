@@ -14,7 +14,11 @@ use App\Services\Sms\TwilioSmsSender;
 use App\Support\Brand;
 use App\Support\SmsLength;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Str;
+use Laravel\Prompts\Exceptions\NonInteractiveValidationException;
+
+use function Laravel\Prompts\text;
 
 /**
  * Un vrai SMS, à un numéro nommé, suivi jusqu'à la livraison.
@@ -44,7 +48,7 @@ use Illuminate\Support\Str;
  * Sans elle, on saurait que Twilio a **accepté**, ce qui n'a jamais voulu dire
  * que le téléphone a **reçu**.
  */
-final class SendTestSms extends Command
+final class SendTestSms extends Command implements PromptsForMissingInput
 {
     protected $signature = 'prod:sms
         {destinataire : le numéro, au format international : +33612345678}
@@ -54,9 +58,50 @@ final class SendTestSms extends Command
 
     protected $description = 'Envoie un vrai SMS à un numéro nommé et le suit jusqu’à la livraison';
 
+    /**
+     * Le numéro manquant est demandé, et non reproché.
+     *
+     * Sans cela, Symfony répond « Not enough arguments » — en anglais, et sur
+     * un serveur où l'on tape de mémoire. Le numéro reste explicite : il est
+     * saisi, affiché en clair, puis confirmé.
+     *
+     * La question passe par une fermeture et non par une simple chaîne, parce
+     * que `laravel/prompts` **lève** quand il n'y a personne pour répondre :
+     * dans un script, une tâche planifiée ou un `docker compose exec` sans
+     * terminal, la trace d'exception remplacerait le message de Symfony par
+     * quelque chose de pire. On rend alors la main à `handle()`, qui sait le
+     * dire en une ligne.
+     *
+     * @return array<string, \Closure(): string>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'destinataire' => function (): string {
+                try {
+                    return text(
+                        label: 'À quel numéro ?',
+                        placeholder: '+33612345678',
+                        validate: fn (?string $value): ?string => self::normalise((string) $value) === ''
+                            ? 'Il faut un numéro, au format international.'
+                            : null,
+                    );
+                } catch (NonInteractiveValidationException) {
+                    return '';
+                }
+            },
+        ];
+    }
+
     public function handle(): int
     {
         $to = self::normalise((string) $this->argument('destinataire'));
+
+        if ($to === '') {
+            $this->components->error('Il faut un numéro : prod:sms +33612345678');
+
+            return self::FAILURE;
+        }
 
         if (preg_match('/^\+[1-9]\d{7,14}$/', $to) !== 1) {
             $this->components->error('Le numéro doit être au format international, indicatif compris : +33612345678.');

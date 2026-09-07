@@ -40,6 +40,18 @@ it('accepte un numéro recopié avec des espaces ou un 00', function (): void {
     $sms->assertSentTo('+33638503252');
 });
 
+it('demande le numéro plutôt que de le reprocher', function (): void {
+    $sms = fakeSms();
+
+    // Sans cela, Symfony répond « Not enough arguments » : en anglais, et sur
+    // un serveur où l'on tape de mémoire.
+    $this->artisan('prod:sms', ['--force' => true, '--attendre' => 0])
+        ->expectsQuestion('À quel numéro ?', '+33638503252')
+        ->assertSuccessful();
+
+    $sms->assertSentTo('+33638503252');
+});
+
 it('refuse de tourner quand le fournisseur n’est pas Twilio', function (): void {
     config()->set('services.sms.provider', 'log');
     $sms = fakeSms();
