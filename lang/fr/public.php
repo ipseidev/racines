@@ -180,7 +180,7 @@ return [
                 'body' => 'Chaque histoire qu’elle choisit de partager arrive à ses proches. Ils la lisent, l’écoutent, lui répondent d’un mot. Pour beaucoup de familles, c’est le meilleur moment de la semaine.',
                 'alt' => 'Deux personnes penchées sur un livre ouvert : l’une montre le code d’un chapitre, l’autre tient un téléphone où sourit la narratrice.',
             ],
-            // Vers la page qui déroule le parcours en six étapes (T-208).
+            // Vers la page qui déroule le parcours en six étapes (T-213).
             'more' => 'Voir le parcours en détail',
         ],
 
@@ -405,7 +405,7 @@ return [
     ],
 
     /*
-     * « Comment ça marche », la page (T-208).
+     * « Comment ça marche », la page (T-213).
      *
      * La structure est celle de la page du leader, relevée section par
      * section sur son HTML et une capture du 7 septembre 2026 : un bandeau de
@@ -638,7 +638,7 @@ return [
         'title' => ':amount offerts',
         'subtitle' => 'sur le livre de ses souvenirs',
         // Le même service en bandeau de bas de page, sur l'accueil et sur
-        // « Comment ça marche » (T-208).
+        // « Comment ça marche » (T-213).
         'band_title' => ':amount offerts pour commencer',
         'teaser' => 'Laissez-nous votre adresse : nous vous envoyons un code de réduction de :amount, valable un an sur toute votre commande.',
         'claim' => 'Je prends ma réduction',
@@ -668,7 +668,7 @@ return [
     ],
 
     /*
-     * Le pied de page (T-208) : la marque et sa phrase, les pages du site,
+     * Le pied de page (T-213) : la marque et sa phrase, les pages du site,
      * les informations légales, le contact, puis l'année et l'hébergement.
      * Les libellés des pages et des textes légaux sont lus ailleurs dans ce
      * fichier ; ici, seulement ce qui n'existe pas encore.

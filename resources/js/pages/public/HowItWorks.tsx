@@ -69,7 +69,7 @@ const TEXT_LINK =
     'text-brand inline-flex items-center gap-2 text-[1.05rem] font-semibold underline underline-offset-4';
 
 /**
- * « Comment ça marche », la page (T-208).
+ * « Comment ça marche », la page (T-213).
  *
  * La structure est celle de la page du leader, relevée sur son HTML et une
  * capture : un bandeau de titre avec deux onglets, une accroche et un média,

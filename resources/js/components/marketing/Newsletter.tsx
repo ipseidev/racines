@@ -17,7 +17,7 @@ type Props = {
 };
 
 /**
- * L'adresse contre une réduction, en bandeau de bas de page (T-208).
+ * L'adresse contre une réduction, en bandeau de bas de page (T-213).
  *
  * Le même service que la fenêtre de bienvenue (T-141), avec les mêmes
  * règles : le code part par courriel et jamais à l'écran, les nouvelles

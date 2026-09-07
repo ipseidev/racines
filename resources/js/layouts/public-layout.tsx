@@ -8,7 +8,7 @@ import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
 
 const NAV = [
-    // La page dédiée depuis T-208 ; l'accueil garde son résumé en quatre étapes.
+    // La page dédiée depuis T-213 ; l'accueil garde son résumé en quatre étapes.
     { href: '/comment-ca-marche', key: 'how' },
     { href: '/#livre', key: 'book' },
     { href: '/#histoire', key: 'story' },

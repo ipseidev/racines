@@ -63,7 +63,7 @@ test('la page d’accueil annonce ses sections dans l’ordre du dossier', async
         .evaluateAll((nodes) => nodes.map((node) => node.id));
 
     // Le bandeau « adresse contre réduction » ferme la page quand la
-    // réduction est proposée à ce visiteur (T-208) : il est le seul à
+    // réduction est proposée à ce visiteur (T-213) : il est le seul à
     // pouvoir manquer.
     expect(order.slice(0, 13)).toEqual([
         'promises',

@@ -6,7 +6,7 @@ use App\Settings\PilotSettings;
 use Inertia\Testing\AssertableInertia;
 
 /**
- * « Comment ça marche », la page (T-208).
+ * « Comment ça marche », la page (T-213).
  *
  * Sa structure est celle de la page du leader ; ses mots sont les nôtres, et
  * ils n'ont le droit de promettre que ce que le dossier tient. Trois choses

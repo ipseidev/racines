@@ -1,6 +1,6 @@
 /*
  * Les classes des pages marketing, partagées entre l'accueil et
- * « Comment ça marche » (T-208).
+ * « Comment ça marche » (T-213).
  *
  * Elles vivaient dans `Landing.tsx` seule tant qu'il n'y avait qu'une page.
  * Deux pages qui redéclarent le même bouton finissent par en avoir deux

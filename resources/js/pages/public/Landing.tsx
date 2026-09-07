@@ -238,7 +238,7 @@ export default function Landing({
             {/* Héros ============================================================ */}
             {/*
              * Trois blocs, dans un ordre qui change avec l'écran (demande du
-             * fondateur, 7 septembre 2026, T-209). Sur téléphone : la photo,
+             * fondateur, 7 septembre 2026, T-214). Sur téléphone : la photo,
              * le texte, puis la carte « question de la semaine » sous la ligne
              * « paiement sécurisé ». Sur bureau : le texte à gauche, la photo à
              * droite alignée en haut, et la carte sous la photo, remontée de
@@ -431,7 +431,7 @@ export default function Landing({
                     ))}
                 </ol>
 
-                {/* Quatre étapes suffisent ici ; la page dédiée en déroule six (T-208). */}
+                {/* Quatre étapes suffisent ici ; la page dédiée en déroule six (T-213). */}
                 <div className="mt-12 flex justify-start lg:justify-center">
                     <Link
                         href="/comment-ca-marche"
@@ -904,7 +904,7 @@ export default function Landing({
                 </dl>
             </section>
 
-            {/* L'adresse contre une réduction, comme chez le leader (T-208) ===== */}
+            {/* L'adresse contre une réduction, comme chez le leader (T-213) ===== */}
             <Newsletter
                 enabled={welcomeOffer.enabled}
                 discountPercent={welcomeOffer.discountPercent}

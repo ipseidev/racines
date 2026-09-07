@@ -34,7 +34,7 @@ final class LandingController
     }
 
     /**
-     * « Comment ça marche », en six étapes (T-208).
+     * « Comment ça marche », en six étapes (T-213).
      *
      * Les mêmes props que l'accueil, et c'est voulu : la page affiche le prix,
      * fait écouter le même extrait et propose la même réduction de bienvenue.

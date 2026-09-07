@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * « Comment ça marche », la page (T-208).
+ * « Comment ça marche », la page (T-213).
  *
  * L'accessibilité est passée au crible dans `landing-a11y.spec.ts`, avec les
  * autres pages publiques. Ici, on vérifie ce que la page raconte et dans
