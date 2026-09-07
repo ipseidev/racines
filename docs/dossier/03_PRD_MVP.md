@@ -1,5 +1,5 @@
 # NARRAE — PRD du MVP
-**v2.7 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
+**v2.8 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
 
 ## 1. Objectif du MVP
 Industrialiser ce que la Phase 0 aura prouvé : un narrateur senior clique, autorise le micro, s'enregistre, **valide explicitement** et recommence (H1) ; les proches écoutent et cette attention est associée à la production (H2) ; l'économie tient après acquisition (H3). Le MVP industrialise **le moteur de complétion** — pas un catalogue de fonctionnalités.
@@ -17,7 +17,7 @@ Téléphonie automatisée (build conditionné aux seuils D-9 mesurés en 0B ; l'
 | P0-3 | Lien d'enregistrement navigateur | 1 lien/question ; validité 30 j ; réutilisable jusqu'à VALIDÉE ; révocable/ré-émissible ; page à un bouton ; **choix de la forme avant toute autorisation — sa voix, ou se filmer face caméra [v2.7, D-11]** ; pré-explication avant le popup micro (et avant celui de la caméra) ; pause/reprise ; upload résumable |
 | P0-4 | Envoi des prompts | SMS + email ; cadence par défaut hebdo, créneau choisi ; WhatsApp = lien copiable en 1 tap pour transfert manuel |
 | P0-5 | Réponse écrite simple | Zone de texte, pas d'éditeur avancé |
-| P0-6 | Photos rattachées aux histoires | Upload simple ; contrôle antivirus/format (doc 04 §12) |
+| P0-6 | Photos rattachées aux histoires | Upload simple ; contrôle de **format** (doc 04 §12) ; **contrôle antivirus débranché [v2.8, D-12]**, journalisation de chaque fichier admis sans contrôle |
 | P0-7 | Transcription FR | Audio smartphone ; audio source conservé, jamais remplacé |
 | P0-8 | **Double rendu Verbatim/Fluide** | À la demande, côte à côte, réversible ; Verbatim jamais supprimé ; le texte conserve mots et tournures, **seul l'audio conserve accent, rythme, silences** |
 | P0-9 | 60-100 questions éditorialisées FR | Corpus original, séquencé du facile vers l'intime |

@@ -141,11 +141,19 @@ services:
     # conserve d'un démarrage à l'autre, sans quoi chaque `sail up` la
     # retéléchargerait.
     #
-    # `ANTIVIRUS_SCANNER=fake` permet de travailler sans ce service. Ne le
-    # laissez pas ainsi : les tests le forcent déjà, et le mettre à `fake`
-    # dans `.env` reviendrait à ne pas avoir d'antivirus là où il compte.
+    # Sous profil, donc **hors du démarrage par défaut** : un `sail up -d` nu
+    # le levait avec le reste et gardait un gigaoctet de mémoire pour un démon
+    # que `laradev` avait déjà débranché en basculant `ANTIVIRUS_SCANNER` sur
+    # `fake`. On le demande maintenant explicitement — `laradev --clamav`, ou
+    # `sail up -d clamav`, qui active son profil du seul fait de le nommer.
+    #
+    # Ce débranchement est local et rien d'autre. `ANTIVIRUS_SCANNER=clamav`
+    # reste le défaut de `.env.example` et de la production : mettre `fake` là
+    # où arrivent les photos d'une famille reviendrait à ne pas avoir
+    # d'antivirus, et c'est le jour où il compte qu'on s'en apercevrait.
     clamav:
         image: 'clamav/clamav:stable-debian'
+        profiles: ['clamav']
         ports:
             - '${FORWARD_CLAMAV_PORT:-3310}:3310'
         volumes:

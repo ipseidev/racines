@@ -60,8 +60,10 @@ return [
     /*
      * Le contrôle antivirus des fichiers déposés (bloc 12).
      *
-     * `clamav` ou `fake`, jamais déduit de l'environnement (T-61) : un
-     * fournisseur déduit finit par être le faux en production.
+     * `clamav`, `fake` ou `off`, jamais déduit de l'environnement (T-61) : un
+     * fournisseur déduit finit par être le faux en production. `off`
+     * débranche le contrôle en le journalisant — décision D-12, à ne pas
+     * confondre avec `fake`, qui simule un scanner (T-216).
      */
     /*
      * Le rendu du BAT (bloc 13).

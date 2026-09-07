@@ -56,6 +56,21 @@ Tout le reste est indépendant du nom, et une bonne partie est déjà branchée 
 
 Trois blocs sont codés, testés et poussés, mais ne peuvent pas être tagués sans ça : **04** (téléphones réels), **05** (Twilio, Resend : le nom est arrêté, restent le domaine d'envoi à vérifier et l'expéditeur à enregistrer) et **06** (clés, corpus de voix). Le **10** est fermé depuis le 2026-09-05 : le compte Stripe de test est configuré, restent les prix en mode live et une clé restreinte avant le go-live. Le **11** et le **12** n'attendent que trente-cinq minutes de ton temps.
 
+### 1.0 Une variable à poser dans Forge — **la production refuse toutes les photos**
+
+Découvert le 2026-09-07 en lisant le courriel horaire de supervision (T-216). `CLAMAV_HOST` n'a jamais été renseigné en production : il valait donc son défaut, `clamav`, qui est le nom du conteneur Sail et ne résout nulle part sur un droplet. Et le démon n'a jamais été installé — la ligne 48 du bloc 16. Comme le scan **refuse** tout fichier lorsqu'il ne joint personne (T-118 : un fichier non scanné n'est pas un fichier propre), **aucune photo n'a pu être déposée depuis la mise en ligne** ; chaque dépôt repartait avec un message d'infection.
+
+Tu as tranché de débrancher le contrôle plutôt que d'installer le démon : c'est **D-12**, inscrite à R-12, dossier passé en v2.8. Le code est prêt et attend la variable — il ne la devine pas, T-61 interdisant de déduire le fournisseur de l'environnement.
+
+- **Où** : Forge → le site de production → Environment.
+- **Quoi** : `ANTIVIRUS_SCANNER=off`. Rien d'autre à changer ; `CLAMAV_HOST` et `CLAMAV_PORT` deviennent sans objet.
+- **Puis** : déployer (le correctif du planificateur, T-217, part dans le même déploiement) et `php artisan config:clear` si la configuration est en cache.
+- **Vérifier** : déposer une vraie photo depuis un téléphone sur une histoire de production. Et la sonde doit dire `débranché (D-12)` — si elle dit `doublé`, c'est `fake` qui a été posé au lieu de `off`, et un scanner simulé en production est précisément ce que D-12 refuse.
+  ```bash
+  php artisan health:check   # sur le serveur
+  ```
+- **Ce que ça laisse ouvert** : les fichiers entrent sans contrôle antiviral, et chacun est journalisé (`antivirus.disabled`). La date de rebranchement est à fixer avant l'ouverture des ventes — c'est écrit dans D-12, pas oublié.
+
 ### 1.1 Clé Anthropic — débloque le bloc 06
 
 Le rendu « Fluide » : la transcription brute mise au propre en un texte lisible dans un livre.
@@ -310,6 +325,7 @@ Le seul endroit à tenir à jour.
 
 | | À réunir | Débloque | État |
 |---|---|---|---|
+| 0 | **`ANTIVIRUS_SCANNER=off` dans Forge** | débloque le **dépôt de photos en production**, cassé depuis la mise en ligne | ☐ **à faire tout de suite** (§1.0, T-216, D-12) |
 | 1 | Clé Anthropic | bloc 06 | ☐ |
 | 2 | Clé Gladia | bloc 06 | ☐ |
 | 3 | `ASR_CALLBACK_SECRET` généré | bloc 06 | ☐ |

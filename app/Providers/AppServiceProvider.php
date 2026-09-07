@@ -14,6 +14,7 @@ use App\Services\Analytics\LogAnalytics;
 use App\Services\Analytics\PostHogAnalytics;
 use App\Services\Antivirus\ClamavScanner;
 use App\Services\Antivirus\FakeScanner;
+use App\Services\Antivirus\NullScanner;
 use App\Services\Antivirus\Scanner;
 use App\Services\Llm\AnthropicMessages;
 use App\Services\Llm\ClaudeStoryRenderer;
@@ -164,6 +165,11 @@ final class AppServiceProvider extends ServiceProvider
      *
      * Un scanner inconnu **lève** plutôt que de rendre « propre » : échouer
      * fort vaut mieux qu'un antivirus qui fait semblant.
+     *
+     * Trois drivers et non deux depuis D-12 : `off` débranche le contrôle,
+     * explicitement et en le journalisant. Il existe parce que `fake` aurait
+     * fait le même travail en mentant — il prétend reconnaître l'EICAR — et
+     * qu'un écart assumé doit se lire dans le nom qu'on lui donne (T-216).
      */
     private function configureAntivirus(): void
     {
@@ -173,8 +179,9 @@ final class AppServiceProvider extends ServiceProvider
             return match ($driver) {
                 'clamav' => new ClamavScanner,
                 'fake' => new FakeScanner,
+                'off' => new NullScanner,
                 default => throw new InvalidArgumentException(
-                    "Scanner antivirus inconnu : {$driver}. Attendu `clamav` ou `fake`.",
+                    "Scanner antivirus inconnu : {$driver}. Attendu `clamav`, `fake` ou `off`.",
                 ),
             };
         });

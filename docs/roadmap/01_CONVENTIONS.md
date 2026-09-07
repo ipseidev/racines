@@ -131,7 +131,7 @@ Définies dans `composer.json` (`scripts`) et `package.json` (`scripts`) au bloc
 
 | Commande | Fait |
 |---|---|
-| `sail up -d` | Démarre l'environnement local : app, pgsql, redis, mailpit, minio (clamav au bloc 12) |
+| `sail up -d` | Démarre l'environnement local : app, pgsql, redis, mailpit, minio. L'antivirus est sous profil Compose, donc éteint : `sail up -d clamav` le lève, comme `laradev --clamav` |
 | `sail composer check` | Alias de `ci:check` : contrôle front puis PHP, la porte complète |
 | `sail composer test` | Enchaîne `lint:check`, `types:check` et les tests PHP |
 | `sail composer lint` | Pint, corrige |
@@ -184,12 +184,36 @@ pas qu'elle est valide (T-208).
 |---|---|
 | `php artisan prod:check` | « Si quelqu'un achète maintenant, est-ce que ça marche ? » Chaque ligne dit ce que le client perd, pas ce qui manque techniquement. `--rapide` n'appelle pas les prestataires |
 | `php artisan prod:sms +33…` | Envoie **un vrai SMS** à un numéro nommé et le suit jusqu'à `delivered`. Annonce avant d'envoyer l'expéditeur que verra le téléphone, la longueur et le nombre de segments ; refuse le numéro d'un narrateur ou d'un proche ; `--corps=` pour un autre texte, `--attendre=0` pour ne pas attendre le rappel, `--force` sans confirmation |
+| `php artisan prod:demo` | Fabrique un décor complet **en production** — compte, commande, narrateur sur un vrai téléphone, proches invités — par le chemin du webhook Stripe, sans qu'aucun argent ne bouge. `--question` pose la première question sans attendre la nuit que l'acceptation pose ; `--purge` efface par le chemin RGPD ; `--telephone=`, `--email=`, `--canal=`, `--proches=`, `--motdepasse`, `--force` |
 
-`prod:sms` est la seule commande du dépôt qui **écrit à une personne**. Son
-texte par défaut ne ressemble donc pas à un message du produit et ne porte
-aucun lien : la faute de frappe la plus probable est un chiffre pour un autre,
-et un faux prompt chez un inconnu serait exactement le smishing que le doc 04
-§9 combat.
+`prod:sms` est la seule commande du dépôt qui **écrit à une personne** de sa
+propre initiative. Son texte par défaut ne ressemble donc pas à un message du
+produit et ne porte aucun lien : la faute de frappe la plus probable est un
+chiffre pour un autre, et un faux prompt chez un inconnu serait exactement le
+smishing que le doc 04 §9 combat.
+
+`prod:demo` écrit aussi, mais **des messages du produit**, et c'est le point :
+entre « les clés répondent » et « un iPhone reçoit un SMS, ouvre un lien,
+enregistre une voix et l'envoie sur R2 », il reste tout ce qui casse
+vraiment — et rien de cela ne casse en local. Trois garde-fous en découlent :
+
+ - **aucun argent ne bouge** : la session porte le préfixe `demo_` au lieu du
+   `cs_` de Stripe, et `stripe_payment_intent_id` reste nul ; c'est ce préfixe
+   qui retrouve le décor, et il n'y a donc rien à rembourser ;
+ - **le projet n'appartient à aucune cohorte** : `FulfillOrder` rangerait un
+   achat dans la cohorte en cours, et le décor décalerait son H0 et son H1.
+   Sans cohorte, il sort de toutes les lectures par cohorte. Il reste compté
+   dans la **lecture globale**, et l'entonnoir PostHog reçoit un
+   `purchase_completed` de plus — `--purge` puis `metrics:compute --date=…`
+   remet les jours touchés ;
+ - **le compte acheteur est un alias** (`toi+demo@…`) et la commande refuse de
+   s'installer sur un compte du personnel : un décor ne change pas le mot de
+   passe de celui qui répond au support.
+
+Aucun lien à jeton n'est imprimé, contrairement à `demo:invitation` : le canal
+est justement ce qu'on vient éprouver, et un lien recopié dans le terminal
+prouverait que la base sait fabriquer une URL, pas qu'un téléphone reçoit un
+SMS.
 
 ### Ce qu'on relance, et quand
 
@@ -294,7 +318,8 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `FLARE_KEY` | Suivi d'erreurs en production | — |
 | `OH_DEAR_HEALTH_CHECK_SECRET` | Endpoint de santé | — |
 | `TELESCOPE_ENABLED` | `true` en local seulement | `true` |
-| `CLAMAV_HOST`, `CLAMAV_PORT` | Antivirus (bloc 12) | `clamav`, `3310` |
+| `ANTIVIRUS_SCANNER` | `clamav`, `fake` ou `off` ; **jamais déduit de l'environnement** (T-61). `off` débranche le contrôle en journalisant chaque fichier admis — décision **D-12**, et c'est la valeur de la production depuis le 2026-09-07 ; `fake` simule un scanner et n'a sa place que dans les tests, où `phpunit.xml` le force | `clamav` (prod : `off`) |
+| `CLAMAV_HOST`, `CLAMAV_PORT` | Antivirus (bloc 12). En production, l'adresse du démon **local** (`127.0.0.1`) : `clamav` est le nom du conteneur Sail et ne résout nulle part ailleurs — c'est ce qui a fait échouer tous les dépôts de photos en ligne | `clamav`, `3310` |
 | `FFMPEG_BINARIES`, `FFPROBE_BINARIES` | Chemins ffmpeg | `/usr/bin/ffmpeg`, `/usr/bin/ffprobe` |
 | `THROTTLE_TOKENS_PER_TOKEN` | Requêtes par minute et par jeton ; protège du balayage, identique partout | `20` |
 | `THROTTLE_TOKENS_PER_IP` | Requêtes par minute et par IP ; desserrée d'office hors production (T-79) | `60` |

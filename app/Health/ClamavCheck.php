@@ -15,12 +15,31 @@ use Spatie\Health\Checks\Result;
  * conséquence visible est qu'**aucune photo ne passe plus**, avec un message
  * qui parle de sécurité et laisse la famille croire que ses images sont en
  * cause. Autant le savoir avant elle.
+ *
+ * Trois états à distinguer, et c'est le résumé qui les porte : le démon
+ * interrogé, le double des tests, et le contrôle débranché de D-12. Les deux
+ * derniers rendent `ok` — il n'y a rien à joindre, et une sonde qui
+ * avertirait en permanence enverrait le courriel horaire jusqu'à ce que
+ * quelqu'un le filtre, ce qui coûterait la prochaine vraie alerte (T-216).
+ * Mais ils ne disent pas la même chose, et le mot compte : « doublé » sur une
+ * production débranchée aurait fait lire un environnement de test.
  */
 final class ClamavCheck extends Check
 {
     public function run(): Result
     {
-        if ((string) config('services.antivirus.scanner') !== 'clamav') {
+        $scanner = (string) config('services.antivirus.scanner');
+
+        if ($scanner === 'off') {
+            /*
+             * Débranché par décision, pas en panne. Le résumé nomme la
+             * décision pour que la sonde renvoie à R-12 plutôt qu'à une
+             * enquête.
+             */
+            return Result::make()->ok()->shortSummary('débranché (D-12)');
+        }
+
+        if ($scanner !== 'clamav') {
             /*
              * `ok` et non un état « ignoré » : hors production le scanner est
              * doublé, et il n'y a effectivement rien à joindre. Le résumé le

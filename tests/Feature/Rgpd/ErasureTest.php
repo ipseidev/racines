@@ -6,12 +6,14 @@ use App\Actions\ConfirmErasure;
 use App\Actions\RequestErasure;
 use App\Enums\BookStatus;
 use App\Enums\ErasureScope;
+use App\Enums\ProjectStatus;
 use App\Enums\SupportTicketKind;
 use App\Exceptions\Domain\ErasureBlocked;
 use App\Jobs\EraseProject;
 use App\Models\AccessToken;
 use App\Models\Book;
 use App\Models\Consent;
+use App\Models\FamilyMember;
 use App\Models\Narrator;
 use App\Models\Order;
 use App\Models\Project;
@@ -19,6 +21,7 @@ use App\Models\Story;
 use App\Models\SupportTicket;
 use App\Models\Transcript;
 use App\Models\User;
+use App\States\Story\Proposed;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -91,6 +94,73 @@ it('efface les fichiers, les textes et les champs personnels', function (): void
         ->and($narrator->first_name)->not->toContain('Odette')
         ->and($narrator->phone_e164)->toBeNull()
         ->and($narrator->email)->toBeNull();
+});
+
+it('efface aussi les proches, que tout projet réel possède', function (): void {
+    [$project] = projetEffacable();
+
+    $proche = FamilyMember::factory()->create([
+        'project_id' => $project->id,
+        'display_name' => 'Camille',
+        'email' => 'camille@exemple.fr',
+        'phone_e164' => '+33600000001',
+    ]);
+
+    app()->call([new EraseProject($project->id), 'handle']);
+
+    /*
+     * `last_name` n'existe pas sur `family_members` — un proche n'a qu'un nom
+     * affiché. L'écrire pour les deux faisait échouer l'effacement **entier**
+     * sur un « column last_name does not exist », donc pour tout projet réel :
+     * `FulfillOrder` pose la fiche d'écoute de l'acheteuse à chaque achat, et
+     * aucun projet n'arrive à l'effacement sans proche. Le décor de ce fichier
+     * n'en semait aucun, et le défaut a vécu jusqu'à ce que `prod:demo` ait
+     * besoin d'effacer son propre décor.
+     */
+    expect($proche->refresh()->display_name)->toBe(EraseProject::MARQUEUR)
+        ->and($proche->email)->toBeNull()
+        ->and($proche->phone_e164)->toBeNull();
+});
+
+it('efface un projet dont une question attend encore sa réponse', function (): void {
+    [$project] = projetEffacable();
+
+    $proposee = Story::factory()->create(['project_id' => $project->id]);
+
+    app()->call([new EraseProject($project->id), 'handle']);
+
+    /*
+     * `Proposed` ne mène pas à la corbeille — les états de retrait de R-4
+     * s'appliquent à une parole, pas à une question posée. L'y pousser faisait
+     * échouer l'effacement **entier**, donc pour tout projet vivant : une
+     * question attend toujours sa réponse.
+     */
+    expect($proposee->refresh()->state->getValue())->toBe(Proposed::$name)
+        ->and($project->refresh()->erased_at)->not->toBeNull();
+
+    // Son lien d'enregistrement est mort avec les autres.
+    expect(AccessToken::query()->where('subject_id', $proposee->id)->whereNull('revoked_at')->count())->toBe(0);
+});
+
+it('fait cesser toute sollicitation', function (): void {
+    [$project] = projetEffacable();
+
+    $project->forceFill([
+        'status' => ProjectStatus::Active,
+        'accepted_at' => now()->subDays(30),
+        'next_prompt_at' => now()->addDay(),
+    ])->save();
+
+    app()->call([new EraseProject($project->id), 'handle']);
+
+    /*
+     * `erased_at` seul ne suffit pas : ni `prompts:dispatch-due` ni les six
+     * règles du moteur ne le lisent, tous filtrant sur `active`. Un projet
+     * effacé posait donc encore des questions et relançait — un narrateur dont
+     * on venait de nuller les coordonnées.
+     */
+    expect($project->refresh()->status)->toBe(ProjectStatus::Cancelled)
+        ->and($project->next_prompt_at)->toBeNull();
 });
 
 it('révoque tous les jetons du projet', function (): void {

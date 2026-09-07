@@ -132,6 +132,21 @@ Schedule::command('backup:monitor')->dailyAt('07:00');
  */
 Schedule::command('health:check')->everyMinute();
 
+/*
+ * Le battement que `ScheduleCheck` relit.
+ *
+ * Sans lui le contrôle est rouge à vie, et il l'était : le planificateur
+ * tournait, `health:check` passait toutes les minutes, mais personne ne
+ * posait la marque que ce contrôle va chercher — d'où « The schedule did not
+ * run yet » par courriel chaque heure, en local comme en production.
+ *
+ * Un contrôle qui crie tout le temps est un contrôle qu'on finit par filtrer,
+ * et le jour où le planificateur tombe pour de bon, le courriel arrive dans
+ * un dossier que plus personne ne lit. C'est le seul dégât d'une sonde
+ * bloquée au rouge, et il suffit à la réparer tout de suite.
+ */
+Schedule::command('health:schedule-check-heartbeat')->everyMinute();
+
 // `audit:verify` tourne déjà plus haut, à 04:30. Le contrôle de santé, lui,
 // ne regarde que la journée en cours : relire à chaque minute un journal qui
 // grossit finirait par faire désactiver le contrôle, ce qui est la vraie panne.

@@ -1,5 +1,5 @@
 # NARRAE — Dossier Confiance, Conformité, Sécurité & Opérations
-**v2.7 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
+**v2.8 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
 
 ## 1. Principes fondateurs
 1. **Le narrateur est souverain** : consentement préalable, **validation explicite — jamais tacite —**, veto par histoire, retrait à tout moment. L'Initiateur·rice organise et paie ; il/elle n'outrepasse jamais.
@@ -79,6 +79,6 @@ BAT interactif obligatoire (lexique noms propres + relecture) ; mention « l'imp
 - **Protection** : URLs masquées dans les journaux et outils d'analytics ; rate limiting et détection d'abus/rejeu ; liens d'écoute famille distincts des liens d'enregistrement, à périmètre lecture seule.
 - **Comptes & actes sensibles — résolution de la contradiction « aucun compte »** : *aucun compte requis pour enregistrer* ; les **actes sensibles** (retrait, suppression, directives post-mortem, paramètres durables) exigent une **authentification sans mot de passe** (lien vérifié + code OTP SMS/email). L'Initiateur·rice a un compte standard ; MFA sur back-office.
 - **Back-office** : MFA obligatoire, rôles et permissions minimales, **journalisation inviolable de toutes les actions support** (lecture comprise), revue d'accès trimestrielle.
-- **Données** : chiffrement at-rest et in-transit, gestion des secrets (coffre), contrôle antivirus/format des fichiers envoyés, cloisonnement par projet.
+- **Données** : chiffrement at-rest et in-transit, gestion des secrets (coffre), contrôle de **format** des fichiers envoyés, cloisonnement par projet. **Le contrôle antivirus est débranché depuis le 7 septembre 2026** [v2.8, D-12] : le démon n'a jamais été installé en production et, comme un fichier non scanné n'est pas traité comme un fichier propre, aucune photo ne pouvait plus être déposée. Ce qui reste : le refus de tout ce qui n'est pas une image lisible, le retrait des métadonnées de géolocalisation, le stockage privé cloisonné. Chaque fichier admis sans contrôle est journalisé, pour qu'on sache ce qui est entré le jour où l'on rebranche ; la date de rebranchement n'est pas fixée (R-12). Ce document ne présente pas ce contrôle comme actif tant qu'il ne l'est pas.
 - **QR** : pages d'écoute à jeton propre, lecture seule, révocables par la famille (cf. §7 D-8).
 - **Réponse aux incidents** : procédure écrite, notification CNIL/personnes selon RGPD, exercices ; **test d'intrusion externe avant le pic Noël 2027**.

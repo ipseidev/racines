@@ -7,6 +7,7 @@ namespace App\Jobs;
 use App\Actions\DeleteStoryAction;
 use App\Audit\AuditLog;
 use App\Enums\DeletionRequestedBy;
+use App\Enums\ProjectStatus;
 use App\Models\AccessToken;
 use App\Models\Consent;
 use App\Models\Export;
@@ -16,6 +17,7 @@ use App\Models\Project;
 use App\Models\Story;
 use App\Services\Storage\MediaStorage;
 use App\States\Story\Deleted;
+use App\States\Story\Proposed;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +95,22 @@ final class EraseProject implements ShouldQueue
          * laisserait des objets en place sans que rien ne le dise.
          */
         foreach ($project->stories as $story) {
+            /*
+             * Une question jamais répondue n'a rien à effacer.
+             *
+             * `Proposed` ne mène pas à la corbeille, et c'est voulu : les
+             * états de retrait de R-4 s'appliquent à une parole, et une
+             * question posée n'en est pas une — `RECORDED_OR_LATER` le dit.
+             * L'y pousser quand même faisait échouer l'effacement **entier**
+             * sur « Transition [proposed -> trashed] is not declared », donc
+             * pour tout projet vivant : une question attend toujours sa
+             * réponse. Elle ne porte ni voix, ni texte, ni photo, et son lien
+             * d'enregistrement est révoqué plus bas avec les autres.
+             */
+            if ($story->state instanceof Proposed) {
+                continue;
+            }
+
             if (! $story->state instanceof Deleted) {
                 app(DeleteStoryAction::class)->handle($story, DeletionRequestedBy::Narrator);
             }
@@ -135,7 +153,26 @@ final class EraseProject implements ShouldQueue
             Export::query()->where('project_id', $project->getKey())
                 ->update(['status' => 'expired', 'object_path' => null, 'manifest' => null]);
 
-            $project->forceFill(['erased_at' => now()])->save();
+            /*
+             * Le projet cesse de solliciter, et pas seulement d'exister.
+             *
+             * `erased_at` n'est lu que par deux métriques et les exports
+             * proactifs : ni `prompts:dispatch-due` ni les six règles du
+             * moteur ne le regardent, tous filtrant sur `active`. Un projet
+             * effacé continuait donc à poser des questions et à relancer —
+             * à un narrateur dont on venait de nuller les coordonnées, ce qui
+             * est exactement ce qu'une demande d'effacement interdit.
+             *
+             * `cancelled` est déjà l'état d'un projet auquel le produit ne
+             * parle plus (`EngineTick::SILENT_STATUSES`), et `next_prompt_at`
+             * part avec lui : la garde tient des deux côtés, celle du statut
+             * et celle du planificateur.
+             */
+            $project->forceFill([
+                'erased_at' => now(),
+                'status' => ProjectStatus::Cancelled,
+                'next_prompt_at' => null,
+            ])->save();
         });
 
         AuditLog::record('erased Project', $project, [
@@ -218,7 +255,6 @@ final class EraseProject implements ShouldQueue
          * plus.
          */
         $champs = [
-            'last_name' => null,
             'email' => null,
             'phone_e164' => null,
         ];
@@ -236,6 +272,12 @@ final class EraseProject implements ShouldQueue
 
         if ($personne instanceof Narrator) {
             $champs['first_name'] = self::MARQUEUR;
+            // `last_name` n'appartient qu'au narrateur : un proche n'a qu'un
+            // nom affiché. L'écrire pour les deux faisait échouer l'effacement
+            // sur un « column last_name does not exist » dès qu'un projet
+            // avait un proche — c'est-à-dire toujours, `FulfillOrder` posant
+            // la fiche d'écoute de l'acheteuse à chaque achat.
+            $champs['last_name'] = null;
         }
 
         if ($personne->getConnection()->getSchemaBuilder()->hasColumn($personne->getTable(), 'display_name')) {
