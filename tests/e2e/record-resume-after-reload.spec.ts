@@ -45,6 +45,8 @@ test('un rechargement en pleine phrase propose de reprendre', async ({
 
     await page.goto(RECORD_LINK);
 
+    // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await page.getByRole('button', { name: /avec votre voix/i }).click();
     await page.getByRole('button', { name: /je suis prêt/i }).click();
 
     const start = page.getByRole('button', { name: /^commencer$/i });

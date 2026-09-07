@@ -173,6 +173,24 @@ prépare l'état, mais c'est `reactions:send-digests` — celle qui tournera à 
 en production — que la vérification doit exercer. Envelopper la commande réelle
 reviendrait à tester l'enveloppe.
 
+### Outillage de production
+
+Symétrique de la famille précédente, et de sens inverse : ces commandes sont
+faites pour tourner **sur le serveur**, là où les doubles n'existent pas. Elles
+appellent les vrais prestataires — c'est le point, une clé présente ne prouve
+pas qu'elle est valide (T-208).
+
+| Commande | Fait |
+|---|---|
+| `php artisan prod:check` | « Si quelqu'un achète maintenant, est-ce que ça marche ? » Chaque ligne dit ce que le client perd, pas ce qui manque techniquement. `--rapide` n'appelle pas les prestataires |
+| `php artisan prod:sms +33…` | Envoie **un vrai SMS** à un numéro nommé et le suit jusqu'à `delivered`. Annonce avant d'envoyer l'expéditeur que verra le téléphone, la longueur et le nombre de segments ; refuse le numéro d'un narrateur ou d'un proche ; `--corps=` pour un autre texte, `--attendre=0` pour ne pas attendre le rappel, `--force` sans confirmation |
+
+`prod:sms` est la seule commande du dépôt qui **écrit à une personne**. Son
+texte par défaut ne ressemble donc pas à un message du produit et ne porte
+aucun lien : la faute de frappe la plus probable est un chiffre pour un autre,
+et un faux prompt chez un inconnu serait exactement le smishing que le doc 04
+§9 combat.
+
 ### Ce qu'on relance, et quand
 
 La porte complète coûte cher : la suite bout en bout demande deux à trois

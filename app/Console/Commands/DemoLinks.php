@@ -188,6 +188,31 @@ final class DemoLinks extends Command
 
         return [
             [
+                'bloc' => '04',
+                'titre' => 'Elle raconte — sa voix, ou son visage',
+                'avant' => [
+                    'Sur un **vrai téléphone**, et donc derrière `laradev --tunnel` : `getUserMedia` refuse le micro et la caméra hors HTTPS, sans rien demander.',
+                    'Le second tunnel n’est pas un confort : l’envoi part droit vers le stockage, et sans lui la page s’ouvre mais l’envoi échoue.',
+                ],
+                'etapes' => [
+                    [
+                        'quoi' => 'Choisir « Avec votre voix », raconter deux minutes, verrouiller l’écran au milieu, reprendre, envoyer. Rien ne doit dire « votre histoire est enregistrée » avant que le stockage l’ait confirmée.',
+                        'url' => self::record('record'),
+                    ],
+                    [
+                        'quoi' => 'Choisir « En vous filmant » (T-210) : on se voit **avant** de commencer, la caméra n’est demandée qu’après l’explication, et la relecture propose de se revoir.',
+                        'url' => self::record('video'),
+                    ],
+                    [
+                        'quoi' => '↳ puis rouvrir la même histoire depuis **l’autre téléphone** : c’est le couple Android → iPhone que le dérivé MP4 existe pour sauver. Sans lui, un récit filmé sur Android est invisible pour la moitié de la famille.',
+                    ],
+                    [
+                        'quoi' => 'Refuser la caméra : l’aide doit parler de la **caméra**, pas du micro, et la voix seule rester offerte avant l’écrit.',
+                        'bloque' => 'Les scénarios S11 à S15 du spike (poids, chaleur, lecture croisée) demandent deux appareils réels : docs/spikes/navigateur.md',
+                    ],
+                ],
+            ],
+            [
                 'bloc' => '07',
                 'titre' => 'Elle valide, ou elle retire',
                 'etapes' => [

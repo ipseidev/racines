@@ -24,6 +24,7 @@ describe('machine à états de l’enregistrement', () => {
     it('déroule le parcours nominal jusqu’à la confirmation', () => {
         const states = [
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_GRANTED' },
             { type: 'RECORD' },
@@ -52,6 +53,7 @@ describe('machine à états de l’enregistrement', () => {
         }, []);
 
         expect(seen).toEqual([
+            'choosing_mode',
             'explaining',
             'requesting_permission',
             'ready',
@@ -77,6 +79,7 @@ describe('machine à états de l’enregistrement', () => {
     it('mène au refus de micro et n’autorise qu’un seul nouvel essai', () => {
         let snapshot = run([
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_DENIED' },
         ]);
@@ -96,6 +99,7 @@ describe('machine à états de l’enregistrement', () => {
     it('compte un segment de plus après une interruption, sans rien perdre', () => {
         let snapshot = run([
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_GRANTED' },
             { type: 'RECORD' },
@@ -122,6 +126,7 @@ describe('machine à états de l’enregistrement', () => {
     it('signale l’approche de la limite à dix minutes', () => {
         const before = run([
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_GRANTED' },
             { type: 'RECORD' },
@@ -139,6 +144,7 @@ describe('machine à états de l’enregistrement', () => {
     it('arrête de lui-même à vingt minutes', () => {
         const snapshot = run([
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_GRANTED' },
             { type: 'RECORD' },
@@ -152,6 +158,7 @@ describe('machine à états de l’enregistrement', () => {
     it('réessaie un envoi échoué sans repartir de l’enregistrement', () => {
         let snapshot = run([
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_GRANTED' },
             { type: 'RECORD' },
@@ -173,6 +180,7 @@ describe('machine à états de l’enregistrement', () => {
     it('ne confirme que depuis l’envoi, jamais depuis la vérification', () => {
         const reviewing = run([
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_GRANTED' },
             { type: 'RECORD' },
@@ -197,8 +205,87 @@ describe('machine à états de l’enregistrement', () => {
 
         const discarded = reduce(found, { type: 'DISCARD_DRAFT' }, limits);
 
-        expect(discarded.state).toBe('explaining');
+        expect(discarded.state).toBe('choosing_mode');
         expect(discarded.context.segments).toBe(0);
+    });
+
+    it('demande la forme avant l’explication, donc avant toute autorisation', () => {
+        const choosing = reduce(initialSnapshot, { type: 'BEGIN' }, limits);
+
+        expect(choosing.state).toBe('choosing_mode');
+        expect(choosing.context.kind).toBe('audio');
+
+        // Sauter le choix ne mène nulle part : on ne fait pas surgir une
+        // caméra sur quelqu'un qui pensait parler.
+        expect(reduce(choosing, { type: 'READY' }, limits).state).toBe(
+            'choosing_mode',
+        );
+
+        const filming = reduce(
+            choosing,
+            { type: 'CHOOSE_MODE', kind: 'video' },
+            limits,
+        );
+
+        expect(filming.state).toBe('explaining');
+        expect(filming.context.kind).toBe('video');
+    });
+
+    it('laisse sortir de l’écran caméra tant que rien n’a été dit (T-212)', () => {
+        const ready = run([
+            { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'video' },
+            { type: 'READY' },
+            { type: 'PERMISSION_GRANTED' },
+        ]);
+
+        const sorti = reduce(ready, { type: 'CANCEL_MODE' }, limits);
+
+        expect(sorti.state).toBe('choosing_mode');
+        expect(sorti.context.kind).toBe('audio');
+    });
+
+    it('refuse de sortir dès que l’enregistrement tourne', () => {
+        const enCours = run([
+            { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'video' },
+            { type: 'READY' },
+            { type: 'PERMISSION_GRANTED' },
+            { type: 'RECORD' },
+            { type: 'TICK', seconds: 30 },
+        ]);
+
+        // Sortir ici jetterait un récit : la seule porte est « Terminer ».
+        expect(reduce(enCours, { type: 'CANCEL_MODE' }, limits).state).toBe(
+            'recording',
+        );
+
+        const enPause = reduce(enCours, { type: 'PAUSE' }, limits);
+
+        expect(reduce(enPause, { type: 'CANCEL_MODE' }, limits).state).toBe(
+            'paused',
+        );
+    });
+
+    it('garde la forme choisie quand on recommence', () => {
+        const confirmed = run([
+            { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'video' },
+            { type: 'READY' },
+            { type: 'PERMISSION_GRANTED' },
+            { type: 'RECORD' },
+            { type: 'TICK', seconds: 30 },
+            { type: 'STOP' },
+            { type: 'STOPPED' },
+        ]);
+
+        const restarted = reduce(confirmed, { type: 'RESTART' }, limits);
+
+        expect(restarted.state).toBe('ready');
+        expect(restarted.context.elapsedSeconds).toBe(0);
+        // La caméra est déjà ouverte : reposer la question serait une
+        // question de trop.
+        expect(restarted.context.kind).toBe('video');
     });
 
     it('bascule sur l’écran d’aide quand le navigateur ne sait pas enregistrer', () => {
@@ -210,6 +297,7 @@ describe('machine à états de l’enregistrement', () => {
     it('ignore le temps qui passe quand on n’enregistre pas', () => {
         const paused = run([
             { type: 'BEGIN' },
+            { type: 'CHOOSE_MODE', kind: 'audio' },
             { type: 'READY' },
             { type: 'PERMISSION_GRANTED' },
             { type: 'RECORD' },

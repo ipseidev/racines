@@ -28,6 +28,8 @@ test('un micro refusé mène à l’aide, puis à la réponse écrite', async ({
 
     await page.goto(RECORD_LINK);
 
+    // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await page.getByRole('button', { name: /avec votre voix/i }).click();
     await page.getByRole('button', { name: /je suis prêt/i }).click();
 
     await expect(

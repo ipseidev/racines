@@ -127,16 +127,32 @@ final readonly class ExportBuilder
             foreach ([
                 'original' => $recording->original_path,
                 'mp3' => $recording->derived_mp3_path,
+                // Le récit filmé part aussi : R-10 promet l'export complet,
+                // et une vidéo restée sur nos serveurs ne serait pas complète.
+                'mp4' => $recording->derived_mp4_path,
             ] as $quoi => $cle) {
                 if (! is_string($cle) || $cle === '') {
                     continue;
                 }
 
-                $nom = $dossier.'/'.($quoi === 'mp3' ? 'audio.mp3' : 'audio-original.'.$this->extension($cle));
+                $nom = $dossier.'/'.match ($quoi) {
+                    'mp3' => 'audio.mp3',
+                    'mp4' => 'video.mp4',
+                    default => ($recording->isVideo() ? 'video-original.' : 'audio-original.').$this->extension($cle),
+                };
+
+                // Le fichier source d'un récit filmé s'annonce comme tel : un
+                // `audio_original` qui porte un `.webm` vidéo tromperait qui
+                // lit le manifeste dans dix ans.
+                $champ = match (true) {
+                    $quoi === 'mp4' => 'video_mp4',
+                    $quoi === 'original' && $recording->isVideo() => 'video_original',
+                    default => 'audio_'.$quoi,
+                };
 
                 try {
                     $this->addString($zip, $nom, $this->storage->get($cle), $checksums);
-                    $fichiers['audio_'.$quoi] = $nom;
+                    $fichiers[$champ] = $nom;
                 } catch (Throwable) {
                     /*
                      * Un objet manquant ne fait pas échouer l'export entier.
@@ -146,7 +162,7 @@ final readonly class ExportBuilder
                      * absent » qu'aucune archive du tout. Et la famille voit
                      * ce qui manque au lieu de le découvrir plus tard.
                      */
-                    $fichiers['audio_'.$quoi] = null;
+                    $fichiers[$champ] = null;
                 }
             }
         }
@@ -360,14 +376,18 @@ final readonly class ExportBuilder
 
         foreach ($stories as $story) {
             $audio = $story['files']['audio_mp3'] ?? $story['files']['audio_original'] ?? null;
+            $video =
+                $story['files']['video_mp4'] ?? $story['files']['video_original'] ?? null;
             $titre = htmlspecialchars((string) ($story['title'] ?? __('book.untitled')), ENT_QUOTES);
             $question = $story['question'] === null
                 ? ''
                 : '<p class="question">« '.htmlspecialchars((string) $story['question'], ENT_QUOTES).' »</p>';
 
-            $lecteur = $audio === null
-                ? '<p class="absent">Enregistrement non disponible.</p>'
-                : '<audio controls preload="none" src="../'.htmlspecialchars((string) $audio, ENT_QUOTES).'"></audio>';
+            $lecteur = match (true) {
+                $video !== null => '<video controls playsinline preload="none" src="../'.htmlspecialchars((string) $video, ENT_QUOTES).'"></video>',
+                $audio !== null => '<audio controls preload="none" src="../'.htmlspecialchars((string) $audio, ENT_QUOTES).'"></audio>',
+                default => '<p class="absent">Enregistrement non disponible.</p>',
+            };
 
             $texte = ($story['files']['text'] ?? null) === null
                 ? ''
@@ -409,7 +429,8 @@ final readonly class ExportBuilder
         article { border-top: 1px solid #d9cfc4; padding: 1.75rem 0; }
         h2 { font-size: 1.25rem; margin: 0 0 .5rem; }
         .question { font-style: italic; color: #5a5049; margin: 0 0 1rem; }
-        audio { width: 100%; margin: .5rem 0; }
+        audio, video { width: 100%; margin: .5rem 0; }
+        video { max-height: 70vh; background: #000; border-radius: 6px; }
         .absent, .lire { color: #5a5049; font-size: .9375rem; }
         a { color: #26211c; }
         footer { border-top: 1px solid #d9cfc4; margin-top: 2rem; padding-top: 1.5rem;

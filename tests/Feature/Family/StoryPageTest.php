@@ -54,7 +54,33 @@ it('rend le titre, la question, l’audio et les deux textes', function (): void
             ->where('text', 'Je me souviens de la maison de Kerhostin.')
             ->where('verbatim', 'Alors euh je me souviens de la maison de Kerhostin.')
             ->has('audioUrl')
+            ->where('videoUrl', null)
             ->has('aiLabel'),
+        );
+});
+
+/**
+ * Le récit filmé arrive jusqu'aux proches (T-210).
+ *
+ * L'audio reste servi à côté : un proche dans le train, ou qui préfère ne pas
+ * regarder, garde la voix. Et c'est ce même MP3 que le QR du livre servira.
+ */
+it('rend la vidéo et l’audio quand la narratrice s’est filmée', function (): void {
+    [$token, , $story] = familyStory();
+
+    $recording = $story->currentRecording()->firstOrFail();
+    $recording->forceFill([
+        'kind' => 'video',
+        'original_mime' => 'video/webm',
+        'derived_mp4_path' => 'derives/pain.mp4',
+    ])->save();
+    fakeMediaStorage()->put('derives/pain.mp4', 'mp4');
+
+    $this->get("/l/{$token}/stories/{$story->id}")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('videoUrl')
+            ->has('audioUrl'),
         );
 });
 

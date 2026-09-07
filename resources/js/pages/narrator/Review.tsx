@@ -2,6 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AudioPlayer from '@/components/AudioPlayer';
+import VideoPlayer from '@/components/VideoPlayer';
 import { CheckField } from '@/components/form/CheckField';
 import { TextAreaField } from '@/components/form/TextAreaField';
 import { useT } from '@/hooks/useT';
@@ -18,6 +19,8 @@ type Props = {
     readable: string | null;
     aiLabel: string;
     audioUrl: string | null;
+    /** Le récit filmé, quand la narratrice a choisi la caméra (T-210). */
+    videoUrl: string | null;
     familyMembers: FamilyMember[];
 };
 
@@ -42,6 +45,7 @@ export default function Review({
     readable,
     aiLabel,
     audioUrl,
+    videoUrl,
     familyMembers,
 }: Props) {
     const t = useT();
@@ -131,7 +135,16 @@ export default function Review({
                     {t('narrator.review.steps.listen')}
                 </StepTitle>
 
-                {audioUrl === null ? (
+                {videoUrl !== null ? (
+                    // Se revoir avant de décider : c'est le même geste que se
+                    // réécouter, et le refus doit rester aussi facile.
+                    <div className="mt-4 flex flex-col gap-4">
+                        <VideoPlayer src={videoUrl} />
+                        {audioUrl === null ? null : (
+                            <AudioPlayer src={audioUrl} compact />
+                        )}
+                    </div>
+                ) : audioUrl === null ? (
                     <p className="text-brand-muted mt-3 text-base">
                         {t('narrator.review.no_audio')}
                     </p>

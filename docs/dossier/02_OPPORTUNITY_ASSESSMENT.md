@@ -1,5 +1,5 @@
 # NARRAE — Opportunity Assessment
-**v2.6 — Septembre 2026 — Sources : registre [Sxx] du doc 05 ; en cas de divergence chiffrée, le Référentiel (doc 05) fait foi.**
+**v2.7 — Septembre 2026 — Sources : registre [Sxx] du doc 05 ; en cas de divergence chiffrée, le Référentiel (doc 05) fait foi.**
 
 ## Taxonomie des affirmations
 **[FAIT SOURCÉ Sxx]** (référence au registre), **[DÉCLARATIF]** (chiffre d'une entreprise sur elle-même), **[OBSERVATION]** (constat qualitatif récurrent), **[ESTIMATION]** (calcul de notre fait), **[HYPOTHÈSE]** (à tester en Phase 0). Une source relayée par un concurrent ne porte jamais seule une décision de marché. Captures d'écran datées des prix : premier lot archivé les 1er et 2 sept. 2026 (site Remento EU, 24 captures, dossier `docs/reference/remento-screenshot/`) [S16] ; à compléter en 0A pour les autres acteurs. Ces captures contiennent des données de test personnelles : à anonymiser avant tout partage externe.

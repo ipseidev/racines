@@ -17,6 +17,10 @@ const catalogue = {
     common: { player: {} },
     narrator: {
         record: {
+            mode_title: 'Comment voulez-vous répondre, :name ?',
+            mode_audio: 'Avec votre voix',
+            mode_video: 'En vous filmant',
+            mode_help: 'La voix suffit.',
             greeting: ':name, voici votre question de la semaine',
             mic_notice:
                 'Quand vous appuierez sur le bouton, votre téléphone demandera le micro.',
@@ -70,6 +74,13 @@ const props = {
         segmentMilliseconds: 5000,
         partSizeBytes: 5 * 1024 * 1024,
         acceptedMimes: ['audio/webm'],
+        video: {
+            maxBytes: 400_000_000,
+            bitsPerSecond: 1_500_000,
+            audioBitsPerSecond: 128_000,
+            height: 720,
+            acceptedMimes: ['video/webm'],
+        },
     },
     writtenAnswerMaxChars: 20000,
     validationVariant: 'deferred' as const,
@@ -114,6 +125,10 @@ describe('le compteur de l’enregistrement', () => {
 
         render(<Record {...props} />);
 
+        // L'écran du choix précède tout (T-210).
+        await user.click(
+            await screen.findByRole('button', { name: 'Avec votre voix' }),
+        );
         await user.click(
             await screen.findByRole('button', { name: 'Je suis prêt·e' }),
         );

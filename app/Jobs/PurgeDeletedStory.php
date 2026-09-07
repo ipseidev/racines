@@ -55,7 +55,7 @@ final class PurgeDeletedStory implements ShouldQueue
         $keys = [];
 
         foreach ($story->recordings as $recording) {
-            foreach ([$recording->original_path, $recording->derived_mp3_path, $recording->replica_path] as $key) {
+            foreach ([$recording->original_path, $recording->derived_mp3_path, $recording->derived_mp4_path, $recording->replica_path] as $key) {
                 if (is_string($key) && $key !== '') {
                     $keys[] = $key;
                 }
@@ -82,6 +82,7 @@ final class PurgeDeletedStory implements ShouldQueue
             $story->recordings()->update([
                 'original_path' => null,
                 'derived_mp3_path' => null,
+                'derived_mp4_path' => null,
                 'replica_path' => null,
                 'segments' => null,
                 'checksum_sha256' => null,

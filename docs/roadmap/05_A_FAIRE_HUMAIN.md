@@ -40,7 +40,7 @@ Le nom de marque et le domaine sont arrêtés depuis le 4 septembre 2026 : **Nar
 | Ligne | Ce que le nom et le domaine permettent maintenant |
 |---|---|
 | **Resend** | Vérifier **narrae.fr** comme domaine d'envoi : SPF, DKIM, DMARC posés chez le registrar. Cela se fait en heures. |
-| **Twilio** | Enregistrer l'expéditeur alphanumérique **NARRAE** en France, pour que le SMS arrive au nom de la marque. L'enregistrement préalable prend des jours ouvrés. |
+| **Twilio** | ~~Enregistrer l'expéditeur alphanumérique **NARRAE** en France~~ — **rien à faire, réglé le 2026-09-07** : « Narrae » ne figure pas sur la liste des marques protégées de l'AF2M, et Twilio n'exige l'enregistrement que pour celles qui y figurent. Le nom part tel quel (T-211). |
 
 Tout le reste est indépendant du nom, et une bonne partie est déjà branchée :
 
@@ -185,13 +185,13 @@ puis `sail artisan config:clear`. **Dis-le moi quand tu en es là** : le tunnel 
 
 ### 1.7 Twilio et Resend — débloque le bloc 05, **le nom est arrêté**
 
-Les questions hebdomadaires partent par SMS et par courriel. Ce sont les **deux seules lignes** de ce document qui dépendaient du nom de marque et du domaine, arrêtés le 4 septembre 2026 (Narrae, narrae.fr, T-143) : Resend veut le domaine d'envoi narrae.fr vérifié, Twilio veut l'expéditeur alphanumérique « NARRAE » enregistré au nom de la marque. Les deux démarches peuvent commencer. En attendant, la boucle complète se joue en local avec Mailpit et le journal SMS, et c'est ainsi que les checkpoints sont prévus.
+Les questions hebdomadaires partent par SMS et par courriel. Ce sont les **deux seules lignes** de ce document qui dépendaient du nom de marque et du domaine, arrêtés le 4 septembre 2026 (Narrae, narrae.fr, T-143) : Resend veut le domaine d'envoi narrae.fr vérifié ; côté Twilio, l'expéditeur alphanumérique « NARRAE » **ne demande aucune démarche** — réponse du 7 septembre 2026, « Narrae » n'est pas sur la liste protégée de l'AF2M (T-211). Il ne reste donc que Resend. En attendant, la boucle complète se joue en local avec Mailpit et le journal SMS, et c'est ainsi que les checkpoints sont prévus.
 
 **Twilio** ([console.twilio.com](https://console.twilio.com)) :
 
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` : sur la page d'accueil de la console.
 - `TWILIO_FROM` : un numéro. Sur un compte d'essai, il faut **vérifier le numéro destinataire** avant de pouvoir lui écrire.
-- ⚠️ **L'expéditeur alphanumérique** — que le SMS arrive au nom de la marque plutôt que d'un numéro — **demande un enregistrement préalable en France** et n'est en général pas disponible sur un compte d'essai. `TWILIO_FROM` existe précisément comme repli. Si ça ne passe pas, ce n'est pas un échec du checkpoint : c'est une information à consigner, et une démarche à lancer avant le pilote.
+- ✅ **L'expéditeur alphanumérique** — que le SMS arrive au nom de la marque plutôt que d'un numéro — **ne demande aucun enregistrement** pour « Narrae » : la liste protégée de l'AF2M ne le porte pas, et Twilio n'exige la démarche que pour les marques qui y figurent (ticket 29391714, réponse du 2026-09-07, T-211). Le nom suffit dans `from`, ce que `TwilioSmsSender` fait déjà pour la France, la Belgique, la Suisse et le Luxembourg ; `TWILIO_FROM` reste le repli **hors** de ces quatre pays et doit donc porter un numéro. Deux réserves : sur un compte d'essai l'alphanumérique n'est en général pas ouvert, et **le nom n'est réservé à personne** — quelqu'un d'autre peut signer un SMS « Narrae » (ligne 9bis).
 
 **Resend** ([resend.com](https://resend.com)) :
 
@@ -318,7 +318,8 @@ Le seul endroit à tenir à jour.
 | 6 | Lecture humaine du Fluide sur 5 histoires **réelles** | bloc 06 | **à moitié** — 5 mots à mot **écrits** lus le 2026-09-03, deux défauts corrigés (`fluide-v2`, T-126) ; reste 5 histoires **réelles**, dans la même séance que le corpus de voix |
 | 7 | iPhone réel + Android réel *(5 idéalement, dont Samsung Internet)* | bloc 04 | ☐ |
 | 8 | Accès HTTPS (tunnel ou préproduction) | bloc 04 | ☐ |
-| 9 | Twilio : SID, token, numéro vérifié, expéditeur « NARRAE » enregistré | bloc 05 | **en cours** — clés dans `.env` le 2026-09-05, demande d'enregistrement AF2M déposée le même jour. **Deux corrections à faire** : `TWILIO_FROM` doit porter un numéro et non « Narrae » (c'est le repli là où l'alphanumérique est interdit), et renseigner `SMS_ALLOWLIST` avant de basculer `SMS_PROVIDER=twilio` — sans elle rien ne part, et c'est voulu (T-174) |
+| 9 | Twilio : SID, token, numéro vérifié, expéditeur « NARRAE » | bloc 05 | **en cours** — `SMS_ALLOWLIST` renseignée ; l'**enregistrement AF2M n'est pas nécessaire** (réponse du 2026-09-07, T-211). **Le jeton d'authentification ne marche pas** : essai d'envoi réel le 2026-09-07, `[HTTP 401] 20003 — auth token is not valid for account AC78371…`. Le SID est bien celui qui a déposé le ticket, il n'y a pas de configuration en cache et la valeur est propre : c'est le jeton lui-même qu'il faut recopier depuis la console (ou qui a été remplacé par un secret de clé d'API). **Dès qu'il est bon** : `artisan prod:sms +33…` rejoue l'essai de bout en bout, rappel de livraison compris. **Autre correction** : `TWILIO_FROM` porte encore « Narrae », or c'est un **numéro** qu'il doit porter — c'est le repli hors FR/BE/CH/LU *et* le `TEL` de la fiche contact VCF du doc 04 §9, qu'un nom rend inimportable (T-174) |
+| 9bis | Déposer la marque **Narrae**, puis demander son inscription sur la liste protégée de l'**AF2M** | bloc 05 | ☐ **pas bloquant, à mener avant que le pilote ne s'élargisse** — hors liste, l'expéditeur donne la reconnaissance mais pas l'exclusivité : n'importe qui peut signer un SMS « Narrae », et le doc 04 §9 s'appuie sur l'expéditeur constant comme pilier anti-hameçonnage (T-211) |
 | 10 | Resend : clé, domaine narrae.fr vérifié, secret de webhook | bloc 05 | **en cours** — clé dans `.env` le 2026-09-05. Restent le domaine vérifié (SPF, DKIM, DMARC) et `RESEND_WEBHOOK_SECRET`, sans lequel aucun message ne passe en `delivered` — et c'est ce statut qui distingue « lien non ouvert » de « courriel jamais reçu » |
 | 11 | 30 min pour le checkpoint du bloc 07 | bloc 07 | ☑ **fait le 2026-09-03** — cinq points sur cinq, quatre écarts trouvés et corrigés (T-127 à T-129), bloc tagué |
 | 12 | 20 min pour le checkpoint du bloc 08 | bloc 08 | ☑ **fait le 2026-09-05** — sept points sur sept, joué sur un vrai iPhone ; quatre écarts trouvés et corrigés (T-156 à T-158, T-160, T-164, T-166), bloc tagué |

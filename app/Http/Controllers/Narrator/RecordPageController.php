@@ -53,6 +53,16 @@ final class RecordPageController
                 'segmentMilliseconds' => (int) config('product.recording.segment_milliseconds'),
                 'partSizeBytes' => (int) config('product.recording.upload_part_bytes'),
                 'acceptedMimes' => array_values((array) config('product.recording.accepted_mimes')),
+                // Les bornes de la vidéo (T-210). Le débit est imposé au
+                // navigateur : laissé libre, il produit un fichier qu'une 4G
+                // de campagne n'enverra jamais.
+                'video' => [
+                    'maxBytes' => (int) config('product.recording.video.max_bytes'),
+                    'bitsPerSecond' => (int) config('product.recording.video.bits_per_second'),
+                    'audioBitsPerSecond' => (int) config('product.recording.video.audio_bits_per_second'),
+                    'height' => (int) config('product.recording.video.height'),
+                    'acceptedMimes' => array_values((array) config('product.recording.video.accepted_mimes')),
+                ],
             ],
             'writtenAnswerMaxChars' => 20_000,
             // La variante décide si les trois choix s'affichent ici, juste

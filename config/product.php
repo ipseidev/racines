@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 return [
 
-    // Enregistrement navigateur (décision T-27, PRD US-01)
+    // Enregistrement navigateur (décision T-27, PRD US-01, T-210 pour la vidéo)
     'recording' => [
         'soft_warning_seconds' => 600,
         'hard_stop_seconds' => 1200,
@@ -25,6 +25,24 @@ return [
         'upload_part_bytes' => 5 * 1024 * 1024,
         'accepted_mimes' => [
             'audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/wav', 'audio/x-m4a',
+        ],
+
+        /*
+         * La vidéo (T-210), bornée séparément parce qu'elle ne pèse pas le
+         * même poids. Vingt minutes à 1,5 Mb/s font environ 225 Mo : la borne
+         * à 400 Mo laisse la marge d'un conteneur bavard sans autoriser un
+         * envoi qu'aucune 4G ne finira. Le débit est imposé au navigateur —
+         * laissé libre, Chrome monte à 5 Mb/s et le même récit devient
+         * inenvoyable depuis une maison de campagne.
+         */
+        'video' => [
+            'max_bytes' => 419_430_400,
+            'bits_per_second' => 1_500_000,
+            'audio_bits_per_second' => 128_000,
+            'height' => 720,
+            'accepted_mimes' => [
+                'video/mp4', 'video/webm', 'video/quicktime', 'video/x-matroska',
+            ],
         ],
     ],
 

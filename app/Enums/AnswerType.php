@@ -16,4 +16,5 @@ enum AnswerType: string
     case Audio = 'audio';
     case Text = 'text';
     case Phone = 'phone';
+    case Video = 'video';
 }

@@ -88,7 +88,10 @@ final readonly class CompleteRecording
             return false;
         }
 
-        $max = (int) config('product.recording.max_bytes');
+        // La borne suit la nature : une vidéo de vingt minutes dépasse de
+        // loin celle du son, et lui appliquer celle du son ferait refuser,
+        // après l'envoi, un récit parfaitement valable.
+        $max = $recording->kind->maxBytes();
 
         if ($total > $max) {
             $this->markFailed($recording, "total size [{$total}] exceeds the limit [{$max}]");
@@ -123,7 +126,10 @@ final readonly class CompleteRecording
         // Une histoire déjà enregistrée reste enregistrée : le narrateur qui
         // recommence ne provoque pas une transition impossible.
         if (! $story->state instanceof Recorded) {
-            $story->state->transitionTo(Recorded::class, AnswerType::Audio);
+            $story->state->transitionTo(
+                Recorded::class,
+                $recording->isVideo() ? AnswerType::Video : AnswerType::Audio,
+            );
         }
 
         // Chaîne délibérée : on réplique la source **avant** d'en dériver
@@ -153,6 +159,7 @@ final readonly class CompleteRecording
             'story_sequence' => $story->sequence,
             'recorded_rank' => $rang,
             'segments' => count($confirmedSegments),
+            'kind' => $recording->kind->value,
         ]);
 
         if ($rang === 1) {
@@ -166,6 +173,7 @@ final readonly class CompleteRecording
             'story_id' => $story->id,
             'bytes' => $total,
             'segments' => count($confirmedSegments),
+            'kind' => $recording->kind->value,
         ]);
 
         return true;

@@ -41,4 +41,14 @@ enum ClientEventName: string
      * qu'on aurait tort de jeter.
      */
     case SelfNarrationInterest = 'self_narration_interest';
+    /*
+     * T-210 : la forme choisie avant toute autorisation. C'est elle qui dira
+     * si se filmer intéresse vraiment les narrateurs, ou si le bouton reste
+     * un ornement — et elle se mesure au choix, pas à l'envoi, parce qu'un
+     * refus de caméra est justement ce qu'on veut compter.
+     */
+    case CameraDenied = 'camera_denied';
+    case CameraGranted = 'camera_granted';
+    case VideoChosen = 'video_chosen';
+    case AudioChosen = 'audio_chosen';
 }

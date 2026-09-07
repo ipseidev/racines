@@ -8,6 +8,7 @@ use App\Jobs\BuildExport;
 use App\Models\Export;
 use App\Models\Narrator;
 use App\Models\Project;
+use App\Models\Recording;
 use App\Models\Story;
 use App\Models\Transcript;
 use App\Notifications\ExportReadyNotification;
@@ -86,6 +87,44 @@ function construire(Export $export): Export
 
 beforeEach(function (): void {
     Notification::fake();
+});
+
+/**
+ * Le récit filmé part avec l'archive (T-210).
+ *
+ * R-10 promet un export **complet** : une vidéo qui resterait sur nos
+ * serveurs ferait mentir l'engagement. Le lecteur hors ligne la montre, et
+ * le MP3 reste là pour qui veut seulement écouter.
+ */
+it('emporte la vidéo, son MP3 et un lecteur qui la montre', function (): void {
+    [$project, $validee] = projetExportable();
+
+    $storage = app(MediaStorage::class);
+    $recording = Recording::factory()->video()->confirmed()
+        ->create(['story_id' => $validee->id]);
+    $recording->forceFill([
+        'derived_mp3_path' => 'derives/fournil.mp3',
+        'derived_mp4_path' => 'derives/fournil.mp4',
+    ])->save();
+
+    $storage->put((string) $recording->original_path, 'la source');
+    $storage->put('derives/fournil.mp3', 'le son');
+    $storage->put('derives/fournil.mp4', 'l’image');
+
+    $export = construire(app(RequestExport::class)->handle($project, ExportScope::Initiator));
+    $noms = implode("\n", array_keys(contenuDeLArchive($export)));
+
+    expect($noms)->toContain('video.mp4')
+        ->and($noms)->toContain('audio.mp3')
+        // La source n'est pas jetée : « l'audio source est sacré » vaut aussi
+        // pour l'image.
+        ->and($noms)->toContain('video-original.');
+
+    expect($export->manifest['stories'][0]['files'])
+        ->toHaveKey('video_mp4')
+        // Et non `audio_original` : un manifeste qui annonce du son là où il
+        // y a une image tromperait qui le lit dans dix ans.
+        ->toHaveKey('video_original');
 });
 
 it('n’emporte que les histoires validées quand l’Initiateur·rice demande', function (): void {

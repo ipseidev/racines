@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\RecordingKind;
 use App\Models\Recording;
 use App\Models\Story;
 use App\Support\ObjectKeys;
@@ -12,6 +13,9 @@ use Illuminate\Support\Str;
 
 /**
  * Ouvre un enregistrement et son premier segment.
+ *
+ * La nature — voix ou vidéo — se lit dans le conteneur annoncé, jamais dans
+ * un champ que le client choisirait.
  *
  * Un narrateur qui recommence n'écrase rien : le précédent enregistrement
  * cesse d'être courant et reste en base, confirmé, avec son objet. « L'audio
@@ -31,6 +35,7 @@ final readonly class InitiateRecording
             $story->recordings()->current()->update(['is_current' => false]);
 
             $recording = new Recording([
+                'kind' => RecordingKind::fromMime($mime),
                 'original_mime' => $mime,
                 'device_info' => $deviceInfo === [] ? null : $deviceInfo,
                 'segments' => [],

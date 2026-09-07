@@ -19,6 +19,7 @@ use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Enums\PromptSlot;
 use App\Enums\QuestionTheme;
+use App\Enums\RecordingKind;
 use App\Enums\RecordingSource;
 use App\Enums\ShareDecision;
 use App\Enums\StoryVisibility;
@@ -52,6 +53,7 @@ function domainEnums(): array
         ProjectStatus::class,
         PromptSlot::class,
         QuestionTheme::class,
+        RecordingKind::class,
         RecordingSource::class,
         ShareDecision::class,
         StoryVisibility::class,

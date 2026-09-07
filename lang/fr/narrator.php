@@ -58,12 +58,40 @@ return [
     ],
 
     'record' => [
+        /*
+         * Écran 0 — la forme (T-210). Il vient avant l'explication, donc
+         * avant toute demande d'autorisation : la voix et la caméra ne se
+         * demandent pas de la même façon, et faire surgir l'objectif sur
+         * quelqu'un qui pensait parler se solderait par un refus réflexe.
+         *
+         * La voix est le premier bouton, et le principal. Ce n'est pas un
+         * hasard : c'est ce que le produit sait faire de mieux, se filmer
+         * intimide, et le livre se lit avec une voix dans l'oreille.
+         */
+        'mode_title' => 'Comment voulez-vous répondre, :name ?',
+        'mode_title_tu' => 'Comment veux-tu répondre, :name ?',
+        'mode_audio' => 'Avec votre voix',
+        'mode_video' => 'En vous filmant',
+        'mode_help' => 'La voix suffit, et c’est elle qui accompagnera le livre. Vous filmer ajoute votre visage, pour votre famille.',
+        'mode_help_tu' => 'La voix suffit, et c’est elle qui accompagnera le livre. Te filmer ajoute ton visage, pour ta famille.',
+
+        /*
+         * L'écran caméra (T-212). Il prend tout l'écran, la question posée
+         * dessus s'efface dès que ça tourne, et « Sortir » n'existe que tant
+         * que rien n'a été dit — après, on passe par « Terminer », qui garde
+         * ce qui a été raconté.
+         */
+        'video_stage' => 'Vous filmer',
+        'mode_exit' => 'Sortir',
+
         // Écran 1 — explication. Elle précède toujours la demande de micro :
         // une autorisation qui surgit sans prévenir se refuse par réflexe.
         'greeting' => ':name, voici votre question de la semaine',
         'greeting_tu' => ':name, voici ta question de la semaine',
         'mic_notice' => 'Quand vous appuierez sur le bouton, votre téléphone demandera l’autorisation d’utiliser le micro. Choisissez « Autoriser ».',
         'mic_notice_tu' => 'Quand tu appuieras sur le bouton, ton téléphone demandera l’autorisation d’utiliser le micro. Choisis « Autoriser ».',
+        'camera_notice' => 'Quand vous appuierez sur le bouton, votre téléphone demandera l’autorisation d’utiliser le micro et la caméra. Choisissez « Autoriser ». Vous vous verrez à l’écran avant de commencer.',
+        'camera_notice_tu' => 'Quand tu appuieras sur le bouton, ton téléphone demandera l’autorisation d’utiliser le micro et la caméra. Choisis « Autoriser ». Tu te verras à l’écran avant de commencer.',
         'ready' => 'Je suis prêt·e',
 
         // Écran 2 — permission.
@@ -73,6 +101,8 @@ return [
         'start' => 'Commencer',
         'tap_hint' => 'Appuyez, puis parlez comme au téléphone. Prenez tout votre temps.',
         'tap_hint_tu' => 'Appuie, puis parle comme au téléphone. Prends tout ton temps.',
+        'tap_hint_video' => 'Installez-vous face à une fenêtre si vous pouvez, puis appuyez et racontez. Prenez tout votre temps.',
+        'tap_hint_video_tu' => 'Installe-toi face à une fenêtre si tu peux, puis appuie et raconte. Prends tout ton temps.',
         'pause' => 'Pause',
         'resume' => 'Reprendre',
         'finish' => 'Terminer',
@@ -87,6 +117,7 @@ return [
 
         // Écran 4 — vérification.
         'review_title' => 'Voulez-vous vous réécouter ?',
+        'review_title_video' => 'Voulez-vous vous revoir ?',
         'review_body' => 'Si ça vous convient, envoyez. Sinon, vous pouvez recommencer.',
         'listen' => 'Réécouter',
         'send' => 'Envoyer',
@@ -114,6 +145,23 @@ return [
 
         'written_link' => 'Répondre par écrit',
         'question_label' => 'Votre question',
+    ],
+
+    /*
+     * L'aide quand c'est la caméra qui a été refusée (T-210). Un texte à
+     * part, et pas une variante du précédent : envoyer quelqu'un dans le
+     * réglage du micro alors qu'il a refusé la caméra le ferait tourner en
+     * rond. La voix reste offerte comme issue, avant l'écrit.
+     */
+    'camera_help' => [
+        'title' => 'La caméra n’est pas autorisée',
+        'body' => 'Sans caméra, nous ne pouvons pas vous filmer. Voici comment l’autoriser, et vous pouvez aussi répondre avec votre voix seule.',
+        'retry' => 'Réessayer',
+        'ios' => 'Sur iPhone : ouvrez Réglages, faites défiler jusqu’à Safari, touchez Appareil photo, puis choisissez « Demander » ou « Autoriser ». Revenez ensuite sur cette page.',
+        'android' => 'Sur Android : touchez le cadenas à gauche de l’adresse, en haut de l’écran, puis Autorisations, puis Appareil photo, et choisissez « Autoriser ».',
+        'samsung' => 'Sur Samsung Internet : touchez le cadenas à gauche de l’adresse, puis Autorisations, puis Appareil photo, et choisissez « Autoriser ».',
+        'other' => 'Cherchez l’icône de cadenas à côté de l’adresse de cette page, puis autorisez la caméra.',
+        'unsupported' => 'Votre navigateur ne sait pas filmer. Vous pouvez répondre avec votre voix, par écrit, ou nous écrire pour qu’on vous appelle.',
     ],
 
     'mic_help' => [

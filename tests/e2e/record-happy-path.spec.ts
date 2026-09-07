@@ -56,6 +56,8 @@ test('un narrateur enregistre, met en pause, reprend et envoie', async ({
 
     // Écran 1 — l'explication précède la demande de micro.
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await page.getByRole('button', { name: /avec votre voix/i }).click();
     const ready = page.getByRole('button', { name: /je suis prêt/i });
     await expect(ready).toBeVisible();
 
@@ -100,6 +102,8 @@ test('la confirmation ne s’affiche jamais avant l’envoi', async ({ page }) =
         0,
     );
 
+    // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await page.getByRole('button', { name: /avec votre voix/i }).click();
     await page.getByRole('button', { name: /je suis prêt/i }).click();
     await expect(
         page.getByRole('button', { name: /^commencer$/i }),

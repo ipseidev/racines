@@ -104,7 +104,7 @@ sail artisan horizon:install
 
 1. En local avec `SMS_PROVIDER=log` et Mailpit : régler le projet du seeder sur `next_prompt_at = now()`, lancer `sail artisan prompts:dispatch-due` → une histoire `proposed`, un SMS dans le log, un email dans Mailpit avec un lien `/r/…` qui ouvre la page du bloc 04.
 2. Relancer la commande : rien de nouveau (idempotence), `next_prompt_at` est la semaine suivante au bon créneau.
-3. Avec des identifiants Twilio et Resend de test (compte d'essai, numéro vérifié) : un vrai SMS et un vrai email arrivent sur un téléphone de l'équipe, l'expéditeur du SMS est le nom de marque, le webhook passe le message en `delivered`.
+3. Avec des identifiants Twilio et Resend de test (compte d'essai, numéro vérifié) : un vrai SMS et un vrai email arrivent sur un téléphone de l'équipe, l'expéditeur du SMS est le nom de marque, le webhook passe le message en `delivered`. Le SMS se joue avec `artisan prod:sms +33…`, qui annonce l'expéditeur et les segments avant d'envoyer puis attend le rappel de livraison.
 4. Importer `/vcard` sur le téléphone : le contact apparaît avec le nom de marque.
 
 ## 8. Critères de sortie

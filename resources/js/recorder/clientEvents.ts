@@ -24,7 +24,11 @@ export type ClientEventName =
     | 'upload_retried'
     | 'upload_failed'
     | 'storage_quota_low'
-    | 'written_answer_chosen';
+    | 'written_answer_chosen'
+    | 'camera_denied'
+    | 'camera_granted'
+    | 'video_chosen'
+    | 'audio_chosen';
 
 export function reportClientEvent(
     event: ClientEventName,

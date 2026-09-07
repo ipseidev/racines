@@ -56,6 +56,7 @@ const catalogue = {
             },
         },
         welcome_offer: {
+            band_title: ':amount offerts pour commencer',
             teaser: 'Laissez-nous votre adresse : un code de :amount.',
             email_label: 'Votre adresse de courriel',
             email_placeholder: 'prenom@exemple.fr',
@@ -207,7 +208,6 @@ const catalogue = {
                 },
                 alt: 'Une femme âgée et sa fille.',
             },
-            newsletter: { title: ':amount offerts pour commencer' },
         },
     },
 };

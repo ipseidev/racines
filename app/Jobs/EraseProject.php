@@ -160,7 +160,7 @@ final class EraseProject implements ShouldQueue
 
         foreach ($project->stories as $story) {
             foreach ($story->recordings as $recording) {
-                foreach ([$recording->original_path, $recording->derived_mp3_path, $recording->replica_path] as $cle) {
+                foreach ([$recording->original_path, $recording->derived_mp3_path, $recording->derived_mp4_path, $recording->replica_path] as $cle) {
                     if (is_string($cle) && $cle !== '') {
                         $cles[] = $cle;
                     }

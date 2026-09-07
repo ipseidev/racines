@@ -59,7 +59,8 @@ export default function CheckoutLayout({ children }: PropsWithChildren) {
 
             <main className="flex-1">{children}</main>
 
-            <PublicFooter />
+            {/* Sans les pages du site : elles concurrenceraient « Continuer » (T-135). */}
+            <PublicFooter variant="compact" />
         </div>
     );
 }

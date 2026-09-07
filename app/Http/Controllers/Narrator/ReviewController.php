@@ -43,6 +43,7 @@ final readonly class ReviewController
         $story = self::reviewableStory($request);
         $recording = $story->currentRecording()->first();
         $derived = $recording?->derived_mp3_path;
+        $video = $recording?->playableVideoPath();
 
         return inertia('narrator/Review', [
             'firstName' => $story->narrator->first_name,
@@ -57,6 +58,7 @@ final readonly class ReviewController
             // obligation (bloc 06 §8), pas une décision d'affichage.
             'aiLabel' => __('family.story.ai_label', ['first_name' => $story->narrator->first_name]),
             'audioUrl' => $derived === null ? null : $storage->temporaryUrl($derived, 60),
+            'videoUrl' => $video === null ? null : $storage->temporaryUrl($video, 60),
             'familyMembers' => $story->project->familyMembers()
                 ->orderBy('display_name')
                 ->get(['id', 'display_name'])

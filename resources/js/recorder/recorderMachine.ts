@@ -1,3 +1,5 @@
+import type { RecordingKind } from './mime';
+
 /**
  * Machine à états de l'enregistrement.
  *
@@ -6,10 +8,16 @@
  * narrateur de 80 ans — que l'explication précède toujours la demande de
  * micro, qu'une interruption ne perd rien, et qu'un envoi échoué se réessaie
  * sans repartir de zéro.
+ *
+ * Depuis T-210, un écran précède tout le reste : la voix seule, ou le visage.
+ * Il est **avant** l'explication et donc avant la demande d'autorisation,
+ * parce que ce ne sont pas les mêmes permissions — faire surgir la caméra sur
+ * quelqu'un qui pensait parler serait une trahison, et un refus par réflexe.
  */
 export type RecorderState =
     | 'idle'
     | 'draft_found'
+    | 'choosing_mode'
     | 'explaining'
     | 'requesting_permission'
     | 'permission_denied'
@@ -30,6 +38,8 @@ export type RecorderContext = {
     warningShown: boolean;
     permissionRetries: number;
     hardStopReached: boolean;
+    /** Ce que la personne a choisi de laisser : sa voix, ou son visage. */
+    kind: RecordingKind;
 };
 
 export type RecorderEvent =
@@ -37,6 +47,8 @@ export type RecorderEvent =
     | { type: 'RESUME_DRAFT' }
     | { type: 'DISCARD_DRAFT' }
     | { type: 'BEGIN' }
+    | { type: 'CHOOSE_MODE'; kind: RecordingKind }
+    | { type: 'CANCEL_MODE' }
     | { type: 'READY' }
     | { type: 'PERMISSION_GRANTED' }
     | { type: 'PERMISSION_DENIED' }
@@ -72,6 +84,7 @@ export const initialContext: RecorderContext = {
     warningShown: false,
     permissionRetries: 0,
     hardStopReached: false,
+    kind: 'audio',
 };
 
 export const initialSnapshot: RecorderSnapshot = {
@@ -98,7 +111,9 @@ export function reduce(
         case 'RESUME_DRAFT':
             // Le brouillon retrouvé est déjà un segment enregistré : on repart
             // en vérification, pas en enregistrement, pour que la personne
-            // décide sans risquer d'écraser ce qu'elle a dit.
+            // décide sans risquer d'écraser ce qu'elle a dit. Sa nature vient
+            // du conteneur du brouillon, pas d'un nouveau choix : ce qui est
+            // sur le téléphone est ce qui est sur le téléphone.
             return state === 'draft_found'
                 ? {
                       state: 'reviewing',
@@ -111,12 +126,35 @@ export function reduce(
 
         case 'DISCARD_DRAFT':
             return state === 'draft_found'
-                ? { state: 'explaining', context: initialContext }
+                ? { state: 'choosing_mode', context: initialContext }
                 : snapshot;
 
         case 'BEGIN':
             return state === 'idle'
-                ? { state: 'explaining', context }
+                ? { state: 'choosing_mode', context }
+                : snapshot;
+
+        case 'CHOOSE_MODE':
+            // Le choix n'est jamais imposé en cours de route : on ne le prend
+            // que depuis l'écran qui le pose.
+            return state === 'choosing_mode'
+                ? {
+                      state: 'explaining',
+                      context: { ...context, kind: event.kind },
+                  }
+                : snapshot;
+
+        case 'CANCEL_MODE':
+            /*
+             * La porte de sortie de l'écran caméra (T-212).
+             *
+             * Elle n'est ouverte que **depuis `ready`**, c'est-à-dire tant que
+             * rien n'a été dit. Depuis `recording` ou `paused`, sortir
+             * jetterait un récit : on n'y va que par « Terminer », qui garde
+             * ce qui a été raconté.
+             */
+            return state === 'ready'
+                ? { state: 'choosing_mode', context: initialContext }
                 : snapshot;
 
         case 'READY':
@@ -248,10 +286,16 @@ export function reduce(
                 : snapshot;
 
         case 'RESTART':
+            // Le compteur repart de zéro, le choix non : la caméra est déjà
+            // ouverte, et refaire choisir quelqu'un qui vient de dire « je
+            // recommence » serait une question de trop.
             return state === 'reviewing' ||
                 state === 'upload_failed' ||
                 state === 'confirmed'
-                ? { state: 'ready', context: initialContext }
+                ? {
+                      state: 'ready',
+                      context: { ...initialContext, kind: context.kind },
+                  }
                 : snapshot;
 
         default:

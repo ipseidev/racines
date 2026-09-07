@@ -445,6 +445,208 @@
         font-size: 1.75rem;
     }
 
+    /*
+     * L'écran caméra en plein écran (T-212).
+     *
+     * Une image occupe l'écran ; le texte passe par-dessus. Tout le travail
+     * de ce bloc tient dans une seule contrainte : une vidéo est un fond
+     * imprévisible, et du blanc sur une fenêtre ensoleillée ne se lit pas.
+     * Les voiles sombres ne sont donc pas un effet, ce sont eux qui tiennent
+     * le contraste — « en transparence » ne veut pas dire illisible.
+     */
+    .video-stage {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background: #000;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .video-stage-feed {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        /* L'image remplit l'écran quitte à être rognée sur les côtés : c'est
+           le comportement de toutes les applications de caméra, et il ne
+           retire jamais rien de ce qui est **enregistré**, qui garde le cadre
+           complet. */
+        object-fit: cover;
+        transform: scaleX(-1);
+    }
+
+    .video-stage-layer {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Les encoches et la barre système : ni la question ni le bouton ne
+       doivent finir dessous. */
+    .video-stage-top {
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+        padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1.25rem 3rem;
+        background: linear-gradient(
+            to bottom,
+            rgb(0 0 0 / 0.7),
+            rgb(0 0 0 / 0.35) 55%,
+            transparent
+        );
+    }
+
+    .video-stage-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.875rem;
+        padding: 3rem 1.25rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+        background: linear-gradient(
+            to top,
+            rgb(0 0 0 / 0.75),
+            rgb(0 0 0 / 0.4) 55%,
+            transparent
+        );
+    }
+
+    /*
+     * La question, posée sur l'image et non dans une carte : c'est la
+     * dernière chose qu'on lit avant de parler. Elle s'efface dès que ça
+     * tourne — pendant, elle recouvrirait le visage qu'on cadre.
+     */
+    .video-stage-question {
+        font-family: var(--font-display);
+        font-size: clamp(1.25rem, 5.5vw, 1.6rem);
+        font-weight: 500;
+        line-height: 1.25;
+        color: #fff;
+        text-wrap: balance;
+        border-radius: 1rem;
+        padding: 0.875rem 1rem;
+        /* Assez opaque pour que le blanc tienne sur n'importe quelle image,
+           assez transparent pour qu'on voie qu'on est déjà dans le cadre. */
+        background: rgb(0 0 0 / 0.55);
+        backdrop-filter: blur(6px);
+    }
+
+    .video-stage-exit {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 2.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        font-size: 1.0625rem;
+        font-weight: 500;
+        color: #fff;
+        background: rgb(0 0 0 / 0.55);
+        backdrop-filter: blur(6px);
+    }
+
+    .video-stage-timer {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: #fff;
+        background: rgb(0 0 0 / 0.55);
+        backdrop-filter: blur(6px);
+    }
+
+    .video-stage-dot {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 999px;
+        background: var(--color-brand-accent, #b0432a);
+        animation: pulse-dot 1.6s ease-in-out infinite;
+    }
+
+    /* En pause, le point ne bat plus : l'immobilité dit l'arrêt mieux qu'un mot. */
+    .video-stage-dot-paused {
+        background: rgb(255 255 255 / 0.6);
+        animation: none;
+    }
+
+    .video-stage-notice {
+        font-size: 1.0625rem;
+        line-height: 1.4;
+        color: #fff;
+        border-radius: 0.875rem;
+        padding: 0.75rem 1rem;
+        background: rgb(0 0 0 / 0.6);
+        backdrop-filter: blur(6px);
+    }
+
+    /*
+     * Le déclencheur : un anneau blanc et un disque rouge, la forme que tout
+     * le monde reconnaît. Le libellé reste écrit dessous — une icône seule
+     * suppose qu'on a déjà utilisé une application de caméra, et ce n'est pas
+     * l'hypothèse à faire ici.
+     */
+    .video-stage-shutter {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: #fff;
+    }
+
+    .video-stage-shutter-dot {
+        width: 4.75rem;
+        height: 4.75rem;
+        border-radius: 999px;
+        background: var(--color-brand-accent, #b0432a);
+        box-shadow: 0 0 0 0.3rem #fff;
+    }
+
+    .video-stage-shutter-label {
+        font-size: 1.1875rem;
+        font-weight: 600;
+        text-shadow: 0 1px 6px rgb(0 0 0 / 0.8);
+    }
+
+    .video-stage-primary,
+    .video-stage-secondary {
+        flex: 1 1 0;
+        min-height: 3.25rem;
+        border-radius: 999px;
+        font-size: 1.1875rem;
+        font-weight: 600;
+        padding-inline: 1rem;
+    }
+
+    .video-stage-primary {
+        color: #fff;
+        background: var(--color-brand-accent, #b0432a);
+    }
+
+    .video-stage-secondary {
+        color: #fff;
+        background: rgb(0 0 0 / 0.55);
+        border: 1px solid rgb(255 255 255 / 0.45);
+        backdrop-filter: blur(6px);
+    }
+
+    @keyframes pulse-dot {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.35;
+        }
+    }
+
     @media (max-height: 740px) {
         .record-greeting {
             font-size: 1.3rem;
@@ -665,6 +867,7 @@
         .enter,
         .animate-rise-in,
         .animate-pop-in,
+        .video-stage-dot,
         .record-halo::before,
         .record-halo::after {
             animation: none;

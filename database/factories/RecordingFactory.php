@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\RecordingKind;
 use App\Enums\RecordingSource;
 use App\Enums\UploadStatus;
 use App\Models\Recording;
@@ -29,6 +30,7 @@ final class RecordingFactory extends Factory
             'id' => (string) Str::uuid7(),
             'story_id' => Story::factory(),
             'source' => RecordingSource::Browser,
+            'kind' => RecordingKind::Audio,
             'original_disk' => 'r2',
             'original_mime' => 'audio/webm',
             'upload_status' => UploadStatus::Initiated,
@@ -55,6 +57,18 @@ final class RecordingFactory extends Factory
             $recording->confirmed_at = now();
             $recording->segments = [['number' => 1, 'bytes' => 1_024_000]];
         });
+    }
+
+    /**
+     * Un récit filmé (T-210). Le conteneur est celui de Chrome Android —
+     * celui qui oblige à dériver un MP4, donc celui qu'il faut éprouver.
+     */
+    public function video(string $mime = 'video/webm'): static
+    {
+        return $this->state(fn (): array => [
+            'kind' => RecordingKind::Video,
+            'original_mime' => $mime,
+        ]);
     }
 
     public function superseded(): static

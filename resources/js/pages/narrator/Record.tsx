@@ -1,5 +1,13 @@
 import { Head } from '@inertiajs/react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    lazy,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 import AudioPlayer from '@/components/AudioPlayer';
 import PhotoUploader from '@/components/PhotoUploader';
@@ -13,7 +21,11 @@ import {
     resumeInfo,
     type Draft,
 } from '@/recorder/draftStore';
-import { isRecordingSupported } from '@/recorder/mime';
+import {
+    isRecordingSupported,
+    kindOfMime,
+    type RecordingKind,
+} from '@/recorder/mime';
 import { detectPlatform } from '@/recorder/platform';
 import {
     initialSnapshot,
@@ -25,7 +37,10 @@ import { uploadDraft } from '@/recorder/uploader';
 import { useMediaRecorder } from '@/recorder/useMediaRecorder';
 import { requestWakeLock } from '@/recorder/wakeLock';
 
+import { formatDuration } from '@/recorder/duration';
+
 import MicHelp from './MicHelp';
+
 import ShareDecision from './ShareDecision';
 import WrittenAnswer from './WrittenAnswer';
 
@@ -36,6 +51,14 @@ export type RecordLimits = {
     segmentMilliseconds: number;
     partSizeBytes: number;
     acceptedMimes: string[];
+    /** Les bornes propres à la vidéo (T-210) : poids, débit, définition. */
+    video: {
+        maxBytes: number;
+        bitsPerSecond: number;
+        audioBitsPerSecond: number;
+        height: number;
+        acceptedMimes: string[];
+    };
 };
 
 type Props = {
@@ -57,15 +80,22 @@ type Props = {
     techComfort: string | null;
 };
 
+/*
+ * L'écran caméra et le lecteur vidéo sont chargés à la demande.
+ *
+ * Le budget de cette page est de 150 Ko gzip, et ce n'est pas une coquetterie :
+ * elle s'ouvre en 4G sur de vieux téléphones, et « un budget dépassé, c'est
+ * une histoire qui ne sera pas racontée ». Faire payer le poids de la caméra à
+ * quelqu'un qui répond avec sa voix — c'est-à-dire au choix par défaut, donc à
+ * la majorité — serait le mauvais arbitrage. Le morceau part chercher dès que
+ * « En vous filmant » est touché, pendant que l'explication se lit : personne
+ * ne voit d'attente.
+ */
+const VideoStage = lazy(() => import('./VideoStage'));
+const VideoPlayer = lazy(() => import('@/components/VideoPlayer'));
+
 /** Les niveaux d'aisance qui appellent plus d'aide à l'écran. */
 const NEEDS_HELP = ['rarely', 'no_smartphone'];
-
-function formatDuration(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const rest = seconds % 60;
-
-    return `${minutes}:${String(rest).padStart(2, '0')}`;
-}
 
 function MicIcon() {
     return (
@@ -80,6 +110,24 @@ function MicIcon() {
         >
             <rect x="9" y="3" width="6" height="11" rx="3" />
             <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" />
+        </svg>
+    );
+}
+
+function CameraIcon() {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="record-icon"
+        >
+            <path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" />
+            <circle cx="12" cy="13" r="3.5" />
         </svg>
     );
 }
@@ -157,8 +205,29 @@ export default function Record({
     const [writing, setWriting] = useState(false);
     const [roomWarning, setRoomWarning] = useState(false);
     const [decided, setDecided] = useState<string | null>(shareDecision);
+    // Se filmer n'est proposé que si le navigateur sait le faire : mieux vaut
+    // pas de bouton qu'un bouton qui mène à un écran d'aide.
+    const [videoSupported, setVideoSupported] = useState(false);
 
-    const recorder = useMediaRecorder(storyRef, limits.segmentMilliseconds);
+    const videoConstraints = useMemo(
+        () => ({
+            bitsPerSecond: limits.video.bitsPerSecond,
+            audioBitsPerSecond: limits.video.audioBitsPerSecond,
+            height: limits.video.height,
+        }),
+        [
+            limits.video.audioBitsPerSecond,
+            limits.video.bitsPerSecond,
+            limits.video.height,
+        ],
+    );
+
+    const recorder = useMediaRecorder(
+        storyRef,
+        limits.segmentMilliseconds,
+        snapshot.context.kind,
+        videoConstraints,
+    );
     const startedAt = useRef<number | null>(null);
     const wakeLock = useRef<{ release: () => void } | null>(null);
 
@@ -171,6 +240,15 @@ export default function Record({
 
     const tu = addressForm === 'tu';
     const needsHelp = NEEDS_HELP.includes(techComfort ?? '');
+    const filming = snapshot.context.kind === 'video';
+
+    /*
+     * La nature de la relecture vient du brouillon, pas du choix courant :
+     * un brouillon retrouvé après une purge d'onglet peut être une vidéo
+     * alors que la machine repart, elle, sur son défaut.
+     */
+    const playbackKind: RecordingKind =
+        draft === null ? snapshot.context.kind : kindOfMime(draft.mime);
 
     // Au chargement : brouillon retrouvé ? navigateur capable ?
     useEffect(() => {
@@ -185,6 +263,8 @@ export default function Record({
 
                 return;
             }
+
+            setVideoSupported(isRecordingSupported('video'));
 
             if (!(await hasRoom())) {
                 setRoomWarning(true);
@@ -282,14 +362,43 @@ export default function Record({
         const granted = await recorder.requestPermission();
 
         if (!granted) {
-            reportClientEvent('mic_denied', { platform: detectPlatform() });
+            reportClientEvent(filming ? 'camera_denied' : 'mic_denied', {
+                platform: detectPlatform(),
+            });
             send({ type: 'PERMISSION_DENIED' });
 
             return;
         }
 
-        reportClientEvent('mic_granted');
+        reportClientEvent(filming ? 'camera_granted' : 'mic_granted');
         send({ type: 'PERMISSION_GRANTED' });
+    };
+
+    /**
+     * Le choix de la forme, avant toute demande d'autorisation.
+     *
+     * La place restante est revérifiée ici, et pas seulement au chargement :
+     * une vidéo pèse dix fois une voix, et le seuil qui convient à l'une ne
+     * dit rien de l'autre.
+     */
+    const chooseMode = (kind: RecordingKind) => {
+        reportClientEvent(kind === 'video' ? 'video_chosen' : 'audio_chosen');
+        send({ type: 'CHOOSE_MODE', kind });
+
+        if (kind !== 'video') {
+            return;
+        }
+
+        // Le morceau de l'écran caméra part maintenant, pas à l'instant où
+        // l'on en a besoin : l'explication qui suit couvre le trajet.
+        void import('./VideoStage');
+
+        void hasRoom(Math.round(limits.video.maxBytes / 2)).then((room) => {
+            if (!room) {
+                setRoomWarning(true);
+                reportClientEvent('storage_quota_low', { kind });
+            }
+        });
     };
 
     const startRecording = async () => {
@@ -298,6 +407,50 @@ export default function Record({
         startedAt.current = Date.now();
         reportClientEvent('recording_started');
         send({ type: 'RECORD' });
+    };
+
+    /*
+     * Pause et reprise, nommées plutôt qu'écrites dans le `onClick` : depuis
+     * T-212 elles servent deux mises en page — la colonne de texte et l'écran
+     * caméra. Deux copies auraient fini par diverger, et c'est précisément
+     * ici qu'un écart coûte cher (le compteur de T-140).
+     */
+    const pauseRecording = () => {
+        recorder.pause();
+        // Le point de départ du compteur s'oublie : à la reprise, il repart
+        // de la durée acquise, pas de l'heure du premier « Commencer ».
+        // Sinon la pause se comptait comme du temps parlé (T-140).
+        startedAt.current = null;
+        reportClientEvent('recording_paused');
+        send({ type: 'PAUSE' });
+
+        /*
+         * La réécoute pendant la pause n'a de sens que pour une voix. Sur
+         * l'écran caméra, poser un lecteur vidéo par-dessus l'image en train
+         * de filmer donnerait deux visages à l'écran, dont un en différé :
+         * on s'en passe, et « Terminer » mène à la relecture complète.
+         */
+        if (snapshot.context.kind !== 'video') {
+            void preparePausedPlayback();
+        }
+    };
+
+    const resumeRecording = () => {
+        recorder.resume();
+        reportClientEvent('recording_resumed');
+        send({ type: 'RESUME' });
+        clearPausedPlayback();
+    };
+
+    /*
+     * Sortir de l'écran caméra sans rien perdre : la machine n'accepte
+     * `CANCEL_MODE` que depuis `ready`, donc tant que rien n'a été dit. Le
+     * flux est relâché au passage — une caméra qui reste allumée derrière un
+     * écran qu'on vient de quitter est une caméra qu'on a oubliée.
+     */
+    const leaveCamera = () => {
+        recorder.release();
+        send({ type: 'CANCEL_MODE' });
     };
 
     const finish = async () => {
@@ -417,6 +570,7 @@ export default function Record({
         return (
             <MicHelp
                 platform={detectPlatform()}
+                kind={snapshot.context.kind}
                 canRetry={snapshot.state === 'permission_denied'}
                 onRetry={() => void askPermission()}
                 onWrite={chooseWriting}
@@ -426,6 +580,40 @@ export default function Record({
 
     const { state, context } = snapshot;
     const capturing = state === 'recording' || state === 'paused';
+
+    /*
+     * Se filmer prend tout l'écran (T-212), et remplace donc la page plutôt
+     * que de s'y insérer : une image réduite à une vignette dans une colonne
+     * de texte demande à quelqu'un de se cadrer dans un timbre-poste.
+     *
+     * Seulement à partir de `ready` : avant, il n'y a pas encore de flux, et
+     * l'explication qui précède l'autorisation garde sa place dans la page.
+     * Après « Terminer », la relecture reprend la mise en page ordinaire, où
+     * vivent « Envoyer » et « Recommencer ».
+     */
+    if (filming && (state === 'ready' || capturing)) {
+        return (
+            <Suspense fallback={<div className="video-stage" />}>
+                <VideoStage
+                    stream={recorder.stream}
+                    phase={
+                        state === 'ready'
+                            ? 'ready'
+                            : (state as 'recording' | 'paused')
+                    }
+                    question={question}
+                    elapsedSeconds={context.elapsedSeconds}
+                    warningShown={context.warningShown}
+                    onStart={() => void startRecording()}
+                    onPause={pauseRecording}
+                    onResume={resumeRecording}
+                    onFinish={() => void finish()}
+                    onExit={leaveCamera}
+                />
+            </Suspense>
+        );
+    }
+
     const primary =
         'btn-primary press record-action min-h-[2.75rem] w-full py-4 text-xl';
     const secondary =
@@ -437,6 +625,7 @@ export default function Record({
         question !== null &&
         [
             'draft_found',
+            'choosing_mode',
             'explaining',
             'requesting_permission',
             'ready',
@@ -515,15 +704,61 @@ export default function Record({
                 </section>
             ) : null}
 
+            {/* Écran 0 : la voix, ou le visage (T-210) =========================== */}
+            {state === 'choosing_mode' ? (
+                <section className="enter mt-5 flex flex-1 flex-col justify-center gap-4">
+                    <h2 className="font-display text-brand text-2xl leading-tight font-medium">
+                        {t(
+                            tu
+                                ? 'narrator.record.mode_title_tu'
+                                : 'narrator.record.mode_title',
+                            { name: firstName },
+                        )}
+                    </h2>
+
+                    <button
+                        type="button"
+                        onClick={() => chooseMode('audio')}
+                        className={`${primary} flex items-center justify-center gap-3`}
+                    >
+                        <MicIcon />
+                        {t('narrator.record.mode_audio')}
+                    </button>
+
+                    {videoSupported ? (
+                        <button
+                            type="button"
+                            onClick={() => chooseMode('video')}
+                            className={`${secondary} flex items-center justify-center gap-3`}
+                        >
+                            <CameraIcon />
+                            {t('narrator.record.mode_video')}
+                        </button>
+                    ) : null}
+
+                    <p className="text-brand-muted text-base">
+                        {t(
+                            tu
+                                ? 'narrator.record.mode_help_tu'
+                                : 'narrator.record.mode_help',
+                        )}
+                    </p>
+                </section>
+            ) : null}
+
             {/* Écran 1 : on explique, puis on demande ============================ */}
             {state === 'explaining' ? (
                 <section className="enter mt-5 flex flex-1 flex-col justify-center gap-5">
                     <div className="panel flex flex-col gap-3">
                         <p>
                             {t(
-                                tu
-                                    ? 'narrator.record.mic_notice_tu'
-                                    : 'narrator.record.mic_notice',
+                                filming
+                                    ? tu
+                                        ? 'narrator.record.camera_notice_tu'
+                                        : 'narrator.record.camera_notice'
+                                    : tu
+                                      ? 'narrator.record.mic_notice_tu'
+                                      : 'narrator.record.mic_notice',
                             )}
                         </p>
                         {needsHelp ? (
@@ -559,7 +794,7 @@ export default function Record({
                             onClick={() => void startRecording()}
                             className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press record-dial flex flex-col items-center justify-center gap-2 rounded-full shadow-[0_18px_40px_rgba(176,67,42,0.35)] transition-colors"
                         >
-                            <MicIcon />
+                            {filming ? <CameraIcon /> : <MicIcon />}
                             <span className="record-label leading-none font-semibold">
                                 {t('narrator.record.start')}
                             </span>
@@ -567,9 +802,13 @@ export default function Record({
                     </div>
                     <p className="text-brand-muted max-w-xs text-base">
                         {t(
-                            tu
-                                ? 'narrator.record.tap_hint_tu'
-                                : 'narrator.record.tap_hint',
+                            filming
+                                ? tu
+                                    ? 'narrator.record.tap_hint_video_tu'
+                                    : 'narrator.record.tap_hint_video'
+                                : tu
+                                  ? 'narrator.record.tap_hint_tu'
+                                  : 'narrator.record.tap_hint',
                         )}
                     </p>
                 </section>
@@ -624,7 +863,13 @@ export default function Record({
 
                     {state === 'paused' && pausedUrl !== null ? (
                         <div className="enter w-full">
-                            <AudioPlayer src={pausedUrl} compact />
+                            {playbackKind === 'video' ? (
+                                <Suspense fallback={null}>
+                                    <VideoPlayer src={pausedUrl} />
+                                </Suspense>
+                            ) : (
+                                <AudioPlayer src={pausedUrl} compact />
+                            )}
                         </div>
                     ) : null}
 
@@ -637,25 +882,11 @@ export default function Record({
                     <div className="mt-auto flex w-full flex-col gap-3">
                         <button
                             type="button"
-                            onClick={() => {
-                                if (state === 'recording') {
-                                    recorder.pause();
-                                    // Le point de départ du compteur s'oublie :
-                                    // à la reprise, il repart de la durée
-                                    // acquise, pas de l'heure du premier
-                                    // « Commencer ». Sinon la pause se
-                                    // comptait comme du temps parlé (T-140).
-                                    startedAt.current = null;
-                                    reportClientEvent('recording_paused');
-                                    send({ type: 'PAUSE' });
-                                    void preparePausedPlayback();
-                                } else {
-                                    recorder.resume();
-                                    reportClientEvent('recording_resumed');
-                                    send({ type: 'RESUME' });
-                                    clearPausedPlayback();
-                                }
-                            }}
+                            onClick={
+                                state === 'recording'
+                                    ? pauseRecording
+                                    : resumeRecording
+                            }
                             className={secondary}
                         >
                             {state === 'recording'
@@ -714,16 +945,24 @@ export default function Record({
                 <section className="enter mt-4 flex flex-1 flex-col justify-center gap-5">
                     <div>
                         <h2 className="font-display text-brand text-2xl leading-tight font-medium">
-                            {t('narrator.record.review_title')}
+                            {t(
+                                playbackKind === 'video'
+                                    ? 'narrator.record.review_title_video'
+                                    : 'narrator.record.review_title',
+                            )}
                         </h2>
                         <p className="text-brand-muted mt-2 text-base">
                             {t('narrator.record.review_body')}
                         </p>
                     </div>
 
-                    {reviewUrl !== null ? (
+                    {reviewUrl === null ? null : playbackKind === 'video' ? (
+                        <Suspense fallback={null}>
+                            <VideoPlayer src={reviewUrl} />
+                        </Suspense>
+                    ) : (
                         <AudioPlayer src={reviewUrl} />
-                    ) : null}
+                    )}
 
                     <button
                         type="button"
@@ -877,7 +1116,9 @@ export default function Record({
             ) : null}
 
             {/* L'écrit, toujours possible ======================================== */}
-            {state === 'explaining' || state === 'ready' ? (
+            {state === 'choosing_mode' ||
+            state === 'explaining' ||
+            state === 'ready' ? (
                 <button
                     type="button"
                     onClick={chooseWriting}

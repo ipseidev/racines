@@ -35,7 +35,7 @@ Chaque bloc a un fichier dans `blocs/`. Les dépendances sont strictes.
 | 02 | [Modèle de domaine et machine d'états](blocs/B02_modele_domaine.md) | 01 | ☑ terminé (2026-09-02) | `bloc-02-done` |
 | 03 | [Jetons, OTP et sécurité des liens](blocs/B03_jetons_securite.md) | 02 | ☑ terminé (2026-09-02) | `bloc-03-done` |
 | 04 | [Page d'enregistrement narrateur et spike navigateur](blocs/B04_enregistrement.md) | 03 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) téléphones + HTTPS | `bloc-04-done` |
-| 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — ⛔ clés posées le 2026-09-05, [attend](05_A_FAIRE_HUMAIN.md) l'expéditeur « NARRAE » (enregistrement AF2M, jours ouvrés) | `bloc-05-done` |
+| 05 | [Corpus de questions et envoi des prompts SMS/email](blocs/B05_prompts_envoi.md) | 04 | ◐ en cours — l'expéditeur « NARRAE » ne demande aucun enregistrement (T-211) ; ⛔ [attend](05_A_FAIRE_HUMAIN.md) un jeton Twilio valide (401 à l'essai du 2026-09-07), un numéro dans `TWILIO_FROM`, le domaine Resend vérifié et l'envoi réel (§7.3) | `bloc-05-done` |
 | 06 | [Transcription, rendu Fluide et banc d'essai ASR](blocs/B06_transcription_rendu.md) | 05 | ◐ en cours — ⛔ [attend](05_A_FAIRE_HUMAIN.md) clés + corpus de voix | `bloc-06-done` |
 | 07 | [Validation explicite, visibilité, retraits](blocs/B07_validation_retraits.md) | 06 | ☑ terminé (2026-09-03) — checkpoint §7 joué par un humain, 4 écarts trouvés et corrigés | `bloc-07-done` |
 | 08 | [Écoute famille et réactions](blocs/B08_ecoute_famille.md) | 07 | ☑ terminé (2026-09-05) — checkpoint §7 joué sur un vrai téléphone, 4 écarts trouvés et corrigés | `bloc-08-done` |
@@ -88,6 +88,7 @@ Ce que la construction a laissé derrière elle et que personne ne réclamera si
 | D-d | **Les prix Stripe en mode live, et une clé restreinte (`rk_`) plutôt que la clé secrète.** L'outillage est prêt depuis T-170 — `stripe:catalogue --ask --write` crée le catalogue avec une clé saisie masquée, sans la déposer dans le `.env`. Restent l'activation du compte chez Stripe et le report des identifiants dans l'environnement de Forge | T-167, T-170, bloc 10 | fondateur, avant le go-live |
 | D-f | **Le PDF du livre reste en RVB, sans passe PDF/X.** Volontaire : la conversion CMJN dépend du profil qu'exige l'imprimeur, et la faire au hasard serait pire que ne pas la faire. À reprendre quand l'imprimeur est choisi, avec le prix de l'exemplaire supplémentaire et les délais de livraison | T-179, bloc 13 | agent, après le devis |
 | D-g | **Le décodage HEIC n'a jamais traversé une vraie requête.** Safari iOS convertit le HEIC en JPEG avant l'envoi, malgré un `accept` qui le déclare : les trois dépôts du checkpoint du bloc 12 sont arrivés en `image/jpeg` (T-194). ImageMagick le lit, le repli `undecodableHeic()` existe, mais la chaîne complète reste non éprouvée. | bloc 12, checkpoint du 2026-09-06 | à lever depuis un Android, ou par un HEIC déposé depuis un ordinateur |
+| D-h | **Le fair use chiffré et la durée d'hébergement publiée ne connaissent pas la vidéo.** Un récit filmé pèse environ dix fois un audio de même durée : les deux chiffres de R-10 ont été calculés sans lui. À recalculer **avant l'ouverture des ventes**, sinon on publie un engagement qu'on ne tient pas | T-210, D-11 | fondateur |
 | D-e | **La narratrice de la commande de test du 2026-09-05 a été modifiée** — courriel ajouté, canal basculé au courriel — pour récupérer un lien d'invitation que le journal masquait. Sans conséquence, mais le décor local ne reflète plus exactement ce qui a été acheté | T-169, bloc 10 | pour mémoire |
 
 ## Registre des risques techniques suivis
@@ -127,7 +128,7 @@ docs/runbooks/
 
 docs/spikes/
 ├── asr.md                       ← règle de choix du fournisseur, écrite avant les chiffres
-└── navigateur.md                ← matrice d'appareils et dix scénarios de capture (bloc 04)
+└── navigateur.md                ← matrice d'appareils et quinze scénarios de capture (bloc 04)
 
 docs/corpus/
 ├── README.md                    ← ordre de lecture et observations des deux lectures du Fluide

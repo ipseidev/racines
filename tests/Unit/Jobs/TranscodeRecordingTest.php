@@ -46,6 +46,38 @@ function transcodable(): Recording
     return $recording;
 }
 
+/**
+ * Le faux ffmpeg d'un récit filmé : il écrit les deux dérivés (T-210).
+ *
+ * `ffprobe` est appelé deux fois — la durée, puis la hauteur de l'image — et
+ * rend la même valeur ; ce que ces tests gardent, c'est la présence des deux
+ * fichiers, pas la finesse du réencodage.
+ */
+function fakeFfmpegVideo(): void
+{
+    Process::fake([
+        '*ffprobe*' => Process::result(output: "720\n"),
+        '*ffmpeg*' => function (): FakeProcessResult {
+            foreach (File::directories(storage_path('app/transcode')) as $directory) {
+                File::put($directory.'/derived.mp3', 'mp3 dérivé');
+                File::put($directory.'/derived.mp4', 'mp4 dérivé');
+            }
+
+            return Process::result(output: '');
+        },
+    ]);
+}
+
+function filmable(string $mime = 'video/webm'): Recording
+{
+    $story = Story::factory()->recorded()->create();
+    $recording = Recording::factory()->video($mime)->confirmed()->create(['story_id' => $story->id]);
+
+    fakeMediaStorage()->put((string) $recording->original_path, 'vidéo brute');
+
+    return $recording;
+}
+
 beforeEach(function (): void {
     Queue::fake();
 });
@@ -169,4 +201,77 @@ it('efface le dossier de travail, même après un échec', function (): void {
 
     // L'audio d'une personne ne traîne pas sur le disque du serveur.
     expect(File::exists(storage_path('app/transcode/'.$recording->id)))->toBeFalse();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Le récit filmé (T-210)
+|--------------------------------------------------------------------------
+*/
+
+it('tire du récit filmé le même MP3 que d’une voix', function (): void {
+    fakeFfmpegVideo();
+    $recording = filmable();
+
+    app()->call([new TranscodeRecording($recording->id), 'handle']);
+
+    // C'est tout l'enjeu : la transcription, le rendu Fluide et le QR du
+    // livre continuent de lire un MP3 et ignorent qu'il y a eu une caméra.
+    expect($recording->refresh()->derived_mp3_path)->toEndWith('.mp3')
+        ->and(app(MediaStorage::class)->get((string) $recording->derived_mp3_path))->toBe('mp3 dérivé');
+});
+
+it('tire aussi un MP4, sans quoi un WebM d’Android serait invisible sur iPhone', function (): void {
+    fakeFfmpegVideo();
+    $recording = filmable('video/webm');
+
+    app()->call([new TranscodeRecording($recording->id), 'handle']);
+
+    $recording->refresh();
+
+    expect($recording->derived_mp4_path)->toEndWith('.mp4')
+        ->and(app(MediaStorage::class)->exists((string) $recording->derived_mp4_path))->toBeTrue()
+        ->and($recording->playableVideoPath())->toBe($recording->derived_mp4_path);
+});
+
+it('ne dérive aucun MP4 d’un enregistrement de voix', function (): void {
+    fakeFfmpeg();
+    $recording = transcodable();
+
+    app()->call([new TranscodeRecording($recording->id), 'handle']);
+
+    expect($recording->refresh()->derived_mp4_path)->toBeNull()
+        ->and($recording->playableVideoPath())->toBeNull();
+});
+
+it('ne donne pas un WebM à regarder tant que son MP4 n’existe pas', function (): void {
+    // Le dérivé arrive par un job : entre la confirmation et lui, il y a un
+    // moment où l'original est tout ce qu'on a. Servir ce WebM à un iPhone
+    // n'afficherait pas une vidéo, mais un lecteur cassé — mieux vaut la
+    // voix, qui elle se lit partout.
+    $webm = Recording::factory()->video('video/webm')->confirmed()->create();
+    $mp4 = Recording::factory()->video('video/mp4')->confirmed()->create();
+
+    expect($webm->playableVideoPath())->toBeNull()
+        ->and($mp4->playableVideoPath())->toBe($mp4->original_path);
+});
+
+it('ne refait pas le travail déjà fait', function (): void {
+    fakeFfmpegVideo();
+    $recording = filmable();
+
+    app()->call([new TranscodeRecording($recording->id), 'handle']);
+    $first = $recording->refresh()->derived_mp4_path;
+
+    // Deux appels à ffmpeg au premier passage : le MP3, puis le MP4.
+    Process::assertRanTimes(fn ($process): bool => str_contains($process->command[0] ?? '', 'ffmpeg'), 2);
+
+    app()->call([new TranscodeRecording($recording->id), 'handle']);
+
+    // Le second passage n'en ajoute aucun : réencoder vingt minutes de vidéo
+    // parce qu'un job a été rejoué coûterait le prix d'un serveur.
+    Process::assertRanTimes(fn ($process): bool => str_contains($process->command[0] ?? '', 'ffmpeg'), 2);
+
+    expect($recording->refresh()->derived_mp4_path)->toBe($first);
+    Queue::assertPushed(SubmitTranscription::class);
 });

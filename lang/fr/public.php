@@ -623,11 +623,6 @@ return [
             'alt' => 'Une femme âgée et sa fille s’étreignent en riant, le livre relié entre elles.',
         ],
 
-        // L'adresse contre une réduction, en bas de page : les mêmes règles que
-        // la fenêtre de bienvenue (T-141), dont elle reprend les textes.
-        'newsletter' => [
-            'title' => ':amount offerts pour commencer',
-        ],
     ],
 
     /*
@@ -642,6 +637,9 @@ return [
         'eyebrow' => 'Pour commencer',
         'title' => ':amount offerts',
         'subtitle' => 'sur le livre de ses souvenirs',
+        // Le même service en bandeau de bas de page, sur l'accueil et sur
+        // « Comment ça marche » (T-208).
+        'band_title' => ':amount offerts pour commencer',
         'teaser' => 'Laissez-nous votre adresse : nous vous envoyons un code de réduction de :amount, valable un an sur toute votre commande.',
         'claim' => 'Je prends ma réduction',
         'no_thanks' => 'Non merci',
@@ -667,6 +665,24 @@ return [
         'imprint' => 'Mentions légales',
         'consents' => 'Vos accords, dans leur version en vigueur',
         'version' => 'Version :version, en vigueur depuis le :date.',
+    ],
+
+    /*
+     * Le pied de page (T-208) : la marque et sa phrase, les pages du site,
+     * les informations légales, le contact, puis l'année et l'hébergement.
+     * Les libellés des pages et des textes légaux sont lus ailleurs dans ce
+     * fichier ; ici, seulement ce qui n'existe pas encore.
+     */
+    'footer' => [
+        'discover' => 'Découvrir',
+        'home' => 'Accueil',
+        'try' => 'Essayer en 60 secondes',
+        'information' => 'Informations',
+        'contact' => 'Nous joindre',
+        'copyright' => '© :year :brand',
+        // Un fait, pas une promesse : la région du serveur et la juridiction
+        // du stockage (T-02, T-04). La phrase complète est dans les engagements.
+        'hosting' => 'Hébergé dans l’Union européenne',
     ],
 
     /*

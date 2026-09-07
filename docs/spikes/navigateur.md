@@ -71,6 +71,11 @@ bloquante et interdit de clore le bloc.
 | S8 | Coupure réseau | Couper le réseau pendant l'envoi, le rétablir | « Réessayer », reprise aux parts manquantes |
 | S9 | Micro refusé puis autorisé | Refuser, suivre l'aide, réautoriser | Aide propre à la plateforme, un seul nouvel essai, puis enregistrement |
 | S10 | Réponse écrite | Refuser le micro, choisir l'écrit | Histoire à l'état `recorded`, `answer_type = text` |
+| S11 | Vidéo nominale (T-210) | Choisir « En vous filmant », se filmer 2 min, terminer, envoyer | Aperçu de soi avant de commencer, confirmation affichée, `kind = video`, `answer_type = video`, dérivés MP3 **et** MP4 produits |
+| S12 | Vidéo interrompue (T-210) | Rejouer S2 en vidéo : appel entrant à 45 s | Deux segments recollés sans perte — c'est le scénario le plus lourd de tout le protocole, et celui qui a le plus de raisons d'échouer |
+| S13 | Vidéo, poids et chaleur (T-210) | Filmer jusqu'à l'arrêt ferme de 20 min, relever la taille du fichier, la température du téléphone et le niveau de batterie | Fichier sous 400 Mo (borne serveur) ; **noter** si le téléphone chauffe au point d'inquiéter ou si `MediaRecorder` s'arrête de lui-même : la vidéo sollicite l'encodeur matériel, l'audio non |
+| S14 | Vidéo lue par la famille (T-210) | Depuis un **autre** appareil que celui du tournage, ouvrir l'histoire partagée | La vidéo se lit. À jouer impérativement **Android → iPhone** : c'est le couple que le dérivé MP4 existe pour sauver |
+| S15 | Caméra refusée (T-210) | Refuser la caméra, suivre l'aide, réautoriser | Aide de la **caméra**, pas celle du micro ; la voix seule reste offerte comme issue avant l'écrit |
 
 ## 5. Relevé
 
@@ -84,6 +89,13 @@ Une ligne par couple appareil × scénario.
 
 - **Une seule perte après confirmation affichée est bloquante.** On corrige
   avant de clore le bloc 04, quel que soit le calendrier.
+- **La vidéo ne bloque pas la clôture du bloc, la voix si.** Si S11-S15
+  échouent là où S1-S10 passent, la conclusion n'est pas « le bloc n'est pas
+  fini » mais « la vidéo n'est pas proposée sur cet appareil » : le bouton
+  disparaît (`isRecordingSupported('video')`), la voix reste, et le motif part
+  dans `03_DECISIONS.md`. Promettre de se filmer sur un téléphone où le
+  fichier n'arrive pas serait la même faute que promettre la reprise iOS avant
+  ce spike.
 - Une perte avant confirmation se chiffre et se compare à l'objectif de 2 %
   (doc 04 §11). Au-delà, on documente la cause et la mitigation.
 - Si `MediaRecorder` manque sur un appareil de la matrice : afficher l'aide et

@@ -19,6 +19,14 @@ final class SmsLength
 
     public const UCS2_SINGLE_SEGMENT = 70;
 
+    /**
+     * Au-delà d'un segment, sept octets par morceau partent dans l'en-tête de
+     * réassemblage : la place utile tombe de 160 à 153, et de 70 à 67.
+     */
+    public const GSM7_CONCATENATED_SEGMENT = 153;
+
+    public const UCS2_CONCATENATED_SEGMENT = 67;
+
     /** Caractères GSM-7 comptant double (norme 3GPP 23.038). */
     private const GSM7_EXTENDED = ['^', '{', '}', '\\', '[', ']', '~', '|', '€'];
 
@@ -60,6 +68,29 @@ final class SmsLength
     public static function exceedsSingleSegment(string $body): bool
     {
         return self::length($body) > self::segmentLimit($body);
+    }
+
+    /**
+     * Le nombre de segments facturés — donc le coût du canal, et le nombre de
+     * morceaux qu'un téléphone ancien peut afficher séparément.
+     */
+    public static function segments(string $body): int
+    {
+        $length = self::length($body);
+
+        if ($length === 0) {
+            return 0;
+        }
+
+        if ($length <= self::segmentLimit($body)) {
+            return 1;
+        }
+
+        $perSegment = self::isGsm7($body)
+            ? self::GSM7_CONCATENATED_SEGMENT
+            : self::UCS2_CONCATENATED_SEGMENT;
+
+        return (int) ceil($length / $perSegment);
     }
 
     /**

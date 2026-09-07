@@ -113,6 +113,11 @@ final class FamilyPresenter
             ? null
             : $recording->derived_mp3_path ?? $recording->original_path;
 
+        // La vidéo quand il y en a une, et l'audio dans tous les cas : un
+        // proche dans le train préfère écouter, et le MP3 est le seul format
+        // que le QR du livre sait servir.
+        $video = $recording?->playableVideoPath();
+
         return [
             'id' => $story->id,
             'title' => $story->title,
@@ -124,6 +129,7 @@ final class FamilyPresenter
             // Régénérée à chaque chargement, valable une heure, et sans rien
             // de personnel dans son chemin (trois identifiants opaques).
             'audioUrl' => $key === null ? null : $storage->temporaryUrl($key, 60),
+            'videoUrl' => $video === null ? null : $storage->temporaryUrl($video, 60),
             'text' => Transcript::readableFor($story)?->text,
             'verbatim' => $story->transcripts()
                 ->ofKind(TranscriptKind::Verbatim)->current()->first()?->text,

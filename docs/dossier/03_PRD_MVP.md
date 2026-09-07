@@ -1,12 +1,12 @@
 # NARRAE — PRD du MVP
-**v2.6 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
+**v2.7 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
 
 ## 1. Objectif du MVP
 Industrialiser ce que la Phase 0 aura prouvé : un narrateur senior clique, autorise le micro, s'enregistre, **valide explicitement** et recommence (H1) ; les proches écoutent et cette attention est associée à la production (H2) ; l'économie tient après acquisition (H3). Le MVP industrialise **le moteur de complétion** — pas un catalogue de fonctionnalités.
 **Pré-requis d'entrée en build (Gate Phase 1)** : données J70 complètes des cohortes 0B ; prix retenu et contribution après CAC démontrée ; périmètre contractuel arrêté (offre, sortie honorable, QR) ; parcours de validation choisi entre les 2 variantes testées ; socle juridique du MVP validé.
 
 ## 2. Ce que le MVP n'est PAS
-Téléphonie automatisée (build conditionné aux seuils D-9 mesurés en 0B ; l'option « Enregistrement par téléphone » du pilote est opérée humainement, hors code — §8.7) · app mobile native (PWA/web responsive) · WhatsApp Business natif (transfert manuel du lien par l'Initiateur·rice) · vidéo · restauration photo · rendu « littéraire » (le MVP livre un **double rendu Verbatim/Fluide**, pas un « curseur » multi-niveaux — Phase 2) · questions adaptatives IA · recherche sémantique · frise auto · traduction · capsules · coffre documentaire · funéraire (discovery séparée) · B2B2C · autres langues · app TV · studio de mise en page complet · multi-imprimeurs automatisé.
+Téléphonie automatisée (build conditionné aux seuils D-9 mesurés en 0B ; l'option « Enregistrement par téléphone » du pilote est opérée humainement, hors code — §8.7) · app mobile native (PWA/web responsive) · WhatsApp Business natif (transfert manuel du lien par l'Initiateur·rice) · **montage vidéo** (le narrateur peut se filmer depuis [v2.7] — voir P0-3 et D-11 ; ce qui reste hors MVP, c'est le montage, l'habillage, les sous-titres incrustés et le livre vidéo) · restauration photo · rendu « littéraire » (le MVP livre un **double rendu Verbatim/Fluide**, pas un « curseur » multi-niveaux — Phase 2) · questions adaptatives IA · recherche sémantique · frise auto · traduction · capsules · coffre documentaire · funéraire (discovery séparée) · B2B2C · autres langues · app TV · studio de mise en page complet · multi-imprimeurs automatisé.
 **Multi-narrateurs** : hors UI au MVP, prévu en modèle de données. Demande mesurée en Phase 0 ; **seuil de promotion pré-engagé : ≥ 35 % des intentions d'achat conditionnées à 2 narrateurs** → réponse commerciale avant build (option « 2e narrateur » opérée manuellement, ou 2e projet). Décision à la Gate Phase 1, pas par défaut.
 
 ## 3. Périmètre P0
@@ -14,7 +14,7 @@ Téléphonie automatisée (build conditionné aux seuils D-9 mesurés en 0B ; l'
 |---|---|---|
 | P0-1 | Achat cadeau + onboarding Initiateur·rice | 1 SKU principal ; expérience cadeau selon le gagnant du test 0A (e-carte / carte imprimée / message audio) ; add-ons : exemplaires supplémentaires, et option « Enregistrement par téléphone » tant que D-9 est en test (plafond affiché, libellé honnête sur la livraison humaine) |
 | P0-2 | Invitation & consentement narrateur | Invitation **SMS/email** avec message personnel ; aucun prompt avant opt-in ; consentements distincts (doc 04 §2) |
-| P0-3 | Lien d'enregistrement navigateur | 1 lien/question ; validité 30 j ; réutilisable jusqu'à VALIDÉE ; révocable/ré-émissible ; page à un bouton ; pré-explication avant le popup micro ; pause/reprise ; upload résumable |
+| P0-3 | Lien d'enregistrement navigateur | 1 lien/question ; validité 30 j ; réutilisable jusqu'à VALIDÉE ; révocable/ré-émissible ; page à un bouton ; **choix de la forme avant toute autorisation — sa voix, ou se filmer face caméra [v2.7, D-11]** ; pré-explication avant le popup micro (et avant celui de la caméra) ; pause/reprise ; upload résumable |
 | P0-4 | Envoi des prompts | SMS + email ; cadence par défaut hebdo, créneau choisi ; WhatsApp = lien copiable en 1 tap pour transfert manuel |
 | P0-5 | Réponse écrite simple | Zone de texte, pas d'éditeur avancé |
 | P0-6 | Photos rattachées aux histoires | Upload simple ; contrôle antivirus/format (doc 04 §12) |

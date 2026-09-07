@@ -48,6 +48,16 @@ return [
         'progress' => 'Progression de l’écoute',
     ],
 
+    /*
+     * Le lecteur vidéo (T-210). Il garde les commandes natives du navigateur,
+     * qui savent le plein-écran et l'incrustation mieux qu'une barre maison :
+     * il n'a donc besoin que d'un nom, pour les lecteurs d'écran.
+     */
+    'video' => [
+        'label' => 'Le récit filmé',
+        'self_view' => 'Ce que voit la caméra',
+    ],
+
     'photos' => [
         'title' => 'Les photos',
         'add' => 'Ajouter une photo',

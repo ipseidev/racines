@@ -61,6 +61,10 @@ final class ObjectKeys
             'audio/ogg' => 'ogg',
             'audio/mpeg' => 'mp3',
             'audio/wav', 'audio/x-wav' => 'wav',
+            'video/mp4' => 'mp4',
+            'video/webm' => 'webm',
+            'video/quicktime' => 'mov',
+            'video/x-matroska' => 'mkv',
             default => 'bin',
         };
     }

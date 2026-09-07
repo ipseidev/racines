@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AudioPlayer from '@/components/AudioPlayer';
+import VideoPlayer from '@/components/VideoPlayer';
 import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
 import PhotoUploader from '@/components/PhotoUploader';
 import { Avatar } from '@/components/space/Avatar';
@@ -23,6 +24,8 @@ type Props = {
     sharedAt: string | null;
     durationSeconds: number | null;
     audioUrl: string | null;
+    /** Le récit filmé, quand il y en a un (T-210). */
+    videoUrl: string | null;
     text: string | null;
     verbatim: string | null;
     aiLabel: string;
@@ -69,6 +72,7 @@ export default function Story({
     title,
     question,
     audioUrl,
+    videoUrl,
     text,
     verbatim,
     aiLabel,
@@ -161,7 +165,23 @@ export default function Story({
              * l'une dans l'autre. Ce conteneur ne fait que l'entrée en fondu.
              */}
             <div className="enter mt-7" style={stagger(3)}>
-                {audioUrl === null ? (
+                {videoUrl !== null ? (
+                    /*
+                     * L'image quand il y en a une, et le son juste en dessous :
+                     * un proche dans le train, ou qui préfère ne pas regarder,
+                     * garde l'accès à la voix (T-210). C'est le même récit, la
+                     * mesure d'écoute ne compte donc qu'une fois, sur l'image.
+                     */
+                    <div className="flex flex-col gap-4">
+                        <VideoPlayer
+                            src={videoUrl}
+                            onProgress={reportProgress}
+                        />
+                        {audioUrl === null ? null : (
+                            <AudioPlayer src={audioUrl} compact />
+                        )}
+                    </div>
+                ) : audioUrl === null ? (
                     <p className="card text-brand-muted px-5 py-5 text-base">
                         {t('family.story.no_audio')}
                     </p>

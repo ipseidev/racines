@@ -122,11 +122,35 @@ it('autorise le micro sur l’essai, qui enregistre lui aussi', function (): voi
         ->toContain('microphone=(self)');
 });
 
-it('interdit partout la caméra et la géolocalisation', function (): void {
+/**
+ * La caméra suit la même mécanique que le micro, en plus étroit (T-210) :
+ * elle n'est ouverte que sur le domaine des liens du narrateur.
+ *
+ * Le même piège que T-151 la guette : une politique qui refuse la caméra fait
+ * rejeter `getUserMedia` **sans rien demander**, et la personne lirait « la
+ * caméra n'a pas été autorisée » sans qu'on la lui ait jamais demandée.
+ */
+it('n’autorise la caméra que sur les pages d’enregistrement', function (): void {
+    $story = Story::factory()->proposed()->create();
+    $issued = app(TokenService::class)->issue(TokenType::Record, $story);
+
+    expect($this->get("/r/{$issued->plain}")->headers->get('Permissions-Policy'))
+        ->toContain('camera=(self)');
+});
+
+it('interdit la caméra partout ailleurs, essai public compris', function (): void {
     $policy = (string) $this->get('/')->headers->get('Permissions-Policy');
 
     expect($policy)->toContain('camera=()')
         ->and($policy)->toContain('geolocation=()');
+
+    expect($this->get('/acheter')->headers->get('Permissions-Policy'))
+        ->toContain('camera=()');
+
+    // L'essai enregistre une voix : une page marchande n'a aucune raison de
+    // pouvoir ouvrir une caméra.
+    expect($this->get('/essai')->headers->get('Permissions-Policy'))
+        ->toContain('camera=()');
 });
 
 it('pose nosniff et refuse l’encadrement', function (): void {

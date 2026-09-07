@@ -111,6 +111,11 @@ return [
         // étape du tunnel. C'est une information de marché, pas une
         // erreur de saisie.
         'self_narration_interest' => 'Intérêt pour raconter sa propre histoire',
+        // T-210 : la forme choisie, mesurée avant toute autorisation.
+        'camera_denied' => 'Caméra refusée',
+        'camera_granted' => 'Caméra autorisée',
+        'video_chosen' => 'Vidéo choisie',
+        'audio_chosen' => 'Voix seule choisie',
     ],
 
     'share_decision' => [
@@ -136,6 +141,12 @@ return [
         'audio' => 'Voix',
         'text' => 'Texte écrit',
         'phone' => 'Téléphone',
+        'video' => 'Vidéo',
+    ],
+
+    'recording_kind' => [
+        'audio' => 'Voix',
+        'video' => 'Vidéo',
     ],
 
     'order_status' => [

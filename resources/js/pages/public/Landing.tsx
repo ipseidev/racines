@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useBrand } from '@/brand/BrandProvider';
 import HeroSample from '@/components/HeroSample';
 import { Check, Lock } from '@/components/marketing/Check';
+import Newsletter from '@/components/marketing/Newsletter';
 import { H2, LEDE, PRIMARY, SECONDARY } from '@/components/marketing/styles';
 import Wave from '@/components/Wave';
 import WelcomeOffer from '@/components/WelcomeOffer';
@@ -893,6 +894,12 @@ export default function Landing({
                     ))}
                 </dl>
             </section>
+
+            {/* L'adresse contre une réduction, comme chez le leader (T-208) ===== */}
+            <Newsletter
+                enabled={welcomeOffer.enabled}
+                discountPercent={welcomeOffer.discountPercent}
+            />
         </>
     );
 }

@@ -8,7 +8,7 @@ Références dossier : PRD P0-3, P0-5, P0-7 (audio source), US-01, US-06, doc 04
 
 ## 1. Objectif
 
-Un narrateur de 80 ans qui reçoit un lien peut, sans aide, comprendre ce qu'on lui demande, autoriser son micro, parler, faire une pause, reprendre, envoyer, et voir « Votre histoire est enregistrée » uniquement quand le fichier est réellement sur le stockage. L'enregistrement survit à un appel entrant, à la mise en veille et à la purge d'onglet. Le fallback écrit existe. Le comportement sur appareils réels est documenté.
+Un narrateur de 80 ans qui reçoit un lien peut, sans aide, comprendre ce qu'on lui demande, **choisir entre sa voix et se filmer** (T-210), autoriser son micro — et sa caméra s'il se filme —, parler, faire une pause, reprendre, envoyer, et voir « Votre histoire est enregistrée » uniquement quand le fichier est réellement sur le stockage. L'enregistrement survit à un appel entrant, à la mise en veille et à la purge d'onglet. Le fallback écrit existe. Le comportement sur appareils réels est documenté.
 
 ## 2. Pourquoi
 
@@ -22,6 +22,7 @@ C'est le risque technique n°1 du dossier et la première mesure de la Gate 0A (
 - Front `resources/js/recorder/` : machine à états, `MediaRecorder`, brouillon IndexedDB (Dexie), uploader multipart résumable, vu-mètre, verrou d'écran.
 - Pages `narrator/Record` (explication → permission → enregistrement → envoi → confirmation), `narrator/MicHelp`, `narrator/WrittenAnswer`, `narrator/AlreadyRecorded`.
 - Jobs `ConcatenateSegments` (si plusieurs segments), `ReplicateRecording`.
+- **Vidéo (T-210, v2.7 du dossier)** : `RecordingKind`, colonnes `recordings.kind` et `derived_mp4_path`, écran `choosing_mode` en tête de la machine, aperçu de soi, dérivé MP4 dans `TranscodeRecording`, `camera=(self)` sur `r/*`, composant `VideoPlayer` partagé par la relecture et l'écoute famille.
 - `docs/spikes/navigateur.md` rempli.
 
 ## 4. Packages
@@ -118,6 +119,7 @@ sail npm i -D fake-indexeddb
 - [ ] Déployer une version de test accessible en HTTPS (tunnel `sail share` ou staging du bloc 16 s'il existe déjà ; le micro exige HTTPS hors `localhost`).
 - [ ] Remplir `docs/spikes/navigateur.md` (protocole écrit, matrice et scénarios prêts) : matrice iPhone Safari (iOS N et N-1), Android Chrome (N et N-1), Samsung Internet ; scénarios : appel entrant pendant l'enregistrement ; verrouillage 2 min ; changement d'application 5 min ; purge d'onglet (ouvrir 10 onglets lourds puis revenir) ; 4G bridée à 1 Mb/s pendant l'envoi ; refus puis réautorisation du micro. Colonnes : résultat, segments produits, perte de données (oui/non), remarques.
 - [ ] Si un scénario perd des données confirmées à l'écran : bloquant, corriger avant de clore le bloc. Si un scénario perd des données **avant** confirmation : documenter le taux, l'objectif est < 2 % (doc 04 §11).
+- [ ] **Jouer aussi S11 à S15, les scénarios vidéo (T-210)** : nominal, interruption, poids et chaleur sur vingt minutes, lecture Android → iPhone, refus de caméra. Ils ne bloquent pas la clôture du bloc — un échec retire le bouton « En vous filmant » sur cet appareil et laisse la voix —, mais aucune promesse publique sur la vidéo ne se fait avant eux.
 
 ### 6.8 Clôture
 - [x] Annexe B mise à jour (`recordings.segments`, `client_events`).
@@ -131,7 +133,8 @@ sail npm i -D fake-indexeddb
 2. Vérifier dans MinIO ou R2 : l'objet existe, sa taille correspond ; dans Filament (bloc 11) ou tinker : `Recording.confirmed_at` posé, `Story.state = recorded`.
 3. Recharger la page pendant un enregistrement : le brouillon est proposé et l'envoi aboutit.
 4. Refuser le micro : l'écran d'aide propose la réponse écrite ; une réponse écrite crée l'histoire en `recorded`.
-5. `docs/spikes/navigateur.md` rempli avec au moins 4 appareils.
+5. Se filmer sur un iPhone **et** sur un Android, puis ouvrir chaque histoire depuis l'autre téléphone : la vidéo se lit des deux côtés (T-210). C'est le couple Android → iPhone qui compte, celui que le dérivé MP4 existe pour sauver.
+6. `docs/spikes/navigateur.md` rempli avec au moins 4 appareils.
 
 ## 8. Critères de sortie
 
@@ -139,6 +142,7 @@ sail npm i -D fake-indexeddb
 - [x] Aucun texte visible hors `t()`.
 - [x] Budget JavaScript respecté.
 - [ ] Le spike ne montre aucune perte après confirmation.
+- [ ] La vidéo est soit démontrée sur appareils réels, soit désactivée avec son motif écrit dans `03_DECISIONS.md` (T-210).
 
 ## 9. Règle de décision par défaut
 
@@ -175,7 +179,7 @@ appareils réels.**
 §6.7 et les points 1 et 5 du checkpoint demandent un iPhone et un Android
 réels, en HTTPS, pour éprouver l'appel entrant, la mise en veille, la purge
 d'onglet et la 4G bridée. `docs/spikes/navigateur.md` est écrit : matrice de
-cinq appareils, dix scénarios, tableau de relevé, et la règle de clôture —
+cinq appareils, quinze scénarios, tableau de relevé, et la règle de clôture —
 **une seule perte après confirmation est bloquante**. Il reste à le jouer.
 
 Tant qu'il n'est pas joué, ce bloc reste `◐ en cours` et n'est pas taggé. Le

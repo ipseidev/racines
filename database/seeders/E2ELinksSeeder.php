@@ -82,6 +82,8 @@ final class E2ELinksSeeder extends Seeder
         'denied' => 'Quelle chanson vous rappelle votre jeunesse ?',
         'a11y' => 'Comment était la cuisine de votre enfance ?',
         'budget' => 'Quel voyage vous a le plus marqué ?',
+        // T-210 : le même parcours, caméra ouverte.
+        'video' => 'À quoi ressemblait votre maison d’enfance ?',
         'expired' => 'Quelle est votre plus belle rencontre ?',
         'revoked' => 'Qu’aimeriez-vous que l’on retienne de vous ?',
         // Bloc 07 : un scénario par variante de validation, plus un retrait.

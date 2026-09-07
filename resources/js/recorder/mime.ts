@@ -1,5 +1,5 @@
 /**
- * Choix du conteneur audio.
+ * Choix du conteneur, pour la voix comme pour la vidéo.
  *
  * L'ordre n'est pas arbitraire. `audio/mp4` d'abord parce que c'est le seul
  * que Safari iOS sait produire, et iOS est la moitié du parc de nos
@@ -12,6 +12,26 @@ export const PREFERRED_MIME_TYPES = [
     'audio/webm',
     'audio/ogg;codecs=opus',
 ] as const;
+
+/**
+ * Même logique pour l'image (T-210), et la même raison : le MP4 d'abord.
+ *
+ * C'est le seul conteneur que Safari produit, et le seul que tous les
+ * appareils de la famille sauront lire sans qu'on ait à réencoder. Quand le
+ * navigateur ne sait rendre que du WebM — Chrome Android, pour l'essentiel —
+ * le serveur en tire un MP4 : la famille ne voit pas la différence, nous
+ * payons quelques minutes de calcul.
+ */
+export const PREFERRED_VIDEO_MIME_TYPES = [
+    'video/mp4',
+    'video/webm;codecs=h264,opus',
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm',
+] as const;
+
+/** Voix seule, ou voix et visage. Le serveur le relit dans le conteneur. */
+export type RecordingKind = 'audio' | 'video';
 
 export type MimeSupportProbe = (mimeType: string) => boolean;
 
@@ -27,12 +47,17 @@ export type MimeSupportProbe = (mimeType: string) => boolean;
 const nativeProbe: MimeSupportProbe = (mimeType) =>
     globalThis.MediaRecorder?.isTypeSupported(mimeType) ?? false;
 
+export function candidatesFor(kind: RecordingKind): readonly string[] {
+    return kind === 'video' ? PREFERRED_VIDEO_MIME_TYPES : PREFERRED_MIME_TYPES;
+}
+
 export function pickMimeType(
+    kind: RecordingKind = 'audio',
     isTypeSupported: MimeSupportProbe | undefined = nativeProbe,
 ): string | null {
     const probe = isTypeSupported ?? nativeProbe;
 
-    for (const candidate of PREFERRED_MIME_TYPES) {
+    for (const candidate of candidatesFor(kind)) {
         if (probe(candidate)) {
             return candidate;
         }
@@ -49,11 +74,16 @@ export function baseMimeType(mimeType: string): string {
     return (mimeType.split(';')[0] ?? mimeType).trim().toLowerCase();
 }
 
-export function isRecordingSupported(): boolean {
+/** La nature d'un brouillon se relit dans son conteneur, jamais ailleurs. */
+export function kindOfMime(mimeType: string): RecordingKind {
+    return baseMimeType(mimeType).startsWith('video/') ? 'video' : 'audio';
+}
+
+export function isRecordingSupported(kind: RecordingKind = 'audio'): boolean {
     return (
         typeof globalThis.MediaRecorder === 'function' &&
         typeof globalThis.navigator?.mediaDevices?.getUserMedia ===
             'function' &&
-        pickMimeType() !== null
+        pickMimeType(kind) !== null
     );
 }

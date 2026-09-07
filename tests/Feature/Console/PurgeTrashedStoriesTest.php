@@ -27,14 +27,23 @@ function trashedWithContent(int $daysAgo): array
     ]);
     $story->forceFill(['trashed_at' => now()->subDays($daysAgo)])->save();
 
-    $recording = Recording::factory()->confirmed()->create(['story_id' => $story->id]);
+    $recording = Recording::factory()->video()->confirmed()->create(['story_id' => $story->id]);
     $recording->forceFill([
         'derived_mp3_path' => 'derives/histoire.mp3',
+        // Le dérivé vidéo (T-210) : un fichier de plus à effacer, et celui
+        // qui porte un visage. L'oublier ferait de la suppression une demi
+        // suppression.
+        'derived_mp4_path' => 'derives/histoire.mp4',
         'replica_path' => 'repliques/histoire.webm',
         'segments' => [['number' => 1, 'key' => (string) $recording->original_path, 'bytes' => 10]],
     ])->save();
 
-    foreach ([(string) $recording->original_path, 'derives/histoire.mp3', 'repliques/histoire.webm'] as $key) {
+    foreach ([
+        (string) $recording->original_path,
+        'derives/histoire.mp3',
+        'derives/histoire.mp4',
+        'repliques/histoire.webm',
+    ] as $key) {
         $storage->put($key, 'contenu');
     }
 
@@ -88,10 +97,15 @@ it('efface les objets du stockage et les transcriptions', function (): void {
     $story->refresh();
     $recording->refresh();
 
-    expect($storage->deletedKeys())->toContain('derives/histoire.mp3', 'repliques/histoire.webm')
+    expect($storage->deletedKeys())->toContain(
+        'derives/histoire.mp3',
+        'derives/histoire.mp4',
+        'repliques/histoire.webm',
+    )
         ->and($story->transcripts()->count())->toBe(0)
         ->and($recording->original_path)->toBeNull()
         ->and($recording->derived_mp3_path)->toBeNull()
+        ->and($recording->derived_mp4_path)->toBeNull()
         ->and($recording->replica_path)->toBeNull()
         ->and($recording->segments)->toBeNull();
 });

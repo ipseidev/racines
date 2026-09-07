@@ -25,6 +25,10 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Le micro n'est autorisé que là où l'on enregistre. Partout ailleurs,
  * `microphone=()` : une page compromise ne peut pas écouter.
+ *
+ * La caméra suit la même règle, en plus étroit encore : elle n'est ouverte
+ * que sur le domaine des liens du narrateur, jamais sur le site public.
+ * L'essai en soixante secondes n'a besoin que du micro (T-210).
  */
 final class SecurityHeaders
 {
@@ -107,8 +111,26 @@ final class SecurityHeaders
     private function permissionsPolicy(Request $request): string
     {
         $microphone = $this->records($request) ? 'microphone=(self)' : 'microphone=()';
+        $camera = $this->films($request) ? 'camera=(self)' : 'camera=()';
 
-        return implode(', ', [$microphone, 'camera=()', 'geolocation=()']);
+        return implode(', ', [$microphone, $camera, 'geolocation=()']);
+    }
+
+    /**
+     * Les pages qui montrent un visage : l'enregistrement du narrateur, et
+     * rien d'autre.
+     *
+     * La même mécanique que pour le micro, et le même piège : un navigateur
+     * qui voit la politique refuser la caméra rejette `getUserMedia` **sans
+     * rien demander**, et la personne lit « la caméra n'a pas été autorisée »
+     * alors qu'on ne lui a jamais posé la question.
+     *
+     * L'essai public en est exclu délibérément : il enregistre une voix, et
+     * une page marchande n'a aucune raison de pouvoir ouvrir une caméra.
+     */
+    private function films(Request $request): bool
+    {
+        return $request->is('r/*');
     }
 
     /**

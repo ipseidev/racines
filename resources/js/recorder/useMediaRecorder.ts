@@ -5,17 +5,24 @@ import {
     openSegment as openDraftSegment,
     startDraft,
 } from './draftStore';
-import { baseMimeType, pickMimeType } from './mime';
+import { baseMimeType, pickMimeType, type RecordingKind } from './mime';
 
 /**
  * `MediaRecorder`, branché sur le brouillon local.
  *
- * La règle qui gouverne tout ce fichier : **aucune tranche audio ne vit
- * uniquement en mémoire**. Chaque `dataavailable` — toutes les cinq secondes —
- * est écrit sur le téléphone avant toute autre chose. Un appel entrant, une
- * veille ou une purge d'onglet arrive donc toujours après que ce qui a été dit
- * est en sécurité.
+ * La règle qui gouverne tout ce fichier : **aucune tranche ne vit uniquement
+ * en mémoire**. Chaque `dataavailable` — toutes les cinq secondes — est écrit
+ * sur le téléphone avant toute autre chose. Un appel entrant, une veille ou
+ * une purge d'onglet arrive donc toujours après que ce qui a été dit est en
+ * sécurité. La vidéo (T-210) ne change rien à cette règle ; elle la rend
+ * seulement plus lourde, d'où le débit imposé.
  */
+export type VideoConstraints = {
+    bitsPerSecond: number;
+    audioBitsPerSecond: number;
+    height: number;
+};
+
 export type MediaRecorderHandle = {
     mime: string | null;
     stream: MediaStream | null;
@@ -32,30 +39,49 @@ export type MediaRecorderHandle = {
 export function useMediaRecorder(
     storyRef: string,
     timesliceMs: number,
+    kind: RecordingKind = 'audio',
+    video?: VideoConstraints,
 ): MediaRecorderHandle {
     const recorder = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const segment = useRef(1);
     const chunkIndex = useRef(0);
     const [mime, setMime] = useState<string | null>(null);
+    // L'aperçu de soi a besoin du flux dès qu'il existe. Un `useRef` ne
+    // rendrait pas, et la personne se verrait dans un rectangle noir.
+    const [stream, setStream] = useState<MediaStream | null>(null);
 
     const requestPermission = useCallback(async (): Promise<boolean> => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
+            const captured = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     autoGainControl: true,
                 },
+                // La caméra frontale et une définition plafonnée : personne ne
+                // regarde un souvenir de famille en 4K, et chaque mégaoctet
+                // de trop est un mégaoctet qu'une 4G de campagne n'enverra pas.
+                ...(kind === 'video'
+                    ? {
+                          video: {
+                              facingMode: 'user',
+                              width: { ideal: 1280 },
+                              height: { ideal: video?.height ?? 720 },
+                              frameRate: { ideal: 30, max: 30 },
+                          },
+                      }
+                    : {}),
             });
 
-            streamRef.current = stream;
+            streamRef.current = captured;
+            setStream(captured);
 
             return true;
         } catch {
             return false;
         }
-    }, []);
+    }, [kind, video?.height]);
 
     const attach = useCallback(
         (chosenMime: string) => {
@@ -67,6 +93,15 @@ export function useMediaRecorder(
 
             const instance = new MediaRecorder(stream, {
                 mimeType: chosenMime,
+                // Le débit n'est imposé que pour la vidéo : laissé libre,
+                // Chrome monte à cinq mégabits et le même récit devient
+                // inenvoyable depuis une maison de campagne.
+                ...(kind === 'video' && video !== undefined
+                    ? {
+                          videoBitsPerSecond: video.bitsPerSecond,
+                          audioBitsPerSecond: video.audioBitsPerSecond,
+                      }
+                    : {}),
             });
 
             instance.ondataavailable = (event: BlobEvent) => {
@@ -90,11 +125,11 @@ export function useMediaRecorder(
 
             return instance;
         },
-        [storyRef],
+        [kind, storyRef, video],
     );
 
     const start = useCallback(async () => {
-        const chosen = pickMimeType();
+        const chosen = pickMimeType(kind);
 
         if (chosen === null) {
             throw new Error('Ce navigateur ne sait pas enregistrer.');
@@ -107,10 +142,10 @@ export function useMediaRecorder(
         await startDraft(storyRef, baseMimeType(chosen));
 
         attach(chosen).start(timesliceMs);
-    }, [attach, storyRef, timesliceMs]);
+    }, [attach, kind, storyRef, timesliceMs]);
 
     const startNewSegment = useCallback(async () => {
-        const chosen = pickMimeType();
+        const chosen = pickMimeType(kind);
 
         if (chosen === null) {
             return;
@@ -120,7 +155,7 @@ export function useMediaRecorder(
         chunkIndex.current = 0;
 
         attach(chosen).start(timesliceMs);
-    }, [attach, storyRef, timesliceMs]);
+    }, [attach, kind, storyRef, timesliceMs]);
 
     const pause = useCallback(() => {
         if (recorder.current?.state === 'recording') {
@@ -160,12 +195,13 @@ export function useMediaRecorder(
     const release = useCallback(() => {
         streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
+        setStream(null);
         recorder.current = null;
     }, []);
 
     return {
         mime,
-        stream: streamRef.current,
+        stream,
         requestPermission,
         start,
         pause,

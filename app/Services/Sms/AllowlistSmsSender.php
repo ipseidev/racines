@@ -33,6 +33,18 @@ final readonly class AllowlistSmsSender implements SmsSender
         private array $allowed,
     ) {}
 
+    /**
+     * L'expéditeur enveloppé.
+     *
+     * `prod:sms` a besoin d'annoncer l'expéditeur que verra le téléphone avant
+     * d'envoyer quoi que ce soit, et cette réponse n'appartient qu'à
+     * `TwilioSmsSender` : la recalculer ici en ferait une seconde vérité.
+     */
+    public function inner(): SmsSender
+    {
+        return $this->inner;
+    }
+
     public function send(string $toE164, string $body, ?string $dedupeKey = null): SmsResult
     {
         if (! $this->permits($toE164)) {

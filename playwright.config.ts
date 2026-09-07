@@ -14,8 +14,9 @@ export default defineConfig({
         locale: 'fr-FR',
         timezoneId: 'Europe/Paris',
         trace: 'on-first-retry',
-        // Le micro doit être accordé sans clic pour les tests d'enregistrement (bloc 04).
-        permissions: ['microphone'],
+        // Le micro doit être accordé sans clic pour les tests d'enregistrement
+        // (bloc 04), et la caméra depuis qu'on peut se filmer (T-210).
+        permissions: ['microphone', 'camera'],
     },
     projects: [
         {
@@ -23,7 +24,7 @@ export default defineConfig({
             // La suite tourne en parallèle : chaque scénario a son propre lien
             // d'enregistrement, semé par `E2ELinksSeeder`.
             testIgnore:
-                /brand\.spec\.ts|admin-audit-trail\.spec\.ts|record-happy-path\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
+                /brand\.spec\.ts|admin-audit-trail\.spec\.ts|record-happy-path\.spec\.ts|record-video\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
             dependencies: ['recorder'],
             use: {
                 ...devices['Desktop Chrome'],
@@ -77,7 +78,7 @@ export default defineConfig({
              */
             name: 'recorder',
             testMatch:
-                /record-happy-path\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
+                /record-happy-path\.spec\.ts|record-video\.spec\.ts|record-resume-after-reload\.spec\.ts|validation-variant-a\.spec\.ts/,
             workers: 1,
             fullyParallel: false,
             use: {

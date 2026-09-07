@@ -33,6 +33,8 @@ function reportBrowserProblems(page: Page): void {
 async function recordAndSend(page: Page, link: string): Promise<void> {
     await page.goto(link);
 
+    // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await page.getByRole('button', { name: /avec votre voix/i }).click();
     await page.getByRole('button', { name: /je suis prêt/i }).click();
 
     const start = page.getByRole('button', { name: /^commencer$/i });
