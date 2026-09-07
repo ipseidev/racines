@@ -1,5 +1,11 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+    useEffect,
+    useRef,
+    useState,
+    type KeyboardEvent,
+    type ReactNode,
+} from 'react';
 
 import { useBrand } from '@/brand/BrandProvider';
 import { CheckField } from '@/components/form/CheckField';
@@ -151,6 +157,25 @@ export default function Checkout({
     const t = useT();
     const page = usePage();
 
+    /*
+     * Une étape nouvelle s'ouvre en haut de page, et son titre prend le
+     * focus (retour du fondateur, 7 septembre 2026, T-215). Sur téléphone, on
+     * avançait depuis le bas du formulaire, sur « Continuer », et l'étape
+     * suivante s'affichait au-dessus de l'écran sans qu'on la voie. Le
+     * défilement est celui d'Inertia, qui remonte quand la visite n'a pas
+     * d'erreur ; le focus dit à qui n'y voit pas qu'on a changé d'écran, et
+     * ne fait pas défiler lui-même.
+     */
+    const heading = useRef<HTMLHeadingElement>(null);
+    const previousStep = useRef(step);
+
+    useEffect(() => {
+        if (previousStep.current !== step) {
+            previousStep.current = step;
+            heading.current?.focus({ preventScroll: true });
+        }
+    }, [step]);
+
     const form = useForm<Record<string, string | number | boolean>>({
         for: text(draft, 'for') || 'relative',
         narrator_first_name: text(draft, 'narrator_first_name'),
@@ -181,7 +206,10 @@ export default function Checkout({
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.post(`/acheter/etape/${step}`, { preserveScroll: true });
+        // La position est gardée quand la saisie a une erreur : elle est
+        // signalée sous le champ, là où l'on est. Sinon l'étape suivante
+        // s'ouvre en haut de page, comme un nouvel écran (T-215).
+        form.post(`/acheter/etape/${step}`, { preserveScroll: 'errors' });
     };
 
     const pay = (event: React.FormEvent) => {
@@ -266,7 +294,11 @@ export default function Checkout({
                      * même nœud et rien ne signalerait qu'on a avancé.
                      */}
                     <div key={step} className="enter">
-                        <h1 className="font-display text-[2rem] leading-[1.15] font-medium sm:text-4xl">
+                        <h1
+                            ref={heading}
+                            tabIndex={-1}
+                            className="font-display text-[2rem] leading-[1.15] font-medium outline-none sm:text-4xl"
+                        >
                             {title}
                         </h1>
 

@@ -130,6 +130,50 @@ test('garde la saisie quand on revient corriger un champ', async ({ page }) => {
     await expect(page.getByLabel('Son prénom')).toHaveValue('Odette');
 });
 
+test('sur téléphone, chaque étape s’ouvre en haut de page', async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    await page.goto('/acheter');
+
+    await page.getByRole('radio', { name: 'Un proche' }).check();
+    await page.getByRole('button', { name: 'Continuer' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+        'narrateur',
+    );
+
+    await page.getByLabel('Son prénom').fill('Odette');
+    await page
+        .getByLabel('Son courriel')
+        .fill(`odette+m${UNIQUE}@example.test`);
+
+    // On avance depuis le bas du formulaire, là où est « Continuer ».
+    const next = page.getByRole('button', { name: 'Continuer' });
+    await next.scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+
+    // Sans dire à quel point elle est à l'aise, le serveur refuse : l'erreur
+    // s'affiche sous le champ, et l'on reste où l'on est pour la lire.
+    await next.click();
+    await expect(page.getByText(/obligatoire/)).toBeVisible();
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+
+    await page.getByRole('radio', { name: /Peu à l’aise/ }).check();
+    await next.scrollIntoViewIfNeeded();
+    await next.click();
+
+    // L'étape suivante s'ouvre en haut, et son titre a le focus. Rester en
+    // bas laissait l'écran du téléphone sur du vide, et l'étape hors de vue
+    // (T-215).
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+        'cadeau',
+    );
+    await expect
+        .poll(() => page.evaluate(() => window.scrollY))
+        .toBeLessThan(10);
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+});
+
 test('l’essai n’envoie rien sur le réseau', async ({ page }) => {
     const uploads: string[] = [];
 
