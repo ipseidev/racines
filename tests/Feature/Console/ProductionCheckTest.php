@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Enums\ConsentKind;
 use App\Exceptions\Domain\ObjectNotStored;
+use App\Models\ConsentText;
 use App\Services\Storage\MediaStorage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /*
  * Ce qu'on vérifie ici n'est pas le verdict — il dépend d'un décor et n'a de
@@ -35,4 +38,31 @@ it('écrit puis relit le stockage, et ne laisse rien derrière lui', function ()
 
     expect(fn () => app(MediaStorage::class)->head('health/prod-check.txt'))
         ->toThrow(ObjectNotStored::class);
+});
+
+/*
+ * Le trou que `prod:demo` a trouvé et que cette commande ne voyait pas.
+ *
+ * `FulfillOrder` recueille deux accords de l'acheteur, et le tunnel affiche
+ * les deux cases sans condition : un texte manquant fait lever l'exécution de
+ * la commande **dans sa transaction**, le webhook répond 500, et Stripe
+ * désactive l'endpoint (T-169, T-211). La question de cette commande est « si
+ * quelqu'un achète maintenant, est-ce que ça marche ? » — elle répondait oui.
+ */
+it('voit un texte de consentement manquant, et dit ce que l’acheteur perd', function () {
+    ConsentText::query()->where('kind', ConsentKind::EarlyServiceStart->value)->delete();
+
+    $this->artisan('prod:check', ['--rapide' => true])
+        ->expectsOutputToContain('early_service_start')
+        ->expectsOutputToContain('un achat peut ne jamais devenir une commande')
+        // Le remède est sur sa propre ligne, donc il survit à une largeur de
+        // terminal étroite : c'est lui qu'on vient chercher.
+        ->expectsOutputToContain('ConsentTextSeeder')
+        ->run();
+})->uses(RefreshDatabase::class);
+
+it('se tait quand les douze textes sont en vigueur', function () {
+    $this->artisan('prod:check', ['--rapide' => true])
+        ->expectsOutputToContain('en vigueur')
+        ->run();
 });

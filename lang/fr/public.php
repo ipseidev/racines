@@ -180,6 +180,15 @@ return [
                 'body' => 'Chaque histoire qu’elle choisit de partager arrive à ses proches. Ils la lisent, l’écoutent, lui répondent d’un mot. Pour beaucoup de familles, c’est le meilleur moment de la semaine.',
                 'alt' => 'Deux personnes penchées sur un livre ouvert : l’une montre le code d’un chapitre, l’autre tient un téléphone où sourit la narratrice.',
             ],
+
+            /*
+             * Le lien vers « Comment ça marche », que le témoin affiche sous
+             * ses quatre étapes (T-220). La clé n'existait que sous `lp` : le
+             * témoin appelait `public.landing.how.more` et n'obtenait rien.
+             * Même libellé que la variante — deux formulations pour un même
+             * lien finiraient par diverger.
+             */
+            'more' => 'Voir le parcours en détail',
             // Vers la page qui déroule le parcours en six étapes (T-213).
         ],
 
@@ -534,7 +543,9 @@ return [
          * S06. L'origine, à la première personne, signée.
          *
          * Le portrait et la signature sont ceux du fondateur, et c'est lui qui
-         * les fournit : « Narrae » ne s'écrit jamais en dur, le rôle passe par
+         * les fournit : le nom de marque ne s'écrit jamais en dur — pas même
+         * dans le commentaire qui l'exige, `BrandAgnosticTest` lisant aussi
+         * les commentaires (T-220) —, le rôle passe par
          * `:brand`.
          */
         'founder' => [

@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import { useBrand } from '@/brand/BrandProvider';
 import { BuyButton, SHELL } from '@/components/landing/primitives';
 
@@ -45,6 +47,24 @@ export default function LandingHero({
 }) {
     const t = useT();
     const brand = useBrand();
+    const video = useRef<HTMLVideoElement>(null);
+
+    // La lecture est lancée à la main plutôt que par l'attribut `autoplay` :
+    // c'est le seul moyen de ne **pas** la lancer quand le visiteur a demandé
+    // moins de mouvement, et un navigateur qui refuse la lecture ne laisse
+    // alors qu'une promesse rejetée à ignorer.
+    useEffect(() => {
+        const element = video.current;
+
+        if (
+            element === null ||
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+            return;
+        }
+
+        void element.play().catch(() => undefined);
+    }, []);
 
     return (
         <section
@@ -79,15 +99,41 @@ export default function LandingHero({
 
             <div className="order-2 lg:col-start-2 lg:row-span-2 lg:row-start-1">
                 <div className="relative">
-                    <img
-                        {...photo('hero')}
-                        sizes="(min-width: 1024px) 34rem, 100vw"
-                        alt={t('public.landing.hero.photo_alt')}
-                        width="1400"
-                        height="1050"
-                        fetchPriority="high"
-                        className="aspect-square w-full rounded-2xl object-cover"
-                    />
+                    {/*
+                     * La vidéo du héros, muette et en boucle.
+                     *
+                     * `muted` et `playsInline` ne sont pas décoratifs : sans
+                     * eux, iOS refuse la lecture automatique et n'affiche que
+                     * l'image d'attente. Deux sources, parce que le MP4 est lu
+                     * partout et le WebM plus léger là où il est accepté.
+                     *
+                     * Elle s'immobilise pour qui a demandé moins de mouvement
+                     * — `prefers-reduced-motion` n'est pas une préférence
+                     * esthétique — et l'image d'attente prend alors sa place.
+                     */}
+                    {/* eslint-disable-next-line jsx-a11y/media-has-caption -- vidéo muette et décorative, le texte du héros dit tout */}
+                    <video
+                        ref={video}
+                        poster="/img/landing/hero-video-poster.webp"
+                        width="1280"
+                        height="720"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        aria-label={t('public.landing.hero.photo_alt')}
+                        className="bg-brand-linen aspect-square w-full rounded-2xl object-cover"
+                    >
+                        <source
+                            src="/video/landing/hero.webm"
+                            type="video/webm"
+                        />
+                        <source
+                            src="/video/landing/hero.mp4"
+                            type="video/mp4"
+                        />
+                    </video>
+
                     <div className="border-brand-sand bg-brand-surface absolute -bottom-5 left-4 flex items-center gap-3 rounded-lg border px-4 py-3 shadow-[0_10px_30px_rgba(38,33,28,0.14)] sm:left-6">
                         <img
                             {...photo('livre')}

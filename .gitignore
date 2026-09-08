@@ -46,6 +46,7 @@ yarn-error.log
 # --- Projet ---
 # Captures Remento : contiennent des données personnelles de test
 docs/reference/remento-screenshot/
+docs/reference/remento-video/
 # Corpus privé du banc d'essai ASR
 tests/bench/asr/corpus/
 # Rapports de test bout en bout

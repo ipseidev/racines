@@ -28,7 +28,12 @@
 @endif
 
 @if (str_starts_with($page['component'], 'public/Landing') && $page['component'] !== 'public/Landing')
-        {{-- Les variantes de page de vente ne s'indexent pas (T-219). `follow`
+        {{-- Le témoin de la page de vente ne s'indexe pas (T-219, T-220). Le
+             garde vise tout composant `public/Landing…` **sauf**
+             `public/Landing` lui-même : c'est ce qui fait que l'accueil
+             s'indexe et que `public/LandingTemoin` non. Renommer le composant
+             de l'accueil le sortirait de l'index sans que rien ne le dise
+             avant la chute du trafic. `follow`
              et non `nofollow` : les liens qu'elles portent mènent au tunnel et
              aux pages légales, qui doivent rester crawlables. La canonique
              désigne l'accueil : c'est la même offre, et deux pages indexées
@@ -87,7 +92,7 @@
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400.woff2" crossorigin="anonymous">
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-600.woff2" crossorigin="anonymous">
 
-@if (str_starts_with($page['component'], 'public/Landing'))
+@if ($page['component'] === 'public/Landing')
         {{-- La photo du héros est l'élément le plus grand de la page d'accueil.
              Sans ce préchargement, le navigateur ne la découvre qu'une fois
              React monté : 890 ms d'attente mesurés le 5 septembre 2026. Les

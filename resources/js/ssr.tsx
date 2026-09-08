@@ -64,10 +64,10 @@ void createServer((page) =>
                     return NarratorLayout;
                 case name.startsWith('family/'):
                     return FamilyLayout;
-                // Avant `public/` : les variantes de page de vente ont leur
-                // propre barre, et un rendu serveur qui poserait celle de
-                // l'accueil ferait diverger l'hydratation (T-219).
-                case name === 'public/LandingStructure':
+                // Avant `public/` : l'accueil a sa propre barre, et un rendu
+                // serveur qui poserait l'autre ferait diverger l'hydratation
+                // (T-219, T-220). Le témoin passe par le cas suivant.
+                case name === 'public/Landing':
                     return LpLayout;
                 case name.startsWith('public/'):
                     return PublicLayout;

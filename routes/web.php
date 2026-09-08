@@ -26,15 +26,27 @@ Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
 Route::get('/comment-ca-marche', [LandingController::class, 'howItWorks'])->name('how_it_works');
 
 /*
- * Les variantes de page de vente (T-219).
+ * Le témoin de la page de vente (T-219, T-220).
  *
- * Une route à part, et non un remplacement de `/` : l'accueil reste le témoin
- * tant que la variante n'est pas mesurée. Elle est servie en `noindex, follow`
- * avec une canonique vers l'accueil — deux pages de vente indexées pour le
- * même produit se prendraient leur propre trafic —, et n'entre dans aucun plan
- * de site.
+ * L'inverse de la situation de T-219 : la variante **est** devenue l'accueil
+ * le 8 septembre 2026, et c'est l'ancienne page qui vit ici. Elle reste
+ * servie plutôt que supprimée parce qu'une variante mesurée contre une page
+ * qui n'existe plus ne mesure rien, et que la mesure n'a pas encore eu lieu.
+ *
+ * Servie en `noindex, follow` avec une canonique vers l'accueil — deux pages
+ * de vente indexées pour le même produit se prendraient leur propre trafic —,
+ * et hors de tout plan de site.
  */
-Route::get('/lp/histoire', [LandingController::class, 'structure'])->name('lp.structure');
+Route::get('/lp/temoin', [LandingController::class, 'temoin'])->name('lp.temoin');
+
+/*
+ * L'ancienne URL de la variante, devenue l'accueil.
+ *
+ * Une redirection permanente et non une suppression : des liens ont pu être
+ * posés sur `/lp/histoire`, et un 404 perdrait le visiteur en même temps que
+ * l'autorité que l'URL avait accumulée.
+ */
+Route::permanentRedirect('/lp/histoire', '/')->name('lp.structure');
 
 // Le manifeste d'installation, rendu depuis les réglages de marque. Sans
 // contrainte de domaine, pour rester de même origine que la page qui le cite.

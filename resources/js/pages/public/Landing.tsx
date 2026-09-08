@@ -1,910 +1,162 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 
-import { useBrand } from '@/brand/BrandProvider';
-import HeroSample from '@/components/HeroSample';
-import { Check, Lock } from '@/components/marketing/Check';
+import EasyForStorytellers from '@/components/landing/EasyForStorytellers';
+import FounderStory from '@/components/landing/FounderStory';
+import GiftBenefits from '@/components/landing/GiftBenefits';
+import GuaranteeBanner from '@/components/landing/GuaranteeBanner';
+import HowItWorks from '@/components/landing/HowItWorks';
+import LandingHero from '@/components/landing/LandingHero';
+import OwnershipAndAccess from '@/components/landing/OwnershipAndAccess';
+import ProductOffer from '@/components/landing/ProductOffer';
+import Testimonials from '@/components/landing/Testimonials';
+import TrustStrip from '@/components/landing/TrustStrip';
+import WhatItIs from '@/components/landing/WhatItIs';
 import Newsletter from '@/components/marketing/Newsletter';
-import { H2, LEDE, PRIMARY, SECONDARY } from '@/components/marketing/styles';
-import Wave from '@/components/Wave';
 import WelcomeOffer from '@/components/WelcomeOffer';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
-import { photo } from '@/lib/photo';
+
+type Proof = {
+    press: { name: string; quote?: string; url?: string }[];
+    quotes: { text: string; author?: string; source?: string }[];
+    reviews: {
+        text: string;
+        author?: string;
+        source?: string;
+        date?: string;
+    }[];
+    videos: {
+        title: string;
+        author?: string;
+        src?: string;
+        poster?: string;
+        duration?: string;
+    }[];
+    stories: {
+        title: string;
+        body?: string;
+        author?: string;
+        photo?: string;
+    }[];
+};
 
 type Props = {
     /** `pilot`, `prevente` ou `core`. */
     mode: string;
     /** Le prix vu par ce visiteur, en centimes. */
     price: number;
+    /** L'identifiant de la variante, pour la mesure. */
+    variant: string;
     /** La fenêtre de bienvenue (T-141) : proposée ou non, et son pourcentage. */
     welcomeOffer: { enabled: boolean; discountPercent: number };
-    /** L'extrait écoutable du héros (T-149), absent tant que le fichier l'est. */
+    /** L'extrait écoutable (T-149), absent tant que le fichier l'est. */
     heroSample: { src: string; disclosed: boolean } | null;
+    /** Les cinq collections de preuves. Vides, elles activent les replis. */
+    proof: Proof;
 };
 
 /*
- * La page d'accueil suit la structure de Remento, le leader, adaptée à notre
- * univers (décision du fondateur, 4 septembre 2026, T-134). Section par
- * section : bandeau, héros, trois raisons d'offrir en bandeau sombre,
- * « qu'est-ce que », comment ça marche, notre histoire, la fiche produit, ce que comprend
- * l'achat et le prix, la bande de confiance, la garantie, « pensé pour les
- * grands-parents » et l'essai, la double page, la relecture, le cadeau, nos
- * engagements, les questions.
+ * La page d'accueil (T-220).
  *
- * Ce qui n'existe pas chez nous n'y est pas : ni presse, ni avis, ni vidéo de
- * clients. Les emplacements viendront avec les premières familles. Les sept
- * engagements gardent leur formulation canonique.
+ * Née comme variante à `/lp/histoire` (T-219), elle a pris la place du
+ * témoin le 8 septembre 2026 sur décision du fondateur. La mesure que T-219
+ * posait comme condition n'a pas eu lieu : le choix est au jugement, et il
+ * est écrit comme tel. L'ancienne page reste servie à `/lp/temoin`, hors
+ * index, pour que le test garde sa moitié témoin si on le veut un jour.
  *
- * Direction artistique du 3 septembre (docs/design/README.md) : une seule
- * couleur d'action, la terracotta ; des sections pleine largeur qui alternent
- * crème, lin et forêt.
+ * Vingt-deux sections dans l'ordre commercial du leader, S00 à S21, avec nos
+ * contenus. L'ordre est la seule chose empruntée : l'accroche et l'achat, la
+ * confiance, les raisons d'offrir, le concept, les étapes, l'origine, la fiche
+ * produit, la propriété, l'introduction des preuves, les preuves, la garantie,
+ * la simplicité, l'expérience, le livre, la mise au propre, l'aide au choix,
+ * les sujets possibles, le cadeau programmé, les deux destinataires, les
+ * questions, la réduction et le pied de page.
  *
- * Le héros suit celui du leader dans l'ordre et le choix des informations
- * (T-142, premier retour d'un prospect : « on ne comprend pas ce que le site
- * fait avant Comment ça marche ») : la photo d'abord sur téléphone, le titre,
- * un texte qui dit qui parle, qui fait quoi, et ce qu'on reçoit, l'action,
- * « Comment ça marche », puis quatre repères. La carte « question de la
- * semaine » reste posée sur la photo : T-142 l'avait retirée, le fondateur
- * l'a reprise le soir même, il y tient (T-144).
- */
-const STEPS = ['one', 'two', 'three', 'four'] as const;
-
-const PROMISES = ['ask', 'voice', 'weekly'] as const;
-
-/*
- * Les sept engagements, dans l'ordre où on se les demande : qui décide, ce
- * qu'on peut reprendre, ce qui est gardé, ce que la machine fait et ne fait
- * pas, où tout cela dort.
- */
-const COMMITMENTS = [
-    'validation',
-    'withdrawal',
-    'source_audio',
-    'ai_arranges',
-    'no_cloning',
-    'no_training',
-    'eu_hosting',
-] as const;
-
-const INCLUDES = [
-    'questions',
-    'device',
-    'download',
-    'book',
-    'qr',
-    'family',
-] as const;
-
-const CHECKS = ['voice', 'no_app', 'kept_words', 'she_decides'] as const;
-
-const QUESTIONS = [
-    'included',
-    'subscription',
-    'edit',
-    'no_smartphone',
-    'refuses',
-    'writing',
-    'privacy',
-    'refund',
-    'shutdown',
-] as const;
-
-/** L'onde d'une voix : le seul mouvement de la page, et il s'arrête pour qui le demande. */
-/*
- * Un motif façon code à scanner, déterministe et décoratif : il ne mène nulle
- * part. Le vrai code viendra avec le livre (bloc 13).
- */
-function FauxQr({ className = '' }: { className?: string }) {
-    const n = 21;
-    let seed = 7;
-    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-    const cells: string[] = [];
-    for (let y = 0; y < n; y++) {
-        for (let x = 0; x < n; x++) {
-            const finder =
-                (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
-            if (!finder && rnd() > 0.55) cells.push(`${x},${y}`);
-        }
-    }
-    const finders = [
-        [0, 0],
-        [14, 0],
-        [0, 14],
-    ];
-    return (
-        <svg
-            viewBox={`0 0 ${n} ${n}`}
-            className={className}
-            aria-hidden="true"
-            shapeRendering="crispEdges"
-        >
-            <rect width={n} height={n} fill="#fff" />
-            {cells.map((c) => {
-                const [x, y] = c.split(',').map(Number);
-                return (
-                    <rect
-                        key={c}
-                        x={x}
-                        y={y}
-                        width="1"
-                        height="1"
-                        fill="#26211C"
-                    />
-                );
-            })}
-            {finders.map(([x, y]) => (
-                <g key={`${x}-${y}`} fill="#26211C">
-                    <rect x={x} y={y} width="7" height="7" />
-                    <rect
-                        x={x + 1}
-                        y={y + 1}
-                        width="5"
-                        height="5"
-                        fill="#fff"
-                    />
-                    <rect x={x + 2} y={y + 2} width="3" height="3" />
-                </g>
-            ))}
-        </svg>
-    );
-}
-
-/**
- * La maquette du livre : une couverture reliée et la page d'écoute, en CSS.
+ * Ce que la structure du leader porte et que nous n'avons pas — une émission de
+ * télévision, des logos de presse, un mur d'avis, des vidéos de familles — est
+ * soit supprimé (le module Shark Tank, sans équivalent français), soit tenu par
+ * un repli qui montre le produit et se **déclare** comme démonstration. Le
+ * mécanisme est dans `product.landing.structure` : une collection vide choisit
+ * le repli, une collection remplie prend sa place.
  *
- * Nous n'avons pas encore de livre imprimé ; le premier viendra du bloc 13.
- * D'ici là, on ne montre pas une photo d'un livre qui n'existe pas : on
- * dessine celui qu'on fabrique, avec un vrai titre d'histoire du corpus.
+ * Étant désormais l'accueil, elle **s'indexe** : le garde de
+ * `app.blade.php` ne pose `noindex` que sur les composants dont le nom
+ * commence par `public/Landing` sans lui être égal, ce qui vise maintenant
+ * `public/LandingTemoin`. C'est pour cela que ce fichier porte le nom
+ * canonique : une page d'accueil qui se déclarerait `noindex` demanderait à
+ * être désindexée, et rien ne le dirait avant la chute du trafic.
+ *
+ * L'identifiant de variante, lu dans `product.landing.structure.id`, ne
+ * change pas : le renommer couperait la continuité des événements de mesure
+ * avec ce qui a déjà été observé sur `/lp/histoire`. Sa valeur n'est pas
+ * recopiée ici — `BrandAgnosticTest` refuse le nom de marque partout dans
+ * `resources/js`, commentaires compris, et il a raison de ne pas faire
+ * d'exception : une exception se recopie.
  */
-function BookMockup() {
-    const t = useT();
-
-    return (
-        <figure
-            aria-label={t('public.landing.product.mockup.aria')}
-            className="relative mx-auto flex w-full max-w-[520px] flex-col items-center py-6 sm:flex-row sm:items-end sm:justify-center sm:gap-6"
-        >
-            <div className="bg-brand-deep relative aspect-[3/4] w-[68%] rounded-l-sm rounded-r-md shadow-[0_30px_60px_rgba(38,33,28,0.28)] sm:w-[62%]">
-                <div className="bg-brand absolute top-0 bottom-0 left-0 w-[5%] rounded-l-sm" />
-                <div className="absolute inset-x-[16%] top-[14%] flex flex-col items-center gap-3 text-center">
-                    <span className="bg-brand-gold h-px w-10" />
-                    <span className="font-display text-[clamp(1rem,2.4vw,1.5rem)] leading-tight font-medium text-[#F7F1E6]">
-                        {t('public.landing.product.mockup.cover_title')}
-                    </span>
-                    <span className="text-[0.7rem] tracking-[0.14em] text-[#C9C0B2] uppercase">
-                        {t('public.landing.product.mockup.cover_sub')}
-                    </span>
-                    <span className="bg-brand-gold h-px w-10" />
-                </div>
-                <div className="absolute inset-x-[22%] bottom-[16%] aspect-[4/3] overflow-hidden rounded-sm">
-                    <img
-                        {...photo('etape-1')}
-                        sizes="25vw"
-                        alt=""
-                        width="1400"
-                        height="930"
-                        loading="lazy"
-                        className="size-full object-cover"
-                    />
-                </div>
-            </div>
-
-            {/*
-             * Sur téléphone, la page d'écoute est posée sous le livre et le
-             * chevauche un peu, comme une carte glissée dans la couverture ;
-             * côte à côte, elle n'avait plus la place de ses mots (T-142).
-             */}
-            <div className="bg-brand-surface relative z-10 -mt-12 flex w-[76%] flex-col gap-3 self-end rounded-2xl p-4 shadow-[0_24px_60px_rgba(38,33,28,0.18)] sm:z-auto sm:mt-0 sm:w-[34%] sm:self-auto">
-                <span className="font-display text-brand text-[clamp(1rem,1.8vw,1.05rem)] leading-tight font-medium">
-                    {t('public.landing.product.mockup.chapter')}
-                </span>
-                <Wave bars={14} />
-                <div className="flex items-center gap-2">
-                    <FauxQr className="border-brand-sand size-12 flex-none rounded-sm border p-0.5" />
-                    <span className="text-brand-muted text-[0.7rem] leading-snug">
-                        {t('public.landing.product.mockup.scan')}
-                    </span>
-                </div>
-            </div>
-        </figure>
-    );
-}
-
 export default function Landing({
-    mode,
     price,
+    variant,
     welcomeOffer,
     heroSample,
+    proof,
 }: Props) {
     const t = useT();
-    const brand = useBrand();
 
     return (
         <>
-            {/*
-             * Le titre de l'onglet et celui des moteurs reste au pluriel, là
-             * où le héros parle d'une personne : un moteur répond à une
-             * recherche. Depuis T-190 les deux disent les mêmes mots, ceux du
-             * produit, et c'est assumé.
-             */}
-            <Head title={t('public.landing.seo_title')} />
+            <Head title={t('public.lp.seo_title')} />
 
-            {/* La réduction de bienvenue, après un délai (T-141) ============== */}
+            {/*
+             * La fenêtre de bienvenue de l'accueil (T-141) : une réduction
+             * contre une adresse, ouverte après un délai et jamais au
+             * chargement. Le même service que le bandeau de bas de page, et un
+             * code pris par l'un fait taire l'autre.
+             */}
             <WelcomeOffer
                 enabled={welcomeOffer.enabled}
                 discountPercent={welcomeOffer.discountPercent}
             />
 
-            {/* Héros ============================================================ */}
-            {/*
-             * Trois blocs, dans un ordre qui change avec l'écran (demande du
-             * fondateur, 7 septembre 2026, T-214). Sur téléphone : la photo,
-             * le texte, puis la carte « question de la semaine » sous la ligne
-             * « paiement sécurisé ». Sur bureau : le texte à gauche, la photo à
-             * droite alignée en haut, et la carte sous la photo, remontée de
-             * trois rem pour la chevaucher un peu, sans plus. Elle la couvrait
-             * jusqu'ici par le bas et cachait le livre.
-             *
-             * La carte reste : le fondateur y tient (T-144). Ce qui change,
-             * c'est où elle se pose.
-             */}
-            <section className="mx-auto grid w-full max-w-6xl gap-8 px-6 pt-6 pb-20 lg:grid-cols-2 lg:grid-rows-[auto_auto] lg:items-start lg:gap-x-16 lg:gap-y-0 lg:pt-16 lg:pb-24">
-                <div className="order-2 flex flex-col gap-7 lg:order-none lg:col-start-1 lg:row-span-2 lg:self-center">
-                    <h1 className="font-display text-[2.5rem] leading-[1.05] font-medium sm:text-5xl lg:text-[4rem]">
-                        {t('public.landing.promise')}
-                    </h1>
+            {/* S01 */}
+            <LandingHero variant={variant} price={price} />
 
-                    {/*
-                     * Le chapeau du héros, en un seul paragraphe : sous un
-                     * titre qui émeut, un pavé de deux blocs se saute.
-                     */}
-                    <p className="text-brand-muted max-w-[34em] text-lg leading-snug">
-                        {t('public.landing.hero.lede')}
-                    </p>
+            {/* S02 */}
+            <TrustStrip />
 
-                    <div className="flex flex-wrap items-center gap-3.5">
-                        <Link
-                            href="/acheter"
-                            className={`${PRIMARY} w-full sm:w-auto`}
-                        >
-                            {t('public.landing.cta')}
-                        </Link>
-                        <a
-                            href="#comment"
-                            className={`${SECONDARY} w-full sm:w-auto`}
-                        >
-                            {t('public.landing.cta_how')} ↓
-                        </a>
-                    </div>
+            {/* S04 — remonté juste après le bandeau, à la demande du fondateur. */}
+            <WhatItIs />
 
-                    <ul className="flex flex-col gap-3">
-                        {CHECKS.map((check) => (
-                            <li
-                                key={check}
-                                className="flex gap-3 text-[1.02rem]"
-                            >
-                                <Check />
-                                <span>
-                                    {t(`public.landing.hero.checks.${check}`)}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
+            {/* S05 — avant les raisons d'offrir, à la demande du fondateur. */}
+            <HowItWorks />
 
-                    <p className="text-brand-muted flex items-center gap-2 text-base">
-                        <Lock />
-                        {t('public.landing.hero.note')}
-                    </p>
-                </div>
+            {/* S06 — avant les raisons d'offrir, à la demande du fondateur. */}
+            <FounderStory />
 
-                {/*
-                 * La photo d'abord sur téléphone, à droite et en haut sur
-                 * bureau : ce qu'on voit avant de lire doit déjà dire « une
-                 * personne, sa voix ».
-                 */}
-                <img
-                    {...photo('hero')}
-                    sizes="(min-width: 1024px) 34rem, 100vw"
-                    alt={t('public.landing.hero.photo_alt')}
-                    width="1400"
-                    height="1050"
-                    fetchPriority="high"
-                    className="order-1 aspect-[4/3] w-full rounded-2xl object-cover lg:order-none lg:col-start-2 lg:row-start-1 lg:aspect-[5/4]"
-                />
+            {/* S07 — avant les raisons d'offrir, à la demande du fondateur. */}
+            <ProductOffer variant={variant} price={price} sample={heroSample} />
 
-                <figure
-                    aria-label={t('public.landing.hero.card.aria')}
-                    className="bg-brand-surface order-3 flex w-full flex-col gap-3.5 rounded-2xl px-6 py-5 shadow-[0_24px_60px_rgba(38,33,28,0.18),0_2px_6px_rgba(38,33,28,0.08)] lg:z-10 lg:order-none lg:col-start-2 lg:row-start-2 lg:-mt-12 lg:-ml-6 lg:w-[min(380px,100%)]"
-                >
-                    <div className="text-brand-muted flex justify-between text-[0.78rem] font-semibold tracking-[0.08em] uppercase">
-                        <span>{t('public.landing.hero.card.label')}</span>
-                        <span>{t('public.landing.hero.card.name')}</span>
-                    </div>
-                    <p className="font-display text-[1.35rem] leading-[1.3] font-medium">
-                        {t('public.landing.hero.card.question')}
-                    </p>
-                    <HeroSample sample={heroSample} />
-                </figure>
-            </section>
+            {/* S08 — avant les raisons d'offrir, à la demande du fondateur. */}
+            <OwnershipAndAccess variant={variant} price={price} />
+
+            {/* S10 — juste après ce que l'achat comprend, à la demande du fondateur. */}
+            <Testimonials />
+
+            {/* S11 — la garantie ferme le bloc des avis. */}
+            <GuaranteeBanner />
+
+            {/* S12 — juste après la garantie, à la demande du fondateur. */}
+            <EasyForStorytellers variant={variant} />
+
+            {/* S03 */}
+            <GiftBenefits quotes={proof.quotes} />
 
             {/*
-             * Trois raisons d'offrir, en bandeau sombre.
-             *
-             * Le filet d'or tient la place que le leader donne à ses cinq
-             * étoiles : il donne du rythme sans rien affirmer. Nous n'avons ni
-             * presse ni avis à citer, et une citation sans auteur en invente
-             * un — ces trois phrases sont donc les nôtres, sans guillemets.
+             * S21 — L'adresse contre une réduction, puis le pied de page (celui
+             * de la mise en page). Le même service que la fenêtre de bienvenue,
+             * avec les mêmes règles : le code part par courriel, la case des
+             * nouvelles est à part et décochée, et rien ne s'affiche quand la
+             * réduction n'est pas proposée à ce visiteur. Aucune remise n'est
+             * annoncée ailleurs sur la page.
              */}
-            <section
-                aria-labelledby="promises"
-                className="bg-brand-deep text-[#F7F1E6]"
-            >
-                <div className="mx-auto w-full max-w-6xl px-6 py-14 lg:py-16">
-                    <h2 id="promises" className="sr-only">
-                        {t('public.landing.promises.title')}
-                    </h2>
-                    <ul className="grid gap-10 text-center sm:grid-cols-3 sm:gap-8">
-                        {PROMISES.map((promise) => (
-                            <li
-                                key={promise}
-                                className="flex flex-col items-center gap-5"
-                            >
-                                <span
-                                    aria-hidden="true"
-                                    className="bg-brand-gold h-0.5 w-7"
-                                />
-                                <p className="font-display text-[1.6rem] leading-tight font-medium text-[#F7F1E6] lg:text-[2rem]">
-                                    {t(`public.landing.promises.${promise}`)}
-                                </p>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
-
-            {/* Qu'est-ce que ==================================================== */}
-            <section
-                aria-labelledby="what"
-                className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-16 lg:grid-cols-2 lg:items-start lg:gap-20 lg:py-24"
-            >
-                <div className="flex flex-col gap-5">
-                    <span className="eyebrow">
-                        {t('public.landing.what.title', { brand: brand.name })}
-                    </span>
-                    <h2 id="what" className={H2}>
-                        {t('public.landing.what.headline')}
-                    </h2>
-                </div>
-                <p className="text-brand-text text-xl leading-relaxed lg:pt-12">
-                    {t('public.landing.what.body', { brand: brand.name })}
-                </p>
-            </section>
-
-            {/* Comment ça marche ================================================ */}
-            <section
-                id="comment"
-                aria-labelledby="how"
-                className="border-brand-sand mx-auto w-full max-w-6xl border-t px-6 py-16 lg:py-24"
-            >
-                {/* À gauche sur téléphone, comme les étapes qui suivent ; centré sur bureau, au-dessus des quatre colonnes. */}
-                <div className="mb-12 flex flex-col items-start gap-4 text-left lg:items-center lg:text-center">
-                    <span className="eyebrow">
-                        {t('public.landing.how.title')}
-                    </span>
-                    <h2 id="how" className={`${H2} max-w-[24em]`}>
-                        {t('public.landing.how.headline')}
-                    </h2>
-                    <p className={`${LEDE} max-w-[36em]`}>
-                        {t('public.landing.how.lede')}
-                    </p>
-                </div>
-
-                <ol className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    {STEPS.map((step, index) => (
-                        <li key={step} className="flex flex-col gap-4">
-                            {/*
-                             * Les quatre photos partagent un seul jeu
-                             * d'attributs : les dimensions déclarées sont
-                             * celles de l'emplacement — le 4:3 que la classe
-                             * impose — et non celles du fichier, dont
-                             * l'étape 1 est la seule à s'écarter encore.
-                             */}
-                            <img
-                                {...photo(`etape-${index + 1}`)}
-                                sizes="(min-width: 1024px) 17rem, (min-width: 640px) 45vw, 100vw"
-                                alt={t(`public.landing.how.${step}.alt`)}
-                                width="1400"
-                                height="1050"
-                                loading="lazy"
-                                className="aspect-[4/3] w-full rounded-lg object-cover"
-                            />
-                            <span className="text-brand-muted text-[0.78rem] font-semibold tracking-[0.12em] uppercase">
-                                Étape {index + 1}
-                            </span>
-                            <h3 className="font-display text-[1.55rem] leading-[1.22] font-medium">
-                                {t(`public.landing.how.${step}.title`)}
-                            </h3>
-                            <p className="text-brand-muted text-[1.02rem]">
-                                {t(`public.landing.how.${step}.body`)}
-                            </p>
-                        </li>
-                    ))}
-                </ol>
-
-                {/* Quatre étapes suffisent ici ; la page dédiée en déroule six (T-213). */}
-                <div className="mt-12 flex justify-start lg:justify-center">
-                    <Link
-                        href="/comment-ca-marche"
-                        className={`${SECONDARY} w-full sm:w-auto`}
-                    >
-                        {t('public.landing.how.more')} →
-                    </Link>
-                </div>
-            </section>
-
-            {/* Pensé pour les grands-parents, et l'essai ======================== */}
-            <section
-                aria-labelledby="tested"
-                className="mx-auto mb-16 grid w-full max-w-6xl overflow-hidden rounded-2xl lg:mb-24 lg:grid-cols-2"
-            >
-                <img
-                    {...photo('etape-2')}
-                    sizes="(min-width: 1024px) 36rem, 100vw"
-                    alt={t('public.landing.tested.photo_alt')}
-                    width="1400"
-                    height="1050"
-                    loading="lazy"
-                    className="aspect-[4/3] h-full w-full object-cover lg:aspect-auto"
-                />
-                <div className="bg-brand-deep flex flex-col gap-7 px-7 py-12 text-[#F7F1E6] lg:px-14 lg:py-16">
-                    <h2
-                        id="tested"
-                        className="font-display text-[2rem] leading-[1.1] font-medium text-[#F7F1E6] sm:text-4xl"
-                    >
-                        {t('public.landing.tested.title')}
-                    </h2>
-                    <p className="text-lg text-[#C9C0B2]">
-                        {t('public.landing.tested.lede')}
-                    </p>
-                    <ul className="grid gap-3 sm:grid-cols-3">
-                        {(['no_writing', 'no_app', 'no_password'] as const).map(
-                            (k) => (
-                                <li
-                                    key={k}
-                                    className="rounded-md bg-white/8 px-4 py-5 text-center text-[1.05rem] font-medium"
-                                >
-                                    {t(`public.landing.tested.${k}`)}
-                                </li>
-                            ),
-                        )}
-                    </ul>
-                    {/*
-                     * Un lien ordinaire, et non un `<Link>` Inertia, et c'est
-                     * la seule exception de la page. La politique de
-                     * permissions vaut pour le document : une navigation
-                     * Inertia garderait celui de l'accueil, où le micro est
-                     * interdit, et Safari refuserait l'essai **sans demander
-                     * l'autorisation**. Recharger le document est ce qui fait
-                     * apparaître la demande (T-151).
-                     */}
-                    <a
-                        href="/essai"
-                        className="bg-brand-surface text-brand hover:bg-brand-linen inline-flex min-h-[3.5rem] items-center justify-center gap-2 rounded-md px-7 text-[1.05rem] font-semibold"
-                    >
-                        <span className="bg-brand-accent size-2.5 rounded-full" />
-                        {t('public.landing.tested.cta')}
-                    </a>
-                </div>
-            </section>
-
-            {/* Notre histoire =================================================== */}
-            <section
-                id="histoire"
-                aria-labelledby="story"
-                className="bg-brand-linen"
-            >
-                <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[5fr_7fr] lg:gap-20 lg:py-24">
-                    <div className="flex flex-col gap-5">
-                        <h2 id="story" className={H2}>
-                            {t('public.landing.story.title')}
-                        </h2>
-                    </div>
-                    <div className="flex flex-col gap-6 text-xl leading-relaxed">
-                        <p>{t('public.landing.story.p1')}</p>
-                        <p>{t('public.landing.story.p2')}</p>
-                        <p className="font-display text-brand text-[1.45rem] leading-snug">
-                            {t('public.landing.story.p3')}
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            {/* La fiche produit ================================================= */}
-            <section
-                id="livre"
-                aria-labelledby="product"
-                className="mx-auto grid w-full max-w-6xl gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center lg:gap-16 lg:py-24"
-            >
-                <BookMockup />
-
-                <div className="flex flex-col gap-6">
-                    <h2 id="product" className={H2}>
-                        {t('public.landing.product.title')}
-                    </h2>
-                    <p className={LEDE}>{t('public.landing.product.lede')}</p>
-
-                    <dl className="border-brand-sand divide-brand-sand flex flex-col divide-y border-y">
-                        {(['read', 'hear', 'bound'] as const).map((key) => (
-                            <div key={key} className="flex flex-col gap-1 py-5">
-                                <dt className="font-display text-brand text-[1.35rem] font-medium">
-                                    {t(`public.landing.product.${key}.title`)}
-                                </dt>
-                                <dd className="text-brand-muted text-[1.02rem]">
-                                    {t(`public.landing.product.${key}.body`)}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-
-                    <ul className="grid gap-2.5 text-[1rem] sm:grid-cols-2">
-                        {INCLUDES.map((item) => (
-                            <li key={item} className="flex gap-2.5">
-                                <Check />
-                                <span>
-                                    {t(
-                                        `public.landing.product.includes.${item}`,
-                                    )}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-
-                    <Link href="/acheter" className={PRIMARY}>
-                        {t('public.landing.cta')} · {formatPrice(price)}
-                    </Link>
-
-                    <ul className="text-brand-muted flex flex-wrap gap-x-6 gap-y-2 text-[0.95rem]">
-                        {(['refund', 'yours', 'download'] as const).map((g) => (
-                            <li key={g} className="flex items-center gap-2">
-                                <Lock />
-                                {t(`public.landing.product.guarantees.${g}`)}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
-
-            {/* Pour toujours, et le prix ======================================== */}
-            <section aria-labelledby="forever" className="bg-brand-linen">
-                <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-16 lg:py-24">
-                    <div className="flex max-w-[40em] flex-col items-start gap-4 text-left lg:mx-auto lg:items-center lg:text-center">
-                        <h2 id="forever" className={H2}>
-                            {t('public.landing.forever.headline')}
-                        </h2>
-                        <p className={LEDE}>
-                            {t('public.landing.forever.lede', {
-                                brand: brand.name,
-                            })}
-                        </p>
-                    </div>
-
-                    <div className="card flex flex-col gap-10 p-7 lg:p-12">
-                        <span className="eyebrow self-center">
-                            {t('public.landing.forever.title')}
-                        </span>
-
-                        <div className="grid gap-8 lg:grid-cols-3">
-                            {(['access', 'download', 'no_sub'] as const).map(
-                                (item) => (
-                                    <div
-                                        key={item}
-                                        className="flex flex-col gap-2"
-                                    >
-                                        <span className="bg-brand text-brand-foreground flex size-10 items-center justify-center rounded-full">
-                                            <Check light className="" />
-                                        </span>
-                                        <h3 className="font-display text-[1.35rem] leading-tight font-medium">
-                                            {t(
-                                                `public.landing.forever.${item}.title`,
-                                            )}
-                                        </h3>
-                                        <p className="text-brand-muted text-[1rem]">
-                                            {t(
-                                                `public.landing.forever.${item}.body`,
-                                            )}
-                                        </p>
-                                    </div>
-                                ),
-                            )}
-                        </div>
-
-                        <p className="font-display border-brand-gold/40 bg-brand-linen text-brand rounded-md border px-6 py-4 text-center text-[1.15rem] italic">
-                            {t('public.landing.forever.banner')}
-                        </p>
-
-                        <div className="grid items-center gap-10 lg:grid-cols-2">
-                            <div className="flex flex-col items-center gap-5 text-center">
-                                <span className="font-display text-brand text-6xl leading-none font-medium tabular-nums">
-                                    {formatPrice(price)}
-                                </span>
-                                <span className="text-brand-muted text-base">
-                                    {t('public.landing.forever.per')}
-                                </span>
-                                <Link href="/acheter" className={PRIMARY}>
-                                    {t('public.landing.cta_start')} →
-                                </Link>
-                                <p className="text-brand-muted flex items-center gap-2 text-[0.95rem]">
-                                    <Lock />
-                                    {t('public.landing.price.reassurance')}
-                                </p>
-                                {mode === 'prevente' && (
-                                    <p className="text-brand-muted text-[0.95rem]">
-                                        {t(
-                                            'public.landing.price.prevente_body',
-                                        )}
-                                    </p>
-                                )}
-                            </div>
-                            <img
-                                {...photo('livre')}
-                                sizes="(min-width: 1024px) 32rem, 100vw"
-                                alt={t('public.landing.book.photo_alt')}
-                                width="1400"
-                                height="1050"
-                                loading="lazy"
-                                className="border-brand-gold aspect-[4/3] w-full rounded-xl border-2 object-cover"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* La bande de confiance ============================================ */}
-            <section
-                aria-label={t('public.landing.trust.title')}
-                className="border-brand-sand border-y"
-            >
-                <ul className="mx-auto flex w-full max-w-6xl flex-col gap-x-10 gap-y-3 px-6 py-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-                    {(['no_app', 'one_payment', 'refund'] as const).map((k) => (
-                        <li
-                            key={k}
-                            className="font-display text-brand flex items-center gap-2.5 text-[1.15rem]"
-                        >
-                            <Check />
-                            {t(`public.landing.trust.${k}`)}
-                        </li>
-                    ))}
-                </ul>
-            </section>
-
-            {/* La garantie ====================================================== */}
-            <section
-                aria-labelledby="guarantee"
-                className="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 px-6 py-16 text-center lg:py-20"
-            >
-                <h2
-                    id="guarantee"
-                    className="font-display text-[1.75rem] leading-[1.25] font-medium sm:text-3xl lg:text-4xl"
-                >
-                    {t('public.landing.guarantee.headline')}
-                </h2>
-                <p className={LEDE}>{t('public.landing.guarantee.body')}</p>
-            </section>
-
-            {/* La double page ================================================== */}
-            <section
-                aria-labelledby="book"
-                className="mx-auto w-full max-w-6xl px-6 py-16 lg:py-24"
-            >
-                <div className="bg-brand-linen flex flex-col items-start gap-8 rounded-2xl px-6 py-14 text-left lg:items-center lg:px-16 lg:text-center">
-                    <span className="eyebrow">
-                        {t('public.landing.book.title')}
-                    </span>
-                    <h2 id="book" className={`${H2} max-w-[22em]`}>
-                        {t('public.landing.book.headline')}
-                    </h2>
-                    <p className={`${LEDE} max-w-[36em]`}>
-                        {t('public.landing.book.body')}
-                    </p>
-                    <Link href="/acheter" className={PRIMARY}>
-                        {t('public.landing.cta')}
-                    </Link>
-
-                    <figure className="bg-brand-surface grid w-full max-w-4xl overflow-hidden rounded-xl shadow-[0_30px_70px_rgba(38,33,28,0.22)] sm:grid-cols-2">
-                        <img
-                            {...photo('livre')}
-                            sizes="(min-width: 640px) 28rem, 100vw"
-                            alt=""
-                            width="1400"
-                            height="1050"
-                            loading="lazy"
-                            className="aspect-[4/3] w-full object-cover sm:aspect-auto sm:h-full"
-                        />
-                        <div className="flex flex-col gap-4 p-7 text-left">
-                            <span className="text-brand-muted text-[0.75rem] font-semibold tracking-[0.12em] uppercase">
-                                Chapitre 3
-                            </span>
-                            <span className="font-display text-brand text-[1.5rem] leading-tight font-medium">
-                                {t('public.landing.product.mockup.chapter')}
-                            </span>
-                            <p className="text-brand-muted font-display text-[1.05rem] leading-relaxed italic">
-                                {t('public.landing.proof.sample_fluide')}
-                            </p>
-                            <div className="mt-auto flex items-center gap-3 pt-2">
-                                <FauxQr className="border-brand-sand size-16 flex-none rounded-sm border p-1" />
-                                <span className="text-brand-muted text-[0.85rem] leading-snug">
-                                    {t('public.landing.product.mockup.scan')}
-                                </span>
-                            </div>
-                        </div>
-                    </figure>
-
-                    <p className="text-brand-muted max-w-[40em] text-[0.95rem]">
-                        {t('public.landing.book.qr')}
-                    </p>
-                </div>
-            </section>
-
-            {/* La relecture ===================================================== */}
-            <section
-                aria-labelledby="review"
-                className="mx-auto grid w-full max-w-6xl gap-10 px-6 pb-16 lg:grid-cols-[6fr_6fr] lg:items-center lg:gap-20 lg:pb-24"
-            >
-                <div className="flex flex-col gap-6">
-                    <h2 id="review" className={H2}>
-                        {t('public.landing.review.headline')}
-                    </h2>
-                    <p className={LEDE}>{t('public.landing.review.body')}</p>
-
-                    <figure
-                        aria-label={t('public.landing.proof.aria')}
-                        className="card overflow-hidden"
-                    >
-                        <div className="border-brand-sand grid border-b sm:grid-cols-2">
-                            <div className="text-brand-muted px-5 py-3 text-[0.75rem] font-semibold tracking-[0.08em] uppercase">
-                                {t('public.landing.proof.verbatim')}
-                            </div>
-                            <div className="border-brand-sand text-brand border-t px-5 py-3 text-[0.75rem] font-semibold tracking-[0.08em] uppercase sm:border-t-0 sm:border-l">
-                                {t('public.landing.proof.fluide')}
-                            </div>
-                        </div>
-                        <div className="grid sm:grid-cols-2">
-                            <p className="bg-brand-linen text-brand-muted px-5 py-5 text-[0.95rem] leading-relaxed italic">
-                                {t('public.landing.proof.sample_verbatim')}
-                            </p>
-                            <p className="border-brand-sand font-display border-t px-5 py-5 text-[1.05rem] leading-relaxed sm:border-t-0 sm:border-l">
-                                {t('public.landing.proof.sample_fluide')}
-                            </p>
-                        </div>
-                        <div className="border-brand-sand text-brand-muted flex flex-wrap items-center gap-2 border-t px-5 py-3.5 text-[0.9rem]">
-                            <span>{t('public.landing.proof.then')}</span>
-                            {(['share', 'keep', 'later'] as const).map((c) => (
-                                <span key={c} className="chip">
-                                    {t(`public.landing.proof.${c}`)}
-                                </span>
-                            ))}
-                        </div>
-                    </figure>
-                </div>
-
-                <div className="mx-auto w-full max-w-[380px]">
-                    <div className="bg-brand-deep rounded-[2.2rem] p-3 shadow-[0_30px_70px_rgba(38,33,28,0.28)]">
-                        {/* Le cadre la plafonne à 380 px moins ses 12 px de
-                            marge : sa largeur ne dépend pas de l'écran, et une
-                            requête média n'aurait rien à y départager. */}
-                        <img
-                            {...photo('relecture', 780)}
-                            sizes="356px"
-                            alt={t('public.landing.review.screenshot_alt')}
-                            width="780"
-                            height="1600"
-                            loading="lazy"
-                            className="w-full rounded-[1.6rem]"
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Le cadeau ======================================================== */}
-            <section
-                aria-labelledby="gift"
-                className="mx-auto w-full max-w-6xl px-6 pb-8"
-            >
-                <div className="bg-brand-linen grid gap-8 rounded-2xl px-7 py-12 lg:grid-cols-[7fr_5fr] lg:items-center lg:px-14">
-                    <div className="flex flex-col gap-5">
-                        <h2 id="gift" className={H2}>
-                            {t('public.landing.gift.headline')}
-                        </h2>
-                        <p className="text-brand-text text-lg leading-relaxed">
-                            {t('public.landing.gift.body')}
-                        </p>
-                        <Link href="/acheter" className={`${PRIMARY} w-fit`}>
-                            {t('public.landing.cta')}
-                        </Link>
-                    </div>
-                    <div className="bg-brand-surface mx-auto flex w-full max-w-[320px] rotate-[-3deg] flex-col gap-4 rounded-md px-7 py-9 shadow-[0_20px_50px_rgba(38,33,28,0.18)]">
-                        <span className="font-display text-brand text-2xl leading-tight font-medium italic">
-                            {t('public.landing.gift.card_name')},
-                        </span>
-                        <span className="bg-brand-sand h-1.5 w-full rounded-full" />
-                        <span className="bg-brand-sand h-1.5 w-[86%] rounded-full" />
-                        <span className="bg-brand-sand h-1.5 w-[70%] rounded-full" />
-                        <div className="flex items-center gap-3 pt-2">
-                            <FauxQr className="border-brand-sand size-12 flex-none rounded-sm border p-0.5" />
-                            <span className="text-brand-muted text-[0.75rem] leading-snug">
-                                {t('public.landing.product.mockup.scan')}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/*
-             * Nos engagements ==================================================
-             *
-             * À la place des deux tuiles d'options — téléphone et exemplaires
-             * — parties dans le tunnel, où elles se choisissent (T-150). Une
-             * page d'accueil vend le produit ; les options se décident quand
-             * on a déjà décidé d'acheter.
-             *
-             * Les sept phrases sont en formulation canonique : les mêmes ici,
-             * dans les CGV et dans les courriels. C'est la première page qui
-             * les affiche, alors qu'elles étaient au catalogue depuis le début.
-             */}
-            <section
-                aria-labelledby="commitments"
-                className="mx-auto w-full max-w-6xl px-6 pb-20 lg:pb-24"
-            >
-                <div className="bg-brand-linen rounded-2xl px-7 py-12 lg:px-14">
-                    <h2 id="commitments" className={H2}>
-                        {t('public.landing.commitments.title')}
-                    </h2>
-                    <p className="text-brand-muted mt-3 text-lg leading-snug">
-                        {t('public.landing.commitments.lede')}
-                    </p>
-                    <ul className="mt-9 grid gap-x-12 gap-y-5 lg:grid-cols-2">
-                        {COMMITMENTS.map((commitment) => (
-                            <li key={commitment} className="flex gap-3">
-                                <Check />
-                                <span className="text-brand-text leading-relaxed">
-                                    {t(
-                                        `public.landing.commitments.${commitment}`,
-                                    )}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
-
-            {/* Questions fréquentes ============================================= */}
-            <section
-                id="questions"
-                aria-labelledby="faq"
-                className="border-brand-sand mx-auto grid w-full max-w-6xl gap-10 border-t px-6 py-16 lg:grid-cols-[4fr_8fr] lg:gap-16 lg:py-24"
-            >
-                <h2 id="faq" className={H2}>
-                    {t('public.landing.faq.title')}
-                </h2>
-
-                <dl className="divide-brand-sand border-brand-sand divide-y border-y">
-                    {QUESTIONS.map((question) => (
-                        <div
-                            key={question}
-                            className="flex flex-col gap-2 py-6"
-                        >
-                            <dt className="text-brand text-xl font-semibold">
-                                {t(`public.landing.faq.${question}.q`)}
-                            </dt>
-                            <dd className="text-brand-muted">
-                                {t(`public.landing.faq.${question}.a`)}
-                            </dd>
-                        </div>
-                    ))}
-                </dl>
-            </section>
-
-            {/* L'adresse contre une réduction, comme chez le leader (T-213) ===== */}
             <Newsletter
                 enabled={welcomeOffer.enabled}
                 discountPercent={welcomeOffer.discountPercent}

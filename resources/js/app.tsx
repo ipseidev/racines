@@ -80,10 +80,12 @@ if (Reflect.get(window, MOUNTED) !== true) {
                 // concurrenceraient « Continuer » (T-135).
                 case name.startsWith('public/Checkout'):
                     return CheckoutLayout;
-                // Les variantes de page de vente ont leur propre barre :
-                // leurs ancres pointent dans la page, et l'accueil — le
-                // témoin du test — n'a pas à apprendre à en changer (T-219).
-                case name === 'public/LandingStructure':
+                // L'accueil a sa propre barre : ses ancres pointent dans la
+                // page, ce qu'une page d'accueil veut — `PublicLayout` visait
+                // `/#livre`, fait pour y revenir de l'extérieur (T-219, T-220).
+                // Le témoin, lui, retombe sur `PublicLayout` par le cas
+                // `public/` qui suit, comme il l'a toujours fait.
+                case name === 'public/Landing':
                     return LpLayout;
                 // Les pages publiques portent le pied de page légal partout, y
                 // compris dans le tunnel : on doit pouvoir lire les conditions

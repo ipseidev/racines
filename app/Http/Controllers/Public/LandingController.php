@@ -14,13 +14,21 @@ use Inertia\Response;
 use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
 
 /**
- * La page d'accueil, la page « Comment ça marche » et la démonstration.
+ * La page d'accueil, le témoin, « Comment ça marche » et la démonstration.
  *
- * L'ordre des sections vient du dossier 01 §4 et n'est pas négociable : la
+ * **L'accueil a changé de page le 8 septembre 2026 (T-220)** : la variante de
+ * structure de T-219 a pris sa place, et l'ancienne page est servie à
+ * `/lp/temoin`, hors index. Elle n'est pas supprimée parce qu'une variante
+ * sans témoin ne se mesure plus, et que la mesure prévue par T-219 n'a pas
+ * eu lieu.
+ *
+ * Conséquence à connaître : l'ordre des sections du dossier 01 §4 — la
  * promesse, comment ça marche, l'essai en soixante secondes, le livre, les
- * engagements, le prix, les questions. On explique avant de demander — c'est
- * la même règle que sur la page d'enregistrement, où l'on explique avant de
- * demander le micro.
+ * engagements, le prix, les questions — est celui du **témoin**, et non plus
+ * celui de l'accueil. L'accueil suit la succession commerciale de T-219, en
+ * vingt-deux sections. La règle qui survit aux deux, elle, n'a pas bougé : on
+ * explique avant de demander, comme sur la page d'enregistrement où l'on
+ * explique avant de demander le micro.
  *
  * Le prix affiché dépend du mode et, en prévente, de la variante vue par ce
  * visiteur. Le cookie est posé **ici** : l'affectation doit précéder l'achat,
@@ -30,7 +38,21 @@ final class LandingController
 {
     public function __invoke(Request $request): Response
     {
-        return inertia('public/Landing', $this->storefront($request));
+        return inertia('public/Landing', $this->salesPage($request));
+    }
+
+    /**
+     * Le témoin, à `/lp/temoin` (T-220).
+     *
+     * L'ancienne page d'accueil, gardée servie pour qu'un test reste possible :
+     * une variante mesurée contre une page qui n'existe plus ne mesure rien.
+     * Hors index par le garde de `app.blade.php`, qui vise tout composant
+     * `public/Landing…` sauf `public/Landing` — deux pages de vente indexées
+     * pour la même offre se disputeraient leur propre trafic.
+     */
+    public function temoin(Request $request): Response
+    {
+        return inertia('public/LandingTemoin', $this->storefront($request));
     }
 
     /**
@@ -77,16 +99,22 @@ final class LandingController
     }
 
     /**
-     * La variante de structure, à `/lp/histoire` (T-219).
+     * Ce que l'accueil reçoit en plus du fond de boutique (T-219, T-220).
      *
-     * L'accueil reste le témoin : on ne remplace pas une page qui vend par une
-     * page qu'on n'a pas encore mesurée. Mêmes props que l'accueil, plus les
-     * cinq collections de preuves — vides par défaut, et c'est le vide qui
-     * choisit le repli de chaque section.
+     * Les cinq collections de preuves, vides par défaut : c'est le vide qui
+     * choisit le repli de chaque section, et un repli se déclare comme
+     * démonstration. Remplir une collection remplace le repli ; rien ne se
+     * remplit tout seul.
+     *
+     * `/lp/histoire` ne passe plus par ici : la route redirige en 301 vers
+     * `/`, pour que les liens déjà posés sur la variante continuent de mener
+     * à la page qu'ils visaient.
+     *
+     * @return array<string, mixed>
      */
-    public function structure(Request $request): Response
+    private function salesPage(Request $request): array
     {
-        return inertia('public/LandingStructure', [
+        return [
             ...$this->storefront($request),
             'variant' => (string) config('product.landing.structure.id'),
             'proof' => [
@@ -96,7 +124,7 @@ final class LandingController
                 'videos' => self::proof('videos'),
                 'stories' => self::proof('stories'),
             ],
-        ]);
+        ];
     }
 
     /**

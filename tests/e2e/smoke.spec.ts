@@ -16,9 +16,24 @@ test('la page d’accueil répond et porte le nom du produit', async ({
     await expect(page).toHaveTitle(/.+/);
 });
 
-test('la variante de structure répond', async ({ page }) => {
-    const response = await page.goto('/lp/histoire');
+test('le témoin répond, hors index', async ({ page }) => {
+    const response = await page.goto('/lp/temoin');
 
     expect(response?.status()).toBe(200);
     await expect(page).toHaveTitle(/.+/);
+
+    // Ce qui compte sur cette page-là : qu'elle ne se dispute pas le trafic
+    // de l'accueil, qui sert la même offre (T-220).
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+        'content',
+        'noindex, follow',
+    );
+});
+
+test('l’ancienne URL de la variante mène à l’accueil', async ({ page }) => {
+    // Des liens ont pu être posés sur `/lp/histoire` avant qu'elle ne devienne
+    // l'accueil : une redirection permanente, pas un 404 (T-220).
+    await page.goto('/lp/histoire');
+
+    expect(new URL(page.url()).pathname).toBe('/');
 });

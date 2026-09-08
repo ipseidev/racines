@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\ConsentKind;
+use App\Support\Database\EnumCheck;
+use App\Models\ConsentText;
 use App\Services\Storage\MediaStorage;
+use BackedEnum;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -52,10 +57,12 @@ final class ProductionCheck extends Command
         $this->newLine();
         $this->line('  <options=bold>Encaisser</>');
         $this->stripe();
+        $this->consentements();
 
         $this->newLine();
         $this->line('  <options=bold>Livrer</>');
         $this->base();
+        $this->contraintes();
         $this->file();
         $this->stockage();
 
@@ -119,6 +126,74 @@ final class ProductionCheck extends Command
         }
     }
 
+    /**
+     * Les textes de consentement : sans eux, **le paiement ne devient pas
+     * une commande**.
+     *
+     * `RecordConsent` refuse d'enregistrer un accord dont il ne pourrait pas
+     * dire, plus tard, ce qui avait été lu (doc 04 §2) — le bon choix. Mais
+     * `FulfillOrder` recueille deux accords de l'acheteur, « démarrer tout de
+     * suite » et « recevoir des nouvelles », et le tunnel affiche les deux
+     * cases sans condition. Un texte manquant fait donc **lever** l'exécution
+     * de la commande, à l'intérieur de sa transaction : la commande et le
+     * projet sont annulés, le webhook répond 500, et Stripe le réessaie avant
+     * de désactiver l'endpoint — soit la punition exacte de T-169, pour un
+     * acheteur qui a simplement coché une case.
+     *
+     * Les cinq accords du narrateur comptent autant : sans eux, la page
+     * d'opt-in ne peut pas s'afficher, et le cadeau n'a nulle part où aller.
+     *
+     * Cette ligne existe parce que `prod:demo` a trouvé le trou que
+     * `prod:check` ne voyait pas : la question de cette commande est « si
+     * quelqu'un achète maintenant, est-ce que ça marche ? », et elle répondait
+     * oui (T-211). Un semis oublié n'est pas une faute de code, et c'est bien
+     * pour cela qu'aucun test ne l'attrape.
+     */
+    private function consentements(): void
+    {
+        $locale = (string) config('app.locale');
+
+        try {
+            $manquants = array_values(array_filter(
+                ConsentKind::cases(),
+                static fn (ConsentKind $kind): bool => ConsentText::current($kind, $locale) === null,
+            ));
+        } catch (Throwable $e) {
+            $this->rouge('Textes de consentement', 'illisibles : '.$e->getMessage());
+
+            return;
+        }
+
+        if ($manquants === []) {
+            $this->vert('Textes de consentement', sprintf('%d en vigueur en « %s »', count(ConsentKind::cases()), $locale));
+
+            return;
+        }
+
+        /*
+         * Le verdict court, la conséquence et le remède sur leurs propres
+         * lignes : `twoColumnDetail` remplit la largeur de points, et une
+         * phrase de trois lignes y perd sa fin — or ce qu'on vient chercher à
+         * trois heures du matin est justement la commande à taper.
+         */
+        $this->rouge('Textes de consentement', sprintf(
+            '%d manquant(s) en « %s » : un achat peut ne jamais devenir une commande.',
+            count($manquants),
+            $locale,
+        ));
+
+        // Les noms bruts, et non les libellés traduits : c'est la valeur que
+        // porte le message d'erreur, et celle que le semis attend.
+        $this->line('      <fg=gray>manquants : </><fg=red>'.implode(', ', array_map(
+            static fn (ConsentKind $kind): string => $kind->value,
+            $manquants,
+        )).'</>');
+
+        $this->line('      <fg=gray>une case « démarrer tout de suite » cochée fait lever l’exécution de</>');
+        $this->line('      <fg=gray>la commande : elle est annulée, et Stripe désactive le webhook.</>');
+        $this->line('      <fg=magenta>php artisan db:seed --class=ConsentTextSeeder --force</>');
+    }
+
     private function base(): void
     {
         try {
@@ -127,6 +202,154 @@ final class ProductionCheck extends Command
         } catch (Throwable $e) {
             $this->rouge('Base de données', 'injoignable : plus rien ne fonctionne. '.$e->getMessage());
         }
+    }
+
+    /**
+     * La base accepte-t-elle tout ce que le code peut y écrire ?
+     *
+     * `EnumCheck::of($enum)` est évalué **au moment où la migration tourne**,
+     * contre le code du jour. Une base créée par `migrate:fresh` obtient donc
+     * l'énumération complète et paraît saine ; une base migrée pas à pas garde
+     * la liste qu'avait l'énumération ce jour-là. Les deux divergent en
+     * silence, la suite de tests tourne toujours sur la première, et c'est la
+     * seconde qui est en production — **aucun test ne peut voir cet écart**.
+     *
+     * Il a coûté le tunnel d'achat : quatre motifs de consentement ajoutés
+     * après le 2 septembre n'avaient élargi que `consents.kind`, pas
+     * `consent_texts.kind`, et un client cochant « démarrer tout de suite »
+     * voyait sa commande annulée et Stripe désactiver le webhook (T-211).
+     *
+     * La correspondance colonne → énumération ne se recopie pas ici : elle est
+     * déjà dans les `casts()` des modèles, qui sont maintenus parce que le
+     * produit s'en sert. Une seconde liste aurait divergé, ce qui est
+     * précisément le défaut qu'on vient de corriger.
+     */
+    private function contraintes(): void
+    {
+        /*
+         * Les colonnes **volontairement plus étroites** que leur énumération,
+         * avec la raison. Sans elles, la ligne crierait au loup sur trois
+         * contraintes justes, et on apprendrait à l'ignorer.
+         */
+        $etroites = [
+            // Un narrateur choisit l'un, l'autre ou les deux ; « opérateur
+            // téléphone » n'est pas une préférence, c'est un humain qui rappelle.
+            'narrators.preferred_channel',
+            // Un code à usage unique et un message sortant partent par un seul
+            // canal : `both` n'a pas de sens à l'envoi.
+            'otp_challenges.channel',
+            'outbound_messages.channel',
+        ];
+
+        try {
+            $ecarts = [];
+            $sansGarde = [];
+
+            foreach (self::colonnesEnumerees() as $colonne => $enum) {
+                if (in_array($colonne, $etroites, true)) {
+                    continue;
+                }
+
+                $autorisees = self::valeursAutorisees($colonne);
+
+                if ($autorisees === null) {
+                    $sansGarde[] = $colonne;
+
+                    continue;
+                }
+
+                $manquantes = array_diff(EnumCheck::of($enum), $autorisees);
+
+                if ($manquantes !== []) {
+                    $ecarts[$colonne] = array_values($manquantes);
+                }
+            }
+        } catch (Throwable $e) {
+            $this->rouge('Contraintes de la base', 'illisibles : '.$e->getMessage());
+
+            return;
+        }
+
+        if ($ecarts === []) {
+            $this->vert('Contraintes de la base', 'chaque colonne accepte toute son énumération');
+        }
+
+        foreach ($ecarts as $colonne => $manquantes) {
+            // Une ligne par colonne : c'est la colonne qu'on va réparer, et
+            // une liste agrégée obligerait à la relire pour savoir laquelle.
+            $this->rouge('Contrainte '.$colonne, sprintf(
+                'refuse %s — la base rejette ce que le code écrit, donc une erreur 500.',
+                implode(', ', $manquantes),
+            ));
+        }
+
+        if ($ecarts !== []) {
+            $this->line('      <fg=gray>une énumération élargie oblige à réémettre la contrainte de chaque</>');
+            $this->line('      <fg=gray>table qui la stocke : une migration `EnumCheck::drop` puis `add`.</>');
+        }
+
+        if ($sansGarde !== []) {
+            // Orange : le produit fonctionne, c'est la garde qui manque.
+            $this->orange('Colonnes sans contrainte', implode(', ', $sansGarde).' — convention §13 : la garde vit en base, pas seulement dans le code.');
+        }
+    }
+
+    /**
+     * Les colonnes qui stockent une énumération, d'après les `casts()`.
+     *
+     * @return array<string, class-string<BackedEnum>>
+     */
+    private static function colonnesEnumerees(): array
+    {
+        $colonnes = [];
+
+        foreach ((array) glob(app_path('Models/*.php')) as $fichier) {
+            if (! is_string($fichier)) {
+                continue;
+            }
+
+            $classe = 'App\\Models\\'.basename($fichier, '.php');
+
+            if (! class_exists($classe) || ! is_subclass_of($classe, Model::class)) {
+                continue;
+            }
+
+            $modele = new $classe;
+
+            foreach ($modele->getCasts() as $colonne => $cast) {
+                if (is_string($cast) && enum_exists($cast) && is_subclass_of($cast, BackedEnum::class)) {
+                    $colonnes[$modele->getTable().'.'.$colonne] = $cast;
+                }
+            }
+        }
+
+        ksort($colonnes);
+
+        return $colonnes;
+    }
+
+    /**
+     * Les valeurs qu'une contrainte `check` laisse passer, ou `null` s'il n'y
+     * en a aucune.
+     *
+     * @return list<string>|null
+     */
+    private static function valeursAutorisees(string $colonne): ?array
+    {
+        [$table, $champ] = explode('.', $colonne, 2);
+
+        $definition = DB::selectOne(
+            'select pg_get_constraintdef(oid) as definition from pg_constraint where contype = ? and conname = ?',
+            ['c', "{$table}_{$champ}_check"],
+        );
+
+        if ($definition === null) {
+            return null;
+        }
+
+        preg_match_all("/'([^']*)'/", (string) $definition->definition, $trouvees);
+
+        return $trouvees[1];
     }
 
     /**
