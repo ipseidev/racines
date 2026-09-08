@@ -182,7 +182,7 @@ pas qu'elle est valide (T-208).
 
 | Commande | Fait |
 |---|---|
-| `php artisan prod:check` | « Si quelqu'un achète maintenant, est-ce que ça marche ? » Chaque ligne dit ce que le client perd, pas ce qui manque techniquement. `--rapide` n'appelle pas les prestataires |
+| `php artisan prod:check` | « Si quelqu'un achète maintenant, est-ce que ça marche ? » Chaque ligne dit ce que le client perd, pas ce qui manque techniquement. `--rapide` n'appelle pas les prestataires. Vérifie aussi ce qu'aucun test ne peut voir : les textes de consentement en vigueur, et les contraintes `check` restées en arrière de leur énumération (§13) |
 | `php artisan prod:sms +33…` | Envoie **un vrai SMS** à un numéro nommé et le suit jusqu'à `delivered`. Annonce avant d'envoyer l'expéditeur que verra le téléphone, la longueur et le nombre de segments ; refuse le numéro d'un narrateur ou d'un proche ; `--corps=` pour un autre texte, `--attendre=0` pour ne pas attendre le rappel, `--force` sans confirmation |
 | `php artisan prod:demo` | Fabrique un décor complet **en production** — compte, commande, narrateur sur un vrai téléphone, proches invités — par le chemin du webhook Stripe, sans qu'aucun argent ne bouge. `--question` pose la première question sans attendre la nuit que l'acceptation pose ; `--purge` efface par le chemin RGPD ; `--telephone=`, `--email=`, `--canal=`, `--proches=`, `--motdepasse`, `--force` |
 
@@ -391,6 +391,7 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 - Migrations toujours réversibles jusqu'au bloc 16 ; après le premier déploiement en production, plus jamais de modification d'une migration existante.
 - Soft delete uniquement là où le dossier le prévoit (état `trashed` des histoires = colonne `trashed_at`, pas `SoftDeletes` global).
 - Contraintes en base et pas seulement en code : clés étrangères, `check` sur les enums stockés en texte, index uniques sur les hash de jetons.
+- **Ajouter un cas à une énumération oblige à réémettre la contrainte de _chaque_ table qui la stocke.** `EnumCheck::of($enum)` est évalué au moment où la migration tourne, contre le code du jour : une base créée par `migrate:fresh` obtient l'énumération complète, une base migrée pas à pas garde la liste d'alors. Les deux divergent **en silence**, et la suite de tests tourne toujours sur la première — aucun test ne peut voir l'écart. `ConsentKind` vit dans `consents` et `consent_texts` ; deux migrations l'ont élargi et n'ont réémis que la première. La conséquence était le tunnel d'achat : `RecordConsent` levait sur un texte absent, la commande était annulée dans sa transaction, le webhook répondait 500 et Stripe désactivait l'endpoint — la punition de T-169, pour une case cochée (T-211). C'est `prod:demo` qui l'a trouvé, en production, et `prod:check` qui le dit maintenant : il compare les `casts()` des modèles aux contraintes vivantes, et nomme les trois colonnes volontairement plus étroites que leur énumération.
 - Le modèle complet est dans `annexes/B_modele_donnees.md`. Toute nouvelle table y est ajoutée dans le même commit.
 
 ## 14. Jobs et queues

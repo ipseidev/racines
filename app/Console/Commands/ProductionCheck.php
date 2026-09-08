@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Enums\ConsentKind;
-use App\Support\Database\EnumCheck;
 use App\Models\ConsentText;
 use App\Services\Storage\MediaStorage;
+use App\Support\Database\EnumCheck;
 use BackedEnum;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
@@ -275,12 +275,19 @@ final class ProductionCheck extends Command
         }
 
         foreach ($ecarts as $colonne => $manquantes) {
-            // Une ligne par colonne : c'est la colonne qu'on va réparer, et
-            // une liste agrégée obligerait à la relire pour savoir laquelle.
+            /*
+             * Une ligne par colonne — c'est elle qu'on va réparer — et le
+             * verdict court : `twoColumnDetail` remplit la largeur de points,
+             * et une phrase de trois lignes y perd sa fin. Les valeurs
+             * refusées vont donc sur leur propre ligne, où elles survivent à
+             * un terminal étroit.
+             */
             $this->rouge('Contrainte '.$colonne, sprintf(
-                'refuse %s — la base rejette ce que le code écrit, donc une erreur 500.',
-                implode(', ', $manquantes),
+                '%d valeur(s) refusées, que le code écrit pourtant : erreur 500.',
+                count($manquantes),
             ));
+
+            $this->line('      <fg=gray>refusées : </><fg=red>'.implode(', ', $manquantes).'</>');
         }
 
         if ($ecarts !== []) {
@@ -303,11 +310,7 @@ final class ProductionCheck extends Command
     {
         $colonnes = [];
 
-        foreach ((array) glob(app_path('Models/*.php')) as $fichier) {
-            if (! is_string($fichier)) {
-                continue;
-            }
-
+        foreach (glob(app_path('Models/*.php')) ?: [] as $fichier) {
             $classe = 'App\\Models\\'.basename($fichier, '.php');
 
             if (! class_exists($classe) || ! is_subclass_of($classe, Model::class)) {
@@ -317,7 +320,9 @@ final class ProductionCheck extends Command
             $modele = new $classe;
 
             foreach ($modele->getCasts() as $colonne => $cast) {
-                if (is_string($cast) && enum_exists($cast) && is_subclass_of($cast, BackedEnum::class)) {
+                // `getCasts()` rend aussi « immutable_datetime » ou
+                // « decimal:2 » : `enum_exists` les écarte sans bruit.
+                if (enum_exists($cast) && is_subclass_of($cast, BackedEnum::class)) {
                     $colonnes[$modele->getTable().'.'.$colonne] = $cast;
                 }
             }

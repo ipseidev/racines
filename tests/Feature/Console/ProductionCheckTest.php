@@ -6,6 +6,7 @@ use App\Enums\ConsentKind;
 use App\Exceptions\Domain\ObjectNotStored;
 use App\Models\ConsentText;
 use App\Services\Storage\MediaStorage;
+use App\Support\Database\EnumCheck;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /*
@@ -64,5 +65,49 @@ it('voit un texte de consentement manquant, et dit ce que l’acheteur perd', fu
 it('se tait quand les douze textes sont en vigueur', function () {
     $this->artisan('prod:check', ['--rapide' => true])
         ->expectsOutputToContain('en vigueur')
+        ->run();
+});
+
+/*
+ * La divergence qu'aucun test ne peut voir autrement.
+ *
+ * `EnumCheck::of($enum)` est évalué au moment où la migration tourne : une
+ * base créée par `migrate:fresh` — celle de cette suite — obtient toujours
+ * l'énumération complète. Une base migrée pas à pas garde la liste d'alors,
+ * et c'est celle-là qui est en production. On reproduit donc l'écart à la
+ * main, parce que c'est la seule façon de l'éprouver ici (T-211).
+ */
+it('voit une contrainte restée en arrière de son énumération', function () {
+    ConsentText::query()->whereIn('kind', [
+        ConsentKind::DeclaredSharing->value,
+        ConsentKind::MandateDelegation->value,
+        ConsentKind::EarlyServiceStart->value,
+        ConsentKind::MarketingEmail->value,
+    ])->delete();
+
+    EnumCheck::drop('consent_texts', 'kind');
+    EnumCheck::add('consent_texts', 'kind', [
+        'voice_recording', 'transcription', 'ai_rendering', 'family_sharing',
+        'sensitive_categories', 'phone_call_recording', 'photo_rights', 'post_mortem_directives',
+    ]);
+
+    $this->artisan('prod:check', ['--rapide' => true])
+        ->expectsOutputToContain('Contrainte consent_texts.kind')
+        // Sur leur propre ligne, donc lisibles sur un terminal étroit.
+        ->expectsOutputToContain('early_service_start')
+        ->expectsOutputToContain('EnumCheck::drop')
+        ->run();
+})->uses(RefreshDatabase::class);
+
+it('ne crie pas au loup sur les trois colonnes volontairement étroites', function () {
+    /*
+     * `narrators.preferred_channel` n'accepte pas `phone_operator`, et
+     * `otp_challenges.channel` n'accepte pas `both` : ces contraintes sont
+     * justes, et les peindre en rouge apprendrait à ignorer le rouge.
+     */
+    $this->artisan('prod:check', ['--rapide' => true])
+        ->doesntExpectOutputToContain('Contrainte narrators.preferred_channel')
+        ->doesntExpectOutputToContain('Contrainte otp_challenges.channel')
+        ->doesntExpectOutputToContain('Contrainte outbound_messages.channel')
         ->run();
 });
