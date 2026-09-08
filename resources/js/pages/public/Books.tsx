@@ -70,7 +70,7 @@ export default function Books({ price, variant, welcomeOffer }: Props) {
 
     return (
         <>
-            <Head title={t('public.books.seo_title')} />
+            <Head title={t('public.seo.books.title')} />
 
             {/* L'accroche, le prix, l'achat. */}
             <section

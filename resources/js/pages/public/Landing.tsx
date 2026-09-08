@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 
+import { useBrand } from '@/brand/BrandProvider';
 import EasyForStorytellers from '@/components/landing/EasyForStorytellers';
 import FounderStory from '@/components/landing/FounderStory';
 import GiftBenefits from '@/components/landing/GiftBenefits';
@@ -100,10 +101,18 @@ export default function Landing({
     proof,
 }: Props) {
     const t = useT();
+    const brand = useBrand();
 
     return (
         <>
-            <Head title={t('public.lp.seo_title')} />
+            {/*
+             * La clé du référencement (`Seo::forComponent`), et pas une autre :
+             * la vue racine écrit ce titre pour le premier affichage, le
+             * rendu serveur le produit à sa place quand il répond, et le
+             * client le réécrit à l'hydratation. Trois auteurs, un seul
+             * titre.
+             */}
+            <Head title={t('public.seo.home.title', { brand: brand.name })} />
 
             {/*
              * La fenêtre de bienvenue de l'accueil (T-141) : une réduction

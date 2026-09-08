@@ -120,7 +120,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
 
     return (
         <>
-            <Head title={t('public.how_it_works.seo_title')} />
+            <Head title={t('public.seo.how.title')} />
 
             {/* Le bandeau de titre, la question, les deux onglets ============= */}
             <section className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-6 pt-14 pb-10 text-center lg:pt-20 lg:pb-14">

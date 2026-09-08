@@ -227,7 +227,7 @@ export default function Landing({
              * recherche. Depuis T-190 les deux disent les mêmes mots, ceux du
              * produit, et c'est assumé.
              */}
-            <Head title={t('public.landing.seo_title')} />
+            <Head title={t('public.seo.home.title', { brand: brand.name })} />
 
             {/* La réduction de bienvenue, après un délai (T-141) ============== */}
             <WelcomeOffer

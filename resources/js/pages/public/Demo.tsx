@@ -238,7 +238,7 @@ export default function Demo({ limits }: Props) {
 
     return (
         <div className="mx-auto w-full max-w-3xl px-6 py-10 lg:py-16">
-            <Head title={t('public.demo.title')} />
+            <Head title={t('public.seo.demo.title')} />
 
             <span className="eyebrow">{t('public.demo.eyebrow')}</span>
 

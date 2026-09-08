@@ -129,7 +129,7 @@ export default function Faq({ price, variant, ebookPrice }: Props) {
 
     return (
         <>
-            <Head title={t('public.faq_page.seo_title')} />
+            <Head title={t('public.seo.faq.title')} />
 
             <section className={`${SHELL} flex flex-col gap-6 py-11 lg:py-16`}>
                 <h1 className="font-display max-w-[24em] text-[2rem] leading-[1.1] font-medium sm:text-[2.6rem] lg:text-[3rem]">

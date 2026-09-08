@@ -94,20 +94,6 @@
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400.woff2" crossorigin="anonymous">
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-600.woff2" crossorigin="anonymous">
 
-@if ($page['component'] === 'public/Landing')
-        {{-- La photo du héros est l'élément le plus grand de la page d'accueil.
-             Sans ce préchargement, le navigateur ne la découvre qu'une fois
-             React monté : 890 ms d'attente mesurés le 5 septembre 2026. Les
-             `imagesrcset` et `imagesizes` répètent mot pour mot ceux de la
-             balise, faute de quoi le fichier est demandé deux fois — l'échelle
-             est celle de resources/js/lib/photo.ts, et rien ne vérifie plus
-             que les deux concordent (T-218) : à relire ensemble. --}}
-        <link rel="preload" as="image" href="/img/landing/hero.webp"
-              imagesrcset="/img/landing/hero-400.webp 400w, /img/landing/hero-550.webp 550w, /img/landing/hero-700.webp 700w, /img/landing/hero-900.webp 900w, /img/landing/hero-1100.webp 1100w, /img/landing/hero.webp 1400w"
-              imagesizes="(min-width: 1024px) 34rem, 100vw"
-              fetchpriority="high">
-@endif
-
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>

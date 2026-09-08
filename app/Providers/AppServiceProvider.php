@@ -45,6 +45,7 @@ use App\Services\Transcription\FakeTranscriptionProvider;
 use App\Services\Transcription\GladiaProvider;
 use App\Services\Transcription\TranscriptionProvider;
 use App\Support\Brand;
+use App\Support\Seo;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\View\View as ViewContract;
@@ -58,6 +59,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
 use InvalidArgumentException;
 use Laravel\Pennant\Feature;
 use RuntimeException;
@@ -104,6 +106,7 @@ final class AppServiceProvider extends ServiceProvider
          *  - SendNewLinkRequestedAlerts          ← App\Events\NewLinkRequested
          *  - ApplyShareDecisionOnTranscriptionReady ← App\Events\TranscriptionReady
          *  - FulfillOrderOnStripeWebhook         ← Cashier WebhookReceived
+ *  - LogSsrRenderFailure                 ← Inertia SsrRenderFailed
          */
 
         // Les drapeaux de `app/Features` sont découverts par leur classe :
@@ -128,6 +131,30 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureAnalytics();
         $this->configurePayments();
         $this->configureAntivirus();
+        $this->configureSsr();
+    }
+
+    /**
+     * Le rendu serveur ne sert que les pages qu'un robot lit.
+     *
+     * Le tunnel, les espaces à jeton et l'administration n'ont rien à donner à
+     * un moteur, et une divergence d'hydratation y coûterait plus qu'elle ne
+     * rapporte : la date du tunnel se calcule à l'heure du serveur,
+     * l'enregistreur parle au navigateur. La liste est celle du plan de site,
+     * plus le témoin, qui sert la même page que l'accueil.
+     */
+    private function configureSsr(): void
+    {
+        $pages = array_map(
+            fn (string $path): string => trim($path, '/') === '' ? '/' : trim($path, '/'),
+            array_keys(Seo::SITEMAP),
+        );
+
+        // La condition remplace le drapeau de configuration au lieu de s'y
+        // ajouter : sans le relire ici, une suite de tests tenterait une
+        // connexion vers le renderer à chaque page publique (T-107).
+        Inertia::disableSsr(fn (): bool => ! config('inertia.ssr.enabled')
+            || ! request()->is([...$pages, 'lp/temoin']));
     }
 
     /**

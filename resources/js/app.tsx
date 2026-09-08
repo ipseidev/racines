@@ -1,23 +1,55 @@
-import { createInertiaApp } from '@inertiajs/react';
-import { lazy, Suspense } from 'react';
+import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+
+import { layoutKeysFor, type Layout, type LayoutKey } from '@/layouts/for-page';
+import { documentTitle } from '@/lib/title';
 
 /*
- * Les mises en page sont chargées à la demande.
+ * Les mises en page sont chargées à la demande, mais **avant** le rendu.
  *
- * Sans cela, l'espace authentifié — sa barre latérale, ses info-bulles, ses
- * notifications — voyageait dans le même paquet que la page d'enregistrement,
- * ouverte en 4G sur de vieux téléphones. Le budget de 150 Ko par page
- * narrateur (convention §4) ne tenait pas.
+ * À la demande : sans cela, l'espace authentifié — sa barre latérale, ses
+ * info-bulles, ses notifications — voyageait dans le même paquet que la page
+ * d'enregistrement, ouverte en 4G sur de vieux téléphones. Le budget de 150 Ko
+ * par page narrateur (convention §4) ne tenait pas.
+ *
+ * Avant le rendu, et non par `lazy()` : un composant paresseux suspend le
+ * premier rendu, et une page rendue par le serveur ne peut pas s'hydrater sur
+ * un arbre qui suspend là où le serveur, lui, avait tout sous la main — React
+ * jetait le HTML reçu et repartait de zéro (erreur 418) sur chaque page
+ * publique. Le module est donc attendu dans `resolve`, avec la page, et
+ * `layout` le trouve déjà chargé.
  */
-const AppLayout = lazy(() => import('@/layouts/app-layout'));
-const AuthLayout = lazy(() => import('@/layouts/auth-layout'));
-const FamilyLayout = lazy(() => import('@/layouts/family-layout'));
-const NarratorLayout = lazy(() => import('@/layouts/narrator-layout'));
-const InitiatorLayout = lazy(() => import('@/layouts/initiator-layout'));
-const PublicLayout = lazy(() => import('@/layouts/public-layout'));
-const LpLayout = lazy(() => import('@/layouts/lp-layout'));
-const CheckoutLayout = lazy(() => import('@/layouts/checkout-layout'));
-const SettingsLayout = lazy(() => import('@/layouts/settings/layout'));
+const LAYOUTS: Record<LayoutKey, () => Promise<{ default: Layout }>> = {
+    app: () => import('@/layouts/app-layout'),
+    auth: () => import('@/layouts/auth-layout'),
+    checkout: () => import('@/layouts/checkout-layout'),
+    family: () => import('@/layouts/family-layout'),
+    initiator: () => import('@/layouts/initiator-layout'),
+    lp: () => import('@/layouts/lp-layout'),
+    narrator: () => import('@/layouts/narrator-layout'),
+    public: () => import('@/layouts/public-layout'),
+    settings: () => import('@/layouts/settings/layout'),
+};
+
+const loaded = new Map<LayoutKey, Layout>();
+
+async function load(key: LayoutKey): Promise<void> {
+    if (!loaded.has(key)) {
+        loaded.set(key, (await LAYOUTS[key]()).default);
+    }
+}
+
+function layoutFor(key: LayoutKey): Layout {
+    const layout = loaded.get(key);
+
+    if (layout === undefined) {
+        throw new Error(
+            `Mise en page « ${key} » demandée avant son chargement.`,
+        );
+    }
+
+    return layout;
+}
 
 const meta = (name: string) =>
     document
@@ -55,65 +87,28 @@ if (Reflect.get(window, MOUNTED) !== true) {
         nonce: meta('csp-nonce'),
         // Le nom vient des réglages de marque, jamais d'une constante de build.
         // Lu une seule fois : Inertia remplace la balise title à chaque page, donc
-        // s'y référer composerait le titre à partir du titre déjà composé.
-        title: (title) => (title ? `${title} · ${brandName}` : brandName),
-        layout: (name) => {
-            switch (true) {
-                case name.startsWith('auth/'):
-                    return AuthLayout;
-                // Espaces sans compte : mise en page sobre, texte large, aucune
-                // dépendance lourde (convention §4, budget 150 Ko par page).
-                case name.startsWith('narrator/'):
-                    return NarratorLayout;
-                case name.startsWith('family/'):
-                    return FamilyLayout;
-                // Les pages ouvertes par un QR imprimé : même sobriété que
-                // l'espace famille, et personne n'est identifié derrière.
-                case name.startsWith('qr/'):
-                    return FamilyLayout;
-                // Les pages d'export : ouvertes depuis un courriel, sans
-                // compte, même sobriété que les autres espaces à jeton.
-                case name.startsWith('exports/'):
-                    return FamilyLayout;
-                // Le tunnel d'achat a sa propre mise en page : sans la
-                // navigation ni le bouton d'achat de l'accueil, qui
-                // concurrenceraient « Continuer » (T-135).
-                case name.startsWith('public/Checkout'):
-                    return CheckoutLayout;
-                // L'accueil a sa propre barre : ses ancres pointent dans la
-                // page, ce qu'une page d'accueil veut — `PublicLayout` visait
-                // `/#livre`, fait pour y revenir de l'extérieur (T-219, T-220).
-                // Le témoin, lui, retombe sur `PublicLayout` par le cas
-                // `public/` qui suit, comme il l'a toujours fait.
-                case name === 'public/Landing':
-                case name === 'public/Faq':
-                case name === 'public/Books':
-                case name === 'public/HowItWorks':
-                    return LpLayout;
-                // Les pages publiques portent le pied de page légal partout, y
-                // compris dans le tunnel : on doit pouvoir lire les conditions
-                // sans revenir en arrière et perdre sa saisie.
-                case name.startsWith('public/'):
-                    return PublicLayout;
-                // Les pages d'action en un tap s'ouvrent depuis un SMS, sans
-                // compte : même sobriété que les autres espaces à jeton, et
-                // surtout pas la navigation d'un espace où l'on n'est pas connecté.
-                case name === 'initiator/OneTapConfirm':
-                    return FamilyLayout;
-                case name.startsWith('initiator/'):
-                    return InitiatorLayout;
-                case name.startsWith('settings/'):
-                    return [AppLayout, SettingsLayout];
-                default:
-                    return AppLayout;
-            }
+        // s'y référer composerait le titre à partir du titre déjà composé. La
+        // règle vit dans `lib/title.ts`, partagée avec le rendu serveur.
+        title: (title) => documentTitle(title, brandName),
+        /*
+         * `resolve` est écrit à la main, comme dans `ssr.tsx` : c'est ici que
+         * la mise en page se charge en même temps que la page, et le greffon
+         * `@inertiajs/vite` n'en pose un que là où il manque.
+         */
+        resolve: async (name): Promise<ResolvedComponent> => {
+            const page = resolvePageComponent<{ default: ResolvedComponent }>(
+                `./pages/${name}.tsx`,
+                import.meta.glob<{ default: ResolvedComponent }>(
+                    './pages/**/*.tsx',
+                ),
+            );
+
+            await Promise.all(layoutKeysFor(name).map(load));
+
+            return (await page).default;
         },
+        layout: (name) => layoutKeysFor(name).map(layoutFor),
         strictMode: true,
-        withApp(app) {
-            // `Suspense` seulement : les fournisseurs d'interface de l'espace
-            // authentifié vivent désormais dans `AppLayout`, où ils servent.
-            return <Suspense fallback={null}>{app}</Suspense>;
-        },
         progress: {
             color: '#4B5563',
         },

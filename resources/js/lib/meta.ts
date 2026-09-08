@@ -105,12 +105,23 @@ export function initMeta(pixelId: string): void {
  * retiré dans la même visite. `revoke` retient alors tout envoi ultérieur, ce
  * que Meta prévoit précisément pour l'Europe.
  */
+let revoked = false;
+
 export function applyConsent(granted: boolean): void {
     if (!demarre) {
         return;
     }
 
-    fbq()('consent', granted ? 'grant' : 'revoke');
+    // `grant` ne se dit qu'après un `revoke` : c'est le protocole de Meta, et
+    // un `grant` à froid, juste après `init`, est au mieux inutile — le pixel
+    // démarre déjà en état accordé — et on ne veut pas lui parler pour rien.
+    if (!granted) {
+        revoked = true;
+        fbq()('consent', 'revoke');
+    } else if (revoked) {
+        revoked = false;
+        fbq()('consent', 'grant');
+    }
 }
 
 /**
