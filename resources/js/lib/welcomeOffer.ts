@@ -8,8 +8,15 @@
  */
 export const WELCOME_OFFER_STORAGE_KEY = 'welcome-offer';
 
-/** Six secondes : le temps de lire la promesse avant qu'on propose autre chose. */
-export const WELCOME_OFFER_DELAY_MS = 6_000;
+/**
+ * Le tiers de la page lu : le moment où la fenêtre s'ouvre (T-221).
+ *
+ * Elle s'ouvrait après six secondes, ce qui ne dit rien de ce que le visiteur
+ * a compris — six secondes sur le héros, c'est quelqu'un qui n'a encore rien
+ * lu. À trente-cinq pour cent de la page, il a vu la promesse, les étapes et
+ * le début du livre : il sait ce qu'on lui propose une réduction *pour*.
+ */
+export const WELCOME_OFFER_SCROLL = 0.35;
 
 export const WELCOME_OFFER_SNOOZE_DAYS = 30;
 

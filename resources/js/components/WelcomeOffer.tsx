@@ -17,7 +17,7 @@ import {
     readWelcomeOfferMemory,
     rememberWelcomeOffer,
     shouldOfferWelcome,
-    WELCOME_OFFER_DELAY_MS,
+    WELCOME_OFFER_SCROLL,
 } from '@/lib/welcomeOffer';
 
 type Props = {
@@ -25,7 +25,8 @@ type Props = {
     enabled: boolean;
     /** En pour cent de la commande. */
     discountPercent: number;
-    delayMs?: number;
+    /** La part de la page lue qui l'ouvre, de 0 à 1. */
+    atScroll?: number;
 };
 
 type Step = 'teaser' | 'form' | 'sent';
@@ -50,7 +51,7 @@ type Step = 'teaser' | 'form' | 'sent';
 export default function WelcomeOffer({
     enabled,
     discountPercent,
-    delayMs = WELCOME_OFFER_DELAY_MS,
+    atScroll = WELCOME_OFFER_SCROLL,
 }: Props) {
     const t = useT();
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -65,15 +66,50 @@ export default function WelcomeOffer({
         website: '',
     });
 
+    /*
+     * Elle s'ouvre à la profondeur de lecture, pas au bout d'un délai (T-221).
+     *
+     * Un délai mesure la patience, pas l'intérêt : six secondes sur le héros,
+     * c'est quelqu'un qui n'a encore rien lu. La part de la page parcourue,
+     * elle, dit qu'on a vu la promesse et les étapes.
+     *
+     * Le détachement de l'écouteur au premier déclenchement n'est pas une
+     * optimisation : sans lui, refermer la fenêtre et continuer à défiler la
+     * rouvrirait à chaque pixel.
+     */
     useEffect(() => {
         if (!enabled || !shouldOfferWelcome(readWelcomeOfferMemory())) {
             return;
         }
 
-        const timer = window.setTimeout(() => setOpen(true), delayMs);
+        let done = false;
 
-        return () => window.clearTimeout(timer);
-    }, [enabled, delayMs]);
+        const check = () => {
+            if (done) {
+                return;
+            }
+
+            const scrollable =
+                document.documentElement.scrollHeight - window.innerHeight;
+
+            // Une page qu'on ne peut pas défiler n'a pas de trente-cinq pour
+            // cent : on ne propose rien plutôt que d'ouvrir aussitôt.
+            if (scrollable <= 0) {
+                return;
+            }
+
+            if (window.scrollY / scrollable >= atScroll) {
+                done = true;
+                setOpen(true);
+                window.removeEventListener('scroll', check);
+            }
+        };
+
+        window.addEventListener('scroll', check, { passive: true });
+        check();
+
+        return () => window.removeEventListener('scroll', check);
+    }, [atScroll, enabled]);
 
     useEffect(() => {
         const dialog = dialogRef.current;

@@ -10,6 +10,7 @@ use App\Enums\TokenType;
 use App\Enums\UserRole;
 use App\Models\AccessToken;
 use App\Models\Cohort;
+use App\Models\ConsentText;
 use App\Models\FamilyMember;
 use App\Models\Narrator;
 use App\Models\Order;
@@ -200,4 +201,59 @@ it('la question n’attend pas le lendemain, et ne s’empile pas', function ():
 
     expect($story->state->getValue())->toBe(Proposed::$name)
         ->and($story->project_id)->toBe($project->getKey());
+});
+
+/*
+ * Les deux pièges heurtés en production le 8 septembre.
+ *
+ * Le premier : la commande a levé sur un texte de consentement manquant
+ * **après** avoir créé le compte et tiré son mot de passe — un compte
+ * inaccessible, et rien pour le dire. Ce qui est tiré une fois s'imprime
+ * avant tout ce qui peut lever.
+ *
+ * Le second : `--motdepasse` modifiait la fabrication, donc la seule façon de
+ * retrouver l'accès était de relancer `prod:demo`, qui efface le décor
+ * précédent. Récupérer le moyen de regarder le parcours l'emportait.
+ */
+it('imprime les identifiants avant tout ce qui peut lever', function (): void {
+    // Le décor sans texte de consentement : exactement l'état de la production
+    // ce matin-là, où `FulfillOrder` lève dans sa transaction.
+    ConsentText::query()->delete();
+
+    $this->artisan('prod:demo --force --email=moi@exemple.fr')
+        ->expectsOutputToContain('moi+demo@exemple.fr')
+        // Le message brut nomme la valeur en cause ; la trace Symfony ne
+        // disait ni ce qui est cassé pour un client, ni quoi taper.
+        ->expectsOutputToContain('early_service_start')
+        ->expectsOutputToContain('prod:check')
+        ->assertFailed();
+
+    // Le compte existe, et son mot de passe a été montré : la commande a
+    // échoué, mais elle n'a pas laissé un compte muet derrière elle.
+    expect(User::query()->where('email', 'moi+demo@exemple.fr')->exists())->toBeTrue()
+        // Transactionnel : pas de projet à moitié construit derrière.
+        ->and(Project::query()->count())->toBe(0)
+        ->and(Order::query()->count())->toBe(0);
+});
+
+it('réémet un mot de passe sans toucher au décor', function (): void {
+    $this->artisan('prod:demo --force --email=moi@exemple.fr')->assertSuccessful();
+
+    $project = Project::query()->sole()->getKey();
+    $before = User::query()->where('email', 'moi+demo@exemple.fr')->sole()->password;
+
+    $this->artisan('prod:demo --motdepasse')
+        ->expectsOutputToContain('moi+demo@exemple.fr')
+        ->expectsOutputToContain('Le décor n’a pas bougé')
+        ->assertSuccessful();
+
+    expect(User::query()->where('email', 'moi+demo@exemple.fr')->sole()->password)->not->toBe($before)
+        // Le décor est intact : même projet, une seule commande, rien d'effacé.
+        ->and(Project::query()->sole()->getKey())->toBe($project)
+        ->and(Project::query()->sole()->erased_at)->toBeNull()
+        ->and(Order::query()->count())->toBe(1);
+});
+
+it('refuse de réémettre quand il n’y a pas de décor', function (): void {
+    $this->artisan('prod:demo --motdepasse')->assertFailed();
 });

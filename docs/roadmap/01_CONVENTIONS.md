@@ -183,6 +183,7 @@ pas qu'elle est valide (T-208).
 | Commande | Fait |
 |---|---|
 | `php artisan prod:check` | « Si quelqu'un achète maintenant, est-ce que ça marche ? » Chaque ligne dit ce que le client perd, pas ce qui manque techniquement. `--rapide` n'appelle pas les prestataires. Vérifie aussi ce qu'aucun test ne peut voir : les textes de consentement en vigueur, et les contraintes `check` restées en arrière de leur énumération (§13) |
+| `php artisan prod:messages` | « Je n'ai jamais reçu le SMS. » Les derniers messages sortants, et **ce que Twilio en dit vraiment** : l'état réel de l'identifiant et son code d'erreur, traduit en sortie. Signale les messages restés à `sent`, c'est-à-dire le rappel de statut qui n'arrive pas. Lecture seule ; `--gabarit=`, `--nombre=`, `--local` |
 | `php artisan prod:sms +33…` | Envoie **un vrai SMS** à un numéro nommé et le suit jusqu'à `delivered`. Annonce avant d'envoyer l'expéditeur que verra le téléphone, la longueur et le nombre de segments ; refuse le numéro d'un narrateur ou d'un proche ; `--corps=` pour un autre texte, `--attendre=0` pour ne pas attendre le rappel, `--force` sans confirmation |
 | `php artisan prod:demo` | Fabrique un décor complet **en production** — compte, commande, narrateur sur un vrai téléphone, proches invités — par le chemin du webhook Stripe, sans qu'aucun argent ne bouge. `--question` pose la première question sans attendre la nuit que l'acceptation pose ; `--purge` efface par le chemin RGPD ; `--telephone=`, `--email=`, `--canal=`, `--proches=`, `--motdepasse`, `--force` |
 
@@ -191,6 +192,18 @@ propre initiative. Son texte par défaut ne ressemble donc pas à un message du
 produit et ne porte aucun lien : la faute de frappe la plus probable est un
 chiffre pour un autre, et un faux prompt chez un inconnu serait exactement le
 smishing que le doc 04 §9 combat.
+
+`prod:messages` est son inverse : elle n'écrit rien, elle demande. La raison
+d'être des deux est la même — `outbound_messages` sait ce que **nous** avons
+fait, jamais ce que l'opérateur en a fait. Cette moitié arrive par le rappel de
+statut, et quand ce rappel n'aboutit pas, la ligne ne quitte jamais `sent` :
+« accepté » se lit alors comme « reçu ». Or en France un expéditeur
+alphanumérique **non déposé auprès des opérateurs** est jeté *après*
+l'acceptation de l'API — Twilio rend un identifiant, le téléphone ne sonne
+jamais, et aucune ligne de journal ne le montre. `prod:messages` va donc
+chercher l'état à la source. Le rappel manquant reste un défaut à lui seul :
+sans lui, le moteur de complétion ne distingue pas « lien non ouvert » de
+« SMS jamais arrivé », et se tait quand il faudrait relancer.
 
 `prod:demo` écrit aussi, mais **des messages du produit**, et c'est le point :
 entre « les clés répondent » et « un iPhone reçoit un SMS, ouvre un lien,

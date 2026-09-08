@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Throwable;
 
 /**
  * Un décor complet **en production**, pour dérouler le tunnel sur un vrai
@@ -84,7 +85,7 @@ final class ProductionDemo extends Command
         {--prenom=Odette : le prénom du narrateur, celui que le SMS dira}
         {--canal=sms : le canal de l’invitation, « sms » ou « email »}
         {--proches=2 : combien de proches inviter, sur des alias + de la même boîte}
-        {--motdepasse : réémet le mot de passe du compte acheteur}
+        {--motdepasse : réémet le mot de passe du compte acheteur, sans toucher au décor}
         {--question : la première question, sans attendre le lendemain}
         {--purge : efface le décor précédent et s’arrête là}
         {--force : sans demander confirmation}';
@@ -131,11 +132,66 @@ final class ProductionDemo extends Command
             return $this->purge();
         }
 
+        /*
+         * Avant `--question` et avant la fabrication : réémettre un mot de
+         * passe est un geste **isolé**.
+         *
+         * Il modifiait la fabrication, ce qui en faisait un piège : la seule
+         * façon de retrouver l'accès au compte était de relancer `prod:demo`,
+         * qui efface le décor précédent — donc d'emporter le parcours en cours
+         * pour récupérer le moyen de le regarder.
+         */
+        if ($this->option('motdepasse') === true) {
+            return $this->resetPassword();
+        }
+
         if ($this->option('question') === true) {
             return $this->firstQuestion();
         }
 
         return $this->create();
+    }
+
+    /**
+     * Réémet le mot de passe du compte acheteur, et ne touche à rien d'autre.
+     *
+     * Le compte est celui du décor en cours, lu sur le projet plutôt que
+     * recalculé depuis `--email` : on veut le compte qui possède le parcours
+     * qu'on est en train d'éprouver, et non celui qu'une option retapée de
+     * mémoire désignerait.
+     */
+    private function resetPassword(): int
+    {
+        $project = self::scenery()->latest('created_at')->first();
+        $buyer = $project instanceof Project ? $project->owner : null;
+
+        if (! $buyer instanceof User) {
+            $this->components->error('Aucun décor en cours, donc aucun compte à rouvrir. Fabriques-en un : php artisan prod:demo');
+
+            return self::FAILURE;
+        }
+
+        if ($buyer->isStaff()) {
+            // La même garde qu'à la fabrication : un décor ne change pas le
+            // mot de passe de celui qui répond au support.
+            $this->components->error("Le compte {$buyer->email} appartient au personnel : on n’y touche pas.");
+
+            return self::FAILURE;
+        }
+
+        $password = Str::password(20);
+
+        $buyer->password = Hash::make($password);
+        $buyer->save();
+
+        $this->newLine();
+        $this->components->twoColumnDetail('Compte', (string) $buyer->email);
+        $this->components->twoColumnDetail('Mot de passe', $password);
+        $this->newLine();
+        $this->line('  <fg=gray>Le décor n’a pas bougé : ni projet, ni commande, ni invitation.</>');
+        $this->newLine();
+
+        return self::SUCCESS;
     }
 
     /**
@@ -198,8 +254,32 @@ final class ProductionDemo extends Command
 
         $this->eraseScenery();
 
-        [$buyer, $password] = $this->buyer($account, $existing);
-        $order = $this->purchase($buyer, $phone, $channel, $mailbox);
+        [$buyer] = $this->buyer($account, $existing);
+
+        /*
+         * Ce que le webhook Stripe encaisse, on l'encaisse aussi — traces
+         * comprises.
+         *
+         * `FulfillOrder` lève sur ce qui manque en base : un texte de
+         * consentement absent, une contrainte restée en arrière de son
+         * énumération. La trace Symfony qui en sortait — « In
+         * MissingConsentText.php line 19 » — est juste et inutilisable sur un
+         * serveur : elle ne dit ni ce qui est cassé pour un client, ni quoi
+         * taper. Le message brut est gardé, parce que c'est lui qui nomme la
+         * valeur en cause, et la commande y ajoute la sortie (T-211).
+         */
+        try {
+            $order = $this->purchase($buyer, $phone, $channel, $mailbox);
+        } catch (Throwable $exception) {
+            $this->newLine();
+            $this->components->error('La commande n’a pas abouti : '.$exception->getMessage());
+            $this->line('  <fg=gray>Le compte ci-dessus existe ; son mot de passe vient d’être montré.</>');
+            $this->line('  <fg=gray>Rien d’autre n’a été créé : l’exécution est transactionnelle.</>');
+            $this->line('  <fg=magenta>php artisan prod:check --rapide</> <fg=gray>nomme ce qui manque, et la commande à taper.</>');
+            $this->newLine();
+
+            return self::FAILURE;
+        }
 
         if (! $order instanceof Order) {
             $this->components->error('La commande n’a pas abouti : voir `checkout.*` dans les journaux.');
@@ -215,9 +295,20 @@ final class ProductionDemo extends Command
             return self::FAILURE;
         }
 
-        $this->invite($project, $buyer, $mailbox, $proches);
+        /*
+         * Un proche qui ne part pas n'emporte pas le reste : le projet, la
+         * commande et l'invitation du narrateur existent, et c'est le
+         * parcours qu'on vient éprouver. Taire le récapitulatif pour un lien
+         * d'écoute manquant cacherait l'identifiant du projet.
+         */
+        try {
+            $this->invite($project, $buyer, $mailbox, $proches);
+        } catch (Throwable $exception) {
+            $proches = 0;
+            $this->components->warn('Les proches n’ont pas été invités : '.$exception->getMessage());
+        }
 
-        return $this->recap($order, $project, $password, $channel, $proches);
+        return $this->recap($order, $project, $channel, $proches);
     }
 
     /**
@@ -277,15 +368,21 @@ final class ProductionDemo extends Command
      *
      * On ne réécrit pas un mot de passe déjà connu : le décor se rejoue
      * souvent, et changer l'accès à chaque tour ferait chercher dans
-     * l'historique du terminal. `--motdepasse` le réémet quand il est perdu.
+     * l'historique du terminal. `prod:demo --motdepasse` le réémet quand il
+     * est perdu, sans toucher au décor.
+     *
+     * **Les identifiants s'impriment ici**, et non dans le récapitulatif de
+     * fin. La première fois que la commande a échoué en production — sur un
+     * texte de consentement manquant — le compte venait d'être créé, son mot
+     * de passe tiré, et l'exception a emporté la seule occasion de le lire :
+     * un compte inaccessible, et rien pour le dire. Ce qui est tiré une fois
+     * s'affiche avant tout ce qui peut lever.
      *
      * @return array{User, string|null}
      */
     private function buyer(string $account, ?User $existing): array
     {
-        $password = $existing instanceof User && $this->option('motdepasse') !== true
-            ? null
-            : Str::password(20);
+        $password = $existing instanceof User ? null : Str::password(20);
 
         $buyer = $existing ?? new User;
         $buyer->name = 'Démonstration';
@@ -303,6 +400,13 @@ final class ProductionDemo extends Command
         if ($buyer->email_verified_at === null) {
             $buyer->markEmailAsVerified();
         }
+
+        $this->newLine();
+        $this->components->twoColumnDetail('Compte', $account);
+        $this->components->twoColumnDetail(
+            'Mot de passe',
+            $password ?? '<fg=gray>inchangé — `prod:demo --motdepasse` pour en réémettre un</>',
+        );
 
         return [$buyer, $password];
     }
@@ -409,17 +513,12 @@ final class ProductionDemo extends Command
      * qu'on vient éprouver. Un lien recopié ici prouverait que la base sait
      * fabriquer une URL, pas qu'un téléphone reçoit un SMS.
      */
-    private function recap(Order $order, Project $project, ?string $password, Channel $channel, int $proches): int
+    private function recap(Order $order, Project $project, Channel $channel, int $proches): int
     {
         $this->newLine();
         $this->components->twoColumnDetail('<fg=green>Décor prêt</>', '');
         $this->components->twoColumnDetail('Projet', $project->getKey());
         $this->components->twoColumnDetail('Commande', $order->getKey().' <fg=gray>'.$order->status->value.'</>');
-        $this->components->twoColumnDetail('Compte', (string) $order->user->email);
-        $this->components->twoColumnDetail(
-            'Mot de passe',
-            $password ?? '<fg=gray>inchangé — `--motdepasse` pour en réémettre un</>',
-        );
         $this->newLine();
 
         $this->step(sprintf(
