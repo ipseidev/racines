@@ -2,8 +2,17 @@ import { router, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 import { initAnalytics, pageview } from '@/lib/analytics';
-import { initGoogleAnalytics, pageview as gaPageview } from '@/lib/gtag';
-import { initMeta, pageview as metaPageview } from '@/lib/meta';
+import { CONSENT_EVENT, readConsent, type Consent } from '@/lib/consent';
+import {
+    applyConsent as gaConsent,
+    initGoogleAnalytics,
+    pageview as gaPageview,
+} from '@/lib/gtag';
+import {
+    applyConsent as metaConsent,
+    initMeta,
+    pageview as metaPageview,
+} from '@/lib/meta';
 
 type Shared = {
     analytics: { key: string; host: string } | null;
@@ -27,9 +36,18 @@ type Shared = {
  *
  * Le hook s'abonne aussi aux navigations d'Inertia : sans cela, une visite
  * en une session ne compterait qu'une page, et le taux de conversion du
- * tunnel serait faux. Les deux fonctions de page vue se gardent elles-mêmes
- * quand leur mesure ne tourne pas, ce qui laisse un seul abonnement pour les
- * deux.
+ * tunnel serait faux. Les fonctions de page vue se gardent elles-mêmes quand
+ * leur mesure ne tourne pas, ce qui laisse un seul abonnement pour toutes.
+ *
+ * **Le consentement (T-227)** ne se tient pas de la même façon pour les trois
+ * mesures, et c'est voulu :
+ *  - PostHog démarre toujours : mémoire seule, aucun cookie, aucun stockage —
+ *    il n'entre pas dans le champ de ce qu'on doit demander ;
+ *  - Google Analytics démarre toujours **en mode sans cookie**, et passe en
+ *    mode complet à l'accord — c'est le mode consentement de Google, conçu
+ *    pour ça ;
+ *  - le pixel Meta ne démarre **qu'à l'accord**. Il n'a pas de mode dégradé
+ *    honnête, donc il n'a pas de mode du tout avant la réponse.
  */
 export function useAnalytics(): void {
     const { analytics, googleAnalytics, metaPixel } = usePage<Shared>().props;
@@ -51,11 +69,33 @@ export function useAnalytics(): void {
             initGoogleAnalytics(googleAnalytics.measurementId);
         }
 
-        if (metaPixel !== null) {
-            initMeta(metaPixel.pixelId);
+        const apply = (choice: Consent) => {
+            const granted = choice === 'granted';
+
+            gaConsent(granted);
+
+            if (metaPixel !== null && granted) {
+                initMeta(metaPixel.pixelId);
+            }
+
+            if (metaPixel !== null) {
+                metaConsent(granted);
+            }
+        };
+
+        // Le choix déjà fait, s'il existe ; puis ceux qui arrivent.
+        const remembered = readConsent();
+
+        if (remembered !== null) {
+            apply(remembered);
         }
 
-        return router.on('navigate', (event) => {
+        const onChange = (event: Event) =>
+            apply((event as CustomEvent<Consent>).detail);
+
+        window.addEventListener(CONSENT_EVENT, onChange);
+
+        const stop = router.on('navigate', (event) => {
             const chemin = new URL(
                 event.detail.page.url,
                 window.location.origin,
@@ -65,5 +105,10 @@ export function useAnalytics(): void {
             gaPageview(chemin);
             metaPageview(chemin);
         });
+
+        return () => {
+            window.removeEventListener(CONSENT_EVENT, onChange);
+            stop();
+        };
     }, [analytics, googleAnalytics, metaPixel]);
 }

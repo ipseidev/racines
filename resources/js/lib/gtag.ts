@@ -180,6 +180,29 @@ export function event(
 }
 
 /**
+ * Le consentement, appliqué à Google (T-227).
+ *
+ * Refusé ou sans réponse, GA tourne en « pings sans cookie » : les visites sont
+ * comptées pour la modélisation, personne n'est suivi, et **rien n'apparaît
+ * dans le temps réel** — c'est ce qui a fait croire à une mesure en panne.
+ * Accordé, GA écrit son cookie et remonte normalement. Retiré, il y revient.
+ */
+export function applyConsent(granted: boolean): void {
+    if (!demarre) {
+        return;
+    }
+
+    const state = granted ? 'granted' : 'denied';
+
+    gtag('consent', 'update', {
+        ad_storage: state,
+        ad_user_data: state,
+        ad_personalization: state,
+        analytics_storage: state,
+    });
+}
+
+/**
  * Une page vue, si la mesure tourne.
  *
  * Inertia navigue sans recharger le document : sans cet appel, une visite de

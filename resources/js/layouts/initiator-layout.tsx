@@ -4,6 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { BrandLogo } from '@/brand/BrandProvider';
 import { Toasts } from '@/components/space/Toasts';
 import { useStatusToast } from '@/hooks/useStatusToast';
+import ConsentBanner from '@/components/ConsentBanner';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 
@@ -88,6 +89,7 @@ export default function InitiatorLayout({ children }: PropsWithChildren) {
             >
                 <div key={path}>{children}</div>
             </main>
+            <ConsentBanner />
 
             <Toasts />
         </div>

@@ -190,24 +190,26 @@ final readonly class FulfillOrder
          * dans ce chemin est un 500 en attente, et un webhook qui répond 500
          * est un webhook que Stripe désactive (T-169).
          */
-        SendMetaPurchase::dispatch(
-            orderId: $order->id,
-            totalCents: $order->total_cents,
-            currency: $order->currency,
-            email: $buyer->email,
-            click: [
-                'fbp' => (string) data_get($session, 'metadata.fbp', ''),
-                'fbc' => (string) data_get($session, 'metadata.fbc', ''),
-                'ua' => (string) data_get($session, 'metadata.ua', ''),
-                // La page d'où l'achat part vraiment : le récapitulatif du
-                // tunnel. L'accueil serait plus flatteur et faux.
-                'url' => route('checkout.show', ['step' => 6]),
-            ],
-            buyer: [
-                'id' => $buyer->id,
-                'name' => $buyer->name,
-            ],
-        );
+        if (data_get($session, 'metadata.consent') === '1') {
+            SendMetaPurchase::dispatch(
+                orderId: $order->id,
+                totalCents: $order->total_cents,
+                currency: $order->currency,
+                email: $buyer->email,
+                click: [
+                    'fbp' => (string) data_get($session, 'metadata.fbp', ''),
+                    'fbc' => (string) data_get($session, 'metadata.fbc', ''),
+                    'ua' => (string) data_get($session, 'metadata.ua', ''),
+                    // La page d'où l'achat part vraiment : le récapitulatif du
+                    // tunnel. L'accueil serait plus flatteur et faux.
+                    'url' => route('checkout.show', ['step' => 6]),
+                ],
+                buyer: [
+                    'id' => $buyer->id,
+                    'name' => $buyer->name,
+                ],
+            );
+        }
 
         return $order->refresh();
     }

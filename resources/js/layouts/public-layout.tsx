@@ -3,6 +3,7 @@ import type { PropsWithChildren } from 'react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
 import { formatPrice, usePilot } from '@/hooks/usePilot';
+import ConsentBanner from '@/components/ConsentBanner';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
@@ -113,6 +114,8 @@ export default function PublicLayout({ children }: PropsWithChildren) {
             <main className="flex-1">{children}</main>
 
             <PublicFooter />
+
+            <ConsentBanner />
         </div>
     );
 }

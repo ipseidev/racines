@@ -213,7 +213,29 @@ final class SecurityHeaders
         return [
             'script' => 'https://connect.facebook.net',
             'img' => 'https://www.facebook.com',
-            'connect' => 'https://www.facebook.com',
+            /*
+             * Les relais d'évènements de Meta, et c'est un arbitrage assumé.
+             *
+             * Mesuré sur la production le 8 septembre 2026 : le pixel 2.9.393
+             * n'émet **plus rien** vers `facebook.com/tr`. Ses évènements
+             * partent en `POST` vers des relais hébergés chez AWS et Google
+             * Cloud, dont le sous-domaine est **tiré au hasard à chaque
+             * session** — `2c-1138a2e0…ecs.us-west-1.on.aws`,
+             * `bded8a3c6ae-1-…us-central1.run.app`. Aucune liste stable n'est
+             * publiée, donc aucune origine précise ne peut être autorisée.
+             *
+             * Le prix : deux jokers larges dans `connect-src`. Ce qu'ils
+             * n'ouvrent pas : `script-src` reste au nonce, donc seuls notre
+             * code et `connect.facebook.net` peuvent s'exécuter. Le seul
+             * script capable d'utiliser ces relais est celui de Meta — à qui
+             * l'on confie déjà la page en installant un pixel. La décision
+             * n'est donc pas « faire confiance à Meta », elle est déjà prise ;
+             * elle est « laisser son script joindre ses propres serveurs ».
+             *
+             * Et comme le reste : seulement là où la mesure a lieu. Une page
+             * de narrateur ne les autorise pas.
+             */
+            'connect' => 'https://www.facebook.com https://*.on.aws https://*.run.app',
             // Les deux transports de repli, trouvés en production : quand
             // `fetch` et l'image ne passent pas, le pixel **soumet un
             // formulaire** vers `/tr/`, et il ouvre une iframe de

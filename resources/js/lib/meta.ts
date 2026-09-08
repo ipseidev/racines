@@ -98,6 +98,22 @@ export function initMeta(pixelId: string): void {
 }
 
 /**
+ * Le consentement, appliqué au pixel (T-227).
+ *
+ * Le pixel n'est **jamais démarré** sans accord — c'est `useAnalytics` qui
+ * s'en assure. Cette fonction sert au cas restant : un accord donné puis
+ * retiré dans la même visite. `revoke` retient alors tout envoi ultérieur, ce
+ * que Meta prévoit précisément pour l'Europe.
+ */
+export function applyConsent(granted: boolean): void {
+    if (!demarre) {
+        return;
+    }
+
+    fbq()('consent', granted ? 'grant' : 'revoke');
+}
+
+/**
  * Une page vue, si le pixel tourne.
  *
  * Inertia navigue sans recharger le document : sans cet appel, une visite de

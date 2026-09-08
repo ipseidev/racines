@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
+import ConsentBanner from '@/components/ConsentBanner';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
@@ -72,6 +73,7 @@ export default function CheckoutLayout({ children }: PropsWithChildren) {
 
             {/* Sans les pages du site : elles concurrenceraient « Continuer » (T-135). */}
             <PublicFooter variant="compact" />
+            <ConsentBanner />
         </div>
     );
 }

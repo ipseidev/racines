@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
 import { useT } from '@/hooks/useT';
+import { openConsent } from '@/lib/consent';
 
 type Item = { href: string; key: string; inertia: boolean };
 
@@ -147,6 +148,20 @@ export default function PublicFooter({
                                     </Link>
                                 </li>
                             ))}
+                            {/*
+                             * Retirer son accord doit être aussi simple que le
+                             * donner (T-227) : ce bouton rouvre le bandeau. Un
+                             * bouton et non un lien — il ne mène nulle part.
+                             */}
+                            <li>
+                                <button
+                                    type="button"
+                                    onClick={openConsent}
+                                    className={`${LINK} text-left`}
+                                >
+                                    {t('public.consent.manage')}
+                                </button>
+                            </li>
                         </ul>
                     </nav>
 

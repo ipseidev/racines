@@ -186,7 +186,20 @@ final readonly class CheckoutController
          * couplage. Absents — visiteur venu d'ailleurs, cookie refusé —, la
          * session part sans eux et l'achat compte quand même.
          */
-        $click = [];
+        /*
+         * Le consentement décide de tout ce qui suit (T-227). Refusé ou sans
+         * réponse : aucun identifiant de clic, aucun agent utilisateur, et le
+         * webhook ne transmettra pas l'achat à Meta. La réponse voyage dans la
+         * session Stripe, parce que le webhook n'a pas de cookies.
+         */
+        $consented = $request->cookie('consentement') === 'granted';
+        $click = ['consent' => $consented ? '1' : '0'];
+
+        if (! $consented) {
+            $session = $this->checkout->handle($draft, $buyer, $click);
+
+            return Inertia::location($session->url);
+        }
 
         foreach (['fbp' => '_fbp', 'fbc' => '_fbc'] as $key => $cookie) {
             $value = $request->cookie($cookie);

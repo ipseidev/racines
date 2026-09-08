@@ -54,7 +54,14 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->encryptCookies(except: ['sidebar_state']);
+        /*
+         * Les cookies que le serveur lit sans les avoir écrits : posés par du
+         * JavaScript, ils ne sont pas chiffrés, et un cookie que le chiffreur
+         * ne sait pas déchiffrer lui arrive **nul** — silencieusement. Le
+         * consentement (T-227) décide de ce qu'on transmet à Meta au paiement,
+         * `_fbp` et `_fbc` sont les identifiants de clic du pixel (T-226).
+         */
+        $middleware->encryptCookies(except: ['sidebar_state', 'consentement', '_fbp', '_fbc']);
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
