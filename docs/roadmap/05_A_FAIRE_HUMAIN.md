@@ -283,7 +283,7 @@ Le stockage des enregistrements. En local, MinIO le remplace et **tu n'as rien �
 - **Juridiction UE à la création** : c'est un choix irréversible sur R2, et c'est une exigence non négociable du dossier.
 - **Un jeton limité à ces trois compartiments**, jamais un jeton de compte.
 - **La règle CORS à reporter dans la console** (MinIO ne sait pas la poser par API, T-58). Elle est dans `docker/minio/cors.json` ; l'exposition de l'`ETag` en est la partie qu'on oublie et sans laquelle les envois échouent en silence.
-- **Variables** : `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT` (`https://<compte>.eu.r2.cloudflarestorage.com` — noter le `.eu.`), `R2_PUBLIC_ENDPOINT` (identique en production).
+- **Variables** : `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT` (`https://<compte>.eu.r2.cloudflarestorage.com` — noter le `.eu.`), `R2_PUBLIC_ENDPOINT` (**identique** en production — et surtout **pas** le domaine `pub-….r2.dev` que le tableau de bord met en avant : lecture publique seulement, aucun dépôt signé, T-227).
 
 ---
 
@@ -352,7 +352,7 @@ Le seul endroit à tenir à jour.
 | 15 | Polices OFL déposées | bloc 13 | ☐ |
 | 16 | Devis imprimeur | bloc 13 | ☐ |
 | 17 | PostHog UE | bloc 15 | ☐ |
-| 18 | DigitalOcean UE, Forge, Flare, Oh Dear | bloc 16 | ☐ |
+| 18 | DigitalOcean UE, Forge, Flare, Oh Dear — **et `sudo apt-get install -y ffmpeg` sur le serveur** : sans lui la voix est conservée et n'atteint jamais le texte, donc ni relecture, ni livre (T-230) | bloc 16 | ☐ |
 | 19 | **Socle juridique validé par conseil** | bloc 17 | ☐ |
 | 20 | DPA signés (11 sous-traitants) | bloc 17 | ☐ |
 

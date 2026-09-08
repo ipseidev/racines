@@ -19,6 +19,20 @@ declare(strict_types=1);
 */
 
 return [
+
+    /*
+     * Une écriture qui échoue, sans quitter la page.
+     *
+     * Le narrateur est au milieu de quelque chose : on lui dit ce qui se
+     * passe et quoi faire, on ne l'envoie pas sur une autre page. Aucun de ces
+     * messages ne l'accuse, et aucun ne porte de terme technique (T-229).
+     */
+    'inertia' => [
+        'expired' => 'Cette page est restée ouverte un moment et son jeton de sécurité a expiré. Rechargez-la, votre réponse est conservée.',
+        'too_many' => 'Vous avez essayé plusieurs fois de suite. Patientez une minute, puis réessayez.',
+        'server' => 'Quelque chose a échoué de notre côté. Réessayez dans un instant ; si cela persiste, écrivez-nous.',
+        'refused' => 'Cette action n’a pas pu être effectuée. Rechargez la page et réessayez.',
+    ],
     'back' => 'Revenir à l’accueil',
 
     '404' => [

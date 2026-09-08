@@ -183,6 +183,17 @@ final class LandingController
         ]);
     }
 
+    /**
+     * La page « Nos livres » (T-224) : ce que le livre contient.
+     *
+     * Les mêmes props que l'accueil, rien de plus : elle affiche le prix,
+     * porte les avis et propose la même réduction.
+     */
+    public function books(Request $request): Response
+    {
+        return inertia('public/Books', $this->storefront($request));
+    }
+
     public function demo(): Response
     {
         return inertia('public/Demo', [

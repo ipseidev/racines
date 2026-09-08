@@ -34,6 +34,8 @@ readonly SOURCES=(
     "public/img/landing/etape-3.jpg:1400"
     "public/img/landing/etape-4.jpg:1400"
     "public/img/landing/livre.jpg:1400"
+    "public/img/landing/cadeau.jpg:1448"
+    "public/img/landing/livres.jpg:1024"
     "public/img/landing/relecture.png:780"
 )
 

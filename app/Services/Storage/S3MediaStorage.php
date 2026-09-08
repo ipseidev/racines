@@ -179,6 +179,34 @@ final class S3MediaStorage implements MediaStorage
     }
 
     /**
+     * Les deux adresses du compartiment : celle du serveur, celle du
+     * navigateur.
+     *
+     * Lues ici et non dans l'appelant, pour la même raison que `corsRules()` :
+     * le nom du disque est une décision de cette classe — `r2`, et pas
+     * `media` — et un contrôle qui devine la clé de configuration lit deux
+     * chaînes vides sans s'en apercevoir. C'est arrivé à la première écriture
+     * du contrôle (T-226).
+     *
+     * @return array{private: string, public: string}
+     */
+    public function endpoints(): array
+    {
+        $config = config("filesystems.disks.{$this->disk}");
+
+        if (! is_array($config)) {
+            return ['private' => '', 'public' => ''];
+        }
+
+        $prive = (string) ($config['endpoint'] ?? '');
+
+        return [
+            'private' => $prive,
+            'public' => (string) ($config['public_endpoint'] ?? $prive),
+        ];
+    }
+
+    /**
      * Les règles CORS du compartiment, ou `null` s'il n'en porte aucune.
      *
      * Un diagnostic, et il vit ici pour une raison : la construction du client

@@ -27,6 +27,77 @@ return [
         'description' => 'Une question par semaine, sa voix qui répond, et le livre relié de ses souvenirs. Sans application ni compte à créer. Rien n\'est partagé sans son accord.',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Titres et descriptions de recherche (T-225)
+    |--------------------------------------------------------------------------
+    |
+    | Une paire par page, et jamais deux fois la même. Le titre est ce que
+    | Google affiche en lien — et, sous un résultat de marque, ce qui devient
+    | le libellé d'un lien de site ; la description est la phrase dessous.
+    |
+    | Règles d'écriture : le titre tient en 60 signes environ, marque comprise,
+    | sinon il est coupé ; la description en 155, et elle dit ce que **cette**
+    | page apporte, pas ce que le produit est. Le prix passe par `:price`, lu
+    | dans les réglages : une description qui l'écrirait en dur mentirait le
+    | jour où il change.
+    |
+    */
+    'seo' => [
+        'home' => [
+            'title' => ':brand — le livre de ses souvenirs, avec sa voix',
+            'description' => 'Une question par semaine, il y répond en parlant, ses histoires deviennent un livre relié avec un QR code par chapitre pour réécouter sa voix. :price, sans abonnement.',
+        ],
+        'how' => [
+            'title' => 'Comment ça marche',
+            'description' => 'Le parcours en six étapes : vous choisissez les questions, votre proche répond en parlant, ses mots deviennent un chapitre, il relit, le livre arrive.',
+        ],
+        'books' => [
+            'title' => 'Nos livres : ce qu’il y a à l’intérieur',
+            'description' => 'Couverture rigide, impression couleur, un chapitre par histoire et un QR code qui rejoue l’enregistrement d’origine : ce que vous ouvrez quand le livre arrive.',
+        ],
+        'faq' => [
+            'title' => 'Questions fréquentes',
+            'description' => 'Ce qui est compris dans l’achat, ce qui se passe après l’année, qui peut écouter les histoires, et ce que nous faisons de vos enregistrements.',
+        ],
+        'demo' => [
+            'title' => 'Essayer en 60 secondes',
+            'description' => 'Enregistrez-vous, réécoutez-vous, voyez ce que ça donne. Rien n’est envoyé : tout reste sur votre appareil et disparaît quand vous fermez la page.',
+        ],
+        // Une page légale par couple : servies par un seul composant, elles
+        // partageaient sinon la même description.
+        'terms' => [
+            'title' => 'Conditions générales de vente',
+            'description' => 'Ce que comprend l’achat, la garantie satisfait ou remboursé de trente jours, la livraison du livre et nos engagements de conservation.',
+        ],
+        'privacy' => [
+            'title' => 'Politique de confidentialité',
+            'description' => 'Quelles données :brand recueille, où elles sont hébergées, combien de temps elles restent, et comment demander leur export ou leur suppression.',
+        ],
+        'imprint' => [
+            'title' => 'Mentions légales',
+            'description' => 'L’éditeur du site, son hébergeur, ses coordonnées de contact et les informations que la loi française exige de toute activité en ligne.',
+        ],
+        'consents' => [
+            'title' => 'Vos accords',
+            'description' => 'Les accords que la personne qui raconte donne un par un — enregistrement, transcription, rendu écrit, partage — et comment les retirer d’un geste.',
+        ],
+        'legal' => [
+            'title' => 'Informations légales',
+            'description' => 'Les textes qui engagent :brand, dans leur version en vigueur.',
+        ],
+        // Le nom et la description de l'objet vendu, pour la donnée
+        // structurée. Distincts de ceux d'une page : ils nomment le livre.
+        'product' => [
+            'title' => 'Le livre de vie que l’on peut écouter',
+            'description' => 'Une année de questions, les histoires de votre proche mises au propre, et un livre relié en couleur avec un QR code par chapitre qui rejoue sa voix.',
+        ],
+        'checkout' => [
+            'title' => 'Offrir le livre',
+            'description' => 'Le parcours d’achat de :brand.',
+        ],
+    ],
+
     'vcard' => [
         'note' => 'Vos questions de la semaine arrivent de ce contact. Nous ne vous demanderons jamais de mot de passe ni de paiement par SMS.',
     ],
@@ -444,6 +515,7 @@ return [
             'how' => 'Comment ça marche',
             'book' => 'Le livre',
             'faq' => 'Questions fréquentes',
+            'login' => 'Se connecter',
             'menu' => 'Ouvrir le menu',
             'menu_close' => 'Fermer le menu',
             // Le bandeau de tête, en deux morceaux : la seconde moitié est en
@@ -762,6 +834,7 @@ return [
                 'no_password' => 'Aucun mot de passe.',
             ],
             'cta' => 'Essayer : ça prend 60 secondes',
+            'photo_alt' => 'Une femme âgée et sa fille s’embrassent sur un canapé, le livre relié qu’elles viennent de déballer posé entre elles.',
         ],
 
         // S13. Voir l'expérience. Sans vidéo de client : une capture de
@@ -928,6 +1001,69 @@ return [
                 'a' => 'Vous bénéficiez de trente jours satisfait ou remboursé. Les modalités sont détaillées dans nos conditions générales de vente.',
                 'link' => 'Conditions générales de vente',
             ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | La page « Nos livres » (T-224)
+    |--------------------------------------------------------------------------
+    |
+    | L'enchaînement des sections est celui de la page « Inside our books » du
+    | leader — accroche et prix, trois onglets, la liste de ce que comprend
+    | l'achat, les avis, un bloc de fond, l'appel final, la réduction. Les
+    | textes, eux, sont écrits pour notre produit : ils décrivent ce que notre
+    | livre contient et ce que la personne qui raconte décide.
+    |
+    */
+    'books' => [
+        'seo_title' => 'Nos livres',
+        'title' => 'Ce qu’il y a dans un livre :brand',
+        'lede' => 'Une année de récits, reliée. Voici ce que vous ouvrez le jour où le livre arrive.',
+        'price_note' => 'Une année de questions et le livre relié. Un seul paiement.',
+        'photo_alt' => 'Trois livres :brand : deux couvertures fermées, l’une crème, l’autre verte, et un exemplaire ouvert sur un chapitre illustré d’une photographie de famille.',
+
+        // Les trois onglets : ce qu'on lit, ce qu'on entend, ce qu'elle décide.
+        'tabs' => [
+            'words' => [
+                'tab' => 'Ses mots',
+                'title' => 'Ses mots, mis au propre sans être réécrits',
+                'body' => 'Chaque chapitre est une histoire qu’elle a racontée. Les hésitations s’effacent, la ponctuation se pose, ses tournures restent les siennes. Le mot à mot est conservé à côté du texte mis au propre : on peut toujours revenir à ce qui a été dit.',
+            ],
+            'voice' => [
+                'tab' => 'Sa voix',
+                'title' => 'Sa voix, à un scan de la page',
+                'body' => 'Un QR code accompagne chaque chapitre et rejoue l’enregistrement d’origine. On lit l’histoire, puis on l’entend la raconter, avec ses silences et ses rires. C’est ce qu’un livre écrit ne peut pas garder.',
+            ],
+            'control' => [
+                'tab' => 'Elle décide',
+                'title' => 'Elle relit avant tout le monde',
+                'body' => 'La personne qui raconte relit chaque texte avant qui que ce soit, corrige un mot si elle veut, et choisit ce que la famille peut lire et écouter. Rien n’est partagé sans son accord, et elle peut revenir sur sa décision.',
+            ],
+        ],
+
+        // Ce que comprend l'achat, en une colonne de six points.
+        'includes_title' => 'Ce que comprend votre livre',
+        'includes' => [
+            'questions' => 'Une année de questions, une par semaine, écrites pour faire revenir les souvenirs.',
+            'record' => 'Des réponses enregistrées depuis n’importe quel téléphone, sans application ni mot de passe.',
+            'text' => 'La mise au propre de chaque récit, avec le mot à mot conservé à côté.',
+            'download' => 'Les enregistrements d’origine et les textes, téléchargeables à tout moment.',
+            'book' => 'Un livre relié en couleur, couverture rigide, avec un QR code par chapitre.',
+            'family' => 'La famille invitée à écouter et à réagir, dans la limite de ce qu’elle autorise.',
+        ],
+
+        // Le bloc de fond : ce qui compte n'est pas l'objet.
+        'why' => [
+            'title' => 'Ce qui compte n’est pas le livre. C’est l’année qui le remplit.',
+            'p1' => 'Le livre est ce qui reste, mais ce n’est pas ce qui se passe. Ce qui se passe, c’est une question posée le dimanche, une réponse qu’on écoute en voiture, un détail qu’on ne connaissait pas et qu’on redemande à Noël.',
+            'p2' => 'Au bout d’un an, la famille a entendu des histoires qu’elle n’aurait jamais pensé à demander. Le livre arrive après : il les réunit, et il les rend faciles à retrouver.',
+        ],
+
+        // L'appel final.
+        'closing' => [
+            'title' => 'Commencez son livre aujourd’hui.',
+            'body' => 'La première question part le jour que vous choisissez. Le livre arrive au bout de l’année.',
         ],
     ],
 

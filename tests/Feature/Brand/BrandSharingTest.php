@@ -26,7 +26,10 @@ it('reflète immédiatement un changement de couleur sans redéploiement', funct
 it('titre la page avec le nom du produit', function (): void {
     app(UpdateBrandSettings::class)->handle(['product_name' => 'Essai']);
 
-    $this->get('/')->assertSee('<title>Essai</title>', escape: false);
+    // Le titre porte le sujet de la page depuis T-225 — c'est lui qui devient
+    // le libellé d'un lien de site. Ce qui compte ici reste que le nom de
+    // marque des réglages y arrive, servi par le serveur.
+    $this->get('/')->assertSee('<title>Essai —', escape: false);
 });
 
 it('partage la marque et les traductions avec chaque page Inertia', function (): void {

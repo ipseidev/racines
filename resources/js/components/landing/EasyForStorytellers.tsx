@@ -40,12 +40,17 @@ export default function EasyForStorytellers({ variant }: { variant: string }) {
              */}
             <div className="mx-auto w-full max-w-[86rem] px-5 sm:px-8 lg:px-10">
                 <div className="grid w-full overflow-hidden rounded-2xl lg:grid-cols-2">
+                    {/*
+                     * La largeur native est passée à `photo()` : 1 448 et non
+                     * 1 400. Annoncer un barreau qu'on ne peut pas servir
+                     * ferait charger un fichier plus petit que l'emplacement.
+                     */}
                     <img
-                        {...photo('etape-2')}
+                        {...photo('cadeau', 1448)}
                         sizes="(min-width: 1024px) 42rem, 100vw"
-                        alt={t('public.landing.tested.photo_alt')}
-                        width="1400"
-                        height="1050"
+                        alt={t('public.lp.easy.photo_alt')}
+                        width="1448"
+                        height="1086"
                         loading="lazy"
                         className="aspect-[4/3] h-full w-full object-cover lg:aspect-auto"
                     />

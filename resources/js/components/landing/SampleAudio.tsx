@@ -133,16 +133,16 @@ export default function SampleAudio({
     };
 
     return (
-        <div className="flex flex-col gap-3.5">
+        <div className="flex flex-col gap-3">
             {/* eslint-disable-next-line jsx-a11y/media-has-caption -- la transcription se déplie juste dessous */}
             <audio ref={audio} src={sample.src} preload="metadata" />
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
                 <button
                     type="button"
                     onClick={toggle}
                     aria-pressed={playing}
-                    className="bg-brand text-brand-foreground press hover:bg-brand-deep flex min-h-[3rem] items-center gap-3 rounded-full pr-6 pl-4 text-[1.0625rem] font-semibold transition-colors"
+                    className="bg-brand text-brand-foreground press hover:bg-brand-deep flex min-h-[2.75rem] items-center gap-2.5 rounded-full pr-5 pl-3.5 text-[1rem] font-semibold transition-colors"
                 >
                     <PlayIcon playing={playing} />
                     {playing

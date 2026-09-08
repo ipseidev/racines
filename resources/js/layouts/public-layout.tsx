@@ -19,9 +19,9 @@ import PublicFooter from '@/layouts/public-footer';
 const NAV = [
     // La page dédiée depuis T-213 ; l'accueil garde son résumé en quatre étapes.
     { href: '/comment-ca-marche', key: 'how', inertia: true },
-    { href: '/#livre', key: 'book', inertia: false },
-    { href: '/#histoire', key: 'story', inertia: false },
-    { href: '/#questions', key: 'faq', inertia: false },
+    { href: '/nos-livres', key: 'book', inertia: true },
+    { href: '/#notre-histoire', key: 'story', inertia: false },
+    { href: '/questions-frequentes', key: 'faq', inertia: true },
 ] as const;
 
 /**

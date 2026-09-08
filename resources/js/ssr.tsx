@@ -69,6 +69,8 @@ void createServer((page) =>
                 // (T-219, T-220). Le témoin passe par le cas suivant.
                 case name === 'public/Landing':
                 case name === 'public/Faq':
+                case name === 'public/Books':
+                case name === 'public/HowItWorks':
                     return LpLayout;
                 case name.startsWith('public/'):
                     return PublicLayout;

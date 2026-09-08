@@ -46,9 +46,18 @@ const STEPS = [
     { key: 'questions', photo: 'etape-1', href: null },
     { key: 'record', photo: 'etape-2', href: '/essai' },
     { key: 'text', photo: 'relecture', href: '#texte' },
-    { key: 'decide', photo: 'etape-3', href: '/#commitments' },
-    { key: 'family', photo: 'etape-4', href: '/#questions' },
-    { key: 'book', photo: 'livre', href: '/#livre' },
+    /*
+     * Les trois destinations ont changé de place : les sept engagements et la
+     * FAQ ne sont plus des sections de l'accueil — la FAQ est une page, les
+     * engagements y ont leur famille de questions — et le livre a la sienne.
+     */
+    { key: 'decide', photo: 'etape-3', href: '/questions-frequentes#privacy' },
+    {
+        key: 'family',
+        photo: 'etape-4',
+        href: '/questions-frequentes#q-privacy-private',
+    },
+    { key: 'book', photo: 'livre', href: '/nos-livres' },
 ] as const;
 
 const SAMPLES = ['first_memory', 'dish', 'meeting', 'value'] as const;
@@ -338,7 +347,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                         </div>
                     ))}
                 </dl>
-                <a href="/#questions" className={TEXT_LINK}>
+                <a href="/questions-frequentes" className={TEXT_LINK}>
                     {t('public.how_it_works.questions.all')}
                     <span aria-hidden="true">→</span>
                 </a>
@@ -476,7 +485,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                             })}
                         </figcaption>
                         <a
-                            href="/#histoire"
+                            href="/#notre-histoire"
                             className="bg-brand-surface text-brand hover:bg-brand-linen inline-flex min-h-[3.25rem] items-center justify-center rounded-md px-6 text-[1.0625rem] font-semibold"
                         >
                             {t('public.how_it_works.voice.cta')}
@@ -492,7 +501,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                                 {t('public.how_it_works.more.faq.body')}
                             </p>
                             <a
-                                href="/#questions"
+                                href="/questions-frequentes"
                                 className={`${TEXT_LINK} mt-auto`}
                             >
                                 {t('public.how_it_works.more.faq.cta')}

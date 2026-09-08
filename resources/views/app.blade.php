@@ -12,36 +12,38 @@
              narrateur la refusait (T-75). --}}
         <meta name="csp-nonce" content="{{ Vite::cspNonce() }}">
 
-@if (str_starts_with($page['component'], 'public/'))
-        {{-- Description et aperçu de partage. Rendus par le serveur : un robot
-             qui n'exécute pas de JavaScript ne verrait rien d'un `<Head>`
-             Inertia. Réservés aux pages publiques : une page narrateur s'ouvre
-             par un lien porteur, et n'a rien à donner à lire à un aperçu.
-             Pas d'`og:url` pour la même raison, il porterait le jeton. --}}
-        <meta name="description" content="{{ __('public.meta.description') }}">
+@php($seo = \App\Support\Seo::forComponent($page['component'], request()->path()))
+@if ($seo['description'] !== '')
+        {{-- Titre, description et canonique **par page** (T-225).
+             Rendus par le serveur : le titre du `<Head>` Inertia n'existe
+             qu'après l'exécution du JavaScript, et c'est ce titre-là qui
+             devient le libellé d'un lien de site sous un résultat de marque.
+             Les deux lisent la même clé de catalogue, sinon le document en
+             afficherait deux à la suite. --}}
+        <meta name="description" content="{{ $seo['description'] }}">
+        <link rel="canonical" href="{{ $seo['canonical'] }}">
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="{{ $brandName }}">
-        <meta property="og:title" content="{{ $brandName }}">
-        <meta property="og:description" content="{{ __('public.meta.description') }}">
+        <meta property="og:url" content="{{ $seo['canonical'] }}">
+        <meta property="og:title" content="{{ $seo['brand'] ? $seo['title'] : $seo['title'].' · '.$brandName }}">
+        <meta property="og:description" content="{{ $seo['description'] }}">
         <meta property="og:image" content="{{ url('/img/landing/hero.jpg') }}">
+        <meta property="og:locale" content="fr_FR">
         <meta name="twitter:card" content="summary_large_image">
 @endif
-
-@if (str_starts_with($page['component'], 'public/Landing') && $page['component'] !== 'public/Landing')
-        {{-- Le témoin de la page de vente ne s'indexe pas (T-219, T-220). Le
-             garde vise tout composant `public/Landing…` **sauf**
-             `public/Landing` lui-même : c'est ce qui fait que l'accueil
-             s'indexe et que `public/LandingTemoin` non. Renommer le composant
-             de l'accueil le sortirait de l'index sans que rien ne le dise
-             avant la chute du trafic. `follow`
-             et non `nofollow` : les liens qu'elles portent mènent au tunnel et
-             aux pages légales, qui doivent rester crawlables. La canonique
-             désigne l'accueil : c'est la même offre, et deux pages indexées
-             pour un seul produit se disputeraient leur propre trafic. Rendu par
-             le serveur, parce qu'un robot ne lit pas un `<Head>` Inertia. --}}
-        <meta name="robots" content="noindex, follow">
-        <link rel="canonical" href="{{ url('/') }}">
+@php($graph = \App\Support\Seo::jsonLd($page['component']))
+@if ($graph !== [])
+        {{-- Données structurées. Le nonce est obligatoire : la politique de
+             contenu refuse un script en ligne sans lui, et le refus est
+             silencieux. --}}
+        <script type="application/ld+json" nonce="{{ Vite::cspNonce() }}">{!! json_encode($graph, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endif
+@unless ($seo['indexable'])
+        {{-- Le tunnel, le remerciement et le témoin : suivis, jamais indexés.
+             `follow` et non `nofollow` : les liens qu'ils portent mènent aux
+             pages qui, elles, doivent être explorées. --}}
+        <meta name="robots" content="noindex, follow">
+@endunless
 
         {{-- Marque : éditable dans l'administration, appliquée sans redéploiement.
              Le nonce vient de SecurityHeaders : sans lui, la politique de
@@ -109,7 +111,7 @@
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
-            <title>{{ $brandName }}</title>
+            <title>{{ $seo['title'] === '' ? $brandName : ($seo['brand'] ? $seo['title'] : $seo['title'].' · '.$brandName) }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

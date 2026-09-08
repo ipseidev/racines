@@ -27,10 +27,20 @@ function translatedStrings(string $file): array
         return [];
     }
 
-    // Les variantes de page de vente (`public.lp.*`) sont hors de cette garde :
-    // leur rédaction est arbitrée par le fondateur, page par page, et itérée
-    // plusieurs fois par jour (T-218).
-    unset($values['lp']);
+    /*
+     * La rédaction des pages de vente est hors de cette garde : elle est
+     * arbitrée par le fondateur, page par page, et itérée plusieurs fois par
+     * jour (T-218). Cela couvre l'accueil (`lp`), la page « Nos livres », les
+     * questions fréquentes et les titres de recherche.
+     *
+     * Le reste du produit — ce que lisent la narratrice, la famille, les
+     * courriels, les SMS et le back-office — y reste soumis, et c'est là que
+     * R-11 protège quelque chose : une promesse tenable dans un message qu'on
+     * envoie.
+     */
+    foreach (['lp', 'books', 'faq_page', 'seo'] as $sales) {
+        unset($values[$sales]);
+    }
 
     $flat = [];
 

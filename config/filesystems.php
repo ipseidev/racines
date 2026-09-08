@@ -65,6 +65,11 @@ return [
             // Adresse vue par le navigateur, pour les URLs présignées. En
             // local, MinIO répond sur un autre hôte depuis le Mac que depuis
             // le conteneur ; en production, c'est la même.
+            //
+            // **Jamais le domaine `pub-….r2.dev`**, que le tableau de bord de
+            // Cloudflare met en avant : c'est un domaine de lecture publique,
+            // qui ne répond à aucune requête signée de l'API S3 — donc à aucun
+            // dépôt, ni à aucun lien d'écoute (T-227).
             'public_endpoint' => env('R2_PUBLIC_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'visibility' => 'private',
@@ -82,6 +87,11 @@ return [
             // Adresse vue par le navigateur, pour les URLs présignées. En
             // local, MinIO répond sur un autre hôte depuis le Mac que depuis
             // le conteneur ; en production, c'est la même.
+            //
+            // **Jamais le domaine `pub-….r2.dev`**, que le tableau de bord de
+            // Cloudflare met en avant : c'est un domaine de lecture publique,
+            // qui ne répond à aucune requête signée de l'API S3 — donc à aucun
+            // dépôt, ni à aucun lien d'écoute (T-227).
             'public_endpoint' => env('R2_PUBLIC_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'visibility' => 'private',
@@ -99,6 +109,11 @@ return [
             // Adresse vue par le navigateur, pour les URLs présignées. En
             // local, MinIO répond sur un autre hôte depuis le Mac que depuis
             // le conteneur ; en production, c'est la même.
+            //
+            // **Jamais le domaine `pub-….r2.dev`**, que le tableau de bord de
+            // Cloudflare met en avant : c'est un domaine de lecture publique,
+            // qui ne répond à aucune requête signée de l'API S3 — donc à aucun
+            // dépôt, ni à aucun lien d'écoute (T-227).
             'public_endpoint' => env('R2_PUBLIC_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'visibility' => 'private',

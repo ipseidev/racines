@@ -40,9 +40,17 @@ const DISCOVER = [
         key: 'public.landing.nav.how',
         inertia: true,
     },
-    { href: '/#livre', key: 'public.landing.nav.book', inertia: false },
-    { href: '/#histoire', key: 'public.landing.nav.story', inertia: false },
-    { href: '/#questions', key: 'public.landing.faq.title', inertia: false },
+    { href: '/nos-livres', key: 'public.landing.nav.book', inertia: true },
+    {
+        href: '/#notre-histoire',
+        key: 'public.landing.nav.story',
+        inertia: false,
+    },
+    {
+        href: '/questions-frequentes',
+        key: 'public.landing.faq.title',
+        inertia: true,
+    },
     { href: '/essai', key: 'public.footer.try', inertia: false },
 ] as const;
 

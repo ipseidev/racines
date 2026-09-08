@@ -16,6 +16,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Horizon\Contracts\MasterSupervisorRepository;
 use Throwable;
@@ -67,6 +68,8 @@ final class ProductionCheck extends Command
         $this->base();
         $this->contraintes();
         $this->cors();
+        $this->presigne();
+        $this->compartiments();
         $this->file();
         $this->stockage();
 
@@ -77,6 +80,7 @@ final class ProductionCheck extends Command
 
         $this->newLine();
         $this->line('  <options=bold>Transformer la voix en texte</>');
+        $this->ffmpeg();
         $this->transcription();
         $this->rendu();
 
@@ -512,6 +516,191 @@ final class ProductionCheck extends Command
         }
     }
 
+    /**
+     * L'envoi présigné, par l'adresse que verra le **navigateur**.
+     *
+     * Les deux lignes précédentes ne suffisent pas, et c'est ce qui a coûté un
+     * après-midi. `stockage()` écrit avec nos identifiants par le point de
+     * terminaison **serveur** ; `cors()` lit la règle du compartiment par le
+     * même. Or un enregistrement part par une URL signée sur
+     * `R2_PUBLIC_ENDPOINT` — l'adresse vue depuis le téléphone — et cette
+     * valeur n'était éprouvée par rien.
+     *
+     * En local elle diffère à dessein : MinIO répond sur un autre hôte depuis
+     * le Mac que depuis le conteneur. En production elle doit être identique,
+     * et un `.env` recopié depuis une machine de développement y laisse une IP
+     * privée ou un `localhost` — l'URL est alors parfaitement signée, et
+     * injoignable depuis le réseau mobile du narrateur. Le navigateur rend une
+     * erreur réseau, le serveur n'a rien vu passer, et « L'envoi n'a pas
+     * abouti » s'affiche après dix minutes de récit (T-226).
+     *
+     * Le contrôle refait donc ce que fait le magnétophone, dans l'ordre :
+     * ouvrir un envoi multipart, signer une part, la **déposer par HTTP**, et
+     * relire l'`ETag` de la réponse. Puis il annule l'envoi : un multipart
+     * abandonné se facture jusqu'à son expiration.
+     */
+    private function presigne(): void
+    {
+        if ((string) config('services.media.driver') !== 's3') {
+            return;
+        }
+
+        $storage = new S3MediaStorage;
+        ['private' => $prive, 'public' => $public] = $storage->endpoints();
+
+        /*
+         * `r2.dev` d'abord, parce que c'est **la** faute que l'interface de
+         * Cloudflare invite : le tableau de bord affiche en grand « Public
+         * R2.dev Bucket URL », et une variable nommée `R2_PUBLIC_ENDPOINT`
+         * semble faite pour l'accueillir. Elle ne l'est pas. `r2.dev` est un
+         * domaine de **lecture publique** ; il ne répond à aucune requête
+         * signée de l'API S3, donc à aucun dépôt. Le navigateur n'obtient même
+         * pas de statut — WebKit dit « Load failed » — et le message générique
+         * « diffère de R2_ENDPOINT » n'expliquerait pas pourquoi (T-227).
+         *
+         * Le même réglage sert les liens d'écoute (`temporaryUrl`) : posé sur
+         * `r2.dev`, il casse aussi la lecture chez les proches, plus tard et
+         * ailleurs.
+         */
+        if (str_contains($public, '.r2.dev')) {
+            $this->rouge('Adresse d’envoi', 'R2_PUBLIC_ENDPOINT est un domaine r2.dev : lecture publique seulement, aucun dépôt signé.');
+            $this->line('      <fg=gray>C’est l’adresse que le tableau de bord met en avant, et ce n’est pas</>');
+            $this->line('      <fg=gray>celle de l’API S3. Il faut le point de terminaison du compte :</>');
+            $this->line('      <fg=magenta>R2_PUBLIC_ENDPOINT='.($prive === '' ? 'https://<compte>.eu.r2.cloudflarestorage.com' : $prive).'</>');
+            $this->line('      <fg=gray>Les liens d’écoute des proches passent par le même réglage.</>');
+        } elseif ($public !== $prive) {
+            // Dit avant l'appel : la différence est légitime en local et
+            // presque toujours un `.env` recopié en production.
+            $this->selonEnv('Adresse d’envoi', sprintf(
+                'R2_PUBLIC_ENDPOINT (%s) diffère de R2_ENDPOINT : le téléphone signe pour une adresse qui n’est pas celle du stockage.',
+                $public === '' ? 'vide' : $public,
+            ));
+        }
+
+        if ($this->option('rapide')) {
+            return;
+        }
+
+        $cle = 'health/prod-check-presigne.bin';
+        $uploadId = null;
+
+        try {
+            $uploadId = $storage->createMultipartUpload($cle, 'application/octet-stream');
+            $url = $storage->presignPart($cle, $uploadId, 1);
+
+            // Cinq octets : on éprouve le chemin, pas le débit.
+            $reponse = Http::withBody('essai', 'application/octet-stream')
+                ->timeout(15)
+                ->put($url);
+
+            if ($reponse->failed()) {
+                $this->rouge('Envoi présigné', sprintf(
+                    'le stockage refuse le dépôt (HTTP %d) : aucun enregistrement ne peut être envoyé.',
+                    $reponse->status(),
+                ));
+
+                return;
+            }
+
+            if ($reponse->header('ETag') === '') {
+                // Le serveur, lui, voit l'en-tête : s'il manque **ici**, ce
+                // n'est pas une affaire de CORS mais de fournisseur.
+                $this->rouge('Envoi présigné', 'le stockage ne rend pas d’ETag : l’envoi multipart ne peut pas se conclure.');
+
+                return;
+            }
+
+            $this->vert('Envoi présigné', sprintf('dépôt accepté et ETag rendu par %s', $public));
+        } catch (Throwable $e) {
+            $this->rouge('Envoi présigné', 'impossible : '.$e->getMessage());
+        } finally {
+            if ($uploadId !== null) {
+                try {
+                    // Un multipart abandonné se facture jusqu'à expiration.
+                    $storage->abortMultipart($cle, $uploadId);
+                } catch (Throwable) {
+                    // Rien à dire : le contrôle a déjà rendu son verdict.
+                }
+            }
+        }
+    }
+
+    /**
+     * Trois compartiments, et la juridiction où ils vivent.
+     *
+     * `05_A_FAIRE_HUMAIN.md` le demande depuis le début, et pour deux raisons
+     * que rien dans le code ne rattrape :
+     *
+     *  - **Trois, et pas un.** La réplique est ce qui protège de la perte d'un
+     *    audio confirmé — le SLO du doc 04 §11 dit « zéro perte après
+     *    "histoire enregistrée" ». Une sauvegarde rangée dans le compartiment
+     *    qu'elle sauvegarde ne protège de rien : ce qui efface l'un efface
+     *    l'autre.
+     *  - **La juridiction UE**, choisie à la création et **irréversible** sur
+     *    R2. C'est une exigence non négociable du dossier (doc 04, hébergement
+     *    UE), et elle se lit dans le point de terminaison : un compartiment de
+     *    juridiction européenne s'adresse par `<compte>.eu.r2…`. Sans le
+     *    `.eu.`, il est très probable que les compartiments aient été créés
+     *    sans juridiction — et la seule sortie est de les recréer, donc mieux
+     *    vaut le savoir avant qu'une famille y ait déposé sa voix (T-228).
+     */
+    private function compartiments(): void
+    {
+        if ((string) config('services.media.driver') !== 's3') {
+            return;
+        }
+
+        $noms = [
+            'media' => (string) config('filesystems.disks.r2.bucket'),
+            'réplique' => (string) config('filesystems.disks.r2_replica.bucket'),
+            'sauvegardes' => (string) config('filesystems.disks.r2_backups.bucket'),
+        ];
+
+        $vides = array_keys(array_filter($noms, static fn (string $nom): bool => $nom === ''));
+
+        if ($vides !== []) {
+            $this->rouge('Compartiments', sprintf('sans nom : %s. Ce qui y va est perdu.', implode(', ', $vides)));
+        }
+
+        // Des noms **distincts** : deux rôles dans un seul compartiment, et
+        // ce qui efface l'un efface l'autre.
+        $doublons = array_keys(array_filter(
+            $noms,
+            static fn (string $nom): bool => $nom !== '' && count(array_keys($noms, $nom, true)) > 1,
+        ));
+
+        if ($doublons !== []) {
+            $this->rouge('Compartiments', sprintf(
+                '%s partagent le même compartiment : une sauvegarde rangée avec ce qu’elle sauvegarde ne protège de rien.',
+                implode(' et ', $doublons),
+            ));
+        }
+
+        $endpoint = (new S3MediaStorage)->endpoints()['private'];
+
+        if ($endpoint !== '' && ! str_contains($endpoint, '.eu.')) {
+            /*
+             * Orange et non rouge : la chaîne n'est pas coupée, personne ne
+             * perd rien aujourd'hui. C'est une exigence du dossier, et elle se
+             * répare en recréant les compartiments — d'où l'urgence de la voir
+             * tôt, sans pour autant peindre en rouge une chaîne qui marche.
+             */
+            $this->orange('Juridiction du stockage', 'R2_ENDPOINT ne porte pas « .eu. » : les compartiments n’ont pas la juridiction UE, qui se choisit à la création et ne se change pas.');
+            $this->line('      <fg=gray>Ce n’est pas la même chose qu’être hors d’Europe : un indice de</>');
+            $this->line('      <fg=gray>localisation — « Western Europe (WEUR) » dans la console — dit où</>');
+            $this->line('      <fg=gray>les données vivent. La juridiction, elle, l’impose et la verrouille.</>');
+            $this->line('      <fg=gray>Lire la ligne « Location » de chaque compartiment, puis trancher :</>');
+            $this->line('      <fg=gray>la localisation suffit-elle à l’engagement du dossier, ou faut-il</>');
+            $this->line('      <fg=gray>recréer les compartiments ? Mieux vaut le décider tôt.</>');
+
+            return;
+        }
+
+        if ($vides === [] && $doublons === []) {
+            $this->vert('Compartiments', sprintf('%s, distincts, juridiction UE', implode(', ', $noms)));
+        }
+    }
+
     private function stockage(): void
     {
         $cle = 'health/prod-check.txt';
@@ -525,6 +714,47 @@ final class ProductionCheck extends Command
             $this->vert('Stockage des voix', sprintf('écriture, relecture et effacement (%d o)', $info->bytes));
         } catch (Throwable $e) {
             $this->rouge('Stockage des voix', 'inaccessible : un narrateur peut parler, rien ne sera conservé. '.$e->getMessage());
+
+            return;
+        }
+
+        $this->compartimentsVoisins($cle);
+    }
+
+    /**
+     * La réplique et les sauvegardes existent-elles vraiment ?
+     *
+     * « Stockage des voix » ne sonde que le compartiment des médias, et c'est
+     * le seul dont l'absence se voit tout de suite. Les deux autres se taisent
+     * jusqu'au jour où on en a besoin : `ReplicateRecording` échoue dans un
+     * ouvrier, et la sauvegarde n'existe pas au moment du désastre. Or c'est
+     * la réplique qui porte le SLO du doc 04 §11 — « zéro perte après
+     * "histoire enregistrée" » — et un nom de compartiment se tape à la main
+     * dans un `.env`, au singulier quand la console l'a créé au pluriel
+     * (T-228).
+     */
+    private function compartimentsVoisins(string $cle): void
+    {
+        if ($this->option('rapide') || (string) config('services.media.driver') !== 's3') {
+            return;
+        }
+
+        $roles = [
+            'Réplique' => ['r2_replica', 'la voix confirmée n’a pas de second exemplaire : le SLO « zéro perte » n’est pas tenu.'],
+            'Sauvegardes' => ['r2_backups', 'aucune archive ne pourra être écrite le jour où il en faut une.'],
+        ];
+
+        foreach ($roles as $nom => [$disque, $consequence]) {
+            try {
+                $storage = new S3MediaStorage($disque);
+                $storage->put($cle, 'ok', 'text/plain');
+                $storage->head($cle);
+                $storage->delete($cle);
+
+                $this->vert($nom, 'joignable en écriture');
+            } catch (Throwable $e) {
+                $this->rouge($nom, $consequence.' '.$e->getMessage());
+            }
         }
     }
 
@@ -591,6 +821,67 @@ final class ProductionCheck extends Command
      * famille voit son récit arriver, puis plus rien — ni texte à relire, ni
      * validation possible, donc ni partage. La chaîne s'arrête au milieu.
      */
+    /**
+     * `ffmpeg` et `ffprobe` : le premier maillon, et le plus silencieux.
+     *
+     * Tout ce qui suit une voix en dépend. Sans dérivé MP3, il n'y a rien à
+     * envoyer au transcripteur : pas de texte, donc pas de relecture, pas de
+     * validation, rien qui atteigne la famille, et pas de livre. Le narrateur,
+     * lui, a vu « votre histoire est enregistrée » — et c'était vrai, le
+     * stockage l'avait confirmée. Elle dort simplement là, sans suite.
+     *
+     * Et rien ne le dit : `TranscodeRecording` échoue dans un ouvrier, trois
+     * fois, puis se range dans `failed_jobs` où personne ne regarde. C'est
+     * ainsi qu'on l'a trouvé — dans les journaux, après coup, « sh: 1: exec:
+     * /usr/bin/ffmpeg: not found » (T-230).
+     *
+     * `ffprobe` compte autant : c'est lui qui donne la **durée réelle**, celle
+     * qui nourrit les critères book-ready de R-6. Sans lui, on ne sait plus si
+     * la matière suffit à faire un livre.
+     */
+    private function ffmpeg(): void
+    {
+        $binaires = [
+            'ffmpeg' => [
+                (string) config('product.media.ffmpeg'),
+                'aucune voix ne devient du texte : ni relecture, ni validation, ni livre.',
+            ],
+            'ffprobe' => [
+                (string) config('product.media.ffprobe'),
+                'aucune durée réelle : les critères du livre (R-6) ne peuvent pas être mesurés.',
+            ],
+        ];
+
+        foreach ($binaires as $nom => [$chemin, $consequence]) {
+            if ($chemin === '') {
+                $this->rouge($nom, 'aucun chemin configuré — '.$consequence);
+
+                continue;
+            }
+
+            try {
+                $resultat = Process::timeout(10)->run([$chemin, '-version']);
+            } catch (Throwable $e) {
+                $this->rouge($nom, $consequence.' '.$e->getMessage());
+
+                continue;
+            }
+
+            if ($resultat->failed()) {
+                $this->rouge($nom, sprintf('%s introuvable — %s', $chemin, $consequence));
+                $this->line('      <fg=magenta>sudo apt-get install -y ffmpeg</> <fg=gray>puis `php artisan queue:retry all`</>');
+
+                continue;
+            }
+
+            // La version, parce qu'un binaire trop ancien ne sait pas encoder
+            // ce que le navigateur produit : WebM/Opus d'un Chrome Android.
+            $premiere = strtok($resultat->output(), PHP_EOL);
+
+            $this->vert($nom, is_string($premiere) ? mb_substr($premiere, 0, 60) : 'présent');
+        }
+    }
+
     private function transcription(): void
     {
         $provider = (string) config('services.asr.provider');

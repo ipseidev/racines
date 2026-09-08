@@ -80,9 +80,9 @@ describe('PublicFooter', () => {
         ).toEqual([
             '/',
             '/comment-ca-marche',
-            '/#livre',
-            '/#histoire',
-            '/#questions',
+            '/nos-livres',
+            '/#notre-histoire',
+            '/questions-frequentes',
             '/essai',
         ]);
 

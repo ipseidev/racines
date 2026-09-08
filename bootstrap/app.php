@@ -18,6 +18,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\Response;
 use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -115,5 +116,45 @@ return Application::configure(basePath: dirname(__DIR__))
             return Inertia::render('family/StoryUnavailable', [
                 'backUrl' => is_string($token) ? '/l/'.$token : null,
             ])->toResponse($request)->setStatusCode(404);
+        });
+
+        /*
+         * Une erreur sur une **écriture Inertia** : on reste sur la page, avec
+         * un message.
+         *
+         * Les pages d'erreur en Blade existent et sont volontairement sans
+         * JavaScript (T-199) — elles doivent tenir quand le bundle ne se
+         * charge pas. Mais Inertia ne sait pas consommer du HTML : sur un
+         * `POST`, sa réponse à ces pages est « All Inertia Requests must
+         * receive a valid Inertia response », un message de développeur
+         * affiché à un narrateur de quatre-vingts ans qui vient de cliquer
+         * « Partager avec mes proches » (T-229).
+         *
+         * Le cas le plus fréquent est **419**, la session expirée : la page
+         * d'enregistrement reste ouverte longtemps — on y parle, on réécoute,
+         * on recommence — et le jeton de formulaire vieillit pendant ce
+         * temps. Renvoyer la personne sur une page d'erreur lui ferait perdre
+         * ce qu'elle est en train de faire ; `back()` la laisse où elle est,
+         * avec une phrase qui dit quoi faire.
+         *
+         * Seules les écritures sont traitées ici. Une navigation `GET` qui
+         * échoue est un lien cassé — un défaut à corriger, pas une situation
+         * à habiller — et elle garde la page Blade, qui s'affiche même sans
+         * JavaScript. C'est précisément le moment où on la veut.
+         */
+        $exceptions->respond(function (Response $response, Throwable $exception, Request $request) {
+            $inertia = $request->hasHeader('X-Inertia');
+            $status = $response->getStatusCode();
+
+            if (! $inertia || $request->isMethod('GET') || $status < 400) {
+                return $response;
+            }
+
+            return back()->with('error', match (true) {
+                $status === 419 => __('errors.inertia.expired'),
+                $status === 429 => __('errors.inertia.too_many'),
+                $status >= 500 => __('errors.inertia.server'),
+                default => __('errors.inertia.refused'),
+            });
         });
     })->create();

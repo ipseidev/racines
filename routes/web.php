@@ -6,6 +6,8 @@ use App\Http\Controllers\Checkout\CheckoutController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalController;
 use App\Http\Controllers\Public\ManifestController;
+use App\Http\Controllers\Public\RobotsController;
+use App\Http\Controllers\Public\SitemapController;
 use App\Http\Controllers\Public\WelcomeOfferController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +27,7 @@ Route::get('/', LandingController::class)->name('home');
 Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
 Route::get('/comment-ca-marche', [LandingController::class, 'howItWorks'])->name('how_it_works');
 Route::get('/questions-frequentes', [LandingController::class, 'faq'])->name('faq');
+Route::get('/nos-livres', [LandingController::class, 'books'])->name('books');
 
 /*
  * Le témoin de la page de vente (T-219, T-220).
@@ -52,6 +55,11 @@ Route::permanentRedirect('/lp/histoire', '/')->name('lp.structure');
 // Le manifeste d'installation, rendu depuis les réglages de marque. Sans
 // contrainte de domaine, pour rester de même origine que la page qui le cite.
 Route::get('/site.webmanifest', ManifestController::class)->name('manifest');
+
+// Le plan de site : neuf adresses fixes, celles qui doivent être explorées
+// comme un ensemble (T-225). robots.txt le déclare.
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', RobotsController::class)->name('robots');
 
 // La fenêtre de bienvenue : une adresse contre un code de réduction (T-141).
 // Bornée par adresse et par IP : une liste de contacts est une cible.

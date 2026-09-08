@@ -1,5 +1,5 @@
-import { Link, usePage } from '@inertiajs/react';
-import type { PropsWithChildren } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { useEffect, useState, type PropsWithChildren } from 'react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
 import { track } from '@/components/landing/track';
@@ -18,8 +18,8 @@ import PublicFooter from '@/layouts/public-footer';
  * est une page à elle, donc une navigation Inertia.
  */
 const NAV = [
-    { href: '#comment-ca-marche', key: 'how', inertia: false },
-    { href: '#le-livre', key: 'book', inertia: false },
+    { href: '/comment-ca-marche', key: 'how', inertia: true },
+    { href: '/nos-livres', key: 'book', inertia: true },
     { href: '/questions-frequentes', key: 'faq', inertia: true },
 ] as const;
 
@@ -34,9 +34,9 @@ const DISCOVER = [
         key: 'public.landing.nav.how',
         inertia: true,
     },
-    { href: '#le-livre', key: 'public.landing.nav.book', inertia: false },
+    { href: '/nos-livres', key: 'public.landing.nav.book', inertia: true },
     {
-        href: '#notre-histoire',
+        href: '/#notre-histoire',
         key: 'public.landing.nav.story',
         inertia: false,
     },
@@ -70,6 +70,31 @@ export default function LpLayout({ children }: PropsWithChildren) {
     const brand = useBrand();
     const pilot = usePilot();
 
+    const [open, setOpen] = useState(false);
+
+    /*
+     * Échap referme, et une navigation aussi.
+     *
+     * La mise en page **survit** aux visites Inertia : sans cet abonnement, le
+     * dépliant resterait ouvert par-dessus la page suivante. Les liens le
+     * ferment déjà au clic, mais pas le bouton « précédent » du navigateur.
+     */
+    useEffect(() => {
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', onKey);
+        const stop = router.on('navigate', () => setOpen(false));
+
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            stop();
+        };
+    }, []);
+
     // L'identifiant de la variante vient de la page : la barre ne le devine
     // pas, sinon deux variantes seraient mesurées sous le même nom.
     const { variant } = usePage<{ variant?: string }>().props;
@@ -102,31 +127,91 @@ export default function LpLayout({ children }: PropsWithChildren) {
 
             <header className="border-brand-sand border-b">
                 {/*
-                 * Une seule barre, qui se replie : le logo et le bouton sur la
-                 * première ligne, les trois ancres sur la seconde sur
-                 * téléphone, et tout aligné dès le grand écran. Un second
-                 * `<nav>` réservé au téléphone aurait dupliqué trois liens
-                 * focusables pour obtenir deux mises en page.
+                 * Une seule barre pour les deux tailles d'écran.
+                 *
+                 * Sur téléphone : le logo, le bouton d'ouverture et l'achat sur
+                 * la première ligne ; les entrées et la connexion se déplient
+                 * dessous. Sur grand écran tout s'aligne, et le bouton
+                 * d'ouverture disparaît. Un second `<nav>` réservé au téléphone
+                 * aurait dupliqué quatre liens focusables pour obtenir deux
+                 * mises en page — l'ordre des cellules et la visibilité
+                 * suffisent.
+                 *
+                 * Les trois entrées tenaient jusqu'ici sur une deuxième ligne
+                 * toujours ouverte : à 360 px elles passaient à trois lignes,
+                 * et la connexion en aurait ajouté une quatrième.
                  */}
-                <div className="mx-auto flex w-full max-w-[74rem] flex-wrap items-center justify-between gap-x-8 gap-y-3 px-5 py-4 sm:px-8 lg:px-10">
+                <div className="mx-auto flex w-full max-w-[74rem] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3.5 sm:gap-x-4 sm:px-8 lg:gap-x-8 lg:px-10 lg:py-4">
                     <Link
                         href="/"
                         aria-label={brand.name}
-                        className="order-1 inline-flex min-h-[2.75rem] items-center"
+                        className="order-1 mr-auto inline-flex min-h-[2.75rem] items-center lg:mr-4"
                     >
-                        <BrandLogo className="font-display text-brand text-[1.55rem] font-semibold" />
+                        <BrandLogo className="font-display text-brand text-[1.25rem] font-semibold sm:text-[1.55rem]" />
+                    </Link>
+
+                    {/*
+                     * Le bouton d'ouverture : un vrai `<button>` avec
+                     * `aria-expanded` et `aria-controls`. Une icône qui
+                     * bascule une classe ne dit rien à un lecteur d'écran de
+                     * ce qu'elle vient d'ouvrir.
+                     */}
+                    <button
+                        type="button"
+                        onClick={() => setOpen(!open)}
+                        aria-expanded={open}
+                        aria-controls="lp-menu"
+                        aria-label={t(
+                            open
+                                ? 'public.lp.nav.menu_close'
+                                : 'public.lp.nav.menu',
+                        )}
+                        className="text-brand hover:bg-brand/5 order-2 inline-flex size-11 items-center justify-center rounded-md lg:hidden"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            aria-hidden="true"
+                            className="size-6"
+                        >
+                            <path
+                                d={
+                                    open
+                                        ? 'M6 6l12 12M18 6L6 18'
+                                        : 'M4 7h16M4 12h16M4 17h16'
+                                }
+                            />
+                        </svg>
+                    </button>
+
+                    <Link
+                        href="/acheter"
+                        onClick={() =>
+                            track('lp_buy_click', {
+                                variant: variant ?? '',
+                                section: 'header',
+                            })
+                        }
+                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep order-3 inline-flex min-h-[2.875rem] items-center justify-center rounded-md px-3 text-[0.88rem] font-semibold whitespace-nowrap sm:px-5 sm:text-base lg:order-5"
+                    >
+                        {t('public.lp.cta.buy')}
                     </Link>
 
                     <nav
+                        id="lp-menu"
                         aria-label="Sections"
-                        className="order-3 w-full lg:order-2 lg:mr-auto lg:w-auto"
+                        className={`${open ? 'block' : 'hidden'} order-4 w-full pt-1 pb-1 lg:order-2 lg:mr-auto lg:block lg:w-auto lg:py-0`}
                     >
-                        <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.98rem]">
+                        <ul className="flex flex-col gap-y-1 text-[1.02rem] lg:flex-row lg:items-center lg:gap-x-6 lg:text-[0.98rem]">
                             {NAV.map((item) => (
                                 <li key={item.key}>
                                     {item.inertia ? (
                                         <Link
                                             href={item.href}
+                                            onClick={() => setOpen(false)}
                                             className="hover:text-brand inline-flex min-h-[2.75rem] items-center"
                                         >
                                             {t(`public.lp.nav.${item.key}`)}
@@ -134,6 +219,7 @@ export default function LpLayout({ children }: PropsWithChildren) {
                                     ) : (
                                         <a
                                             href={item.href}
+                                            onClick={() => setOpen(false)}
                                             className="hover:text-brand inline-flex min-h-[2.75rem] items-center"
                                         >
                                             {t(`public.lp.nav.${item.key}`)}
@@ -144,17 +230,20 @@ export default function LpLayout({ children }: PropsWithChildren) {
                         </ul>
                     </nav>
 
+                    {/*
+                     * La connexion suit la même visibilité que les entrées :
+                     * dans le dépliant sur téléphone, à gauche du bouton
+                     * d'achat sur grand écran. Un seul lien, donc une seule
+                     * cible pour le clavier.
+                     */}
                     <Link
-                        href="/acheter"
-                        onClick={() =>
-                            track('lp_buy_click', {
-                                variant: variant ?? '',
-                                section: 'header',
-                            })
-                        }
-                        className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep order-2 inline-flex min-h-[2.875rem] items-center justify-center rounded-md px-5 text-base font-semibold lg:order-3"
+                        href="/login"
+                        onClick={() => setOpen(false)}
+                        className={`${
+                            open ? 'inline-flex' : 'hidden'
+                        } text-brand hover:text-brand-deep border-brand-sand order-5 min-h-[2.75rem] w-full items-center border-t pt-2 text-[1.02rem] font-medium lg:order-4 lg:inline-flex lg:w-auto lg:border-0 lg:pt-0 lg:text-[0.98rem]`}
                     >
-                        {t('public.lp.cta.buy')}
+                        {t('public.lp.nav.login')}
                     </Link>
                 </div>
             </header>

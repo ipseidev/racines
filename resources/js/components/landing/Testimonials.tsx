@@ -220,7 +220,12 @@ export default function Testimonials() {
     const stars = t('public.lp.testimonials.stars');
 
     return (
-        <Section tone="white" labelledBy="lp-testimonials" className={BAND}>
+        <Section
+            id="avis"
+            tone="white"
+            labelledBy="lp-testimonials"
+            className={BAND}
+        >
             <div
                 className={SHELL}
                 onMouseEnter={() => setPaused(true)}

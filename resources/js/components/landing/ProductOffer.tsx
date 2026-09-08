@@ -31,16 +31,25 @@ const VIEWS = [
     { name: 'hero', label: 'family', alt: 'public.landing.hero.photo_alt' },
 ] as const;
 
+/*
+ * Les trois bénéfices et leur pictogramme.
+ *
+ * Le livre est un livre ouvert (tracé), le QR code un vrai QR code (rempli,
+ * `evenodd` creusant l'anneau des trois repères et son point central) : les
+ * deux premiers essais — un livre replié sur lui-même et quatre carrés
+ * détourés — ne se lisaient pas à vingt pixels.
+ */
+const QR_PATH =
+    'M3 3H11V11H3Z M5 5V9H9V5Z M6 6H8V8H6Z M13 3H21V11H13Z M15 5V9H19V5Z M16 6H18V8H16Z M3 13H11V21H3Z M5 15V19H9V15Z M6 16H8V18H6Z M13 13H16V16H13Z M18 13H21V16H18Z M13 18H16V21H13Z M18 18H21V21H18Z';
+
 const BENEFITS = [
     {
         key: 'read',
-        icon: 'M12 6.5v13M12 6.5A4 4 0 0 0 4 6.5v11a4 4 0 0 1 8-2m0-9a4 4 0 0 1 8 0v11a4 4 0 0 0-8-2',
+        icon: 'M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z',
+        solid: false,
     },
-    {
-        key: 'hear',
-        icon: 'M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 3h3m0 0v3m3-3v3',
-    },
-    { key: 'bound', icon: 'M7 3h10v18l-5-4-5 4V3Z' },
+    { key: 'hear', icon: QR_PATH, solid: true },
+    { key: 'bound', icon: 'M7 3h10v18l-5-4-5 4V3Z', solid: false },
 ] as const;
 
 const INCLUDES = [
@@ -82,13 +91,22 @@ function Stars({ label }: { label: string }) {
     );
 }
 
-function Icon({ path, className }: { path: string; className: string }) {
+function Icon({
+    path,
+    className,
+    solid = false,
+}: {
+    path: string;
+    className: string;
+    solid?: boolean;
+}) {
     return (
         <svg
             viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
+            fill={solid ? 'currentColor' : 'none'}
+            fillRule={solid ? 'evenodd' : undefined}
+            stroke={solid ? 'none' : 'currentColor'}
+            strokeWidth={solid ? undefined : 1.7}
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
@@ -165,7 +183,7 @@ export default function ProductOffer({
                 </div>
 
                 {/* La galerie et la carte d'écoute : la colonne de gauche. */}
-                <div className="order-2 flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+                <div className="order-2 flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-center">
                     <div className="flex gap-3">
                         {/*
                          * La bande de vignettes : de vrais boutons, donc
@@ -261,9 +279,9 @@ export default function ProductOffer({
                      */}
                     <figure
                         id="ecouter"
-                        className="border-brand-sand bg-brand-surface flex min-w-0 scroll-mt-6 flex-col gap-4 rounded-xl border p-5"
+                        className="border-brand-sand bg-brand-surface flex min-w-0 scroll-mt-6 flex-col gap-3 rounded-xl border p-4"
                     >
-                        <figcaption className="flex items-center gap-4">
+                        <figcaption className="flex items-center gap-3">
                             {/*
                              * Un pictogramme, pas un faux code : aucune
                              * destination imprimée n'est vérifiée, et un carré
@@ -271,17 +289,18 @@ export default function ProductOffer({
                              * Le bouton de lecture fait le travail.
                              */}
                             <Icon
-                                path="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 3h3m0 0v3m3-3v3"
-                                className="border-brand-sand text-brand size-12 flex-none rounded-md border p-2"
+                                path={QR_PATH}
+                                solid
+                                className="border-brand-sand text-brand size-9 flex-none rounded-md border p-1.5"
                             />
                             <span className="flex min-w-0 flex-col gap-0.5">
                                 <span className="text-brand-muted text-[0.72rem] font-semibold tracking-[0.12em] uppercase">
                                     {t('public.lp.offer.player.label')}
                                 </span>
-                                <span className="font-display text-brand text-[1.15rem] leading-tight font-medium italic">
+                                <span className="font-display text-brand text-[1.02rem] leading-tight font-medium italic">
                                     {t('public.lp.offer.player.title')}
                                 </span>
-                                <span className="text-brand-muted text-[0.85rem]">
+                                <span className="text-brand-muted text-[0.78rem]">
                                     {t('public.lp.offer.player.attribution', {
                                         brand: brand.name,
                                     })}
@@ -299,7 +318,11 @@ export default function ProductOffer({
                         {BENEFITS.map((item) => (
                             <div key={item.key} className="flex gap-4">
                                 <span className="bg-brand-gold/25 text-brand flex size-11 flex-none items-center justify-center rounded-full">
-                                    <Icon path={item.icon} className="size-5" />
+                                    <Icon
+                                        path={item.icon}
+                                        solid={item.solid}
+                                        className="size-5"
+                                    />
                                 </span>
                                 <div className="flex flex-col gap-1">
                                     <dt className="font-display text-brand text-[1.35rem] leading-tight font-medium">
