@@ -105,7 +105,10 @@ final class SecurityHeaders
             self::directive('connect-src', ["'self'", $connect, $google['connect'], $meta['connect']]),
             "object-src 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
+            self::directive('form-action', ["'self'", $meta['form']]),
+            // Déclarée explicitement : sans elle, `frame-src` retombe sur
+            // `default-src 'self'` et l'iframe du pixel est refusée.
+            self::directive('frame-src', ["'self'", $meta['frame']]),
             "frame-ancestors 'none'",
         ]);
     }
@@ -189,11 +192,11 @@ final class SecurityHeaders
      * mesurées**. Une page de narrateur ne demande jamais le pixel, et sa
      * politique ne l'autoriserait pas davantage.
      *
-     * @return array{script: string, img: string, connect: string}
+     * @return array{script: string, img: string, connect: string, form: string, frame: string}
      */
     private function metaPixel(Request $request): array
     {
-        $vide = ['script' => '', 'img' => '', 'connect' => ''];
+        $vide = ['script' => '', 'img' => '', 'connect' => '', 'form' => '', 'frame' => ''];
 
         if (config('services.meta.enabled') !== true) {
             return $vide;
@@ -211,6 +214,14 @@ final class SecurityHeaders
             'script' => 'https://connect.facebook.net',
             'img' => 'https://www.facebook.com',
             'connect' => 'https://www.facebook.com',
+            // Les deux transports de repli, trouvés en production : quand
+            // `fetch` et l'image ne passent pas, le pixel **soumet un
+            // formulaire** vers `/tr/`, et il ouvre une iframe de
+            // synchronisation. Sans ces deux origines, les deux sont refusés
+            // et une partie des évènements n'arrive jamais — sans que rien
+            // d'autre qu'un message de console ne le dise.
+            'form' => 'https://www.facebook.com',
+            'frame' => 'https://www.facebook.com',
         ];
     }
 
