@@ -277,6 +277,24 @@
     }
 
     /*
+     * Le défilement doux pour toutes les ancres du site (T-223).
+     *
+     * Posé sur le document plutôt que sur chaque lien : une ancre est un saut
+     * du navigateur, pas un composant, et le faire au cas par cas laisse
+     * toujours un lien qui saute sec. Il vaut aussi pour les défilements
+     * programmés (`scrollIntoView`, la remontée du tunnel entre deux étapes).
+     *
+     * La garde n'est pas une politesse : `prefers-reduced-motion` est demandé
+     * par des personnes que le défilement animé rend malades, et le dossier
+     * exige WCAG 2.2 AA.
+     */
+    @media (prefers-reduced-motion: no-preference) {
+        html {
+            scroll-behavior: smooth;
+        }
+    }
+
+    /*
      * Fraunces réglée pour le livre : empattements adoucis, lettres penchées.
      * Ce réglage est ce qui distingue un serif de livre d'un serif de site ;
      * la taille optique suit la taille de rendu (auto).

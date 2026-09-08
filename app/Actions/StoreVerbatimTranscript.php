@@ -70,7 +70,15 @@ final class StoreVerbatimTranscript
             }
 
             if ($story->state instanceof Transcribed || $story->refresh()->state instanceof Transcribed) {
-                RenderFluide::dispatch($transcript->id);
+                /*
+                 * Après le `commit`, pour la même raison que l'invitation du
+                 * cadeau (T-223) : `RenderFluide` ne reçoit qu'un identifiant
+                 * de transcription, et poussé avant la validation de cette
+                 * transaction il ne la trouve pas. Il sort alors sans bruit,
+                 * rien ne le rejoue, et l'histoire garde son mot à mot sans
+                 * jamais recevoir sa mise au propre.
+                 */
+                RenderFluide::dispatch($transcript->id)->afterCommit();
             }
 
             Log::info('transcription.stored', [

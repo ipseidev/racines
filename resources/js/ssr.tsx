@@ -68,6 +68,7 @@ void createServer((page) =>
                 // serveur qui poserait l'autre ferait diverger l'hydratation
                 // (T-219, T-220). Le témoin passe par le cas suivant.
                 case name === 'public/Landing':
+                case name === 'public/Faq':
                     return LpLayout;
                 case name.startsWith('public/'):
                     return PublicLayout;

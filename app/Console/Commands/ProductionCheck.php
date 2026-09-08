@@ -146,7 +146,7 @@ final class ProductionCheck extends Command
      * Cette ligne existe parce que `prod:demo` a trouvé le trou que
      * `prod:check` ne voyait pas : la question de cette commande est « si
      * quelqu'un achète maintenant, est-ce que ça marche ? », et elle répondait
-     * oui (T-211). Un semis oublié n'est pas une faute de code, et c'est bien
+     * oui (T-222). Un semis oublié n'est pas une faute de code, et c'est bien
      * pour cela qu'aucun test ne l'attrape.
      */
     private function consentements(): void
@@ -217,7 +217,7 @@ final class ProductionCheck extends Command
      * Il a coûté le tunnel d'achat : quatre motifs de consentement ajoutés
      * après le 2 septembre n'avaient élargi que `consents.kind`, pas
      * `consent_texts.kind`, et un client cochant « démarrer tout de suite »
-     * voyait sa commande annulée et Stripe désactiver le webhook (T-211).
+     * voyait sa commande annulée et Stripe désactiver le webhook (T-222).
      *
      * La correspondance colonne → énumération ne se recopie pas ici : elle est
      * déjà dans les `casts()` des modèles, qui sont maintenus parce que le

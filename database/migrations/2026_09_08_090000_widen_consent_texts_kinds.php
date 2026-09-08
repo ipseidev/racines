@@ -21,7 +21,7 @@ use Illuminate\Database\Migrations\Migration;
  * migrée pas à pas garde les huit d'alors. Les deux divergent en silence, la
  * suite de tests tourne toujours sur la première, et c'est la seconde qui est
  * en production. On l'a découvert en fabriquant un décor de production : le
- * semis des textes échouait sur `declared_sharing` (T-211).
+ * semis des textes échouait sur `declared_sharing` (T-222).
  *
  * Ce que ça coûtait, tant que ça durait : aucun texte n'existait pour les
  * quatre motifs, donc `RecordConsent` levait — à raison, il refuse un accord

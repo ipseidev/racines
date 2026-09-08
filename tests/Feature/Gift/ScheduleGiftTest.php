@@ -71,6 +71,58 @@ it('programme l’invitation à la date choisie, à neuf heures', function (): v
     );
 });
 
+/*
+ * L'invitation ne part qu'**après** le `commit`.
+ *
+ * Ce que le test précédent prouve : le job est poussé, avec le bon
+ * identifiant. Ce qu'il ne prouvait pas : que le job puisse **trouver** son
+ * projet. `FulfillOrder` construit tout dans une transaction, et le job ne
+ * reçoit qu'un identifiant. Poussé avant la validation, un ouvrier le prend en
+ * quelques millisecondes, ne trouve pas le projet, et `SendGiftInvitation`
+ * sort par sa première garde en rendant `null` : pas d'exception, pas de job
+ * en échec, rien dans `failed_jobs`. Le job a « réussi ».
+ *
+ * Ce que le client voit alors : sa confirmation d'achat arrive, le projet
+ * reste en `draft`, et le parent n'est **jamais** invité. C'est une course,
+ * donc intermittente — elle a tenu en local et perdu à la première commande
+ * passée en production (T-223). Un `Queue::fake()` ne la joue pas : il n'y a
+ * ni ouvrier ni transaction réelle. C'est donc l'intention qui est vérifiée
+ * ici, et c'est la seule chose vérifiable sans ouvrier.
+ */
+it('ne pousse l’invitation qu’après la validation de la transaction', function (): void {
+    Queue::fake();
+    Notification::fake();
+
+    $buyer = User::factory()->create();
+
+    $draft = new CheckoutDraft([
+        'step' => 6,
+        'payload' => [
+            'narrator_first_name' => 'Jeanne',
+            'narrator_email' => 'jeanne@exemple.test',
+            'preferred_channel' => Channel::Email->value,
+            'address_form' => 'vous',
+            'gift_send_at' => now()->toDateString(),
+            'gift_message' => 'J’aimerais garder tes histoires.',
+            'accepts_terms' => true,
+        ],
+        'expires_at' => now()->addDays(7),
+    ]);
+    $draft->save();
+
+    app(FulfillOrder::class)->handle([
+        'id' => 'cs_test_after_commit',
+        'payment_intent' => 'pi_test_after_commit',
+        'amount_total' => 4_900,
+        'metadata' => ['draft_id' => $draft->id, 'user_id' => (string) $buyer->id],
+    ]);
+
+    Queue::assertPushed(
+        SendGiftInvitation::class,
+        fn (SendGiftInvitation $job): bool => $job->afterCommit === true,
+    );
+});
+
 it('envoie l’invitation sur le canal du narrateur', function (): void {
     Notification::fake();
 

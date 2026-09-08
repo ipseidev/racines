@@ -446,7 +446,11 @@ return [
             'faq' => 'Questions fréquentes',
             'menu' => 'Ouvrir le menu',
             'menu_close' => 'Fermer le menu',
-            'bar' => 'Une année de questions et son livre relié : :price, sans abonnement.',
+            // Le bandeau de tête, en deux morceaux : la seconde moitié est en
+            // gras, et un `<strong>` dans une chaîne traduite serait du
+            // balisage dans le catalogue.
+            'bar' => 'Enregistrements illimités + Livre relié :',
+            'bar_strong' => 'le tout pour :price',
         ],
 
         // S01. Le héros : la promesse, l'action, la preuve visuelle.
@@ -515,7 +519,6 @@ return [
          */
         'how' => [
             'eyebrow' => 'Comment ça marche',
-            'title' => 'Histoires sur la page. Voix à seulement un scan.',
             'step' => 'Étape :number',
             'one' => [
                 'title' => "Choisissez les questions.\nRendez-les personnelles.",
@@ -925,6 +928,266 @@ return [
                 'a' => 'Vous bénéficiez de trente jours satisfait ou remboursé. Les modalités sont détaillées dans nos conditions générales de vente.',
                 'link' => 'Conditions générales de vente',
             ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | La page « Questions fréquentes » (T-222)
+    |--------------------------------------------------------------------------
+    |
+    | Structure et contenu repris de la page FAQ du leader, section par section
+    | et question par question, traduits et adaptés : le nom de marque passe
+    | par `:brand`, les prix par les réglages du pilote, les États-Unis
+    | deviennent la France, les langues deviennent le français, et l'adresse de
+    | support vient de la marque.
+    |
+    | Ce qui reste à trancher est signalé dans le compte rendu : le
+    | renouvellement n'a pas de prix chez nous, et plusieurs réponses décrivent
+    | des capacités du leader que notre produit n'a pas encore.
+    |
+    */
+    'faq_page' => [
+        'seo_title' => 'Questions fréquentes',
+        'title' => 'Questions fréquentes',
+        'lede' => 'Découvrez les réponses aux questions sur la façon dont :brand aide votre famille à préserver ses souvenirs et ses histoires comme jamais auparavant.',
+        'jump' => 'Aller à',
+
+        'categories' => [
+            'common' => 'Les questions les plus fréquentes',
+            'about' => 'À propos de :brand',
+            'pricing' => 'Achat et renouvellement',
+            'recording' => 'Enregistrer ses histoires',
+            'customizing' => 'Personnaliser l’expérience',
+            'book' => 'Créer et commander le livre',
+            'gifting' => 'Offrir et partager',
+            'privacy' => 'Vie privée et assistance',
+            'other' => 'Autres questions',
+        ],
+
+        'common' => [
+            'renewal' => [
+                'q' => 'Pourquoi y a-t-il un renouvellement ?',
+                'a' => 'L’offre comprend une année d’accès à la plateforme et toutes les fonctions de collecte d’histoires. Le renouvellement permet de continuer à enregistrer de nouvelles histoires les années suivantes. Même sans renouveler, vous pouvez toujours consulter et écouter tous les enregistrements de votre famille.',
+            ],
+            'shutdown' => [
+                'q' => 'Que se passe-t-il si :brand cesse son activité ?',
+                'a' => 'Vous pouvez télécharger vos enregistrements, vos photos et vos histoires écrites à tout moment, pour les conserver sur vos appareils ou les déposer sur le service de stockage de votre choix. Nous vous prévenons au moins trois mois à l’avance et nous vous remboursons ce qui n’a pas été livré.',
+            ],
+            'printed' => [
+                'q' => 'Qu’est-ce qui est imprimé exactement dans le livre ?',
+                'a' => ':brand transforme la transcription des enregistrements en texte écrit, selon votre préférence : soit la transcription mise au propre, soit un récit rédigé par le Speech-to-Story™.',
+            ],
+            'shipping' => [
+                'q' => 'Où :brand livre-t-il ?',
+                'a' => 'La livraison en France est comprise dans le prix d’achat. La livraison vers d’autres pays est possible, avec des frais supplémentaires.',
+            ],
+            'language' => [
+                'q' => 'Quelles langues :brand prend-il en charge ?',
+                'a' => 'Le Speech-to-Story™ prend en charge le français. D’autres langues suivront.',
+            ],
+            'seniors' => [
+                'q' => 'Est-ce que :brand est simple à utiliser pour les personnes âgées de la famille ?',
+                'a' => 'Il n’y a aucune application à télécharger et aucun identifiant à retenir. Tout est pensé pour la simplicité : beaucoup de nos narrateurs ont 70, 80 ou 90 ans.',
+            ],
+        ],
+
+        'about' => [
+            'who' => [
+                'q' => 'À qui s’adresse :brand ?',
+                'a' => ':brand s’adresse à celles et ceux qui veulent préserver les histoires de leurs parents, de leurs grands-parents ou d’un proche. Il convient aussi pour enregistrer sa propre histoire, ses valeurs, ce qu’on a appris dans son métier ou ce qu’on souhaite transmettre.',
+            ],
+            'how' => [
+                'q' => 'Comment fonctionne :brand ?',
+                'a' => 'Chaque semaine, la personne qui raconte reçoit une question par courriel ou par SMS. Elle y répond en parlant, depuis n’importe quel appareil connecté, sans identifiant ni application à installer. L’enregistrement devient une histoire écrite, partagée avec les proches autorisés. Des photos peuvent s’y ajouter. Au bout d’un an, les histoires sont réunies dans un livre relié, avec un QR code par chapitre qui rejoue l’enregistrement d’origine.',
+            ],
+            'shutdown' => [
+                'q' => 'Que se passe-t-il si :brand cesse son activité ?',
+                'a' => 'Vous gardez un accès simple au téléchargement de tous vos enregistrements, de vos photos et de vos histoires écrites, pour les conserver chez vous ou sur le service de stockage de votre choix.',
+            ],
+            'two_people' => [
+                'q' => 'Deux personnes peuvent-elles partager un même :brand ?',
+                'a' => ':brand est conçu pour une seule personne qui raconte par livre, afin que sa voix et son regard ressortent pleinement. Vous pouvez acheter plusieurs offres pour plusieurs narrateurs.',
+            ],
+        ],
+
+        'pricing' => [
+            'included' => [
+                'q' => 'Qu’est-ce qui est compris dans mon achat ?',
+                'a' => 'Un compte pour la personne qui raconte, un nombre illimité de proches invités, une année de questions, un livre relié en couleur (jusqu’à 200 pages) et la livraison en France.',
+            ],
+            'why_renewal' => [
+                'q' => 'Pourquoi y a-t-il un renouvellement ?',
+                'a' => 'L’offre couvre une année d’accès pour recueillir les histoires. Le renouvellement sert à continuer d’enregistrer ensuite. Sans renouvellement, vous pouvez toujours consulter, écouter et télécharger tout ce qui a été recueilli.',
+            ],
+            'no_renewal' => [
+                'q' => 'Que se passe-t-il si je ne renouvelle pas ?',
+                'a' => 'Même après la première année, les histoires de votre famille restent entièrement accessibles. Vous pouvez écouter les enregistrements, lire les histoires et commander des exemplaires supplémentaires du livre. Tout se télécharge à tout moment. Enregistrer de **nouvelles** histoires demande en revanche un renouvellement, que vous pouvez souscrire quand vous le souhaitez.',
+            ],
+        ],
+
+        'recording' => [
+            'submit' => [
+                'q' => 'Comment j’envoie mon histoire ?',
+                'a' => 'C’est simple : il suffit de toucher le lien reçu par courriel ou par message. Aucune application à télécharger, aucun mot de passe. N’importe quel appareil connecté fait l’affaire, et le Speech-to-Story™ se charge de la suite.',
+            ],
+            'writing' => [
+                'q' => 'Comment :brand transforme-t-il un enregistrement en texte ?',
+                'a' => 'Deux rendus existent : la transcription mot à mot, débarrassée des hésitations, ou un récit fluide. Le réglage s’applique à une histoire ou à tout le projet, et chaque texte reste modifiable avant l’impression.',
+            ],
+            'more_than_one' => [
+                'q' => 'Peut-on partager plus d’une histoire par semaine ?',
+                'a' => 'Oui. Par défaut, une question part chaque semaine, mais le rythme se règle du quotidien au mensuel. On peut aussi enregistrer plusieurs réponses quand l’envie est là.',
+            ],
+            'missed' => [
+                'q' => 'Que se passe-t-il si je manque une question ?',
+                'a' => 'Vous pouvez toujours revenir en arrière et répondre aux questions précédentes quand vous le souhaitez. Toutes restent accessibles dans votre espace privé.',
+            ],
+            'length' => [
+                'q' => 'Quelle longueur peut faire un enregistrement ?',
+                'a' => 'Chaque enregistrement peut durer jusqu’à trente minutes. Il n’y a pas de durée minimale : certaines des histoires les plus marquantes ne font que quelques minutes.',
+            ],
+            'languages' => [
+                'q' => 'Quelles langues sont prises en charge ?',
+                'a' => 'Le Speech-to-Story™ prend en charge le français. Les enregistrements sont transcrits fidèlement, imprimés dans le livre relié, et le QR code de chaque chapitre rejoue l’enregistrement d’origine.',
+            ],
+        ],
+
+        'customizing' => [
+            'choose' => [
+                'q' => 'Peut-on choisir ou changer les questions ?',
+                'a' => 'Vous avez toute liberté sur les questions : piocher dans celles que nous avons écrites, en rédiger vous-même, ou partir d’une photo pour faire raconter l’histoire qui va avec. Les proches peuvent aussi proposer des questions.',
+            ],
+            'change_weekly' => [
+                'q' => 'Peut-on changer la question de la semaine ?',
+                'a' => 'Oui. L’invitation hebdomadaire permet de changer de question en un geste : en choisir une autre dans la bibliothèque, ou en écrire une soi-même.',
+            ],
+            'seniors' => [
+                'q' => 'Est-ce simple pour un parent ou un grand-parent ?',
+                'a' => ':brand a été conçu pour la simplicité, en pensant d’abord aux parents et aux grands-parents que la technologie n’enchante pas. Aucune application à installer, aucun identifiant à retenir.',
+            ],
+            'not_tech' => [
+                'q' => 'Est-ce simple pour quelqu’un qui n’est pas à l’aise avec la technologie ?',
+                'a' => 'Oui. La personne qui raconte touche un lien reçu par courriel ou par message : rien à télécharger, aucun mot de passe à créer. Beaucoup de nos narrateurs ont entre 70 et 90 ans.',
+            ],
+        ],
+
+        'book' => [
+            'create' => [
+                'q' => 'Comment je crée mon livre :brand ?',
+                'a' => 'Les histoires s’accumulent au fil de l’année, à mesure qu’elles sont enregistrées. Vous confirmez ensuite le rendu voulu pour chacune, l’ordre des chapitres, la couverture, et vous prévisualisez le livre entier avant l’impression. Le premier livre relié (jusqu’à 200 pages) est compris dans l’offre.',
+            ],
+            'printed' => [
+                'q' => 'Qu’est-ce qui est imprimé exactement ?',
+                'a' => 'Vous choisissez, pour chaque histoire, entre la transcription mise au propre et le récit rédigé par le Speech-to-Story™.',
+            ],
+            'edit' => [
+                'q' => 'Peut-on corriger ou compléter ses histoires ?',
+                'a' => 'Bien sûr. Vous pouvez modifier la version écrite de vos histoires à tout moment avant d’imprimer le livre. Des photos peuvent aussi s’ajouter après l’enregistrement.',
+            ],
+            'photos' => [
+                'q' => 'Peut-on inclure des photos ?',
+                'a' => 'Oui. Les photos s’ajoutent comme question de la semaine, ou après l’enregistrement d’une histoire.',
+            ],
+            'looks_like' => [
+                'q' => 'À quoi ressemble le livre imprimé ?',
+                'a' => 'Un beau livre relié de 20 × 25 cm, imprimé professionnellement, tout en couleur. Chaque histoire est un chapitre avec son titre, son texte, ses photos et un QR code qui ouvre l’enregistrement d’origine.',
+            ],
+            'preview' => [
+                'q' => 'Peut-on voir un aperçu avant l’impression ?',
+                'a' => 'Oui. Dès la première histoire enregistrée, vous pouvez prévisualiser le rendu imprimé.',
+            ],
+            'limits' => [
+                'q' => 'Y a-t-il une limite de mots ou de pages ?',
+                'a' => 'Chaque enregistrement peut durer jusqu’à trente minutes, et il n’y a pas de limite de mots sur les textes. Un livre :brand peut aller jusqu’à 380 pages. La plupart font moins de 200 pages, ce qui est compris dans l’offre. Au-delà de 380 pages, le livre est édité en deux volumes.',
+            ],
+            'extra' => [
+                'q' => 'Peut-on commander des exemplaires supplémentaires ?',
+                'a' => 'Oui. Un exemplaire relié supplémentaire coûte :extra_copy. Une version numérique est proposée à :ebook. Pour une grande quantité, commandez d’abord un exemplaire.',
+            ],
+            'family_order' => [
+                'q' => 'Mes proches peuvent-ils commander un exemplaire ?',
+                'a' => 'Oui. Un exemplaire supplémentaire coûte :extra_copy et contient toutes les histoires, les photos et les QR codes.',
+            ],
+            'shipping' => [
+                'q' => 'Où livrez-vous ?',
+                'a' => 'La livraison en France est comprise dans le prix d’achat. La livraison vers d’autres pays entraîne des frais supplémentaires.',
+            ],
+        ],
+
+        'gifting' => [
+            'when' => [
+                'q' => 'Puis-je choisir la date d’envoi du cadeau à son destinataire ?',
+                'a' => 'Oui. À l’achat, vous choisissez le jour exact où votre proche reçoit le courriel. Une carte à imprimer permet aussi de remettre le cadeau en main propre.',
+            ],
+            'gift_card' => [
+                'q' => 'Peut-on acheter une carte cadeau :brand ?',
+                'a' => 'Oui. La carte cadeau porte un code qui donne accès à l’offre complète. Son destinataire crée son espace, choisit ses réglages et la date de la première question. La carte s’envoie par courriel ou s’imprime chez vous.',
+            ],
+            'printable' => [
+                'q' => 'Y a-t-il quelque chose à imprimer et à offrir ?',
+                'a' => 'Oui. Après votre achat, vous recevez un courriel avec le lien d’une carte cadeau soignée, prête à imprimer.',
+            ],
+            'delivery' => [
+                'q' => 'Combien de temps prend la livraison ?',
+                'a' => ':brand fait un très bon cadeau de dernière minute : l’année de récits peut être remise le jour même, par courriel. Le livre relié, lui, est imprimé et expédié à la fin de l’année de questions.',
+            ],
+        ],
+
+        'privacy' => [
+            'private' => [
+                'q' => 'Est-ce que :brand est privé ?',
+                'a' => 'Oui. Tout ce qui est créé avec :brand est privé par défaut : vous décidez qui voit quoi. Seules les personnes autorisées y ont accès. Vos contenus restent les vôtres et se téléchargent à tout moment. Vos enregistrements et vos textes sont hébergés dans l’Union européenne.',
+            ],
+            'download' => [
+                'q' => 'Peut-on télécharger toutes ses histoires et tous ses enregistrements ?',
+                'a' => 'Oui. Vous pouvez exporter vos histoires en texte ou en PDF, et télécharger les fichiers audio à tout moment depuis votre espace.',
+            ],
+            'training' => [
+                'q' => 'Mes histoires servent-elles à entraîner une IA ?',
+                'a' => 'Non. Vos contenus ne servent à entraîner aucun modèle. Ils sont traités pour créer votre livre, et pour rien d’autre.',
+            ],
+            'delete' => [
+                'q' => 'Peut-on supprimer son compte et ses données ?',
+                'a' => 'Oui. Vous pouvez supprimer votre compte et toutes les données associées à tout moment : enregistrements, transcriptions, photos et informations de compte.',
+            ],
+            'returns' => [
+                'q' => 'Quelle est votre politique de retour ?',
+                'a' => 'Nous offrons une garantie satisfait ou remboursé de trente jours après l’achat, si le résultat ne vous convient pas.',
+            ],
+            'help' => [
+                'q' => 'Et si j’ai besoin d’aide ?',
+                'a' => 'Notre équipe répond à cette adresse :',
+            ],
+        ],
+
+        'other' => [
+            'storyworth' => [
+                'q' => 'En quoi :brand est-il différent de Storyworth ?',
+                'a' => ':brand capte la voix et la personnalité par des souvenirs enregistrés, là où Storyworth recueille des réponses écrites. Le Speech-to-Story™ transforme les enregistrements en histoires écrites, et un QR code rejoue la voix à côté du texte imprimé.',
+            ],
+            'my_life' => [
+                'q' => 'En quoi :brand est-il différent de My Life In A Book ?',
+                'a' => ':brand repose sur le récit parlé plutôt que sur un questionnaire à remplir. Les enregistrements deviennent des récits soignés, et le QR code conserve la voix d’origine à côté du texte.',
+            ],
+            'storykeeper' => [
+                'q' => 'En quoi :brand est-il différent de StoryKeeper ?',
+                'a' => ':brand livre à la fois les histoires écrites et les enregistrements d’origine. Les QR codes du livre imprimé ouvrent l’audio : la famille peut lire **et** entendre.',
+            ],
+            'no_story_lost' => [
+                'q' => 'En quoi :brand est-il différent de No Story Lost ?',
+                'a' => ':brand ne demande ni longs entretiens ni rédacteur professionnel. La personne raconte ses souvenirs à son rythme, guidée par des questions, et ses réponses deviennent des récits écrits accompagnés du QR code de sa voix.',
+            ],
+        ],
+
+        'closing' => [
+            'title' => 'Chaque famille a des histoires qui méritent d’être gardées.',
+            'body' => 'Des épreuves traversées, des moments de joie, ce qu’on a appris au fil des années. :brand capte ces conversations comme elles viennent et les réunit dans un beau livre relié, où un QR code permet aux générations suivantes de lire l’histoire et d’entendre la voix de celle ou celui qui l’a racontée.',
+        ],
+
+        'still' => [
+            'title' => 'Encore une question ?',
+            'body' => 'Écrivez-nous, une personne vous répond.',
         ],
     ],
 

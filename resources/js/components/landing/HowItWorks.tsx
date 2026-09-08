@@ -1,11 +1,5 @@
 import { useBrand } from '@/brand/BrandProvider';
-import {
-    BAND,
-    H3,
-    Heading,
-    Section,
-    SHELL,
-} from '@/components/landing/primitives';
+import { BAND, Section, SHELL } from '@/components/landing/primitives';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
@@ -29,13 +23,19 @@ export default function HowItWorks() {
 
     return (
         <Section id="comment-ca-marche" labelledBy="lp-how" className={BAND}>
-            <div className={`${SHELL} flex flex-col gap-10`}>
-                <Heading
+            <div className="mx-auto flex w-full max-w-[86rem] flex-col gap-10 px-5 sm:px-8 lg:px-10">
+                {/*
+                 * « Comment ça marche » **est** le titre : la phrase de
+                 * section qui le suivait — « Histoires sur la page. Voix à
+                 * seulement un scan. » — est retirée, et l'ancien œillet
+                 * prend sa place et sa taille.
+                 */}
+                <h2
                     id="lp-how"
-                    eyebrow={t('public.lp.how.eyebrow')}
-                    title={t('public.lp.how.title')}
-                    centered
-                />
+                    className="font-display text-center text-[1.9rem] leading-[1.1] font-medium sm:text-[2.35rem] lg:text-[2.75rem]"
+                >
+                    {t('public.lp.how.eyebrow')}
+                </h2>
 
                 {/*
                  * Les quatre colonnes n'arrivent qu'à 1280 px : à 1024,
@@ -89,12 +89,10 @@ export default function HowItWorks() {
                              * de `.font-display` est neutralisé pour la même
                              * raison.
                              */}
-                            <h3
-                                className={`${H3} [text-wrap:initial] whitespace-pre-line`}
-                            >
+                            <h3 className="font-display text-[1.4rem] leading-[1.25] font-medium [text-wrap:initial] whitespace-pre-line">
                                 {t(`public.lp.how.${step}.title`)}
                             </h3>
-                            <p className="text-brand-muted text-[1.0625rem] leading-relaxed">
+                            <p className="text-brand-muted text-[1rem] leading-relaxed">
                                 {t(`public.lp.how.${step}.body`, {
                                     brand: brand.name,
                                 })}

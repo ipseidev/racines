@@ -134,10 +134,29 @@ final readonly class FulfillOrder
         $this->recordBuyerConsents($draft, $buyer, $project);
         self::consumeDiscountCode($draft, $order);
 
-        // Programmée, jamais envoyée tout de suite : l'acheteur a choisi une
-        // date, et un cadeau qui arrive avant l'heure n'est plus une surprise.
+        /*
+         * Programmée, jamais envoyée tout de suite : l'acheteur a choisi une
+         * date, et un cadeau qui arrive avant l'heure n'est plus une surprise.
+         *
+         * **`afterCommit()` n'est pas une précaution.** Tout ce bloc tourne
+         * dans la transaction de `handle()`, et le job ne reçoit qu'un
+         * identifiant : poussé avant le `commit`, un ouvrier le prend en
+         * quelques millisecondes, ne trouve **pas** le projet, et
+         * `SendGiftInvitation` sort par sa première garde en rendant `null`.
+         * Pas d'exception, pas de job en échec, rien dans `failed_jobs` — le
+         * job a « réussi ». L'acheteur a sa confirmation, le projet reste en
+         * `draft`, et le parent n'est jamais invité. Personne ne s'en aperçoit
+         * avant qu'on demande pourquoi il n'a rien reçu.
+         *
+         * C'est une course, donc intermittente : elle a tenu en local et
+         * perdu à la première commande en production (T-223). Le réglage
+         * `after_commit` de `config/queue.php` la ferme aussi, mais la
+         * justesse du tunnel d'achat ne doit pas dépendre d'un réglage qu'on
+         * peut basculer.
+         */
         SendGiftInvitation::dispatch($project->id, 1)
-            ->delay($project->gift_send_at ?? now());
+            ->delay($project->gift_send_at ?? now())
+            ->afterCommit();
 
         $buyer->notify(new OrderConfirmationNotification($order));
 

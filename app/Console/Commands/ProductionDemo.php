@@ -266,7 +266,7 @@ final class ProductionDemo extends Command
          * MissingConsentText.php line 19 » — est juste et inutilisable sur un
          * serveur : elle ne dit ni ce qui est cassé pour un client, ni quoi
          * taper. Le message brut est gardé, parce que c'est lui qui nomme la
-         * valeur en cause, et la commande y ajoute la sortie (T-211).
+         * valeur en cause, et la commande y ajoute la sortie (T-222).
          */
         try {
             $order = $this->purchase($buyer, $phone, $channel, $mailbox);

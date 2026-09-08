@@ -13,9 +13,14 @@ import PublicFooter from '@/layouts/public-footer';
  * qu'on est en train de lire. Trois entrées, pas cinq : une barre chargée sur
  * une page de vente donne autant de façons de la quitter.
  */
+/*
+ * Les entrées de la barre. Les ancres restent dans la page de vente ; la FAQ
+ * est une page à elle, donc une navigation Inertia.
+ */
 const NAV = [
-    { href: '#comment-ca-marche', key: 'how' },
-    { href: '#le-livre', key: 'book' },
+    { href: '#comment-ca-marche', key: 'how', inertia: false },
+    { href: '#le-livre', key: 'book', inertia: false },
+    { href: '/questions-frequentes', key: 'faq', inertia: true },
 ] as const;
 
 /*
@@ -34,6 +39,11 @@ const DISCOVER = [
         href: '#notre-histoire',
         key: 'public.landing.nav.story',
         inertia: false,
+    },
+    {
+        href: '/questions-frequentes',
+        key: 'public.lp.nav.faq',
+        inertia: true,
     },
     { href: '/essai', key: 'public.footer.try', inertia: false },
 ] as const;
@@ -66,11 +76,29 @@ export default function LpLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="bg-brand-background text-brand-text flex min-h-screen flex-col">
-            <p className="bg-brand-deep px-5 py-2.5 text-center text-[0.95rem] text-[#F7F1E6]">
-                {t('public.lp.nav.bar', {
-                    price: formatPrice(pilot.pilotPriceCents),
-                })}
-            </p>
+            {/*
+             * Le bandeau mène au tunnel : c'est la première ligne de la page,
+             * elle annonce le prix, et quelqu'un qui la touche a décidé. Un
+             * lien plutôt qu'un `<p>` cliquable — sinon rien ne l'annonce au
+             * clavier ni au lecteur d'écran.
+             */}
+            <Link
+                href="/acheter"
+                onClick={() =>
+                    track('lp_buy_click', {
+                        variant: variant ?? '',
+                        section: 'bar',
+                    })
+                }
+                className="bg-brand-deep hover:bg-brand block px-5 py-2.5 text-center text-[0.95rem] text-[#F7F1E6] transition-colors"
+            >
+                {t('public.lp.nav.bar')}{' '}
+                <strong className="font-semibold underline decoration-1 underline-offset-2">
+                    {t('public.lp.nav.bar_strong', {
+                        price: formatPrice(pilot.pilotPriceCents),
+                    })}
+                </strong>
+            </Link>
 
             <header className="border-brand-sand border-b">
                 {/*
@@ -96,12 +124,21 @@ export default function LpLayout({ children }: PropsWithChildren) {
                         <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.98rem]">
                             {NAV.map((item) => (
                                 <li key={item.key}>
-                                    <a
-                                        href={item.href}
-                                        className="hover:text-brand inline-flex min-h-[2.75rem] items-center"
-                                    >
-                                        {t(`public.lp.nav.${item.key}`)}
-                                    </a>
+                                    {item.inertia ? (
+                                        <Link
+                                            href={item.href}
+                                            className="hover:text-brand inline-flex min-h-[2.75rem] items-center"
+                                        >
+                                            {t(`public.lp.nav.${item.key}`)}
+                                        </Link>
+                                    ) : (
+                                        <a
+                                            href={item.href}
+                                            className="hover:text-brand inline-flex min-h-[2.75rem] items-center"
+                                        >
+                                            {t(`public.lp.nav.${item.key}`)}
+                                        </a>
+                                    )}
                                 </li>
                             ))}
                         </ul>

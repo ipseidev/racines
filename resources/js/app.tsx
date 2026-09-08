@@ -86,6 +86,7 @@ if (Reflect.get(window, MOUNTED) !== true) {
                 // Le témoin, lui, retombe sur `PublicLayout` par le cas
                 // `public/` qui suit, comme il l'a toujours fait.
                 case name === 'public/Landing':
+                case name === 'public/Faq':
                     return LpLayout;
                 // Les pages publiques portent le pied de page légal partout, y
                 // compris dans le tunnel : on doit pouvoir lire les conditions

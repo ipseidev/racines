@@ -47,7 +47,7 @@ it('écrit puis relit le stockage, et ne laisse rien derrière lui', function ()
  * `FulfillOrder` recueille deux accords de l'acheteur, et le tunnel affiche
  * les deux cases sans condition : un texte manquant fait lever l'exécution de
  * la commande **dans sa transaction**, le webhook répond 500, et Stripe
- * désactive l'endpoint (T-169, T-211). La question de cette commande est « si
+ * désactive l'endpoint (T-169, T-222). La question de cette commande est « si
  * quelqu'un achète maintenant, est-ce que ça marche ? » — elle répondait oui.
  */
 it('voit un texte de consentement manquant, et dit ce que l’acheteur perd', function () {
@@ -75,7 +75,7 @@ it('se tait quand les douze textes sont en vigueur', function () {
  * base créée par `migrate:fresh` — celle de cette suite — obtient toujours
  * l'énumération complète. Une base migrée pas à pas garde la liste d'alors,
  * et c'est celle-là qui est en production. On reproduit donc l'écart à la
- * main, parce que c'est la seule façon de l'éprouver ici (T-211).
+ * main, parce que c'est la seule façon de l'éprouver ici (T-222).
  */
 it('voit une contrainte restée en arrière de son énumération', function () {
     ConsentText::query()->whereIn('kind', [

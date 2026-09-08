@@ -24,6 +24,7 @@ Route::get('/', LandingController::class)->name('home');
 
 Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
 Route::get('/comment-ca-marche', [LandingController::class, 'howItWorks'])->name('how_it_works');
+Route::get('/questions-frequentes', [LandingController::class, 'faq'])->name('faq');
 
 /*
  * Le témoin de la page de vente (T-219, T-220).

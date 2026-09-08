@@ -168,6 +168,21 @@ final class LandingController
         return $collection;
     }
 
+    /**
+     * La page « Questions fréquentes » (T-222).
+     *
+     * Les mêmes props que l'accueil — la barre affiche le prix, le pied de
+     * page la réduction —, plus le prix du livre numérique, seul chiffre cité
+     * dans les réponses que la mise en page ne partage pas déjà.
+     */
+    public function faq(Request $request): Response
+    {
+        return inertia('public/Faq', [
+            ...$this->storefront($request),
+            'ebookPrice' => app(PilotSettings::class)->ebook_price_cents,
+        ]);
+    }
+
     public function demo(): Response
     {
         return inertia('public/Demo', [

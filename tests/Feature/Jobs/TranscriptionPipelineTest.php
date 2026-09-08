@@ -76,7 +76,18 @@ it('soumet, stocke le verbatim, fait passer l’histoire en transcrite et demand
         ->and($recording->story->refresh()->state)->toBeInstanceOf(Transcribed::class)
         ->and(TranscriptionJob::query()->sole()->status)->toBe(TranscriptionStatus::Done);
 
-    Queue::assertPushed(RenderFluide::class);
+    /*
+     * Et **après le `commit`** : `StoreVerbatimTranscript` écrit dans une
+     * transaction, et `RenderFluide` ne reçoit qu'un identifiant de
+     * transcription. Poussé avant la validation, il ne la trouve pas, sort
+     * sans bruit, et rien ne le rejoue : l'histoire garderait son mot à mot
+     * sans jamais recevoir sa mise au propre (T-223, même défaut que
+     * l'invitation du cadeau).
+     */
+    Queue::assertPushed(
+        RenderFluide::class,
+        fn (RenderFluide $job): bool => $job->afterCommit === true,
+    );
 });
 
 it('donne le lexique du projet au fournisseur, avant la transcription', function (): void {

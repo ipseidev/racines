@@ -61,3 +61,29 @@ it('omet proprement un numéro absent', function (): void {
     expect($card)->not->toContain('TEL')
         ->and($card)->toContain('EMAIL;TYPE=INTERNET:');
 });
+
+/*
+ * Un nom dans `TWILIO_FROM` ne devient pas un numéro de téléphone.
+ *
+ * Le champ est le repli des pays qui refusent un expéditeur alphanumérique,
+ * et rien n'empêchait d'y écrire le nom de la marque — un `.env` de production
+ * en portait un. La fiche partait avec ce nom en `TEL;TYPE=CELL`, qu'aucun
+ * téléphone n'importe : l'inverse de ce que le §9 du doc 04 lui demande.
+ * T-211 nommait l'exigence, rien ne la tenait (T-223).
+ */
+it('omet le mobile plutôt que d’écrire un nom dans un TEL', function (): void {
+    config()->set('services.twilio.from', 'UnNomDeMarque');
+
+    $reponse = $this->get('/vcard');
+
+    // Omis, et non corrigé : une carte sans mobile s'importe, une carte avec
+    // un mobile faux se garde et trompe.
+    expect($reponse->getContent())->not->toContain('TEL;TYPE=CELL')
+        ->and($reponse->getContent())->not->toContain('UnNomDeMarque');
+});
+
+it('porte le mobile quand c’en est un', function (): void {
+    config()->set('services.twilio.from', '+33612345678');
+
+    $this->get('/vcard')->assertSee('TEL;TYPE=CELL:+33612345678');
+});
