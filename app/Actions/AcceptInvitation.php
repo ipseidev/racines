@@ -140,6 +140,10 @@ final readonly class AcceptInvitation
             $narrator->phone_e164 = (string) $preferences['narrator_phone'];
         }
 
+        if (isset($preferences['narrator_email'])) {
+            $narrator->email = (string) $preferences['narrator_email'];
+        }
+
         $narrator->opted_in_at = now();
         // Le contact n'est plus en sursis : la personne a dit oui.
         $narrator->contact_deletion_due_at = null;

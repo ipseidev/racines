@@ -425,6 +425,19 @@ return [
         'from' => 'Un message de :inviter',
         'listen_message' => 'Écouter son message',
 
+        /*
+         * L'ouverture (T-232) : un écran vide, le nom de marque, puis trois
+         * phrases qui se succèdent avant la page. Le prénom reprend
+         * `greeting` ; `greeting` d'ici sert quand on ne le connaît pas. Ce
+         * qu'elles disent se retrouve sur la page : personne ne perd rien à
+         * lire lentement.
+         */
+        'overture' => [
+            'greeting' => 'Bonjour,',
+            'offered' => ':inviter vous a offert quelque chose.',
+            'promise' => 'Vos souvenirs, de votre voix, pour les vôtres.',
+        ],
+
         'means' => [
             'title' => 'Ce que cela veut dire pour vous',
             'one' => 'Vous recevez une question par semaine, et vous y répondez en parlant, depuis votre téléphone. Deux minutes suffisent.',
@@ -432,20 +445,33 @@ return [
             'three' => 'Vous pouvez arrêter, masquer une histoire ou tout supprimer à tout moment, sans avoir à vous justifier.',
         ],
 
+        /*
+         * Les cinq accords sont donnés par le bouton « J'accepte », sans case
+         * à cocher (T-233). Rien n'est pré-coché : un accord donné par un
+         * geste explicite n'est pas une case remplie d'avance. Ils restent
+         * cinq lignes distinctes dans le journal, chacune révocable seule.
+         * `before_accept` se lit juste au-dessus du bouton et nomme les cinq :
+         * leurs textes complets sont repliés sous les boutons.
+         */
         'consents' => [
             'title' => 'Vos accords',
-            'intro' => 'Chaque accord est séparé, et chacun se retire indépendamment des autres.',
-            'read' => 'Lire le texte',
-            'hide' => 'Masquer le texte',
+            'summary' => 'Les textes complets des cinq accords, et leur version.',
+            'before_accept' => 'En appuyant sur « J’accepte », vous donnez les cinq accords décrits plus bas : l’enregistrement de votre voix, sa transcription, la mise en forme du texte par une intelligence artificielle, le partage avec vos proches, et les sujets sensibles que vos récits peuvent aborder.',
+            'intro' => 'Touchez un accord pour lire son texte. Chacun est séparé, et chacun se retire quand vous voulez, indépendamment des autres.',
             'version' => 'Version :version',
         ],
 
         'settings' => [
             'title' => 'Comment nous vous joignons',
+            'hint' => 'Tout est déjà réglé par la personne qui vous offre ce cadeau. Changez seulement ce qui ne vous convient pas.',
             'channel' => 'Par quel moyen ?',
             'phone' => 'Votre numéro de téléphone',
             'phone_hint' => 'Comme vous le tapez, par exemple 06 12 34 56 78.',
             'phone_confirm' => 'Nous vous écrirons à ce numéro : est-il correct ?',
+            'phone_required' => 'Il nous faut un numéro pour vous envoyer des SMS.',
+            'email' => 'Votre adresse de courriel',
+            'email_hint' => 'Nous y enverrons chaque question.',
+            'email_required' => 'Il nous faut une adresse pour vous envoyer des courriels.',
             'cadence' => 'À quelle fréquence ?',
             'day' => 'Quel jour ?',
             'slot' => 'À quel moment de la journée ?',

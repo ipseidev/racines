@@ -137,6 +137,57 @@ it('exige cinq consentements distincts', function (): void {
     }
 });
 
+it('ne propose au narrateur que le SMS, le courriel, ou les deux', function (): void {
+    [, , $plain] = invitedProject();
+
+    // Le téléphone opéré est l'option D-9 : il se vend, il ne se choisit pas
+    // depuis une invitation (T-234).
+    $this->get("/i/{$plain}")
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('narrator/OptIn')
+            ->where('channels', fn ($channels) => collect($channels)->pluck('value')->all() === ['sms', 'email', 'both'])
+            ->where('email', fn ($email) => is_string($email) && str_contains($email, '@')));
+});
+
+it('refuse le canal du téléphone opéré', function (): void {
+    [$project, , $plain] = invitedProject();
+
+    $this->post("/i/{$plain}/accepter", acceptancePayload(['preferred_channel' => Channel::PhoneOperator->value]))
+        ->assertSessionHasErrors('preferred_channel');
+
+    expect($project->refresh()->accepted_at)->toBeNull();
+});
+
+it('enregistre l’adresse corrigée, en minuscules', function (): void {
+    [, $narrator, $plain] = invitedProject();
+
+    $this->post("/i/{$plain}/accepter", acceptancePayload(['narrator_email' => '  Jeanne.Nouvelle@Example.test ']))
+        ->assertRedirect();
+
+    expect($narrator->refresh()->email)->toBe('jeanne.nouvelle@example.test');
+});
+
+it('refuse le SMS sans numéro, à l’endroit du champ', function (): void {
+    [$project, $narrator, $plain] = invitedProject();
+
+    // Invitée par courriel, sans numéro connu : choisir le SMS sans en donner
+    // un, c'est accepter un cadeau dont aucune question n'arriverait.
+    expect($narrator->phone_e164)->toBeNull();
+
+    $this->post("/i/{$plain}/accepter", acceptancePayload(['preferred_channel' => Channel::Sms->value]))
+        ->assertSessionHasErrors('narrator_phone');
+
+    expect($project->refresh()->accepted_at)->toBeNull();
+
+    // Avec un numéro, tapé comme on le tape, ça passe.
+    $this->post("/i/{$plain}/accepter", acceptancePayload([
+        'preferred_channel' => Channel::Sms->value,
+        'narrator_phone' => '06 12 34 56 78',
+    ]))->assertRedirect();
+
+    expect($narrator->refresh()->phone_e164)->toBe('+33612345678');
+});
+
 it('active le projet et planifie la première question le lendemain', function (): void {
     [$project, $narrator, $plain] = invitedProject();
 

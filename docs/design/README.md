@@ -160,6 +160,36 @@ d'écran : une seule chose à la fois, la question en carte blanche sous un file
 d'or, puis un seul geste. Une confirmation est une coche qui apparaît
 (`animate-pop-in`) et une phrase qui dit ce qui vient.
 
+**L'ouverture du cadeau (8 septembre, T-232)** est le second geste appuyé de
+l'interface, après le livre qui s'ouvre. La page d'invitation — le moment H0,
+le seul écran que quelqu'un découvre sans l'avoir demandé — commence par un
+rideau crème (`.overture`) : le nom de marque seul sous un filet d'or, comme
+une page de titre, puis « Bonjour Odette, », puis ce qu'on lui offre, une
+phrase à la fois, chacune montant en fondu depuis un léger flou et s'effaçant
+vers le haut. Sous douze secondes en tout (`lib/overture.ts`, deux cent
+soixante millisecondes par mot, rallongé d'un quart par le fondateur après
+l'avoir vu sur son téléphone : « ça va être lu par une personne âgée »), puis
+le rideau tombe et la page monte pendant qu'il s'efface. La page est rendue dessous dès le départ et redit tout ce que
+l'ouverture a dit : le rideau est un décor `aria-hidden`, pas une étape. Un tap
+écourte la phrase en cours, un Tab fait tomber le rideau, et il ne se lève pas
+sous `prefers-reduced-motion`. Sur la page, le salut passe en Fraunces italique
+et la lettre de la personne qui offre aussi : les italiques portent les mots qui
+comptent.
+
+**Les accords sans cases (8 septembre, T-233).** Sur la même page, les cinq
+cases à cocher disparaissent. L'ordre, arrêté par le fondateur après deux
+passes : les réglages en clair (déjà posés par la personne qui offre), une
+phrase qui nomme les cinq accords que le bouton donne, les deux boutons, puis
+un accordéon « Vos accords » replié — un `<details>` natif dans une carte, le
+« + » qui pivote comme sur la foire aux questions — où chaque titre d'accord
+est lui-même un bouton qui ouvre son texte et sa version, en lignes de 44 px.
+Rien n'est pré-coché : une case cochée d'avance n'est pas un consentement, et
+c'est le geste sur « J'accepte », sous la phrase qui le décrit, qui donne les
+cinq. Pour la personne, le résultat est celui que le fondateur demandait : rien
+à cocher, un bouton. Dernière passe (T-234) : les titres de section en
+Fraunces comme le titre de la page, les réglages dans une carte blanche, et le
+champ de contact qui suit le canal choisi, déjà rempli.
+
 ## L'espace Initiateur·rice (passe du 5 septembre, T-149)
 
 Le checkpoint du bloc 10 l'a dit sans détour : l'espace avait la palette mais

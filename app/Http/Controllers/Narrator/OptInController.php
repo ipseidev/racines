@@ -21,7 +21,9 @@ use App\Support\Options;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 
 /**
@@ -63,13 +65,16 @@ final readonly class OptInController
                 : $storage->temporaryUrl((string) $giftAudio->derived_mp3_path, 60),
             'phoneMasked' => self::maskPhone($narrator?->phone_e164),
             'phone' => $narrator?->phone_e164,
+            'email' => $narrator?->email,
             'preferredChannel' => $narrator?->preferred_channel->value,
             'addressForm' => $project->address_form->value,
             'cadence' => $project->cadence->value,
             'promptDay' => $project->prompt_day,
             'promptSlot' => $project->prompt_slot->value,
             'consents' => self::consentTexts(),
-            'channels' => Options::of(Channel::class),
+            // L'un, l'autre, ou les deux : jamais le téléphone opéré, qui est
+            // l'option D-9 et ne se choisit pas depuis une invitation (T-234).
+            'channels' => Options::only(Channel::class, Channel::narratorPreferences()),
             'cadences' => Options::of(Cadence::class),
             'slots' => Options::of(PromptSlot::class),
             'addressForms' => Options::of(AddressForm::class),
@@ -87,26 +92,35 @@ final readonly class OptInController
     {
         $project = self::projectFor($request);
 
-        $request->merge(['narrator_phone' => Phone::e164($request->input('narrator_phone'))]);
+        $email = trim((string) $request->input('narrator_email', ''));
+
+        $request->merge([
+            'narrator_phone' => Phone::e164($request->input('narrator_phone')),
+            'narrator_email' => $email === '' ? null : mb_strtolower($email),
+        ]);
 
         $validated = $request->validate([
-            // Cinq cases, cinq acceptations. Pas un « j'accepte tout » : le
-            // dossier veut les consentements distincts et révocables, et une
-            // case unique rendrait la révocation d'un seul impossible.
+            // Cinq accords, cinq champs. Pas un « j'accepte tout » : le dossier
+            // veut les consentements distincts et révocables, et un champ
+            // unique rendrait la révocation d'un seul impossible. La page les
+            // envoie tous avec le bouton (T-233) ; le serveur les exige un à un.
             'consent_voice_recording' => ['accepted'],
             'consent_transcription' => ['accepted'],
             'consent_ai_rendering' => ['accepted'],
             'consent_family_sharing' => ['accepted'],
             'consent_sensitive_categories' => ['accepted'],
-            'preferred_channel' => ['required', new Enum(Channel::class)],
+            'preferred_channel' => ['required', Rule::in(Channel::narratorPreferences())],
             // Tapé comme on le tape, ramené au format international avant
             // la règle (T-136) : la contrainte est la nôtre, pas la sienne.
             'narrator_phone' => ['nullable', 'string', 'regex:/^\+[1-9]\d{7,14}$/'],
+            'narrator_email' => ['nullable', 'string', 'email:rfc', 'max:254'],
             'cadence' => ['required', new Enum(Cadence::class)],
             'prompt_day' => ['required', 'integer', 'min:1', 'max:7'],
             'prompt_slot' => ['required', new Enum(PromptSlot::class)],
             'address_form' => ['required', new Enum(AddressForm::class)],
         ]);
+
+        self::ensureReachable($project, $validated);
 
         $this->accept->handle($project, $validated);
 
@@ -241,6 +255,40 @@ final readonly class OptInController
         }
 
         return $texts;
+    }
+
+    /**
+     * Le canal choisi doit pouvoir joindre la personne.
+     *
+     * Choisir « SMS » sans numéro, ou « courriel » sans adresse, c'est accepter
+     * un cadeau dont aucune question n'arrivera jamais — et personne ne s'en
+     * apercevrait avant la relance. Ce qui n'est pas renvoyé par le formulaire
+     * garde sa valeur connue ; ce qui manque au bout du compte est refusé, à
+     * l'endroit du champ (T-234).
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private static function ensureReachable(Project $project, array $validated): void
+    {
+        $narrator = $project->primaryNarrator;
+        $channels = Channel::from((string) $validated['preferred_channel'])->resolve();
+
+        $phone = $validated['narrator_phone'] ?? $narrator?->phone_e164;
+        $email = $validated['narrator_email'] ?? $narrator?->email;
+
+        $missing = [];
+
+        if (in_array(Channel::Sms, $channels, true) && ($phone === null || $phone === '')) {
+            $missing['narrator_phone'] = __('narrator.optin.settings.phone_required');
+        }
+
+        if (in_array(Channel::Email, $channels, true) && ($email === null || $email === '')) {
+            $missing['narrator_email'] = __('narrator.optin.settings.email_required');
+        }
+
+        if ($missing !== []) {
+            throw ValidationException::withMessages($missing);
+        }
     }
 
     private static function maskPhone(?string $phone): ?string

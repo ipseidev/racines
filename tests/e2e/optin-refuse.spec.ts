@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { openInvitation } from './support/optin';
+
 /**
  * Le moment H0, refusé.
  *
@@ -10,7 +12,7 @@ import { expect, test } from '@playwright/test';
 const OPTIN = `/i/${'demo-optin-refuse-link'.padEnd(43, 'x')}`;
 
 test('le refus a le même poids visuel que l’acceptation', async ({ page }) => {
-    await page.goto(OPTIN);
+    await openInvitation(page, OPTIN);
 
     const accept = page.getByRole('button', { name: 'J’accepte' });
     const refuse = page.getByRole('button', { name: 'Non merci' });
@@ -30,7 +32,7 @@ test('le refus a le même poids visuel que l’acceptation', async ({ page }) =>
 });
 
 test('décline le cadeau, sans avoir à se justifier', async ({ page }) => {
-    await page.goto(OPTIN);
+    await openInvitation(page, OPTIN);
 
     await page.getByRole('button', { name: 'Non merci' }).click();
 

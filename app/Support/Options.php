@@ -39,6 +39,25 @@ final class Options
     }
 
     /**
+     * Les choix d'une énumération, restreints à certaines valeurs.
+     *
+     * Une énumération porte souvent plus de cas que ce qu'une page peut
+     * proposer : le canal « téléphone (opérateur) » existe pour l'option D-9,
+     * mais un narrateur ne le choisit pas depuis son invitation (T-234).
+     *
+     * @param  class-string<BackedEnum>  $enum
+     * @param  list<string>  $values
+     * @return list<array{value: string, label: string}>
+     */
+    public static function only(string $enum, array $values): array
+    {
+        return array_values(array_filter(
+            self::of($enum),
+            static fn (array $option): bool => in_array($option['value'], $values, true),
+        ));
+    }
+
+    /**
      * Le libellé traduit d'un cas.
      *
      * Tolérant à une énumération qui n'emploie pas `HasTranslatedLabel` : elle

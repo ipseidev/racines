@@ -1040,6 +1040,121 @@
     }
 
     /*
+     * L'ouverture du cadeau, sur la page d'invitation (T-232). Un rideau
+     * crème posé sur la page entière ; une phrase à la fois, qui monte en
+     * fondu depuis un léger flou et s'efface vers le haut avant la suivante.
+     * Le premier temps est une page de titre : le nom, un filet d'or. Le
+     * rideau ne se lève pas pour qui a demandé qu'on ne bouge pas — le
+     * composant ne le rend pas —, et la garde CSS est là si jamais il l'était.
+     */
+    .overture {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        text-align: center;
+        background:
+            radial-gradient(
+                ellipse 70% 55% at 50% 45%,
+                var(--color-brand-linen) 0%,
+                transparent 100%
+            ),
+            var(--color-brand-background);
+        touch-action: none;
+        overscroll-behavior: contain;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .overture[data-phase='leave'] {
+        animation: overture-leave var(--overture-leave, 0.5s) var(--ease-soft)
+            both;
+        pointer-events: none;
+    }
+
+    .overture-title,
+    .overture-line {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.1rem;
+        max-width: 24ch;
+        animation: overture-in 0.6s var(--ease-soft) both;
+    }
+
+    .overture-title[data-phase='out'],
+    .overture-line[data-phase='out'] {
+        animation: overture-out 0.4s var(--ease-soft) both;
+    }
+
+    .overture-title p {
+        font-size: clamp(2.75rem, 12vw, 3.75rem);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+    }
+
+    .overture-line p {
+        font-size: clamp(1.9rem, 8vw, 2.6rem);
+        line-height: 1.15;
+    }
+
+    .overture-rule {
+        display: block;
+        width: 2.5rem;
+        height: 1px;
+        background: var(--color-brand-gold);
+    }
+
+    html.overture-open {
+        overflow: hidden;
+    }
+
+    @keyframes overture-in {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+            filter: blur(6px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+            filter: blur(0);
+        }
+    }
+
+    @keyframes overture-out {
+        from {
+            opacity: 1;
+            transform: none;
+            filter: blur(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+            filter: blur(6px);
+        }
+    }
+
+    @keyframes overture-leave {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .overture,
+        .overture-title,
+        .overture-line {
+            animation: none;
+        }
+    }
+
+    /*
      * Les pages légales : du markdown converti côté serveur, donc sans
      * classes. La mise en forme se fait ici, sur les balises.
      */
