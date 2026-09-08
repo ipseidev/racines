@@ -18,6 +18,7 @@ use App\Enums\ProjectMemberRole;
 use App\Enums\PromptSlot;
 use App\Enums\Sku;
 use App\Jobs\SendGiftInvitation;
+use App\Jobs\SendMetaPurchase;
 use App\Models\CheckoutDraft;
 use App\Models\Lead;
 use App\Models\Order;
@@ -176,6 +177,37 @@ final readonly class FulfillOrder
             'project_id' => $project->id,
             'total_cents' => $order->total_cents,
         ]);
+
+        /*
+         * L'achat renvoyé à la publicité (T-226).
+         *
+         * **Ici**, au même endroit que l'événement d'entonnoir et pour la même
+         * raison : un paiement dont la commande n'aboutit pas n'est pas un
+         * achat, et le compter apprendrait à Meta à chercher les mauvais
+         * acheteurs.
+         *
+         * En file, et jamais dans le fil du webhook : une requête sortante
+         * dans ce chemin est un 500 en attente, et un webhook qui répond 500
+         * est un webhook que Stripe désactive (T-169).
+         */
+        SendMetaPurchase::dispatch(
+            orderId: $order->id,
+            totalCents: $order->total_cents,
+            currency: $order->currency,
+            email: $buyer->email,
+            click: [
+                'fbp' => (string) data_get($session, 'metadata.fbp', ''),
+                'fbc' => (string) data_get($session, 'metadata.fbc', ''),
+                'ua' => (string) data_get($session, 'metadata.ua', ''),
+                // La page d'où l'achat part vraiment : le récapitulatif du
+                // tunnel. L'accueil serait plus flatteur et faux.
+                'url' => route('checkout.show', ['step' => 6]),
+            ],
+            buyer: [
+                'id' => $buyer->id,
+                'name' => $buyer->name,
+            ],
+        );
 
         return $order->refresh();
     }

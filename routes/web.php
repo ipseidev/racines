@@ -54,7 +54,13 @@ Route::permanentRedirect('/lp/histoire', '/')->name('lp.structure');
 
 // Le manifeste d'installation, rendu depuis les réglages de marque. Sans
 // contrainte de domaine, pour rester de même origine que la page qui le cite.
-Route::get('/site.webmanifest', ManifestController::class)->name('manifest');
+//
+// `not-a-page` : le navigateur le demande de lui-même, quand il le décide, et
+// `StartSession` en ferait la « page précédente » — le `back()` du formulaire
+// suivant y retournerait, et Inertia recevrait du JSON (T-231).
+Route::get('/site.webmanifest', ManifestController::class)
+    ->middleware('not-a-page')
+    ->name('manifest');
 
 // Le plan de site : neuf adresses fixes, celles qui doivent être explorées
 // comme un ensemble (T-225). robots.txt le déclare.

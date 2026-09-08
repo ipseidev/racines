@@ -3,10 +3,12 @@ import { useEffect } from 'react';
 
 import { initAnalytics, pageview } from '@/lib/analytics';
 import { initGoogleAnalytics, pageview as gaPageview } from '@/lib/gtag';
+import { initMeta, pageview as metaPageview } from '@/lib/meta';
 
 type Shared = {
     analytics: { key: string; host: string } | null;
     googleAnalytics: { measurementId: string } | null;
+    metaPixel: { pixelId: string } | null;
 };
 
 /**
@@ -30,10 +32,14 @@ type Shared = {
  * deux.
  */
 export function useAnalytics(): void {
-    const { analytics, googleAnalytics } = usePage<Shared>().props;
+    const { analytics, googleAnalytics, metaPixel } = usePage<Shared>().props;
 
     useEffect(() => {
-        if (analytics === null && googleAnalytics === null) {
+        if (
+            analytics === null &&
+            googleAnalytics === null &&
+            metaPixel === null
+        ) {
             return;
         }
 
@@ -45,6 +51,10 @@ export function useAnalytics(): void {
             initGoogleAnalytics(googleAnalytics.measurementId);
         }
 
+        if (metaPixel !== null) {
+            initMeta(metaPixel.pixelId);
+        }
+
         return router.on('navigate', (event) => {
             const chemin = new URL(
                 event.detail.page.url,
@@ -53,6 +63,7 @@ export function useAnalytics(): void {
 
             pageview(chemin);
             gaPageview(chemin);
+            metaPageview(chemin);
         });
-    }, [analytics, googleAnalytics]);
+    }, [analytics, googleAnalytics, metaPixel]);
 }

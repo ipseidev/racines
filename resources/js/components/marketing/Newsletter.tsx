@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
+import { track } from '@/components/landing/track';
 import { CheckField } from '@/components/form/CheckField';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { TextField } from '@/components/form/TextField';
@@ -56,6 +57,10 @@ export default function Newsletter({ enabled, discountPercent }: Props) {
             onSuccess: () => {
                 // La fenêtre de bienvenue se tait pour de bon : le code est pris.
                 rememberWelcomeOffer({ status: 'claimed', at: Date.now() });
+                // Une adresse laissée : l'événement que la publicité sait
+                // optimiser avant l'achat (T-226). Aucune donnée personnelle
+                // ne voyage avec — le nom de l'événement suffit.
+                track('welcome_offer_claimed', { section: 'newsletter' });
                 setSent(true);
             },
         });

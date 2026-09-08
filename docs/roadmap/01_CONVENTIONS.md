@@ -277,6 +277,16 @@ d'onglets a introduit des cibles de 40 px là où le dossier en exige 44 (T-164)
 et une entrée en fondu a rendu trois audits d'accessibilité intermittents
 (T-161). Aucun n'aurait été vu par `npm run check`.
 
+**Et jamais deux fois en même temps.** Deux sessions qui lancent la suite
+partagent la base `testing` **et** les compartiments MinIO : le `migrate:fresh`
+de l'une efface le schéma sous l'autre. Les échecs qui en sortent ressemblent à
+des régressions et n'en sont pas — « relation "users" does not exist », des
+interblocages sur un `drop table … cascade`, un fichier média illisible juste
+après avoir été écrit. Trois passes de porte y sont passées le 2026-09-08 avant
+qu'on comprenne, et la même série est repassée verte en isolation. Avant de
+conclure à une régression sur une erreur de ce genre, relancer **le sous-dossier
+seul** : s'il est vert, c'était la collision.
+
 **Et on ne la joue pas pendant une vérification humaine.** La suite écrit sur la même base que la personne qui déroule un checkpoint : une notification différée d'une minute tombée au milieu d'une exécution a coûté une heure de recherche pour un défaut qui n'existait pas (T-166).
 
 **Et on resème avant de conclure.** Trois échecs consécutifs ont été imputés à
@@ -364,6 +374,21 @@ Toutes dans `.env.example` avec une valeur d'exemple ou vide et un commentaire d
 | `INERTIA_SSR_ENABLED` | Rendu serveur des pages publiques. **Éteint par défaut** : c'est un service séparé, et l'allumer ferait tenter une connexion à 127.0.0.1:13714 depuis chaque test (T-107) | `false` |
 | `INERTIA_SSR_URL` | Adresse du service de rendu serveur | `http://127.0.0.1:13714` |
 | `BROWSERSHOT_NODE_BINARY`, `BROWSERSHOT_CHROME_PATH` | Génération PDF (bloc 13) | — |
+
+## 8bis. Routes qui ne rendent pas une page
+
+`StartSession` note l'adresse de **toute** requête `GET` non-ajax comme « page
+précédente », sans regarder ce qu'elle a rendu. Une route qui rend un
+manifeste, un fichier, une archive — que le navigateur demande de lui-même, au
+moment qu'il choisit — devient donc la cible du prochain `back()`, et Inertia
+qui suit la redirection reçoit du JSON ou du binaire. Un narrateur a lu « All
+Inertia requests must receive a valid Inertia response » après avoir cliqué
+« Partager avec mes proches » (T-231).
+
+**Toute route qui ne rend pas une page porte donc `not-a-page`.** Aujourd'hui
+`/site.webmanifest` et `/vcard` ; le téléchargement d'export est le prochain
+candidat. La correction vit dans `terminate()` et non au retour de `handle()` :
+`storeCurrentUrl()` s'exécute après toute la pile.
 
 ## 9. Sécurité, règles permanentes
 

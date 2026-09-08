@@ -45,7 +45,9 @@ use Illuminate\Support\Facades\Route;
 // Fiche contact : sans jeton, mais sur le domaine des liens, pour qu'un
 // narrateur puisse enregistrer l'expéditeur de ses questions (doc 04 §9).
 Route::get('/vcard', VcardController::class)
-    ->middleware('throttle:tokens')
+    // `not-a-page` : un fichier téléchargé, et le narrateur l'enregistre
+    // juste avant d'aller enregistrer son histoire (T-231).
+    ->middleware(['throttle:tokens', 'not-a-page'])
     ->name('narrator.vcard');
 
 // Remerciement après un geste qui a révoqué le lien : sans jeton, donc sans

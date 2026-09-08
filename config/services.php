@@ -113,6 +113,43 @@ return [
         'measurement_id' => env('GA_MEASUREMENT_ID'),
     ],
 
+    /*
+     * Le pixel Meta, la mesure de la **publicité** (T-226).
+     *
+     * Elle ne recoupe ni PostHog ni Google Analytics : les deux premières
+     * disent ce que font les visiteurs, celle-ci dit à Meta lesquels ont
+     * acheté, pour qu'il apprenne à qui montrer l'annonce. Sans l'achat
+     * renvoyé, une campagne ne peut s'optimiser que sur la vue de page — ce
+     * qui, pour un cadeau à quatre-vingt-neuf euros décidé en plusieurs
+     * visites, revient à acheter du trafic au hasard.
+     *
+     * Deux moitiés, et la seconde est la plus importante. Le **pixel** dans le
+     * navigateur mesure l'intention (arrivée sur la page, clic vers le
+     * tunnel) ; l'**API de conversions**, appelée par le serveur depuis le
+     * webhook Stripe, mesure l'achat. C'est la seule qui survit à un bloqueur
+     * de publicité, à Safari et à un onglet fermé pendant le paiement — et
+     * c'est l'achat qui compte.
+     *
+     * Le verrou de T-61, comme partout : c'est `META_PIXEL_ENABLED` qui
+     * décide, jamais la présence de l'identifiant. Un identifiant laissé dans
+     * un `.env` de développement enverrait les commandes d'un décor dans le
+     * compte publicitaire de production, et le coût d'acquisition mentirait
+     * sans que rien ne le dise.
+     *
+     * `test_code` n'est renseigné que le temps de vérifier le branchement
+     * dans le testeur d'événements de Meta : laissé en place, les événements
+     * n'entrent jamais dans l'optimisation.
+     */
+    'meta' => [
+        'enabled' => env('META_PIXEL_ENABLED', false),
+        'pixel_id' => env('META_PIXEL_ID'),
+        // Le jeton de l'API de conversions. Un secret, contrairement à
+        // l'identifiant du pixel, qui est lisible dans la source de la page.
+        'capi_token' => env('META_CAPI_TOKEN'),
+        'api_version' => env('META_API_VERSION', 'v21.0'),
+        'test_code' => env('META_TEST_EVENT_CODE'),
+    ],
+
     'browsershot' => [
         // `browsershot` ou `fake`, jamais déduit de l'environnement (T-61) :
         // un rendu déduit finit par être le faux en production, et une famille

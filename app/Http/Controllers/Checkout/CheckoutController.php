@@ -177,7 +177,39 @@ final readonly class CheckoutController
             return redirect()->route('checkout.show', ['step' => min($missing)]);
         }
 
-        $session = $this->checkout->handle($draft, $buyer);
+        /*
+         * Les identifiants de clic posés par le pixel Meta (T-226).
+         *
+         * `_fbp` identifie le navigateur, `_fbc` la publicité cliquée. Ils
+         * sont lus ici et non dans l'action : c'est la requête qui les porte,
+         * et une action qui irait les chercher toute seule cacherait ce
+         * couplage. Absents — visiteur venu d'ailleurs, cookie refusé —, la
+         * session part sans eux et l'achat compte quand même.
+         */
+        $click = [];
+
+        foreach (['fbp' => '_fbp', 'fbc' => '_fbc'] as $key => $cookie) {
+            $value = $request->cookie($cookie);
+
+            if (is_string($value) && $value !== '') {
+                $click[$key] = $value;
+            }
+        }
+
+        /*
+         * L'agent utilisateur, tronqué : Meta le réclame pour tout évènement
+         * d'origine « website », et une métadonnée Stripe s'arrête à cinq
+         * cents signes. Quatre cents suffisent — aucun navigateur n'annonce
+         * plus long, et ce qui dépasserait ferait échouer la création de la
+         * session plutôt que la mesure.
+         */
+        $agent = (string) $request->userAgent();
+
+        if ($agent !== '') {
+            $click['ua'] = mb_substr($agent, 0, 400);
+        }
+
+        $session = $this->checkout->handle($draft, $buyer, $click);
 
         // `Inertia::location` et non `redirect()->away` : le bouton « Payer »
         // envoie une requête XHR portant `X-Inertia`, et le navigateur suit

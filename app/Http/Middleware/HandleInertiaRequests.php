@@ -83,6 +83,7 @@ final class HandleInertiaRequests extends Middleware
              * le front à démêler deux absences différentes.
              */
             'googleAnalytics' => self::googleAnalytics($request),
+            'metaPixel' => self::metaPixel($request),
         ];
     }
 
@@ -135,6 +136,31 @@ final class HandleInertiaRequests extends Middleware
         }
 
         return ['measurementId' => $id];
+    }
+
+    /**
+     * De quoi démarrer le pixel Meta, ou rien.
+     *
+     * La même garde que les deux mesures précédentes, littéralement la même
+     * fonction : une page à jeton ne porte aucun identifiant de mesure,
+     * d'aucun fournisseur. Et le même verrou (T-61) : `META_PIXEL_ENABLED`
+     * décide, jamais la présence de l'identifiant.
+     *
+     * @return array{pixelId: string}|null
+     */
+    private static function metaPixel(Request $request): ?array
+    {
+        $id = (string) config('services.meta.pixel_id');
+
+        if ($id === '' || config('services.meta.enabled') !== true) {
+            return null;
+        }
+
+        if (! Measured::allows($request)) {
+            return null;
+        }
+
+        return ['pixelId' => $id];
     }
 
     /**

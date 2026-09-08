@@ -72,6 +72,7 @@ final class SecurityHeaders
         // Les origines de Google Analytics, quand la mesure tourne et là où
         // elle a le droit de tourner. Voir `googleAnalytics()`.
         $google = $this->googleAnalytics($request);
+        $meta = $this->metaPixel($request);
 
         if ($this->isBackOffice($request)) {
             return implode('; ', [
@@ -91,7 +92,7 @@ final class SecurityHeaders
 
         return implode('; ', [
             "default-src 'self'",
-            self::directive('script-src', ["'self'", "'nonce-{$nonce}'", $google['script']]),
+            self::directive('script-src', ["'self'", "'nonce-{$nonce}'", $google['script'], $meta['script']]),
             "style-src 'self' 'nonce-{$nonce}'",
             // Les styles posés en attribut par React ne peuvent pas porter de
             // nonce. Les autoriser en attribut seulement laisse `style-src`
@@ -99,9 +100,9 @@ final class SecurityHeaders
             "style-src-attr 'unsafe-inline'",
             // Les polices sont auto-hébergées (T-40) : aucune origine tierce.
             "font-src 'self' data:",
-            self::directive('img-src', ["'self'", 'data:', 'blob:', $media, $google['img']]),
+            self::directive('img-src', ["'self'", 'data:', 'blob:', $media, $google['img'], $meta['img']]),
             trim("media-src 'self' blob: {$media}"),
-            self::directive('connect-src', ["'self'", $connect, $google['connect']]),
+            self::directive('connect-src', ["'self'", $connect, $google['connect'], $meta['connect']]),
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
@@ -167,6 +168,49 @@ final class SecurityHeaders
             'script' => 'https://www.googletagmanager.com',
             'img' => 'https://*.google-analytics.com https://www.googletagmanager.com',
             'connect' => 'https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com',
+        ];
+    }
+
+    /**
+     * Les origines que le pixel Meta a besoin d'atteindre, ou trois chaînes
+     * vides (T-226).
+     *
+     * Sans elles, le script serait refusé **en silence** : c'est la faute
+     * T-75, et elle est particulièrement traître ici parce qu'une campagne qui
+     * tourne sans mesure dépense sans rien apprendre, et que rien à l'écran ne
+     * le dit.
+     *
+     * `connect.facebook.net` sert `fbevents.js`, et lui seul ; les événements
+     * partent ensuite vers `www.facebook.com`, en `fetch` quand il passe et en
+     * pixel image quand il ne passe pas — d'où les deux dernières origines.
+     *
+     * Les mêmes gardes que pour Google, et la seconde est le point du
+     * dossier : la politique n'ouvre ces origines **que sur les pages
+     * mesurées**. Une page de narrateur ne demande jamais le pixel, et sa
+     * politique ne l'autoriserait pas davantage.
+     *
+     * @return array{script: string, img: string, connect: string}
+     */
+    private function metaPixel(Request $request): array
+    {
+        $vide = ['script' => '', 'img' => '', 'connect' => ''];
+
+        if (config('services.meta.enabled') !== true) {
+            return $vide;
+        }
+
+        if ((string) config('services.meta.pixel_id') === '') {
+            return $vide;
+        }
+
+        if (! Measured::allows($request)) {
+            return $vide;
+        }
+
+        return [
+            'script' => 'https://connect.facebook.net',
+            'img' => 'https://www.facebook.com',
+            'connect' => 'https://www.facebook.com',
         ];
     }
 

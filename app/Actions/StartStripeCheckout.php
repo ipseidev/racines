@@ -30,7 +30,14 @@ final readonly class StartStripeCheckout
 {
     public function __construct(private CheckoutSessions $sessions) {}
 
-    public function handle(CheckoutDraft $draft, User $buyer): CheckoutSession
+    /**
+     * @param  array<string, string>  $click  Les identifiants de clic
+     *                                        publicitaire lus dans les cookies du navigateur. Ils voyagent
+     *                                        dans les métadonnées de la session : le webhook n'a pas de
+     *                                        cookies, et sans eux l'achat renvoyé à Meta s'apparie mal
+     *                                        (T-226).
+     */
+    public function handle(CheckoutDraft $draft, User $buyer, array $click = []): CheckoutSession
     {
         $items = self::lineItemsFor($draft);
 
@@ -55,6 +62,7 @@ final readonly class StartStripeCheckout
                 'user_id' => (string) $buyer->id,
                 'price_variant' => (string) ($draft->price_variant ?? ''),
                 'discount_code' => $lead instanceof Lead ? $lead->discount_code : '',
+                ...$click,
             ],
             successUrl: route('checkout.thanks').'?session_id={CHECKOUT_SESSION_ID}',
             cancelUrl: route('checkout.show', ['step' => 6]),

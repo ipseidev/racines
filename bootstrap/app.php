@@ -8,6 +8,7 @@ use App\Exceptions\Domain\StoryUnavailable;
 use App\Exceptions\Domain\TokenUnavailable;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\NoStore;
+use App\Http\Middleware\NotAPage;
 use App\Http\Middleware\RequireSensitiveGrant;
 use App\Http\Middleware\ResolveAccessToken;
 use App\Http\Middleware\SecurityHeaders;
@@ -62,6 +63,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            // Une réponse qui n'est pas une page : elle ne doit pas devenir
+            // celle où un `back()` revient (T-231).
+            'not-a-page' => NotAPage::class,
             'resolve.token' => ResolveAccessToken::class,
             'no-store' => NoStore::class,
             'sensitive' => RequireSensitiveGrant::class,
