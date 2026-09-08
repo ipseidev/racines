@@ -1,5 +1,5 @@
 import { useBrand } from '@/brand/BrandProvider';
-import { BAND, Section, SHELL } from '@/components/landing/primitives';
+import { BAND, Section } from '@/components/landing/primitives';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
@@ -89,7 +89,7 @@ export default function HowItWorks() {
                              * de `.font-display` est neutralisé pour la même
                              * raison.
                              */}
-                            <h3 className="font-display text-[1.4rem] leading-[1.25] font-medium [text-wrap:initial] whitespace-pre-line">
+                            <h3 className="font-display text-[1.5rem] leading-[1.2] font-medium [text-wrap:initial] whitespace-pre-line">
                                 {t(`public.lp.how.${step}.title`)}
                             </h3>
                             <p className="text-brand-muted text-[1rem] leading-relaxed">

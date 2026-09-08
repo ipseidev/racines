@@ -18,7 +18,7 @@ export default function FounderStory() {
     return (
         <Section
             id="notre-histoire"
-            tone="white"
+            tone="linen"
             labelledBy="lp-founder"
             className={BAND}
         >
@@ -68,9 +68,7 @@ export default function FounderStory() {
                             {t('public.lp.founder.name')}
                         </span>
                         <span className="text-brand-muted text-[0.95rem]">
-                            {t('public.lp.founder.role', {
-                                brand: brand.name,
-                            })}
+                            {t('public.lp.founder.role')}
                         </span>
                     </figcaption>
                 </figure>

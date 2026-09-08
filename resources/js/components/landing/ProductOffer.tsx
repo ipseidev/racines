@@ -130,12 +130,12 @@ export default function ProductOffer({
     return (
         <Section
             id="le-livre"
-            tone="linen"
+            tone="white"
             labelledBy="lp-offer"
             className={BAND}
         >
             <div
-                className={`${SHELL} grid gap-8 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-14`}
+                className={`${SHELL} grid gap-8 lg:grid-cols-[56fr_44fr] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-12`}
             >
                 {/* Le bandeau de notoriété, le titre, le chapeau. */}
                 <div className="order-1 flex flex-col gap-4 lg:col-start-2 lg:row-start-1">
@@ -159,7 +159,7 @@ export default function ProductOffer({
                         {t('public.lp.offer.title')}
                     </h2>
 
-                    <p className="text-brand-muted max-w-[34em] text-[1.0625rem] leading-relaxed sm:text-[1.15rem]">
+                    <p className="text-brand-text max-w-[34em] text-[0.95rem] leading-relaxed sm:text-[1rem]">
                         {t('public.lp.offer.lede')}
                     </p>
                 </div>
@@ -215,7 +215,7 @@ export default function ProductOffer({
                             <img
                                 key={current.name}
                                 {...photo(current.name)}
-                                sizes="(min-width: 1024px) 30rem, 100vw"
+                                sizes="(min-width: 1024px) 36rem, 100vw"
                                 alt={t(current.alt)}
                                 width="1400"
                                 height="1050"
@@ -302,10 +302,10 @@ export default function ProductOffer({
                                     <Icon path={item.icon} className="size-5" />
                                 </span>
                                 <div className="flex flex-col gap-1">
-                                    <dt className="font-display text-brand text-[1.25rem] leading-tight font-medium">
+                                    <dt className="font-display text-brand text-[1.35rem] leading-tight font-medium">
                                         {t(`public.lp.offer.${item.key}.title`)}
                                     </dt>
-                                    <dd className="text-brand-muted text-[1.0625rem] leading-relaxed">
+                                    <dd className="text-brand-text text-[0.95rem] leading-relaxed">
                                         {t(`public.lp.offer.${item.key}.body`, {
                                             brand: brand.name,
                                         })}

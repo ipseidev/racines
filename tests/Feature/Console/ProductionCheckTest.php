@@ -111,3 +111,20 @@ it('ne crie pas au loup sur les trois colonnes volontairement étroites', functi
         ->doesntExpectOutputToContain('Contrainte outbound_messages.channel')
         ->run();
 });
+
+/*
+ * Le stockage simulé ne prouve rien d'un envoi navigateur, et le dit.
+ *
+ * `stockage()` écrit et relit avec **nos** identifiants depuis le serveur :
+ * ça prouve le compartiment et la clé, et rien du tout de ce qu'un téléphone
+ * arrive à faire — l'envoi va en direct du navigateur vers R2 (T-224).
+ */
+it('annonce que le stockage simulé n’éprouve aucun envoi navigateur', function () {
+    config()->set('services.media.driver', 'fake');
+
+    // Une seule attente : les deux moitiés tiennent sur la même ligne, et
+    // `expectsOutputToContain` consomme les lignes dans l'ordre.
+    $this->artisan('prod:check', ['--rapide' => true])
+        ->expectsOutputToContain('aucun envoi navigateur n’est éprouvé')
+        ->run();
+});

@@ -178,6 +178,41 @@ final class S3MediaStorage implements MediaStorage
         ]);
     }
 
+    /**
+     * Les règles CORS du compartiment, ou `null` s'il n'en porte aucune.
+     *
+     * Un diagnostic, et il vit ici pour une raison : la construction du client
+     * S3 — point de terminaison, région, style de chemin, identifiants — ne
+     * doit exister qu'à un seul endroit, et `prod:check` la recopierait
+     * autrement. C'est la seule chose que le serveur puisse dire d'un envoi
+     * **navigateur** : il écrit et relit par ses propres identifiants, ce qui
+     * ne prouve rien de ce qu'un téléphone arrive à faire (T-224).
+     *
+     * @return list<array<string, mixed>>|null
+     *
+     * @throws S3Exception quand le stockage ne répond pas du tout
+     */
+    public function corsRules(): ?array
+    {
+        try {
+            $result = $this->client()->getBucketCors(['Bucket' => $this->bucket()]);
+        } catch (S3Exception $exception) {
+            // Pas de règle n'est pas une panne : R2 et MinIO répondent tous
+            // deux par une erreur nommée, qu'il faut lire comme « aucune ».
+            if (str_contains($exception->getMessage(), 'NoSuchCORSConfiguration')
+                || str_contains($exception->getMessage(), 'CORSConfigurationNotFound')) {
+                return null;
+            }
+
+            throw $exception;
+        }
+
+        /** @var list<array<string, mixed>> $rules */
+        $rules = $result->get('CORSRules') ?? [];
+
+        return $rules;
+    }
+
     private function bucket(): string
     {
         return (string) config("filesystems.disks.{$this->disk}.bucket");

@@ -458,7 +458,7 @@ return [
             'title' => 'Un livre de souvenirs qui vous permet d’entendre leur voix pour toujours.',
             'lede' => 'Ils ne font que parler. :brand le capture, l’écrit et le regroupe en une belle couverture cartonnée avec leur voix sur chaque page. Aucune écriture requise. Juste leurs histoires, dans leur propre voix, dans un livre que ta famille gardera depuis des générations.',
             'checks' => [
-                'voice' => 'Leur voix résonne sur chaque page',
+                'voice' => 'Leur voix et la transcription sur chaque page',
                 'no_app' => 'Fonctionne sur n’importe quel téléphone, aucune application ou connexion requise',
                 'digital' => 'Livraison numérique disponible',
                 'no_writing' => 'Pas besoin d’écrire, ils parlent juste',
@@ -560,7 +560,7 @@ return [
             'p4' => 'Parce qu’un jour, ces anecdotes, ces petits détails et cette voix que l’on connaît par cœur auront une valeur impossible à mesurer.',
             'p5' => ':brand existe pour les préserver, tant qu’il est encore temps de les raconter.',
             'name' => 'Nicolas Serra',
-            'role' => 'Co-Founder & CTO, :brand',
+            'role' => 'Fondateur',
             'photo_alt' => 'Nicolas Serra, fondateur, en extérieur dans un parc.',
         ],
 

@@ -7,7 +7,10 @@ namespace App\Console\Commands;
 use App\Enums\ConsentKind;
 use App\Models\ConsentText;
 use App\Services\Storage\MediaStorage;
+use App\Services\Storage\S3MediaStorage;
+use App\Support\Brand;
 use App\Support\Database\EnumCheck;
+use App\Support\Storage\BrowserUploadCors;
 use BackedEnum;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
@@ -63,6 +66,7 @@ final class ProductionCheck extends Command
         $this->line('  <options=bold>Livrer</>');
         $this->base();
         $this->contraintes();
+        $this->cors();
         $this->file();
         $this->stockage();
 
@@ -419,6 +423,95 @@ final class ProductionCheck extends Command
      * inaudibles. C'est la panne qui coûte le plus cher : on ne redemande pas
      * à quelqu'un de quatre-vingts ans de tout raconter une seconde fois.
      */
+    /**
+     * Le navigateur peut-il déposer, et lire la réponse ?
+     *
+     * `stockage()` écrit et relit avec **nos** identifiants, depuis le
+     * serveur : ça prouve le compartiment et la clé, et rien du tout de ce
+     * qu'un téléphone arrive à faire. Or l'envoi d'un enregistrement se fait
+     * en direct du navigateur vers R2, par URL présignée, et il ne dépend
+     * d'aucune de ces deux choses.
+     *
+     * Trois conditions, et il en faut les trois :
+     *
+     *  - l'**origine** qui sert la page d'enregistrement doit être autorisée,
+     *    et en production c'est le domaine court, pas celui de l'application ;
+     *  - `PUT` doit être autorisé ;
+     *  - `ETag` doit être **exposé**. C'est celle qu'on oublie, et la plus
+     *    cruelle : le dépôt réussit, le navigateur cache l'en-tête, et l'envoi
+     *    multipart ne peut pas se conclure. `api.ts` lève alors « Le stockage
+     *    n'a pas rendu d'ETag », un narrateur voit « L'envoi n'a pas abouti »
+     *    après avoir parlé dix minutes, et les journaux du serveur sont vides
+     *    parce que rien n'a échoué chez nous (T-224).
+     *
+     * `05_A_FAIRE_HUMAIN.md` prévenait déjà, ligne 13 : « l'exposition de
+     * l'ETag en est la partie qu'on oublie et sans laquelle les envois
+     * échouent en silence ». Une prose ne vérifie rien ; cette ligne, si.
+     */
+    private function cors(): void
+    {
+        // Le pilote configuré, et non un `instanceof` : c'est ce réglage qui
+        // décide du stockage monté, et un double local n'a pas de
+        // compartiment — la question n'a alors pas de réponse, ce qui n'est
+        // pas la même chose qu'une réponse vide.
+        if ((string) config('services.media.driver') !== 's3') {
+            $this->selonEnv('CORS du stockage', 'stockage simulé : aucun envoi navigateur n’est éprouvé.');
+
+            return;
+        }
+
+        try {
+            $regles = (new S3MediaStorage)->corsRules();
+        } catch (Throwable $e) {
+            $this->orange('CORS du stockage', 'règles illisibles : '.$e->getMessage());
+
+            return;
+        }
+
+        // L'origine qui sert la page à jeton, et non `app.url` : en production
+        // `Links::routeDomain()` impose le domaine court, et c'est de là que
+        // le navigateur émet sa requête.
+        $origine = 'https://'.Brand::linksDomain();
+        $manques = BrowserUploadCors::missing($regles, $origine);
+
+        if ($manques === []) {
+            $this->vert('CORS du stockage', sprintf('%s peut déposer et lire l’ETag', $origine));
+
+            return;
+        }
+
+        /*
+         * Aucune règle **lisible** n'est rouge en production et orange
+         * ailleurs : MinIO ne sert pas ses règles par l'API S3 (T-58), donc en
+         * local la réponse est vide alors que la console en porte une. Peindre
+         * ça en rouge apprendrait à ignorer le rouge.
+         */
+        if ($regles === null || $regles === []) {
+            $this->selonEnv('CORS du stockage', 'aucune règle lisible : aucun enregistrement ne peut partir d’un navigateur.');
+            $this->remede($origine);
+
+            return;
+        }
+
+        $this->rouge('CORS du stockage', sprintf(
+            'il manque %s : « L’envoi n’a pas abouti » après avoir parlé.',
+            implode(', ', $manques),
+        ));
+        $this->remede($origine);
+    }
+
+    /**
+     * La règle à coller, sur les trois compartiments.
+     */
+    private function remede(string $origine): void
+    {
+        $this->line('      <fg=gray>Console R2 → chacun des trois compartiments → CORS :</>');
+
+        foreach (BrowserUploadCors::suggestion($origine) as $ligne) {
+            $this->line('      <fg=magenta>'.$ligne.'</>');
+        }
+    }
+
     private function stockage(): void
     {
         $cle = 'health/prod-check.txt';
