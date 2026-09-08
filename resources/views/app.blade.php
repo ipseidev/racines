@@ -94,6 +94,17 @@
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400.woff2" crossorigin="anonymous">
         <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-600.woff2" crossorigin="anonymous">
 
+@if ($page['component'] === 'public/Landing')
+        {{-- L'image d'attente de la vidéo du héros est l'élément le plus grand
+             de l'écran d'accueil sur téléphone : c'est elle que mesure le LCP.
+             Un attribut `poster` ne porte pas de priorité, et le navigateur
+             ne le découvre qu'en arrivant à la balise : sans cette ligne,
+             mesuré le 8 septembre 2026, elle partait derrière le JavaScript.
+             Le fichier est un carré de 720 px — la vidéo est affichée en carré
+             partout — et pèse 27 Ko. --}}
+        <link rel="preload" as="image" href="/img/landing/hero-video-poster.webp" fetchpriority="high">
+@endif
+
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>

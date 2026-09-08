@@ -57,6 +57,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -132,6 +133,31 @@ final class AppServiceProvider extends ServiceProvider
         $this->configurePayments();
         $this->configureAntivirus();
         $this->configureSsr();
+        $this->configureAssetPriorities();
+    }
+
+    /**
+     * Le JavaScript passe derrière ce qui s'affiche.
+     *
+     * Le navigateur télécharge en même temps la feuille de style, les polices,
+     * l'image du héros et une vingtaine de modules JavaScript — dont React et
+     * Inertia, 104 Ko compressés — que la vue racine lui demande de précharger.
+     * Tous partent en priorité haute, et sur un téléphone à 1,6 Mbit/s ils se
+     * partagent le débit : l'image d'attente du héros, élément le plus grand de
+     * l'écran, arrivait 2 s après le HTML (mesuré le 8 septembre 2026).
+     *
+     * Le texte de la page est rendu par le serveur ; le JavaScript n'apporte
+     * que l'interactivité. Il peut donc attendre que le visible soit là : une
+     * priorité basse sur ses balises laisse la bande passante à la feuille de
+     * style — dont le préchargement garde sa priorité, elle bloque le rendu —
+     * et à l'image.
+     */
+    private function configureAssetPriorities(): void
+    {
+        Vite::useScriptTagAttributes(['fetchpriority' => 'low']);
+        Vite::usePreloadTagAttributes(
+            fn (string $src, string $url): array => str_ends_with($url, '.css') ? [] : ['fetchpriority' => 'low'],
+        );
     }
 
     /**

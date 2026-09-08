@@ -298,8 +298,14 @@ export default function Testimonials() {
                         className="flex lg:hidden"
                     />
 
-                    {/* Les traits de position : de vrais boutons, pas des puces décoratives. */}
-                    <div className="flex items-center gap-1.5 lg:gap-2">
+                    {/*
+                     * Les traits de position : de vrais boutons, pas des
+                     * puces décoratives. Le trait fait 6 px de haut, le
+                     * bouton qui le porte en fait 24 : c'est la taille
+                     * minimale d'une cible tactile (WCAG 2.2), et un trait
+                     * seul ne se touchait pas au doigt.
+                     */}
+                    <div className="flex items-center gap-0.5 lg:gap-1">
                         {Array.from({ length: pages }, (_, index) => (
                             <button
                                 key={index}
@@ -309,12 +315,17 @@ export default function Testimonials() {
                                     number: index + 1,
                                 })}
                                 aria-current={index === page}
-                                className={`h-1.5 w-4 rounded-full transition-colors lg:w-8 ${
-                                    index === page
-                                        ? 'bg-brand'
-                                        : 'bg-brand-sand hover:bg-brand-muted'
-                                }`}
-                            />
+                                className="group flex h-6 min-w-6 items-center justify-center lg:min-w-10"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className={`h-1.5 w-4 rounded-full transition-colors lg:w-8 ${
+                                        index === page
+                                            ? 'bg-brand'
+                                            : 'bg-brand-sand group-hover:bg-brand-muted'
+                                    }`}
+                                />
+                            </button>
                         ))}
                     </div>
 

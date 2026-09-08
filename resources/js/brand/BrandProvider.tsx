@@ -59,10 +59,18 @@ export function BrandLogo({ className }: { className?: string }) {
         <span
             className={`inline-flex items-center gap-[0.4em] ${className ?? ''}`}
         >
+            {/*
+             * Largeur et hauteur du fichier livré (viewBox 177,75 × 100) :
+             * sans elles, la place n'est pas réservée avant le chargement,
+             * et la ligne de navigation bouge. La feuille de style garde la
+             * main sur la taille affichée.
+             */}
             <img
                 src={brand.mark_url}
                 alt=""
                 aria-hidden="true"
+                width="178"
+                height="100"
                 className="h-[0.95em] w-auto flex-none"
             />
             {brand.name}

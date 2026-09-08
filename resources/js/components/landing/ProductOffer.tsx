@@ -314,9 +314,15 @@ export default function ProductOffer({
 
                 {/* Les bénéfices, ce que comprend l'achat, le bouton, les réassurances. */}
                 <div className="order-3 flex flex-col gap-6 lg:col-start-2 lg:row-start-2">
-                    <dl className="border-brand-sand flex flex-col gap-5 border-t pt-6">
+                    {/*
+                     * Une liste simple : c'était une `<dl>`, mais l'icône
+                     * placée à côté de chaque groupe la rendait invalide
+                     * (une `<dl>` ne tolère que des paires `dt`/`dd`), et
+                     * les lecteurs d'écran l'annonçaient mal.
+                     */}
+                    <ul className="border-brand-sand flex flex-col gap-5 border-t pt-6">
                         {BENEFITS.map((item) => (
-                            <div key={item.key} className="flex gap-4">
+                            <li key={item.key} className="flex gap-4">
                                 <span className="bg-brand-gold/25 text-brand flex size-11 flex-none items-center justify-center rounded-full">
                                     <Icon
                                         path={item.icon}
@@ -325,18 +331,18 @@ export default function ProductOffer({
                                     />
                                 </span>
                                 <div className="flex flex-col gap-1">
-                                    <dt className="font-display text-brand text-[1.35rem] leading-tight font-medium">
+                                    <p className="font-display text-brand text-[1.35rem] leading-tight font-medium">
                                         {t(`public.lp.offer.${item.key}.title`)}
-                                    </dt>
-                                    <dd className="text-brand-text text-[0.95rem] leading-relaxed">
+                                    </p>
+                                    <p className="text-brand-text text-[0.95rem] leading-relaxed">
                                         {t(`public.lp.offer.${item.key}.body`, {
                                             brand: brand.name,
                                         })}
-                                    </dd>
+                                    </p>
                                 </div>
-                            </div>
+                            </li>
                         ))}
-                    </dl>
+                    </ul>
 
                     <ul className="border-brand-sand grid gap-x-8 gap-y-2.5 border-t pt-6 sm:grid-cols-2">
                         {INCLUDES.map((key) => (

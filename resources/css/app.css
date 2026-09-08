@@ -94,6 +94,39 @@
         U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/*
+ * Les polices de repli, aux métriques de celles qu'elles remplacent.
+ *
+ * `font-display: swap` affiche le texte tout de suite dans une police du
+ * système, puis le redessine quand la nôtre arrive. Sans ces déclarations,
+ * les deux n'ont ni la même largeur ni la même hauteur de ligne, et la page
+ * saute d'une ligne à l'échange : 0,079 de décalage cumulé mesuré le
+ * 8 septembre 2026 sur « Comment ça marche ». `size-adjust` et les
+ * `*-override` (calculés avec Capsize sur les métriques des fichiers) font
+ * occuper à Arial et Georgia exactement la place d'Inter et de Fraunces.
+ * Android n'a ni l'une ni l'autre : il ignore ces faces et passe à la
+ * suivante de la pile, sans correction. Si l'administration choisit une
+ * autre police de marque, les métriques ne correspondent plus, et le repli
+ * redevient un repli ordinaire — rien de pire qu'avant.
+ */
+@font-face {
+    font-family: 'Inter Fallback';
+    src: local('Arial'), local('ArialMT');
+    ascent-override: 90.4365%;
+    descent-override: 22.518%;
+    line-gap-override: 0%;
+    size-adjust: 107.1194%;
+}
+
+@font-face {
+    font-family: 'Fraunces Fallback';
+    src: local('Georgia');
+    ascent-override: 92.9623%;
+    descent-override: 24.2386%;
+    line-gap-override: 0%;
+    size-adjust: 105.2039%;
+}
+
 @theme {
     /*
      * Typographie et couleurs de marque. Les variables --brand-* sont écrites
@@ -101,13 +134,13 @@
      * charte ne demande ni build ni déploiement.
      */
     --font-sans:
-        var(--brand-font-body, 'Inter'), ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        var(--brand-font-body, 'Inter'), 'Inter Fallback', ui-sans-serif,
+        system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
 
     --font-display:
-        var(--brand-font-display, 'Fraunces'), 'Iowan Old Style',
-        'Palatino Linotype', Georgia, serif;
+        var(--brand-font-display, 'Fraunces'), 'Fraunces Fallback',
+        'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
 
     /* La marque : huit valeurs éditables dans l'administration. */
     --color-brand: var(--brand-primary);

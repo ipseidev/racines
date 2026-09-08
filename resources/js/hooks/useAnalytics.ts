@@ -14,6 +14,44 @@ import {
     pageview as metaPageview,
 } from '@/lib/meta';
 
+/**
+ * Après le chargement de la page, puis quand le navigateur n'a rien de plus
+ * pressé.
+ *
+ * Les mesures n'ont rien à faire dans la fenêtre où se joue le premier
+ * affichage : le script de Google pèse 170 Ko, et l'image d'attente du héros
+ * n'a pas à attendre derrière lui. Mesuré le 8 septembre 2026 sur l'accueil :
+ * 300 ms de connexions ouvertes pour la seule mesure pendant le chargement.
+ * Un événement déclenché avant le démarrage est perdu — les fonctions se
+ * gardent déjà — mais personne n'achète dans la première seconde.
+ */
+function whenIdle(run: () => void): () => void {
+    let cancel = (): void => undefined;
+
+    const start = (): void => {
+        // `typeof` et non `in` : Safari n'a pas l'API, et le test `in`
+        // ferait croire au compilateur que la branche de repli est morte.
+        if (typeof window.requestIdleCallback === 'function') {
+            const id = window.requestIdleCallback(run, { timeout: 2000 });
+
+            cancel = () => window.cancelIdleCallback(id);
+        } else {
+            const id = window.setTimeout(run, 0);
+
+            cancel = () => window.clearTimeout(id);
+        }
+    };
+
+    if (document.readyState === 'complete') {
+        start();
+    } else {
+        window.addEventListener('load', start, { once: true });
+        cancel = () => window.removeEventListener('load', start);
+    }
+
+    return () => cancel();
+}
+
 type Shared = {
     analytics: { key: string; host: string } | null;
     googleAnalytics: { measurementId: string } | null;
@@ -61,14 +99,6 @@ export function useAnalytics(): void {
             return;
         }
 
-        if (analytics !== null) {
-            void initAnalytics(analytics.key, analytics.host);
-        }
-
-        if (googleAnalytics !== null) {
-            initGoogleAnalytics(googleAnalytics.measurementId);
-        }
-
         const apply = (choice: Consent) => {
             const granted = choice === 'granted';
 
@@ -83,12 +113,23 @@ export function useAnalytics(): void {
             }
         };
 
-        // Le choix déjà fait, s'il existe ; puis ceux qui arrivent.
-        const remembered = readConsent();
+        const stopIdle = whenIdle(() => {
+            if (analytics !== null) {
+                void initAnalytics(analytics.key, analytics.host);
+            }
 
-        if (remembered !== null) {
-            apply(remembered);
-        }
+            if (googleAnalytics !== null) {
+                initGoogleAnalytics(googleAnalytics.measurementId);
+            }
+
+            // Le choix déjà fait, s'il existe ; ceux qui arrivent sont
+            // écoutés dès maintenant, ci-dessous.
+            const remembered = readConsent();
+
+            if (remembered !== null) {
+                apply(remembered);
+            }
+        });
 
         const onChange = (event: Event) =>
             apply((event as CustomEvent<Consent>).detail);
@@ -107,6 +148,7 @@ export function useAnalytics(): void {
         });
 
         return () => {
+            stopIdle();
             window.removeEventListener(CONSENT_EVENT, onChange);
             stop();
         };

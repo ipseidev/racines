@@ -120,7 +120,16 @@ export default function LandingHero({
                         muted
                         loop
                         playsInline
-                        preload="metadata"
+                        /*
+                         * `none` et non `metadata` : avec `metadata`, le
+                         * navigateur commence à télécharger la vidéo dès
+                         * l'analyse du HTML, en concurrence avec la feuille
+                         * de style, les polices et l'image d'attente — qui
+                         * est l'élément le plus grand de l'écran sur
+                         * téléphone. `play()` ci-dessus déclenche le
+                         * chargement une fois la page en place.
+                         */
+                        preload="none"
                         aria-label={t('public.landing.hero.photo_alt')}
                         className="bg-brand-linen aspect-square w-full rounded-2xl object-cover"
                     >
