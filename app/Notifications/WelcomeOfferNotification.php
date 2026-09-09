@@ -35,22 +35,18 @@ final class WelcomeOfferNotification extends Notification implements TracksDeliv
     {
         $amount = Percent::format($this->lead->discount_percent);
 
-        $message = (new MailMessage)
+        // Une vue plutôt que des lignes : le code est posé seul, en grand,
+        // parce que c'est lui qu'on est venu chercher (T-237).
+        return (new MailMessage)
             ->subject(__('notifications.welcome_offer.subject', ['amount' => $amount]))
-            ->greeting(__('notifications.welcome_offer.greeting'))
-            ->line(__('notifications.welcome_offer.code_line', ['code' => $this->lead->discount_code]))
-            ->line(__('notifications.welcome_offer.value_line', [
+            ->markdown('mail.welcome-offer', [
+                'code' => $this->lead->discount_code,
                 'amount' => $amount,
                 'date' => $this->lead->code_expires_at->translatedFormat('j F Y'),
-            ]))
-            ->line(__('notifications.welcome_offer.how_line'))
-            ->action(__('notifications.welcome_offer.button'), route('checkout.show'));
-
-        if ($this->lead->news_opted_in_at !== null) {
-            $message->line(__('notifications.welcome_offer.news_line'));
-        }
-
-        return $message->salutation(__('notifications.prompt.signature', ['brand' => Brand::nameSafe()]));
+                'url' => route('checkout.show'),
+                'news' => $this->lead->news_opted_in_at !== null,
+                'brand' => Brand::nameSafe(),
+            ]);
     }
 
     /**

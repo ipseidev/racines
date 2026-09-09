@@ -478,6 +478,22 @@ return [
             'address_form' => 'Préférez-vous qu’on vous dise « vous » ou « tu » ?',
         ],
 
+        /*
+         * Les souhaits pour plus tard, repliés sous les accords (T-236) :
+         * « transmettre à ma famille » est proposé d'avance parce que c'est ce
+         * qui arrivera de toute façon sans directive (doc 04 §6). Rien n'est
+         * écrit tant que la personne ne choisit pas autre chose ou ne désigne
+         * personne. La ligne sous le titre le dit sans qu'il faille ouvrir.
+         */
+        'advanced' => [
+            'title' => 'Paramètres avancés',
+            'summary' => 'Après vous : vos histoires pourront être transmises à votre famille, sauf choix contraire.',
+            'wishes_title' => 'Vos souhaits pour plus tard',
+            'wishes_body' => 'Ce qu’il faudra faire de vos histoires après votre décès. Vos souhaits passent avant la demande de vos proches, et vous pourrez les changer quand vous voudrez.',
+            'referent' => 'La personne à qui nous nous adresserons (facultatif)',
+            'referent_contact' => 'Comment la joindre, téléphone ou courriel (facultatif)',
+        ],
+
         'days' => [
             '1' => 'Lundi',
             '2' => 'Mardi',
@@ -512,16 +528,14 @@ return [
             'body' => 'Nos messages arriveront toujours de ce contact. Si un message vous parvient d’ailleurs en nous imitant, c’est qu’il est faux.',
             'button' => 'Ajouter le contact',
         ],
+        /*
+         * Plus de question ici (T-236) : les souhaits se choisissent à
+         * l'acceptation. On dit ce qui vaut, et où le changer.
+         */
         'wishes' => [
             'title' => 'Vos souhaits pour plus tard',
-            'body' => 'Vous pouvez nous dire, dès maintenant ou dans longtemps, ce qu’il faudra faire de vos histoires après votre décès. Vos souhaits passent avant la demande de vos proches.',
-            'start' => 'Dire mes souhaits maintenant',
-            'later' => 'Plus tard',
-            'deferred' => 'C’est noté. Vous pourrez nous le dire quand vous voudrez, depuis votre espace.',
+            'default' => 'Sauf choix contraire de votre part, vos histoires pourront être transmises à votre famille. Vous pourrez le préciser quand vous voudrez, depuis votre espace.',
             'saved' => 'Vos souhaits sont enregistrés. Vous pourrez les changer quand vous voudrez.',
-            'save' => 'Enregistrer mes souhaits',
-            'referent' => 'La personne à qui nous nous adresserons (facultatif)',
-            'note' => 'Une précision, si vous le souhaitez',
         ],
     ],
 

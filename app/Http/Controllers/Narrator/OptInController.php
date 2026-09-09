@@ -79,6 +79,11 @@ final readonly class OptInController
             'slots' => Options::of(PromptSlot::class),
             'addressForms' => Options::of(AddressForm::class),
             'refusalReasons' => Options::of(RefusalReason::class),
+            // Les souhaits pour plus tard, repliés sous les accords (T-236). Le
+            // choix proposé est celui de la politique sans directive (doc 04
+            // §6) : il vient d'ici, jamais d'une constante du front.
+            'wishes' => Options::of(PostMortemWish::class),
+            'defaultWish' => PostMortemWish::TransferToFamily->value,
             'answered' => $project->accepted_at !== null || $project->refused_at !== null,
             // Les URL d'action viennent du serveur, comme sur la page
             // d'enregistrement : une page qui recompose son chemin à partir de
@@ -118,11 +123,16 @@ final readonly class OptInController
             'prompt_day' => ['required', 'integer', 'min:1', 'max:7'],
             'prompt_slot' => ['required', new Enum(PromptSlot::class)],
             'address_form' => ['required', new Enum(AddressForm::class)],
+            'wishes' => ['nullable', new Enum(PostMortemWish::class)],
+            'referent_name' => ['nullable', 'string', 'max:120'],
+            'referent_contact' => ['nullable', 'string', 'max:180'],
         ]);
 
         self::ensureReachable($project, $validated);
 
-        $this->accept->handle($project, $validated);
+        $project = $this->accept->handle($project, $validated);
+
+        $this->recordWishesIfChosen($project, $validated, $request);
 
         return redirect()
             ->route('narrator.optin.welcome', ['token' => $request->route('token')])
@@ -147,11 +157,12 @@ final readonly class OptInController
     }
 
     /**
-     * L'écran de bienvenue : la fiche contact, et les souhaits pour plus tard.
+     * L'écran de bienvenue : la fiche contact, et un mot sur plus tard.
      *
-     * « Plus tard » est toujours proposé, et c'est le bouton par défaut : on
-     * ne demande pas à quelqu'un qui vient d'accepter de raconter sa vie de
-     * penser d'abord à sa mort.
+     * Les souhaits se choisissent sur la page d'acceptation, repliés sous les
+     * accords (T-236) ; ici on dit seulement ce qui vaut — le choix fait, ou
+     * la politique sans directive —, sans rien redemander à quelqu'un qui
+     * vient d'accepter de raconter sa vie.
      */
     public function welcome(Request $request): Response
     {
@@ -161,8 +172,6 @@ final readonly class OptInController
             'firstName' => $project->primaryNarrator?->first_name,
             'nextPromptAt' => $project->next_prompt_at?->toIso8601String(),
             'vcardUrl' => route('narrator.vcard'),
-            'wishes' => Options::of(PostMortemWish::class),
-            'directivesAction' => route('narrator.optin.directives', ['token' => $request->route('token')]),
             'directivesRecorded' => $project->primaryNarrator?->postMortemDirective()->exists() ?? false,
         ]);
     }
@@ -255,6 +264,55 @@ final readonly class OptInController
         }
 
         return $texts;
+    }
+
+    /**
+     * Les souhaits pour plus tard, s'ils ont été **choisis**.
+     *
+     * La page propose « transmettre à ma famille » d'avance, replié sous les
+     * accords (T-236) : c'est ce qui arrivera de toute façon sans directive,
+     * sur demande de la famille (doc 04 §6). Laisser ce choix tel quel n'est
+     * pas un acte, et une directive s'accompagne d'un consentement journalisé
+     * : on n'écrit donc rien tant que la personne n'a pas choisi autre chose
+     * ou désigné quelqu'un. Un journal qui n'enregistrerait que des cases
+     * remplies d'avance ne prouverait rien le jour où il faudrait le montrer.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function recordWishesIfChosen(Project $project, array $validated, Request $request): void
+    {
+        $narrator = $project->primaryNarrator;
+        $wishes = isset($validated['wishes']) ? PostMortemWish::from((string) $validated['wishes']) : null;
+        $referentName = self::given($validated['referent_name'] ?? null);
+        $referentContact = self::given($validated['referent_contact'] ?? null);
+
+        $chosen = ($wishes !== null && $wishes !== PostMortemWish::TransferToFamily)
+            || $referentName !== null
+            || $referentContact !== null;
+
+        if ($narrator === null || ! $chosen) {
+            return;
+        }
+
+        $this->directives->handle(
+            $project,
+            $narrator,
+            $wishes ?? PostMortemWish::TransferToFamily,
+            $referentName,
+            $referentContact,
+            ['ip' => $request->ip(), 'user_agent' => $request->userAgent()],
+        );
+    }
+
+    private static function given(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 
     /**

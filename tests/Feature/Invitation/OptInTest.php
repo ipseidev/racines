@@ -256,7 +256,7 @@ it('note l’acceptation sur l’invitation, avec son numéro d’envoi', functi
         ->and($invitation->attempt)->toBe(1);
 });
 
-it('propose la fiche contact et les souhaits sur l’écran de bienvenue', function (): void {
+it('propose la fiche contact sur l’écran de bienvenue, sans redemander les souhaits', function (): void {
     [, , $plain] = invitedProject();
 
     $this->post("/i/{$plain}/accepter", acceptancePayload());
@@ -268,9 +268,71 @@ it('propose la fiche contact et les souhaits sur l’écran de bienvenue', funct
             ->where('firstName', 'Jeanne')
             ->has('vcardUrl')
             ->has('nextPromptAt')
-            ->has('wishes', 3)
+            // Les souhaits ne sont plus demandés ici (T-236) : la page dit
+            // seulement s'ils ont été choisis.
+            ->missing('wishes')
             ->where('directivesRecorded', false),
         );
+});
+
+it('propose les souhaits sur la page d’acceptation, « transmettre » d’avance', function (): void {
+    [, , $plain] = invitedProject();
+
+    $this->get("/i/{$plain}")
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('narrator/OptIn')
+            ->has('wishes', 3)
+            ->where('defaultWish', PostMortemWish::TransferToFamily->value));
+});
+
+it('n’écrit aucune directive quand les souhaits restent au choix proposé', function (): void {
+    [, , $plain] = invitedProject();
+
+    // Le choix proposé n'est pas un choix : c'est la politique sans directive
+    // (doc 04 §6). Une directive s'accompagne d'un consentement journalisé, et
+    // un journal de cases remplies d'avance ne prouverait rien (T-236).
+    $this->post("/i/{$plain}/accepter", acceptancePayload([
+        'wishes' => PostMortemWish::TransferToFamily->value,
+        'referent_name' => '',
+        'referent_contact' => '',
+    ]))->assertRedirect();
+
+    expect(PostMortemDirective::query()->count())->toBe(0);
+});
+
+it('écrit la directive dès que la personne choisit autre chose à l’acceptation', function (): void {
+    [$project, $narrator, $plain] = invitedProject();
+
+    $this->post("/i/{$plain}/accepter", acceptancePayload([
+        'wishes' => PostMortemWish::Freeze->value,
+    ]))->assertRedirect();
+
+    $directive = PostMortemDirective::query()->firstOrFail();
+
+    expect($directive->wishes)->toBe(PostMortemWish::Freeze)
+        ->and($directive->narrator_id)->toBe($narrator->id)
+        ->and($directive->project_id)->toBe($project->id)
+        ->and($directive->consent_id)->not->toBeNull();
+
+    // Et la bienvenue le sait.
+    $this->get("/i/{$plain}/bienvenue")
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('directivesRecorded', true));
+});
+
+it('écrit la directive quand la personne désigne quelqu’un, même sans changer le choix', function (): void {
+    [, , $plain] = invitedProject();
+
+    $this->post("/i/{$plain}/accepter", acceptancePayload([
+        'wishes' => PostMortemWish::TransferToFamily->value,
+        'referent_name' => 'Claire',
+        'referent_contact' => 'Claire@Exemple.FR',
+    ]))->assertRedirect();
+
+    $directive = PostMortemDirective::query()->firstOrFail();
+
+    expect($directive->wishes)->toBe(PostMortemWish::TransferToFamily)
+        ->and($directive->referent_name)->toBe('Claire')
+        ->and($directive->referent_contact_masked)->toBe('Cl•••@Exemple.FR');
 });
 
 it('laisse remettre les souhaits à plus tard, puis les enregistrer', function (): void {

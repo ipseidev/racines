@@ -38,6 +38,8 @@ type Props = {
     slots: Option[];
     addressForms: Option[];
     refusalReasons: Option[];
+    wishes: Option[];
+    defaultWish: string;
     answered: boolean;
     acceptAction: string;
     refuseAction: string;
@@ -85,6 +87,8 @@ export default function OptIn({
     slots,
     addressForms,
     refusalReasons,
+    wishes,
+    defaultWish,
     answered,
     acceptAction,
     refuseAction,
@@ -114,6 +118,12 @@ export default function OptIn({
         prompt_day: promptDay,
         prompt_slot: promptSlot,
         address_form: addressForm,
+        // Les souhaits pour plus tard, proposés d'avance : le serveur n'écrit
+        // une directive que si la personne choisit autre chose ou désigne
+        // quelqu'un (T-236).
+        wishes: defaultWish,
+        referent_name: '',
+        referent_contact: '',
     });
 
     const refusal = useForm<{ reason: string }>({ reason: '' });
@@ -133,6 +143,11 @@ export default function OptIn({
     const consentError = consents
         .map((consent) => form.errors[`consent_${consent.kind}`])
         .find((error) => error !== undefined);
+
+    // Même chose pour les souhaits, repliés eux aussi.
+    const wishesError = ['wishes', 'referent_name', 'referent_contact'].some(
+        (field) => form.errors[field] !== undefined,
+    );
 
     if (answered) {
         return (
@@ -590,6 +605,108 @@ export default function OptIn({
                                         {consentError}
                                     </p>
                                 )}
+                            </section>
+                        </details>
+
+                        {/*
+                         * Les souhaits pour plus tard, repliés sous les accords
+                         * (T-236). « Transmettre à ma famille » est proposé
+                         * d'avance : c'est ce qui arrivera sans directive, sur
+                         * demande de la famille. La ligne sous le titre le dit
+                         * sans qu'il faille ouvrir, et le serveur n'écrit rien
+                         * tant que la personne ne choisit pas autre chose.
+                         */}
+                        <details
+                            className="card group mt-4"
+                            open={wishesError || undefined}
+                        >
+                            <summary className="flex min-h-[3.25rem] cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 [&::-webkit-details-marker]:hidden">
+                                <span className="flex flex-col gap-1">
+                                    <span className="text-brand text-[1.05rem] font-semibold">
+                                        {t('narrator.optin.advanced.title')}
+                                    </span>
+                                    <span className="text-brand-muted text-base">
+                                        {t('narrator.optin.advanced.summary')}
+                                    </span>
+                                </span>
+                                <span
+                                    aria-hidden="true"
+                                    className="text-brand-muted flex-none text-2xl transition-transform group-open:rotate-45"
+                                >
+                                    +
+                                </span>
+                            </summary>
+
+                            <section
+                                aria-labelledby="wishes"
+                                className="border-brand-sand border-t px-5 pt-4 pb-5"
+                            >
+                                <h3
+                                    id="wishes"
+                                    className="text-lg font-semibold"
+                                >
+                                    {t('narrator.optin.advanced.wishes_title')}
+                                </h3>
+                                <p className="text-brand-muted mt-1 text-base">
+                                    {t('narrator.optin.advanced.wishes_body')}
+                                </p>
+
+                                <fieldset className="mt-4 flex flex-col gap-3">
+                                    <legend className="sr-only">
+                                        {t(
+                                            'narrator.optin.advanced.wishes_title',
+                                        )}
+                                    </legend>
+                                    {wishes.map((wish) => (
+                                        <ChoiceCard
+                                            key={wish.value}
+                                            name="wishes"
+                                            value={wish.value}
+                                            checked={
+                                                form.data.wishes === wish.value
+                                            }
+                                            onChange={(value) =>
+                                                form.setData('wishes', value)
+                                            }
+                                            title={wish.label}
+                                        />
+                                    ))}
+                                </fieldset>
+
+                                <div className="mt-5 flex flex-col gap-5">
+                                    <TextField
+                                        label={t(
+                                            'narrator.optin.advanced.referent',
+                                        )}
+                                        error={form.errors.referent_name}
+                                        type="text"
+                                        value={String(form.data.referent_name)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'referent_name',
+                                                event.target.value,
+                                            )
+                                        }
+                                        autoComplete="off"
+                                    />
+                                    <TextField
+                                        label={t(
+                                            'narrator.optin.advanced.referent_contact',
+                                        )}
+                                        error={form.errors.referent_contact}
+                                        type="text"
+                                        value={String(
+                                            form.data.referent_contact,
+                                        )}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'referent_contact',
+                                                event.target.value,
+                                            )
+                                        }
+                                        autoComplete="off"
+                                    />
+                                </div>
                             </section>
                         </details>
                     </form>

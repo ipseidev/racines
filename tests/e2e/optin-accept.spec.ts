@@ -64,21 +64,10 @@ test('accepte le cadeau et voit sa première question annoncée', async ({
         page.getByRole('link', { name: 'Ajouter le contact' }),
     ).toBeVisible();
 
-    // Et les souhaits pour plus tard, avec « Plus tard » proposé aussi
-    // visiblement que l'autre choix.
-    const later = page.getByRole('button', { name: 'Plus tard' });
-    const now = page.getByRole('button', {
-        name: 'Dire mes souhaits maintenant',
-    });
-
-    await expect(later).toBeVisible();
-    await expect(now).toBeVisible();
-
-    await later.click();
-
-    // « Plus tard » ne poste rien : la section se replie, et la personne sait
-    // qu'elle pourra y revenir.
-    await expect(page.getByText(/quand vous voudrez/)).toBeVisible();
+    // Et rien à décider de plus (T-236) : les souhaits ont été proposés sur
+    // la page d'acceptation, on dit seulement ce qui vaut.
+    await expect(page.getByText(/transmises à votre famille/)).toBeVisible();
+    await expect(page.getByRole('button')).toHaveCount(0);
 });
 
 test('montre les réglages avant les boutons, et replie les accords dessous', async ({
@@ -88,7 +77,8 @@ test('montre les réglages avant les boutons, et replie les accords dessous', as
 
     const accept = page.getByRole('button', { name: 'J’accepte' });
     const day = page.getByLabel('Quel jour ?');
-    const consents = page.locator('details');
+    const consents = page.locator('details', { hasText: 'Vos accords' });
+    const advanced = page.locator('details', { hasText: 'Paramètres avancés' });
     const transcription = page.getByRole('button', { name: /Transcription/ });
 
     // Les réglages se lisent avant de dire oui ; les accords attendent
@@ -129,6 +119,20 @@ test('montre les réglages avant les boutons, et replie les accords dessous', as
 
     await transcription.click();
     await expect(page.getByText(/^Version /)).toBeVisible();
+
+    // Les souhaits pour plus tard, repliés sous les accords, « transmettre à
+    // ma famille » coché d'avance : la personne n'a rien à gérer (T-236).
+    const transfer = page.getByRole('radio', {
+        name: 'Transmettre à ma famille',
+    });
+
+    await expect(advanced).toContainText('transmises à votre famille');
+    await expect(transfer).toBeHidden();
+
+    await advanced.locator('summary').click();
+
+    await expect(transfer).toBeVisible();
+    await expect(transfer).toBeChecked();
 
     // Rien n'a été posté : la page est intacte pour la prochaine fois.
     await expect(accept).toBeVisible();

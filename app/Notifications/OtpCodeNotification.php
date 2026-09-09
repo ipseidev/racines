@@ -36,12 +36,14 @@ final class OtpCodeNotification extends Notification
 
     public function toMail(mixed $notifiable): MailMessage
     {
+        // Une vue plutôt que des lignes : le code est posé seul, en grand,
+        // pour être lu à bout de bras et recopié sans le relire (T-237).
         return (new MailMessage)
             ->subject(__('notifications.otp.subject', ['code' => $this->code]))
-            ->greeting(__('notifications.otp.greeting'))
-            ->line(__('notifications.otp.code_line', ['code' => $this->code]))
-            ->line(__('notifications.otp.expiry_line', ['minutes' => $this->minutes]))
-            ->line(__('notifications.otp.warning_line'));
+            ->markdown('mail.otp', [
+                'code' => $this->code,
+                'minutes' => $this->minutes,
+            ]);
     }
 
     public function toSms(mixed $notifiable): string

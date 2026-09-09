@@ -167,6 +167,7 @@ plus cher que pas de feuille du tout.
 | `sail artisan demo:cadeau` | Le parcours du cadeau bout à bout : l'annonce d'abord, puis `--question` pour la première question sans attendre la nuit que l'acceptation pose — jusqu'à la photo (blocs 10 → 04 → 12) |
 | `sail artisan demo:reaction-timing` | Affiche ou bascule le drapeau des réactions du projet d'essai ; `--veille` antidate une réaction pour que le résumé la voie (bloc 08) |
 | `sail artisan fluide:try --file=…` | Soumet un mot à mot au vrai modèle et imprime le rendu à côté, sans rien écrire en base (bloc 06, corpus dans `docs/corpus/`) |
+| `sail artisan demo:courriels --envoyer` | Rend les dix courriels du produit sur un décor jetable (transaction annulée) et les poste dans Mailpit, pour relire le gabarit dans un vrai client ; sans `--envoyer`, écrit seulement le HTML dans `storage/app/private/courriels` (T-237) |
 
 **Ces commandes ne remplacent jamais la vraie.** `demo:reaction-timing --veille`
 prépare l'état, mais c'est `reactions:send-digests` — celle qui tournera à 9 h

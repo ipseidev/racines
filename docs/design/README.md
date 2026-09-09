@@ -190,6 +190,71 @@ cinq. Pour la personne, le résultat est celui que le fondateur demandait : rien
 Fraunces comme le titre de la page, les réglages dans une carte blanche, et le
 champ de contact qui suit le canal choisi, déjà rempli.
 
+**Les confettis des deux oui (8 septembre, T-235).** Sur l'écran de bienvenue
+de la narratrice et sur la page de merci de l'acheteur, une seule salve façon
+pétard : deux bouffées depuis les coins du bas, aux couleurs de la marque (or,
+sauge, terracotta, lin), sans son ni boucle (`lib/celebrate.ts`,
+`canvas-confetti` chargé à l'instant du tir). Douce pour la narratrice,
+généreuse pour l'acheteur, où elle part quand la couverture du livre bascule.
+Rien sous `prefers-reduced-motion`, et jamais deux fois pour le même oui.
+
+**Rien à gérer (8 septembre, T-236).** Sous « Vos accords », un second
+accordéon « Paramètres avancés », fermé, porte les souhaits pour plus tard avec
+« Transmettre à ma famille » coché d'avance et la ligne « Après vous : vos
+histoires pourront être transmises à votre famille, sauf choix contraire »
+lisible sans l'ouvrir. L'écran de bienvenue ne pose plus de question : il dit
+ce qui vaut. Le serveur n'écrit une directive que si la personne choisit autre
+chose ou désigne quelqu'un.
+
+## Les courriels (passe du 9 septembre, T-237)
+
+Jusqu'ici, tout courriel partait dans le gabarit gris de Laravel : « Narrae »
+en texte brut au-dessus d'une carte blanche, un bouton bleu, « Tous droits
+réservés » en pied, et des objets restés en anglais sur les courriels du
+framework (« Reset your password »). Le gabarit est
+désormais le nôtre, et il suit une règle simple : **un courriel de la marque
+ressemble à la page qu'il ouvre.**
+
+- **Une lettre sur papier crème**, pas une carte sur du gris : le fond est le
+  crème de la page, le texte est posé dessus, en Inter 19 px comme sur les
+  pages de la narratrice. En tête, le pictogramme (en PNG : Gmail et Outlook
+  ne dessinent pas un SVG) et le nom en Fraunces, centrés comme une page de
+  titre, sous le filet d'or de l'ouverture. Le nom reste du texte : si la
+  messagerie bloque les images, il reste lisible, et le pictogramme est
+  décoratif au sens des lecteurs d'écran.
+- **Le salut en Fraunces italique** (« Bonjour Odette, »), comme sur la page
+  d'invitation : les italiques portent les mots qui comptent. La lettre de la
+  personne qui offre est une citation, en Fraunces italique sous un filet
+  d'or.
+- **La question de la semaine dans sa carte** : blanche, à filet sable, un
+  filet d'or, la question en Fraunces à 26 px, exactement `.record-card`. Un
+  code à recopier (code à usage unique, code de réduction) est posé seul, en
+  grand, sur lin, sans aucun lien à côté.
+- **Un bouton, terracotta, et rien d'autre en terracotta.** Le « niveau » que
+  Laravel attache à une notification (`success`, `error`) ne colore rien : un
+  bouton se voit par son isolement. Sur téléphone il prend toute la largeur.
+  Sous le message, le lien en clair pour qui ne peut pas presser le bouton.
+- **Le pied est le même partout** et porte trois repères d'anti-hameçonnage
+  (doc 04 §9) : l'adresse du support, le domaine dont partent nos liens, le
+  nom de la marque avec « Données hébergées dans l'Union européenne », et la
+  mention légale dès que l'administration la renseigne. Rien en or dans le
+  pied : l'or est un filet, jamais un petit texte.
+- **Thème clair seul**, déclaré au client (`color-scheme: light`). Les polices
+  sont chargées depuis nos fichiers là où la messagerie le permet — Apple
+  Mail, Mail d'iOS — et tombent sur Georgia et Arial ailleurs, y compris dans
+  Word-Outlook, à qui on nomme les replis.
+
+Ce que cela change dans le code : les composants sont dans
+`resources/views/vendor/mail/html` (plus `question` et `code`, qui n'existent
+pas chez Laravel), le thème est **une vue Blade** (`mail/themes/brand`) qui
+lit les couleurs et les polices dans `BrandSettings` à chaque rendu — changer
+la charte dans l'administration change les courriels sans déploiement —, et
+`vendor/notifications/email` remplace le gabarit anglais. Les tons de dessin
+(lin, sable, or) sont fixes, comme dans `app.css`. Vérifié à l'écran à 390 et
+720 px sur huit courriels, et dans Mailpit. Pour relire : `sail artisan
+demo:courriels --envoyer` rend les dix courriels du produit sur un décor
+jetable et les poste dans Mailpit.
+
 ## L'espace Initiateur·rice (passe du 5 septembre, T-149)
 
 Le checkpoint du bloc 10 l'a dit sans détour : l'espace avait la palette mais

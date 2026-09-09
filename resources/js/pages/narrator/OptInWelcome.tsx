@@ -1,18 +1,13 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, usePage } from '@inertiajs/react';
+import { useEffect } from 'react';
 
-import { ChoiceCard } from '@/components/form/ChoiceCard';
-import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
-
-type Option = { value: string; label: string };
+import { celebrate } from '@/lib/celebrate';
 
 type Props = {
     firstName: string | null;
     nextPromptAt: string | null;
     vcardUrl: string;
-    wishes: Option[];
-    directivesAction: string;
     directivesRecorded: boolean;
 };
 
@@ -34,33 +29,29 @@ function formatWhen(iso: string | null, fallback: string): string {
  * Juste après le oui : quand arrive la première question, comment nous
  * reconnaître, et un mot sur plus tard.
  *
- * Les souhaits pour après sont proposés, jamais imposés : « Plus tard » a
- * la même taille que « maintenant », et la personne pourra y revenir depuis
- * son espace.
+ * Les souhaits pour après se choisissent sur la page d'acceptation, repliés
+ * sous les accords (T-236). Ici on ne redemande rien à quelqu'un qui vient
+ * d'accepter de raconter sa vie : on dit ce qui vaut, et où le changer.
+ *
+ * Et une pluie de confettis, légère, aux couleurs de la marque (T-235) : elle
+ * vient de dire oui. Le message flash n'existe qu'à l'arrivée depuis
+ * l'acceptation, donc la fête ne se rejoue ni au rechargement ni plus tard.
  */
 export default function OptInWelcome({
     firstName,
     nextPromptAt,
     vcardUrl,
-    wishes,
-    directivesAction,
     directivesRecorded,
 }: Props) {
     const t = useT();
     const status =
         (usePage().props.flash as { status?: string | null } | undefined)
             ?.status ?? null;
-    const [asking, setAsking] = useState(false);
-    const [deferred, setDeferred] = useState(false);
-
-    const form = useForm({
-        wishes: wishes[0]?.value ?? '',
-        referent_name: '',
-        referent_contact: '',
-    });
-
-    const pair =
-        'btn-secondary press min-h-[2.75rem] flex-1 py-3 disabled:opacity-60';
+    useEffect(() => {
+        if (status !== null) {
+            void celebrate('soft');
+        }
+    }, [status]);
 
     return (
         <>
@@ -124,105 +115,12 @@ export default function OptInWelcome({
                 <h2 id="wishes" className="text-xl font-semibold">
                     {t('narrator.optin_welcome.wishes.title')}
                 </h2>
-                <p className="text-brand-muted mt-2 text-base">
-                    {t('narrator.optin_welcome.wishes.body')}
+
+                <p role="status" className="panel mt-4">
+                    {directivesRecorded
+                        ? t('narrator.optin_welcome.wishes.saved')
+                        : t('narrator.optin_welcome.wishes.default')}
                 </p>
-
-                {directivesRecorded ? (
-                    <p role="status" className="panel mt-4">
-                        {t('narrator.optin_welcome.wishes.saved')}
-                    </p>
-                ) : asking ? (
-                    <form
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            form.post(directivesAction);
-                        }}
-                        className="enter mt-6 flex flex-col gap-5"
-                    >
-                        <fieldset className="flex flex-col gap-3">
-                            <legend className="sr-only">
-                                {t('narrator.optin_welcome.wishes.title')}
-                            </legend>
-                            {wishes.map((wish) => (
-                                <ChoiceCard
-                                    key={wish.value}
-                                    name="wishes"
-                                    value={wish.value}
-                                    checked={form.data.wishes === wish.value}
-                                    onChange={(value) =>
-                                        form.setData('wishes', value)
-                                    }
-                                    title={wish.label}
-                                />
-                            ))}
-                        </fieldset>
-
-                        <TextField
-                            label={t('narrator.optin_welcome.wishes.referent')}
-                            type="text"
-                            value={form.data.referent_name}
-                            onChange={(event) =>
-                                form.setData(
-                                    'referent_name',
-                                    event.target.value,
-                                )
-                            }
-                            autoComplete="off"
-                        />
-
-                        <TextField
-                            label={t('narrator.optin_welcome.wishes.note')}
-                            type="text"
-                            value={form.data.referent_contact}
-                            onChange={(event) =>
-                                form.setData(
-                                    'referent_contact',
-                                    event.target.value,
-                                )
-                            }
-                            autoComplete="off"
-                        />
-
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <button
-                                type="submit"
-                                disabled={form.processing}
-                                className={pair}
-                            >
-                                {t('narrator.optin_welcome.wishes.save')}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setAsking(false)}
-                                className={pair}
-                            >
-                                {t('narrator.optin_welcome.wishes.later')}
-                            </button>
-                        </div>
-                    </form>
-                ) : deferred ? (
-                    <p role="status" className="panel enter mt-4">
-                        {t('narrator.optin_welcome.wishes.deferred')}
-                    </p>
-                ) : (
-                    <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                        <button
-                            type="button"
-                            onClick={() => setAsking(true)}
-                            className={pair}
-                        >
-                            {t('narrator.optin_welcome.wishes.start')}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setDeferred(true)}
-                            className={pair}
-                        >
-                            {t('narrator.optin_welcome.wishes.later')}
-                        </button>
-                    </div>
-                )}
             </section>
         </>
     );

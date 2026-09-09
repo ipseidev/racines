@@ -16,6 +16,23 @@ declare(strict_types=1);
 return [
 
     /*
+     * Le gabarit commun à tous les courriels (T-237) : ce que le cadre dit
+     * autour du message, quel que soit le message. Le pied porte trois
+     * repères d'anti-hameçonnage du doc 04 §9 — la marque nommée, l'adresse
+     * du support, le domaine dont partent nos liens — pour que la personne
+     * puisse les vérifier sans nous faire confiance sur parole.
+     */
+    'layout' => [
+        'greeting' => 'Bonjour,',
+        'error_greeting' => 'Un instant,',
+        'salutation' => 'À bientôt, l’équipe :brand.',
+        'trouble' => 'Si le bouton « :action » ne réagit pas, copiez cette adresse dans votre navigateur :',
+        'help' => 'Une question ? Écrivez-nous à :email.',
+        'domain' => 'Nos liens commencent toujours par :domain.',
+        'copyright' => '© :year :brand · Données hébergées dans l’Union européenne.',
+    ],
+
+    /*
      * Le livre (bloc 13). Trois moments, et jamais de promesse de délai
      * d'impression : le devis n'est pas fait, et une date annoncée qu'on ne
      * tient pas coûte plus que l'attente elle-même (doc 03 P0-14).
@@ -300,7 +317,7 @@ return [
     'welcome_offer' => [
         'subject' => 'Vos :amount offerts sur le livre',
         'greeting' => 'Bonjour,',
-        'code_line' => 'Voici votre code de réduction : :code',
+        'code_intro' => 'Voici votre code de réduction :',
         'value_line' => 'Il vous fait :amount de réduction sur toute votre commande, jusqu’au :date.',
         'how_line' => 'Entrez-le au récapitulatif de votre commande. Si vous commandez depuis l’appareil où vous l’avez demandé, il s’appliquera tout seul.',
         'button' => 'Commencer son livre',
@@ -336,7 +353,7 @@ return [
     'otp' => [
         'subject' => 'Votre code : :code',
         'greeting' => 'Bonjour,',
-        'code_line' => 'Votre code est :code.',
+        'code_intro' => 'Votre code :',
         'expiry_line' => 'Il expire dans :minutes minutes.',
         'warning_line' => 'Ne le communiquez à personne, même à quelqu’un qui dirait appeler de notre part.',
         'sms' => ':brand : votre code est :code. Il expire dans :minutes minutes. Ne le communiquez à personne.',

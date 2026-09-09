@@ -94,5 +94,7 @@ Le bloc 10 n'installe que `laravel/cashier`. Les pages légales sont rendues ave
 | posthog-js | 1.x | 15 — chargé par `import()` dynamique : une page à jeton ne télécharge pas le fragment (T-204) |
 | fake-indexeddb (dev) | 6.2.5 | 04 |
 | @testing-library/user-event (dev) | 14.6.7 | 04 |
+| canvas-confetti | 1.9.4 | 10 — les confettis des deux oui (T-235) ; chargé par `import()` à l'instant du tir, six kilo-octets, sans dépendance |
+| @types/canvas-confetti (dev) | 1.9.0 | 10 |
 
 `vite-plus` fournit oxlint, oxfmt et Vitest : ni ESLint, ni Prettier, ni Vitest ne sont installés séparément (décision T-30).

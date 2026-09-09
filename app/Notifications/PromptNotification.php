@@ -86,7 +86,6 @@ final class PromptNotification extends Notification implements TracksDelivery
                 'question' => $this->story->questionText(),
                 'link' => $this->link(),
                 'brand' => Brand::name(),
-                'supportEmail' => Brand::supportEmail(),
             ]);
     }
 

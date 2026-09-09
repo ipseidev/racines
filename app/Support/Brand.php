@@ -73,6 +73,32 @@ final class Brand
         return $shipped === '' ? null : asset($shipped);
     }
 
+    /**
+     * Le pictogramme tel qu'un courriel peut le montrer.
+     *
+     * Les clients de messagerie ne dessinent pas un SVG : le fichier livré
+     * a son double en PNG (`brand.mark_email`). Un pictogramme téléversé
+     * dans l'administration l'emporte s'il est matriciel ; s'il est
+     * vectoriel, les courriels portent le nom seul — mieux qu'un dessin qui
+     * ne serait plus celui de la marque.
+     */
+    public static function markEmailUrl(): ?string
+    {
+        $path = self::settings()->mark_path;
+
+        if ($path !== null) {
+            $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+            return in_array($extension, ['png', 'jpg', 'jpeg', 'gif'], true)
+                ? asset('storage/'.$path)
+                : null;
+        }
+
+        $shipped = (string) config('brand.mark_email');
+
+        return $shipped === '' ? null : asset($shipped);
+    }
+
     public static function logoUrl(): ?string
     {
         $path = self::settings()->logo_path;

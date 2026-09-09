@@ -13,6 +13,7 @@ use App\Support\Brand;
 use App\Support\Links;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\HtmlString;
 
 /**
  * « {Initiateur} vous offre {Marque}. »
@@ -80,8 +81,11 @@ final class GiftInvitationNotification extends Notification implements TracksDel
 
         if (is_string($personal) && trim($personal) !== '') {
             // Le message de la personne, cité tel quel : c'est lui qui fait
-            // ouvrir le lien, pas notre argumentaire.
-            $message->line('« '.trim($personal).' »');
+            // ouvrir le lien, pas notre argumentaire. En citation, donc en
+            // Fraunces italique sous un filet d'or (T-237) : sur la page
+            // d'invitation aussi, la lettre de la personne qui offre porte
+            // les italiques. Échappé à la main, puisqu'on passe du HTML.
+            $message->line(new HtmlString('> « '.e(trim($personal)).' »'));
         }
 
         return $message

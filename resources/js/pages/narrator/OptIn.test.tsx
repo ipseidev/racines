@@ -31,6 +31,15 @@ const catalogue = {
                 intro: 'Touchez un accord pour lire son texte.',
                 version: 'Version :version',
             },
+            advanced: {
+                title: 'Paramètres avancés',
+                summary:
+                    'Après vous : vos histoires pourront être transmises à votre famille, sauf choix contraire.',
+                wishes_title: 'Vos souhaits pour plus tard',
+                wishes_body: 'Ce qu’il faudra faire de vos histoires.',
+                referent: 'La personne à qui nous nous adresserons',
+                referent_contact: 'Comment la joindre',
+            },
             settings: {
                 title: 'Comment nous vous joignons',
                 hint: 'Tout est déjà réglé.',
@@ -169,6 +178,12 @@ const props = {
         { value: 'not_the_right_time', label: 'Ce n’est pas le bon moment' },
         { value: 'prefer_not_to', label: 'Je préfère ne pas' },
     ],
+    wishes: [
+        { value: 'transfer_to_family', label: 'Transmettre à ma famille' },
+        { value: 'freeze', label: 'Geler, sans rien transmettre' },
+        { value: 'delete', label: 'Tout supprimer' },
+    ],
+    defaultWish: 'transfer_to_family',
     answered: false,
     acceptAction: '/i/jeton/accepter',
     refuseAction: '/i/jeton/refuser',
@@ -260,6 +275,44 @@ describe('la page d’opt-in', () => {
 
         expect(screen.getByLabelText('Votre numéro de téléphone')).toBeTruthy();
         expect(screen.getByLabelText('Votre adresse de courriel')).toBeTruthy();
+    });
+
+    it('replie les souhaits pour plus tard sous les accords, « transmettre » proposé d’avance', () => {
+        render(<OptIn {...props} />);
+
+        const [accords, advanced] = Array.from(
+            document.querySelectorAll('details'),
+        );
+
+        if (accords === undefined || advanced === undefined) {
+            throw new Error('deux accordéons attendus');
+        }
+
+        // Fermé, sous les accords, et la ligne sous le titre dit ce qui vaut
+        // sans qu'il faille ouvrir.
+        expect(advanced.open).toBe(false);
+        expect(
+            (accords.compareDocumentPosition(advanced) &
+                Node.DOCUMENT_POSITION_FOLLOWING) !==
+                0,
+        ).toBe(true);
+        expect(advanced.querySelector('summary')?.textContent).toContain(
+            'Paramètres avancés',
+        );
+        expect(advanced.querySelector('summary')?.textContent).toContain(
+            'transmises à votre famille',
+        );
+
+        // « Transmettre à ma famille » est coché d'avance : c'est ce qui
+        // arrivera sans directive, et la personne n'a rien à gérer. Le
+        // serveur, lui, n'écrit rien tant qu'elle ne choisit pas autre chose.
+        expect(
+            screen.getByRole('radio', { name: 'Transmettre à ma famille' }),
+        ).toBeChecked();
+        expect(server.initial).toMatchObject({
+            wishes: 'transfer_to_family',
+            referent_name: '',
+        });
     });
 
     it('ouvre les accords quand le serveur en refuse un', () => {

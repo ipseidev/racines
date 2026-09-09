@@ -92,15 +92,16 @@ it('écrit un courriel qui donne le code, sa valeur et sa fin', function (): voi
     $lead = Lead::factory()->create(['discount_percent' => 10]);
 
     $mail = (new WelcomeOfferNotification($lead))->toMail($lead);
-    $text = implode(' ', array_map('strval', $mail->introLines)).' '.implode(' ', array_map('strval', $mail->outroLines));
+    // Le courriel est une vue depuis T-237 : on lit ce qui est rendu.
+    $html = (string) $mail->render();
 
     expect($mail->subject)->toContain("10\u{202F}%")
-        ->and($text)->toContain($lead->discount_code)
-        ->and($text)->toContain("10\u{202F}%")
-        ->and($text)->toContain($lead->code_expires_at->translatedFormat('j F Y'))
-        ->and($mail->actionUrl)->toBe(route('checkout.show'))
+        ->and($html)->toContain($lead->discount_code)
+        ->and($html)->toContain("10\u{202F}%")
+        ->and($html)->toContain($lead->code_expires_at->translatedFormat('j F Y'))
+        ->and($html)->toContain('href="'.route('checkout.show').'"')
         // Pas de nouvelles promises à qui ne les a pas demandées.
-        ->and($text)->not->toContain('nos nouvelles');
+        ->and($html)->not->toContain('nos nouvelles');
 });
 
 it('part vraiment par courriel, avec sa trace de livraison', function (): void {
@@ -125,10 +126,9 @@ it('enregistre la demande de nouvelles, datée et versionnée, seulement si la c
         // Jamais l'adresse IP en clair.
         ->and($lead->ip_hash)->not->toBe('127.0.0.1');
 
-    $mail = (new WelcomeOfferNotification($lead))->toMail($lead);
-    $text = implode(' ', array_map('strval', $mail->outroLines));
+    $html = (string) (new WelcomeOfferNotification($lead))->toMail($lead)->render();
 
-    expect($text)->toContain('nos nouvelles');
+    expect($html)->toContain('nos nouvelles');
 });
 
 it('ne fabrique pas un second code pour la même adresse, et la renvoie le sien', function (): void {

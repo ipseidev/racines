@@ -31,6 +31,16 @@ return [
     'mark' => '/img/brand/mark.svg',
 
     /*
+     * Le même pictogramme, en PNG, pour les courriels : Gmail et Outlook ne
+     * dessinent pas un SVG. Généré depuis mark.svg (192 px de large, soit
+     * quatre fois son affichage). Si l'administration téléverse un
+     * pictogramme matriciel, il le remplace ; si elle téléverse un SVG, les
+     * courriels portent le nom seul plutôt qu'un dessin qui ne serait plus
+     * le sien.
+     */
+    'mark_email' => '/img/brand/mark.png',
+
+    /*
      * Palette issue de l'analyse colorimétrique du fondateur (3 septembre 2026,
      * docs/design/README.md). Deux couleurs signature : le vert forêt, qui
      * porte la marque, et la terracotta, qui porte l'action — et rien d'autre.

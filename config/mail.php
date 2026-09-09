@@ -117,4 +117,26 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Gabarit des courriels
+    |--------------------------------------------------------------------------
+    |
+    | Tous les courriels — notifications, Mailables Markdown, réinitialisation
+    | de mot de passe — passent par les composants de `views/vendor/mail`
+    | (T-237). Le thème est une vue Blade et non un fichier CSS : il lit les
+    | couleurs et les polices dans BrandSettings au moment du rendu, comme la
+    | vue racine des pages, pour qu'un changement de charte dans
+    | l'administration atteigne les courriels sans déploiement.
+    |
+    */
+
+    'markdown' => [
+        'theme' => 'themes.brand',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
+
 ];

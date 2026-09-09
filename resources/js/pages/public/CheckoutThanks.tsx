@@ -1,6 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
+import { useEffect } from 'react';
 
 import { useT } from '@/hooks/useT';
+import { celebrateOnce } from '@/lib/celebrate';
 import { ofName } from '@/lib/french';
 
 import { formatDate, formatTime } from './Checkout';
@@ -25,14 +27,30 @@ type Props = {
  * Le livre qui s'ouvre est le geste le plus appuyé de toute l'interface
  * (T-135) : c'est l'objet qu'on vient d'offrir, à l'instant où on l'offre.
  * Il s'ouvre une fois, et reste ouvert pour qui a demandé qu'on ne bouge pas.
+ * Les confettis partent quand la couverture bascule (T-235), une fois par
+ * commande : un rechargement ne refait pas la fête.
  */
+
+/** La couverture commence à pivoter à 0,9 s et passe l'équerre vers 1,5 s. */
+const COVER_OPEN_MS = 1500;
+
 export default function CheckoutThanks({
+    sessionId,
     forSelf,
     narratorFirstName,
     giftSendAt,
     giftSendTime,
 }: Props) {
     const t = useT();
+
+    useEffect(() => {
+        const timer = window.setTimeout(
+            () => celebrateOnce(sessionId ?? 'commande', 'generous'),
+            COVER_OPEN_MS,
+        );
+
+        return () => window.clearTimeout(timer);
+    }, [sessionId]);
     const name = narratorFirstName ?? '';
     const of = ofName(name);
 
