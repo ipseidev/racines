@@ -15,6 +15,10 @@ namespace App\Services\Payments;
 interface CheckoutSessions
 {
     /**
+     * Sans coupon posé par nous, la page du prestataire ouvre son propre
+     * champ « code promo » : les deux ne peuvent pas coexister — Stripe
+     * refuse la session qui demanderait l'un et l'autre.
+     *
      * @param  list<array{price: string, quantity: int}>  $lineItems
      * @param  array<string, string>  $metadata
      * @param  list<array{coupon: string}>  $discounts  Des identifiants de

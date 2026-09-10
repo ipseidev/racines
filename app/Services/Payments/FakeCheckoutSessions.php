@@ -41,6 +41,7 @@ final class FakeCheckoutSessions implements CheckoutSessions
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
             'discounts' => $discounts,
+            'allow_promotion_codes' => $discounts === [],
         ];
 
         return new CheckoutSession(id: $id, url: 'https://checkout.stripe.test/'.$id);

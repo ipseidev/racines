@@ -121,6 +121,27 @@ it('se retire', function (): void {
         ->and($draft->value('discount_percent'))->toBeNull();
 });
 
+it('oublie le témoin de bienvenue quand le code est retiré', function (): void {
+    // Sans cela, le retrait n'a aucun effet visible : le brouillon perd le
+    // code, puis l'affichage du récapitulatif le repose depuis le témoin.
+    $lead = Lead::factory()->create();
+    $draft = discountDraft(['discount_code' => $lead->discount_code, 'discount_percent' => 10]);
+
+    $this->withCookie('checkout_draft', $draft->id)
+        ->withCookie(WelcomeOfferController::COOKIE, $lead->discount_code)
+        ->delete('/acheter/code')
+        ->assertRedirect('/acheter?step=6')
+        ->assertCookieExpired(WelcomeOfferController::COOKIE);
+
+    // Le navigateur n'enverra plus le témoin effacé ; le client de test, lui,
+    // garde ceux qu'on lui a donnés, d'où la valeur vide.
+    $this->withCookie(WelcomeOfferController::COOKIE, '')
+        ->get('/acheter?step=6')
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('discount', null));
+
+    expect($draft->refresh()->value('discount_code'))->toBeNull();
+});
+
 it('applique tout seul le code laissé en cookie par la page d’accueil', function (): void {
     $lead = Lead::factory()->create();
     $draft = discountDraft();
@@ -172,7 +193,10 @@ it('envoie le coupon Stripe, et jamais un pourcentage ni un montant', function (
     expect($session['discounts'])->toBe([['coupon' => 'coupon_welcome']])
         ->and($session['metadata']['discount_code'])->toBe($lead->discount_code)
         ->and(json_encode($session))->not->toContain('"10"')
-        ->and(json_encode($session))->not->toContain('890');
+        ->and(json_encode($session))->not->toContain('890')
+        // Stripe refuse la session qui demanderait les deux, et le
+        // récapitulatif a déjà annoncé ce montant-là.
+        ->and($session['allow_promotion_codes'])->toBeFalse();
 });
 
 it('n’envoie aucun coupon sans code', function (): void {
@@ -184,7 +208,10 @@ it('n’envoie aucun coupon sans code', function (): void {
     $this->actingAs($buyer)->post('/acheter/payer')->assertRedirect();
 
     expect($sessions->last()['discounts'])->toBe([])
-        ->and($sessions->last()['metadata']['discount_code'])->toBe('');
+        ->and($sessions->last()['metadata']['discount_code'])->toBe('')
+        // Personne à qui rendre des comptes ici : la page de Stripe ouvre son
+        // champ, pour les codes promotionnels créés là-bas.
+        ->and($sessions->last()['allow_promotion_codes'])->toBeTrue();
 });
 
 it('retire au paiement un code qui a servi ailleurs, et encaisse sans lui', function (): void {

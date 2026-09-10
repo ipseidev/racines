@@ -129,6 +129,14 @@ final readonly class CheckoutController
             ->withCookie(self::draftCookie($draft));
     }
 
+    /**
+     * Retire le code du brouillon, et oublie le témoin de bienvenue.
+     *
+     * Les deux, sinon le retrait ne se voit pas : le brouillon perdrait le
+     * code, puis l'affichage du récapitulatif le reposerait aussitôt depuis
+     * le témoin. Quelqu'un qui retire un code ne demande pas qu'on lui en
+     * remette un — le sien reste dans son courriel s'il se ravise.
+     */
     public function removeCode(Request $request): RedirectResponse
     {
         $draft = self::draftFor($request);
@@ -137,7 +145,8 @@ final readonly class CheckoutController
 
         return redirect()
             ->to(LocalizedRoutes::route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP]))
-            ->withCookie(self::draftCookie($draft));
+            ->withCookie(self::draftCookie($draft))
+            ->withCookie(cookie()->forget(WelcomeOfferController::COOKIE));
     }
 
     public function store(Request $request, int $step): RedirectResponse

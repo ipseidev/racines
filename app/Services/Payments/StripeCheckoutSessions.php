@@ -44,13 +44,43 @@ final class StripeCheckoutSessions implements CheckoutSessions
             // la personne au moment où elle sort sa carte. Stripe ne connaît
             // que la langue, pas le marché.
             'locale' => Locales::current()->stripe(),
+            /*
+             * Ce qui suit vient du Checkout Studio (2026-09-10). Les quatre
+             * premiers sont les valeurs par défaut de Stripe, écrites ici
+             * pour que la page reste celle qu'on a réglée le jour où Stripe
+             * changera ses défauts.
+             */
+            'ui_mode' => 'hosted_page',
+            'origin_context' => 'web',
+            'billing_address_collection' => 'auto',
+            'submit_type' => 'auto',
+            // Le téléphone de l'acheteur, que le tunnel ne demande pas : il
+            // ne collecte que celui du narrateur, à qui partent les SMS.
+            'phone_number_collection' => ['enabled' => true],
+            /*
+             * La TVA calculée par Stripe. Sans effet tant qu'aucune
+             * immatriculation n'est active ; le jour où l'une le sera, l'euro
+             * est inféré toutes taxes comprises et les prix annoncés ne
+             * bougeront pas — la taxe s'extrait du montant au lieu de s'y
+             * ajouter.
+             */
+            'automatic_tax' => ['enabled' => true],
         ];
 
-        // Un coupon posé par nous, et pas de champ « code promo » sur la page
-        // de Stripe : le code se saisit chez nous, où l'on sait à qui il
-        // appartient et s'il a déjà servi.
+        /*
+         * L'un ou l'autre, jamais les deux : « You may only specify one of
+         * these parameters: allow_promotion_codes, discounts ».
+         *
+         * Un code de bienvenue posé chez nous gagne : c'est celui dont on
+         * sait à qui il appartient et s'il a déjà servi (T-141), et le
+         * récapitulatif en a déjà annoncé le montant. Sinon la page de
+         * Stripe ouvre son champ, qui sert les codes promotionnels créés
+         * là-bas — ceux qu'aucune ligne de `leads` ne porte.
+         */
         if ($discounts !== []) {
             $parameters['discounts'] = $discounts;
+        } else {
+            $parameters['allow_promotion_codes'] = true;
         }
 
         $session = $this->client()->checkout->sessions->create($parameters);
