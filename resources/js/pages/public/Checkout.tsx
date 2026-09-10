@@ -1,6 +1,7 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     useEffect,
+    useMemo,
     useRef,
     useState,
     type KeyboardEvent,
@@ -85,7 +86,23 @@ function isoDate(daysFromNow: number): string {
     const date = new Date();
     date.setDate(date.getDate() + daysFromNow);
 
-    return date.toISOString().slice(0, 10);
+    /*
+     * Les parties **locales**, pas `toISOString()` : à minuit trente à Paris,
+     * l'UTC est encore la veille, et « aujourd'hui » deviendrait hier — le
+     * champ laisserait alors choisir une date que le serveur refuse.
+     */
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+    ].join('-');
+}
+
+/** L'heure locale au format des créneaux : « 14:05 ». */
+function localTime(): string {
+    const now = new Date();
+
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
 /**
@@ -189,6 +206,51 @@ export default function Checkout({
     };
 
     const forSelf = form.data.for === 'self';
+
+    /*
+     * Les créneaux **encore devant nous**.
+     *
+     * Une heure déjà passée n'est pas une programmation : le cadeau partirait
+     * à la seconde du paiement, et l'écran aurait annoncé dix heures (T-239).
+     * La liste ne dépend donc pas que de la journée, mais de la date choisie.
+     *
+     * L'heure est lue **après le montage**, jamais pendant le rendu : le rendu
+     * serveur a l'heure et le fuseau du serveur, le navigateur les siens, et
+     * une liste d'options qui diffère entre les deux est une hydratation qui
+     * échoue. Le premier rendu propose donc tous les créneaux, des deux côtés,
+     * et le navigateur les réduit ensuite.
+     */
+    const [nowTime, setNowTime] = useState<string | null>(null);
+
+    useEffect(() => {
+        setNowTime(localTime());
+    }, [step]);
+
+    const times = useMemo(() => {
+        if (nowTime === null || String(form.data.gift_send_at) !== isoDate(0)) {
+            return TIMES;
+        }
+
+        return TIMES.filter((time) => time > nowTime);
+    }, [nowTime, form.data.gift_send_at]);
+
+    /*
+     * Et la valeur suit la liste, en deux passes plutôt qu'en une : quand plus
+     * aucun créneau ne reste aujourd'hui, c'est la **date** qui passe à demain,
+     * et le tour suivant y trouve tous les créneaux. Écrire les deux champs
+     * d'un coup les ferait s'écraser l'un l'autre.
+     */
+    useEffect(() => {
+        if (times.length === 0) {
+            form.setData('gift_send_at', isoDate(1));
+
+            return;
+        }
+
+        if (!times.includes(String(form.data.gift_send_time))) {
+            form.setData('gift_send_time', times[0]);
+        }
+    }, [times]);
 
     /** Le libellé « son » ou « votre », selon qui racontera. */
     const who = (key: string) =>
@@ -563,7 +625,7 @@ export default function Checkout({
                                                 label={t(
                                                     'public.checkout.gift.send_time',
                                                 )}
-                                                options={TIMES.map((time) => ({
+                                                options={times.map((time) => ({
                                                     value: time,
                                                     label: fmt.time(time),
                                                 }))}

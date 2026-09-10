@@ -95,5 +95,7 @@ return [
 
     'verify' => [
         'sent' => 'Un nuovo link è appena partito verso il tuo indirizzo.',
+        'expired' => 'Questo link era scaduto. Un nuovo link è appena partito verso il tuo indirizzo.',
+        'mismatch' => 'Questo link conferma un indirizzo diverso da quello dell’account aperto qui. Esci e accedi con l’indirizzo da confermare.',
     ],
 ];

@@ -15,13 +15,18 @@ use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Support\Links;
 use App\Support\Locales;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -123,6 +128,72 @@ return Application::configure(basePath: dirname(__DIR__))
                 'canRequestNewLink' => $exception->canRequestNewLink(),
                 'tokenType' => $exception->tokenType()?->value,
             ])->toResponse($request)->setStatusCode($status);
+        });
+
+        /*
+         * Un lien de confirmation d'adresse qui ne marche plus : une page qui
+         * répare, jamais un mur.
+         *
+         * `verification.verify` porte `signed`, et Fortify y ajoute une
+         * requête qui compare l'identifiant et l'empreinte de l'adresse au
+         * compte connecté. Trois échecs possibles, et les trois rendaient
+         * **403** : le lien a passé son délai, sa signature ne correspond pas,
+         * ou il vise un autre compte que celui ouvert dans ce navigateur.
+         *
+         * La page de 403 dit « Cette page ne vous est pas ouverte. Il faut un
+         * lien personnel pour y accéder. Demandez-le à la personne qui vous a
+         * invité. » — un message d'invitation, servi à l'acheteuse qui vient
+         * de payer et qui n'a plus rien à cliquer. Vu en production, sur un
+         * vrai paiement (T-240).
+         *
+         * `auth` passe **avant** `signed` : quand on arrive ici, on sait qui
+         * est là. Un lien périmé n'a donc pas besoin d'être redemandé, il se
+         * remplace tout de suite — sauf s'il désigne quelqu'un d'autre, où le
+         * remède n'est pas un nouveau lien mais l'autre compte.
+         *
+         * Le motif est journalisé sans le lien : `expired` est ordinaire,
+         * `signature` ne l'est pas — c'est la trace qu'on chercherait si des
+         * liens frais se mettaient à échouer (clé d'application changée,
+         * adresse réécrite en route).
+         */
+        $exceptions->render(function (InvalidSignatureException|AccessDeniedHttpException $exception, Request $request) {
+            $user = $request->user();
+
+            if (! $request->routeIs('verification.verify') || ! $user instanceof MustVerifyEmail) {
+                return null;
+            }
+
+            if ($user->hasVerifiedEmail()) {
+                return redirect()->to((string) config('fortify.home'));
+            }
+
+            /*
+             * Fortify refuse l'autorisation quand l'identifiant ou l'empreinte
+             * de l'adresse ne sont pas ceux du compte connecté. On l'attrape
+             * sous sa forme HTTP : le noyau traduit `AuthorizationException`
+             * en `AccessDeniedHttpException` **avant** de consulter ces
+             * fermetures, et une fermeture typée sur la première ne serait
+             * jamais appelée.
+             */
+            $mismatch = $exception instanceof AccessDeniedHttpException;
+
+            if (! $mismatch) {
+                $user->sendEmailVerificationNotification();
+            }
+
+            Log::warning('auth.verification_link_rejected', [
+                'user_id' => $user->getAuthIdentifier(),
+                'reason' => match (true) {
+                    $mismatch => 'mismatch',
+                    ! URL::hasCorrectSignature($request) => 'signature',
+                    default => 'expired',
+                },
+            ]);
+
+            return redirect()->route('verification.notice')->with(
+                'status',
+                $mismatch ? 'verification-link-mismatch' : 'verification-link-expired',
+            );
         });
 
         /*

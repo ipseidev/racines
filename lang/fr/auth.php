@@ -95,5 +95,8 @@ return [
 
     'verify' => [
         'sent' => 'Un nouveau lien vient de partir vers votre adresse.',
+        // Le lien avait expiré : on ne le dit pas sans avoir déjà agi.
+        'expired' => 'Ce lien avait expiré. Un nouveau vient de partir vers votre adresse.',
+        'mismatch' => 'Ce lien confirme une autre adresse que celle du compte ouvert ici. Déconnectez-vous, puis reconnectez-vous avec l’adresse à confirmer.',
     ],
 ];

@@ -8,6 +8,7 @@ use App\Enums\Channel;
 use App\Models\Order;
 use App\Notifications\Channels\TrackedMailChannel;
 use App\Support\Brand;
+use Carbon\CarbonImmutable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -48,6 +49,7 @@ final class OrderConfirmationNotification extends Notification implements Tracks
         if ($project?->gift_send_at !== null) {
             $message->line(__('notifications.checkout.confirmation.gift_date', [
                 'date' => $project->gift_send_at->translatedFormat('j F Y'),
+                'time' => self::hour($project->gift_send_at),
             ]));
         }
 
@@ -59,6 +61,22 @@ final class OrderConfirmationNotification extends Notification implements Tracks
                 'date' => $this->order->withdrawal_deadline_at?->translatedFormat('j F Y') ?? '',
             ]))
             ->salutation(__('notifications.prompt.signature', ['brand' => Brand::nameSafe()]));
+    }
+
+    /**
+     * « 10 h », « 9 h 30 » — la règle française de `formatTime` sur le front,
+     * pour que le courriel dise l'heure exactement comme le récapitulatif du
+     * tunnel l'a écrite.
+     *
+     * L'heure était écrite en dur, « à neuf heures », depuis le bloc 10 : le
+     * tunnel a gagné un choix d'heure sans que la phrase le suive, et le
+     * courriel annonçait donc neuf heures à qui avait demandé dix (T-239).
+     */
+    private static function hour(CarbonImmutable $at): string
+    {
+        return $at->minute === 0
+            ? $at->format('G').' h'
+            : $at->format('G').' h '.$at->format('i');
     }
 
     public function dedupeKey(Channel $channel): string

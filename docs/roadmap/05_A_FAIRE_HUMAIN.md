@@ -71,6 +71,19 @@ Tu as tranché de débrancher le contrôle plutôt que d'installer le démon : c
   ```
 - **Ce que ça laisse ouvert** : les fichiers entrent sans contrôle antiviral, et chacun est journalisé (`antivirus.disabled`). La date de rebranchement est à fixer avant l'ouverture des ventes — c'est écrit dans D-12, pas oublié.
 
+### 1.0bis Une variable à vérifier dans Forge — **un cadeau programmé peut partir tout de suite**
+
+Découvert le 2026-09-10 sur un vrai paiement en production : cadeau programmé pour 10 h, parti à 9 h 40, en même temps que le récapitulatif d'achat (T-239). Le code pousse l'invitation avec un report jusqu'à l'heure choisie, et ce report est juste — mais il n'existe pas sur toutes les files : `sync`, `deferred` et `background` exécutent le travail dans la requête qui le pousse, c'est-à-dire dans le webhook Stripe.
+
+Le produit ne dépend plus de ce réglage : l'envoi refuse désormais de partir avant l'heure, et `gifts:dispatch-due` le reprend à la minute venue. **Mais si la file est bien `sync` en production, deux autres choses sont cassées sans bruit** : l'appel sortant vers Meta se fait dans la requête du webhook, où un échec devient le 500 que Stripe punit en désactivant l'endpoint (T-169), et la transcription d'un enregistrement se ferait dans la requête du navigateur.
+
+- **Où** : Forge → le site de production → Environment.
+- **Quoi** : `QUEUE_CONNECTION=redis`. Puis déployer, et `php artisan config:clear` si la configuration est en cache.
+- **Vérifier** : la sonde le dit maintenant, en rouge et avant Horizon.
+  ```bash
+  php artisan prod:check     # sur le serveur
+  ```
+
 ### 1.1 Clé Anthropic — débloque le bloc 06
 
 Le rendu « Fluide » : la transcription brute mise au propre en un texte lisible dans un livre.
@@ -326,6 +339,7 @@ Le seul endroit à tenir à jour.
 | | À réunir | Débloque | État |
 |---|---|---|---|
 | 0 | **`ANTIVIRUS_SCANNER=off` dans Forge** | débloque le **dépôt de photos en production**, cassé depuis la mise en ligne | ☐ **à faire tout de suite** (§1.0, T-216, D-12) |
+| 0bis | **`QUEUE_CONNECTION=redis` vérifié dans Forge** | débloque l'**heure d'envoi des cadeaux**, et referme le risque de webhook à 500 | ☐ **à vérifier tout de suite** (§1.0bis, T-239) |
 | 1 | Clé Anthropic | bloc 06 | ☐ |
 | 2 | Clé Gladia | bloc 06 | ☐ |
 | 3 | `ASR_CALLBACK_SECRET` généré | bloc 06 | ☐ |

@@ -301,7 +301,7 @@ return [
             'subject' => 'Votre commande est confirmée',
             'greeting' => 'Bonjour :name,',
             'line' => 'Merci. Tout est prêt pour recueillir les souvenirs de :narrator.',
-            'gift_date' => 'L’invitation lui sera envoyée le :date, à neuf heures.',
+            'gift_date' => 'L’invitation lui sera envoyée le :date, à :time.',
             // Dit maintenant plutôt qu'au moment du refus : la déception ne
             // doit pas se doubler d'une surprise.
             'free_to_refuse' => 'Il reste entièrement libre d’accepter ou non. S’il préfère ne pas participer, nous vous remboursons intégralement.',

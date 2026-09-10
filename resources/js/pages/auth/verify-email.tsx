@@ -7,19 +7,33 @@ import { useT } from '@/hooks/useT';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
+/**
+ * Ce que la page a à dire en arrivant, selon d'où l'on vient.
+ *
+ * `expired` et `mismatch` sont posés par le noyau quand un lien de
+ * confirmation ne marche plus (T-240) : la personne y arrive en ayant cliqué,
+ * pas en ayant demandé, et la page doit d'abord expliquer.
+ */
+const MESSAGES: Record<string, string> = {
+    'verification-link-sent': 'auth.verify.sent',
+    'verification-link-expired': 'auth.verify.expired',
+    'verification-link-mismatch': 'auth.verify.mismatch',
+};
+
 export default function VerifyEmail({ status }: { status?: string }) {
     const t = useT();
+    const message = status ? MESSAGES[status] : undefined;
 
     return (
         <>
             <Head title={t('auth.pages.verify_email.title')} />
 
-            {status === 'verification-link-sent' && (
+            {message && (
                 <p
                     role="status"
                     className="panel enter mb-6 text-center text-base"
                 >
-                    {t('auth.verify.sent')}
+                    {t(message)}
                 </p>
             )}
 

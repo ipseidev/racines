@@ -374,6 +374,26 @@ final class ProductionCheck extends Command
      */
     private function file(): void
     {
+        /*
+         * Le pilote de file, avant Horizon : c'est lui qui décide si « plus
+         * tard » veut dire quelque chose. `sync`, `deferred` et `background`
+         * exécutent tout de suite ce qu'on leur demande de différer. Un
+         * cadeau programmé pour dix heures part alors à la seconde du
+         * paiement (T-239), et l'appel sortant vers Meta se retrouve dans la
+         * requête du webhook, où un échec devient le 500 que Stripe punit en
+         * désactivant l'endpoint (T-169).
+         */
+        $pilote = (string) config('queue.default');
+
+        if (in_array($pilote, ['sync', 'deferred', 'background'], true)) {
+            $this->rouge('File de travaux', sprintf(
+                'file « %s » : rien n’est différé, un cadeau programmé part à l’instant du paiement.',
+                $pilote,
+            ));
+
+            return;
+        }
+
         try {
             if (app(MasterSupervisorRepository::class)->all() === []) {
                 $this->rouge('File de travaux', 'Horizon ne tourne pas : ni invitation, ni transcription, ni relance.');

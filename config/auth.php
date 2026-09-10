@@ -116,4 +116,22 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Confirmation de l'adresse électronique
+    |--------------------------------------------------------------------------
+    |
+    | Le lien de confirmation vit **vingt-quatre heures**, et non l'heure que
+    | Laravel accorde par défaut. Le compte se crée à la quatrième étape du
+    | tunnel d'achat : la personne finit de payer, referme l'ordinateur, et
+    | n'ouvre sa boîte que le soir. Une heure la mettait devant un lien mort
+    | (T-240). Le lien ne donne rien de plus que la confirmation, et il exige
+    | déjà d'être connecté au compte qu'il désigne : l'allonger ne coûte rien.
+    |
+    */
+
+    'verification' => [
+        'expire' => 60 * 24,
+    ],
+
 ];

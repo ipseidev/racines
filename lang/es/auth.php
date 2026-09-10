@@ -95,5 +95,7 @@ return [
 
     'verify' => [
         'sent' => 'Acabamos de enviar un nuevo enlace a tu dirección.',
+        'expired' => 'Este enlace había caducado. Acabamos de enviar uno nuevo a tu dirección.',
+        'mismatch' => 'Este enlace confirma una dirección distinta a la de la cuenta abierta aquí. Cierra sesión y vuelve a entrar con la dirección que quieres confirmar.',
     ],
 ];

@@ -78,6 +78,37 @@ final class SendGiftInvitation implements ShouldQueue
             return null;
         }
 
+        if ($this->attempt === 1 && $project->gift_sent_at !== null) {
+            // L'invitation est déjà partie : le filet ne double pas la file.
+            return null;
+        }
+
+        /*
+         * **Rien ne part avant l'heure choisie.**
+         *
+         * Le report de la file ne peut pas être la seule garantie. `->delay()`
+         * ne veut rien dire sur une file `sync`, `deferred` ou `background` :
+         * le travail s'exécute dans la requête qui le pousse, donc dans le
+         * webhook Stripe, donc **à la seconde où l'on paie**. C'est ce qui est
+         * arrivé en production le 10 septembre 2026 : cadeau programmé pour
+         * dix heures, parti à neuf heures quarante, en même temps que le
+         * récapitulatif qui annonçait dix heures (T-239).
+         *
+         * La garde est ici et pas chez l'appelant : l'envoi est le seul
+         * endroit que tous les chemins traversent — la file, le filet
+         * `gifts:dispatch-due`, une relance du moteur, une commande de
+         * démonstration. Et elle ne perd rien : ce qu'elle refuse trop tôt,
+         * le filet le reprend à la minute où l'heure arrive.
+         */
+        if ($project->gift_send_at !== null && $project->gift_send_at->isFuture()) {
+            Log::info('gift.too_early', [
+                'project_id' => $project->id,
+                'gift_send_at' => $project->gift_send_at->toIso8601String(),
+            ]);
+
+            return null;
+        }
+
         if (! Invitation::canSendTo($narrator)) {
             Log::info('gift.attempts_exhausted', ['project_id' => $project->id]);
 

@@ -29,6 +29,18 @@ Schedule::command('prompts:dispatch-due')
     ->everyFiveMinutes()
     ->withoutOverlapping();
 
+/*
+ * Le filet des cadeaux programmés, toutes les minutes.
+ *
+ * La voie normale reste le report en file posé par `FulfillOrder`. Celui-ci
+ * rattrape le cas où ce report n'a pas lieu : une file `sync`, `deferred` ou
+ * `background` exécute tout de suite ce qu'on lui demande de différer, et le
+ * cadeau part à la seconde du paiement au lieu de l'heure choisie (T-239).
+ */
+Schedule::command('gifts:dispatch-due')
+    ->everyMinute()
+    ->withoutOverlapping();
+
 // Filet du rappel de transcription : un webhook perdu laisserait une histoire
 // enregistrée sans texte, et personne ne le saurait.
 Schedule::job(new PollTranscription)

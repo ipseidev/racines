@@ -34,6 +34,21 @@ it('dit ce que perd le client quand une clé manque, pas ce qui manque', functio
         ->run();
 });
 
+/*
+ * La vérification qui manquait le 10 septembre 2026.
+ *
+ * La suite tourne sur `QUEUE_CONNECTION=sync` (`phpunit.xml`) : c'est le monde
+ * exact où `->delay()` ne veut rien dire, et c'est pour cette raison qu'un
+ * cadeau programmé pour dix heures a pu partir à neuf heures quarante en
+ * production sans qu'aucun test le voie (T-239). La sonde le dit maintenant,
+ * et ce test se sert de ce que la suite est justement dans ce monde-là.
+ */
+it('voit une file qui n’attend pas, et dit ce que le cadeau perd', function () {
+    $this->artisan('prod:check', ['--rapide' => true])
+        ->expectsOutputToContain('un cadeau programmé part à l’instant du paiement')
+        ->run();
+});
+
 it('écrit puis relit le stockage, et ne laisse rien derrière lui', function () {
     $this->artisan('prod:check', ['--rapide' => true])->run();
 

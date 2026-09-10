@@ -139,6 +139,15 @@ final readonly class FulfillOrder
          * Programmée, jamais envoyée tout de suite : l'acheteur a choisi une
          * date, et un cadeau qui arrive avant l'heure n'est plus une surprise.
          *
+         * **Le report n'est pourtant pas la garantie.** Une file `sync`,
+         * `deferred` ou `background` ignore `->delay()` et exécute le travail
+         * dans cette requête-ci : le cadeau partirait à la seconde du
+         * paiement, ce qui est arrivé en production le 10 septembre 2026
+         * (T-239). Ce qui garantit l'heure est ailleurs, en deux morceaux :
+         * l'envoi refuse de partir avant l'heure, et `gifts:dispatch-due`
+         * reprend à la minute ce qu'il a refusé. Ce report reste la voie
+         * normale — celle qui envoie à la minute juste quand la file marche.
+         *
          * **`afterCommit()` n'est pas une précaution.** Tout ce bloc tourne
          * dans la transaction de `handle()`, et le job ne reçoit qu'un
          * identifiant : poussé avant le `commit`, un ouvrier le prend en
@@ -216,9 +225,6 @@ final readonly class FulfillOrder
 
     private function createProject(CheckoutDraft $draft, User $buyer, PilotSettings $settings): Project
     {
-        $sendAt = $draft->value('gift_send_at');
-        [$hour, $minute] = self::sendTime($draft->value('gift_send_time'), $settings->gift_send_hour);
-
         $project = new Project([
             'offer' => $settings->isPrevente() ? Offer::Prevente : Offer::Pilot,
             'address_form' => AddressForm::from((string) $draft->value('address_form', AddressForm::Vous->value)),
@@ -230,9 +236,7 @@ final readonly class FulfillOrder
             'prompt_day' => 1,
             'prompt_slot' => PromptSlot::Morning,
             'gift_message' => $draft->value('gift_message'),
-            'gift_send_at' => $sendAt === null
-                ? now()->addDay()->setTime($hour, $minute)
-                : CarbonImmutable::parse((string) $sendAt)->setTime($hour, $minute),
+            'gift_send_at' => self::sendAt($draft, $settings),
         ]);
 
         $project->owner()->associate($buyer);
@@ -267,6 +271,30 @@ final readonly class FulfillOrder
         ]);
 
         return $project->refresh();
+    }
+
+    /**
+     * L'instant où l'invitation partira.
+     *
+     * **Jamais dans le passé.** Un brouillon vit sept jours, et le paiement
+     * n'arrive pas toujours quand on quitte le tunnel : une méthode à
+     * notification différée le confirme parfois une heure plus tard (T-167).
+     * L'heure choisie peut donc être révolue au moment où la commande se fait,
+     * et l'enregistrer telle quelle ferait annoncer par courriel une heure
+     * passée pour un envoi qui, lui, a lieu maintenant. On enregistre ce qui
+     * va se produire, pas ce qui aurait dû (T-239).
+     */
+    private static function sendAt(CheckoutDraft $draft, PilotSettings $settings): CarbonImmutable
+    {
+        [$hour, $minute] = self::sendTime($draft->value('gift_send_time'), $settings->gift_send_hour);
+        $chosen = $draft->value('gift_send_at');
+        $now = CarbonImmutable::now();
+
+        $at = $chosen === null
+            ? $now->addDay()->setTime($hour, $minute)
+            : CarbonImmutable::parse((string) $chosen)->setTime($hour, $minute);
+
+        return $at->isBefore($now) ? $now : $at;
     }
 
     /**

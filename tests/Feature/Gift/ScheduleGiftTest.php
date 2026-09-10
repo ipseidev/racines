@@ -10,9 +10,11 @@ use App\Jobs\SendGiftInvitation;
 use App\Models\CheckoutDraft;
 use App\Models\Invitation;
 use App\Models\Narrator;
+use App\Models\Order;
 use App\Models\Project;
 use App\Models\User;
 use App\Notifications\GiftInvitationNotification;
+use App\Notifications\OrderConfirmationNotification;
 use App\Services\Tokens\TokenService;
 use App\Settings\PilotSettings;
 use Illuminate\Support\Facades\Notification;
@@ -65,10 +67,122 @@ it('programme l’invitation à la date choisie, à neuf heures', function (): v
 
     // Programmée, jamais envoyée tout de suite : un cadeau qui arrive avant
     // l'heure n'est plus une surprise.
+    //
+    // Le **report** est vérifié, pas seulement la poussée : c'est tout ce qui
+    // sépare « programmé » d'« envoyé maintenant », et c'est précisément ce
+    // que l'ancienne version de ce test ne regardait pas (T-239).
     Queue::assertPushed(
         SendGiftInvitation::class,
-        fn (SendGiftInvitation $job): bool => $job->projectId === $project->id && $job->attempt === 1,
+        fn (SendGiftInvitation $job): bool => $job->projectId === $project->id
+            && $job->attempt === 1
+            && $job->delay instanceof DateTimeInterface
+            && $job->delay->format('Y-m-d H:i') === $project->gift_send_at?->format('Y-m-d H:i'),
     );
+});
+
+/*
+ * La garde qui manquait.
+ *
+ * Un report n'est pas une promesse : sur une file `sync`, `deferred` ou
+ * `background`, `->delay()` est ignoré et le travail s'exécute dans la requête
+ * qui le pousse — donc dans le webhook Stripe, donc à la seconde du paiement.
+ * C'est ce qui est arrivé en production le 10 septembre 2026 : cadeau
+ * programmé pour dix heures, parti à neuf heures quarante.
+ *
+ * Aucun test ne pouvait le voir, et pour une raison qui vaut d'être écrite :
+ * **la suite tourne elle-même sur `sync`** (`phpunit.xml`), où le report
+ * n'existe pas. Un `Queue::fake()` ne le voit pas davantage. La seule défense
+ * qui tienne est donc dans l'envoi lui-même, et elle se teste sans file.
+ */
+it('ne part jamais avant l’heure choisie, même si la file ignore le report', function (): void {
+    Notification::fake();
+
+    $project = Project::factory()->create([
+        'status' => ProjectStatus::Draft,
+        'gift_send_at' => now()->addHours(3),
+    ]);
+    $narrator = Narrator::factory()->byEmail()->create([
+        'project_id' => $project->id,
+        'is_primary' => true,
+    ]);
+
+    (new SendGiftInvitation($project->id))->handle(app(TokenService::class));
+
+    Notification::assertNothingSentTo($narrator);
+
+    // Rien n'a bougé : ni jeton émis, ni statut avancé. Le projet attend son
+    // heure, et personne ne sait encore qu'il existe.
+    expect(Invitation::query()->count())->toBe(0)
+        ->and($project->refresh()->gift_sent_at)->toBeNull()
+        ->and($project->status)->toBe(ProjectStatus::Draft);
+});
+
+it('part à l’heure venue, par le filet, sans rien attendre de la file', function (): void {
+    Notification::fake();
+
+    $project = Project::factory()->create([
+        'status' => ProjectStatus::Draft,
+        'gift_send_at' => now()->subMinute(),
+    ]);
+    $narrator = Narrator::factory()->byEmail()->create([
+        'project_id' => $project->id,
+        'is_primary' => true,
+    ]);
+
+    $this->artisan('gifts:dispatch-due')->assertSuccessful();
+
+    Notification::assertSentTo($narrator, GiftInvitationNotification::class);
+    expect($project->refresh()->gift_sent_at)->not->toBeNull()
+        ->and($project->status)->toBe(ProjectStatus::AwaitingAcceptance);
+});
+
+it('ne renvoie pas, par le filet, une invitation déjà partie', function (): void {
+    Notification::fake();
+
+    $project = Project::factory()->create([
+        'status' => ProjectStatus::AwaitingAcceptance,
+        'gift_send_at' => now()->subDay(),
+        'gift_sent_at' => now()->subDay(),
+    ]);
+    $narrator = Narrator::factory()->byEmail()->create([
+        'project_id' => $project->id,
+        'is_primary' => true,
+    ]);
+
+    $this->artisan('gifts:dispatch-due')->assertSuccessful();
+
+    // Deux envois de la même invitation, c'est deux fois la même surprise, et
+    // la table le refuserait de toute façon (unique par narrateur et
+    // tentative) — au prix d'un travail en échec.
+    Notification::assertNothingSentTo($narrator);
+    expect(Invitation::query()->count())->toBe(0);
+});
+
+it('annonce dans la confirmation l’heure choisie, et pas neuf heures', function (): void {
+    $buyer = User::factory()->create();
+
+    $project = Project::factory()->create([
+        'status' => ProjectStatus::Draft,
+        'gift_send_at' => now()->addDays(3)->setTime(10, 0),
+    ]);
+    Narrator::factory()->byEmail()->create([
+        'project_id' => $project->id,
+        'is_primary' => true,
+        'first_name' => 'Agate',
+    ]);
+
+    $order = Order::factory()->create([
+        'user_id' => $buyer->id,
+        'project_id' => $project->id,
+    ]);
+
+    $html = (string) (new OrderConfirmationNotification($order->refresh()))->toMail($buyer)->render();
+
+    // « à 10 h », comme le récapitulatif du tunnel l'a écrit : la phrase
+    // portait « à neuf heures » en dur depuis le bloc 10, et annonçait donc
+    // neuf heures à qui avait demandé dix (T-239).
+    expect($html)->toContain('10 h')
+        ->and($html)->not->toContain('neuf heures');
 });
 
 /*
