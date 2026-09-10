@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { Counter } from '@/components/form/Counter';
 import { SelectField } from '@/components/form/SelectField';
 import { SubmitButton } from '@/components/form/SubmitButton';
@@ -9,7 +10,6 @@ import { IconButton } from '@/components/space/IconButton';
 import { Check, Pause, Plus, Trash } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
 import { useT } from '@/hooks/useT';
-import { formatDate, formatDateTime } from '@/lib/dates';
 import { stagger } from '@/lib/motion';
 
 type Option = { value: string; label: string };
@@ -28,6 +28,7 @@ type Props = {
         promptDay: number;
         promptSlot: string;
         addressForm: string;
+        locale: string;
         timezone: string;
         pausedUntil: string | null;
         nextPromptAt: string | null;
@@ -36,14 +37,15 @@ type Props = {
     cadences: Option[];
     slots: Option[];
     addressForms: Option[];
+    locales: Option[];
     mandateOpen: boolean;
 };
 
 const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 /**
- * Les réglages du projet : le rythme, le lexique, la pause. Trois cartes, un
- * geste par carte. Le rythme est la seule action principale de la page ;
+ * Les réglages du projet : le rythme, la langue, le lexique, la pause. Une
+ * carte, un geste. Le rythme est la seule action principale de la page ;
  * « Enregistré » apparaît près du bouton, puis s'efface, en plus du toast.
  */
 export default function Settings({
@@ -53,8 +55,12 @@ export default function Settings({
     cadences,
     slots,
     addressForms,
+    locales,
     mandateOpen,
 }: Props) {
+    const fmt = useFormat();
+    const formatDate = fmt.date;
+    const formatDateTime = fmt.dateTime;
     const t = useT();
     const name = narratorFirstName ?? '';
 
@@ -65,6 +71,7 @@ export default function Settings({
         address_form: project.addressForm,
     });
 
+    const language = useForm({ locale: project.locale });
     const entry = useForm({ term: '', replacement: '', notes: '' });
     const pause = useForm({ weeks: 2 });
 
@@ -296,10 +303,59 @@ export default function Settings({
                 </form>
             </section>
 
+            {/*
+             * La langue du projet : celle des pages que verront la personne
+             * qui raconte et les proches, jamais celle de cet écran-ci
+             * (T-238). Sa propre carte, comme les autres réglages : un geste
+             * par carte.
+             */}
+            <section
+                aria-labelledby="langue"
+                className="card enter mt-8 p-6"
+                style={stagger(3)}
+            >
+                <h2 id="langue" className="eyebrow">
+                    {t('initiator.settings.locale')}
+                </h2>
+
+                <form
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        language.post('/espace/reglages/langue', {
+                            preserveScroll: true,
+                        });
+                    }}
+                    className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-end"
+                >
+                    <div className="sm:flex-1">
+                        <SelectField
+                            label={t('initiator.settings.locale')}
+                            hint={t('initiator.settings.locale_help', {
+                                name,
+                            })}
+                            options={locales}
+                            value={language.data.locale}
+                            onChange={(value) =>
+                                language.setData('locale', value)
+                            }
+                            error={language.errors.locale}
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={language.processing}
+                        className="btn-secondary press min-h-[2.75rem] disabled:opacity-60"
+                    >
+                        {t('initiator.settings.submit')}
+                    </button>
+                </form>
+            </section>
+
             <section
                 aria-labelledby="pause"
                 className="card enter mt-8 p-6"
-                style={stagger(3)}
+                style={stagger(4)}
             >
                 <h2 id="pause" className="eyebrow">
                     {t('initiator.settings.pause.title')}
@@ -344,7 +400,7 @@ export default function Settings({
                 <section
                     aria-labelledby="mandate"
                     className="card enter mt-8 p-6"
-                    style={stagger(4)}
+                    style={stagger(5)}
                 >
                     <h2 id="mandate" className="eyebrow">
                         {t('initiator.settings.mandate.title', { name })}

@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react';
 
 import { BrandLogo } from '@/brand/BrandProvider';
+import LocaleSwitcher from '@/components/LocaleSwitcher';
 
 /**
  * Mise en page des pages de la narratrice.
@@ -25,6 +26,18 @@ export default function NarratorLayout({ children }: PropsWithChildren) {
             <main className="enter mx-auto flex w-full max-w-xl flex-1 flex-col px-6 py-5 text-[1.1875rem] leading-relaxed">
                 {children}
             </main>
+
+            {/*
+             * La langue, en toutes lettres et en bas de page.
+             *
+             * La page parle déjà celle du projet — c'est la personne qui offre
+             * qui l'a choisie (T-238) —, mais elle peut s'être trompée, et
+             * personne ici n'a de compte où corriger. Des mots, pas de
+             * drapeau ni d'icône : la règle des pages narrateur.
+             */}
+            <footer className="mx-auto w-full max-w-xl px-6 pb-6">
+                <LocaleSwitcher />
+            </footer>
         </div>
     );
 }

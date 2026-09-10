@@ -1,9 +1,10 @@
 import { Link } from '@inertiajs/react';
 import type { PropsWithChildren, ReactNode } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { track } from '@/components/landing/track';
 import { PRIMARY, SECONDARY } from '@/components/marketing/styles';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 
 /*
@@ -157,6 +158,9 @@ export function BuyButton({
     style?: 'primary' | 'secondary';
     className?: string;
 }) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const text =
         label ??
@@ -166,7 +170,7 @@ export function BuyButton({
 
     return (
         <Link
-            href="/acheter"
+            href={urls.checkout_show}
             onClick={() => track('lp_buy_click', { variant, section })}
             className={`${style === 'primary' ? PRIMARY : SECONDARY} ${className}`}
         >
@@ -192,9 +196,10 @@ export function TryLink({
     variant: string;
     className?: string;
 }>) {
+    const urls = useUrls();
     return (
         <a
-            href="/essai"
+            href={urls.demo}
             onClick={() => track('lp_try_click', { variant, section })}
             className={className}
         >

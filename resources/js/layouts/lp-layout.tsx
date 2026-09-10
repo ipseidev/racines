@@ -1,13 +1,16 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState, type PropsWithChildren } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
 import { track } from '@/components/landing/track';
-import { formatPrice, usePilot } from '@/hooks/usePilot';
+import { usePilot } from '@/hooks/usePilot';
 import ConsentBanner from '@/components/ConsentBanner';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
+import type { LocalizedUrls } from '@/types/locale';
 
 /*
  * S00 — La navigation de la variante : ses propres ancres, celles de la page
@@ -18,36 +21,28 @@ import PublicFooter from '@/layouts/public-footer';
  * Les entrées de la barre. Les ancres restent dans la page de vente ; la FAQ
  * est une page à elle, donc une navigation Inertia.
  */
-const NAV = [
-    { href: '/comment-ca-marche', key: 'how', inertia: true },
-    { href: '/nos-livres', key: 'book', inertia: true },
-    { href: '/questions-frequentes', key: 'faq', inertia: true },
-] as const;
+const navOf = (urls: LocalizedUrls) => [
+    { href: urls.how_it_works, key: 'how', inertia: true },
+    { href: urls.books, key: 'book', inertia: true },
+    { href: urls.faq, key: 'faq', inertia: true },
+];
 
 /*
  * S21 — Les pages du site, au pied de page. Ce que la variante porte
  * elle-même reste dans la variante ; les pages dédiées gardent leurs routes.
  */
-const DISCOVER = [
-    { href: '/', key: 'public.footer.home', inertia: true },
+const discoverOf = (urls: LocalizedUrls) => [
+    { href: urls.home, key: 'public.footer.home', inertia: true },
+    { href: urls.how_it_works, key: 'public.landing.nav.how', inertia: true },
+    { href: urls.books, key: 'public.landing.nav.book', inertia: true },
     {
-        href: '/comment-ca-marche',
-        key: 'public.landing.nav.how',
-        inertia: true,
-    },
-    { href: '/nos-livres', key: 'public.landing.nav.book', inertia: true },
-    {
-        href: '/#notre-histoire',
+        href: `${urls.home}#notre-histoire`,
         key: 'public.landing.nav.story',
         inertia: false,
     },
-    {
-        href: '/questions-frequentes',
-        key: 'public.lp.nav.faq',
-        inertia: true,
-    },
-    { href: '/essai', key: 'public.footer.try', inertia: false },
-] as const;
+    { href: urls.faq, key: 'public.lp.nav.faq', inertia: true },
+    { href: urls.demo, key: 'public.footer.try', inertia: false },
+];
 
 /**
  * La mise en page des variantes de page de vente (T-219).
@@ -64,6 +59,9 @@ const DISCOVER = [
  * clignotant.
  */
 export default function LpLayout({ children }: PropsWithChildren) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     // La mesure d'audience. Le serveur décide : sans clé, rien ne démarre.
     useAnalytics();
 
@@ -109,7 +107,7 @@ export default function LpLayout({ children }: PropsWithChildren) {
              * clavier ni au lecteur d'écran.
              */}
             <Link
-                href="/acheter"
+                href={urls.checkout_show}
                 onClick={() =>
                     track('lp_buy_click', {
                         variant: variant ?? '',
@@ -144,7 +142,7 @@ export default function LpLayout({ children }: PropsWithChildren) {
                  */}
                 <div className="mx-auto flex w-full max-w-[74rem] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3.5 sm:gap-x-4 sm:px-8 lg:gap-x-8 lg:px-10 lg:py-4">
                     <Link
-                        href="/"
+                        href={urls.home}
                         aria-label={brand.name}
                         className="order-1 mr-auto inline-flex min-h-[2.75rem] items-center lg:mr-4"
                     >
@@ -189,7 +187,7 @@ export default function LpLayout({ children }: PropsWithChildren) {
                     </button>
 
                     <Link
-                        href="/acheter"
+                        href={urls.checkout_show}
                         onClick={() =>
                             track('lp_buy_click', {
                                 variant: variant ?? '',
@@ -207,7 +205,7 @@ export default function LpLayout({ children }: PropsWithChildren) {
                         className={`${open ? 'block' : 'hidden'} order-4 w-full pt-1 pb-1 lg:order-2 lg:mr-auto lg:block lg:w-auto lg:py-0`}
                     >
                         <ul className="flex flex-col gap-y-1 text-[1.02rem] lg:flex-row lg:items-center lg:gap-x-6 lg:text-[0.98rem]">
-                            {NAV.map((item) => (
+                            {navOf(urls).map((item) => (
                                 <li key={item.key}>
                                     {item.inertia ? (
                                         <Link
@@ -251,7 +249,7 @@ export default function LpLayout({ children }: PropsWithChildren) {
 
             <main className="flex-1">{children}</main>
 
-            <PublicFooter discover={DISCOVER} />
+            <PublicFooter discover={discoverOf(urls)} />
 
             <ConsentBanner />
         </div>

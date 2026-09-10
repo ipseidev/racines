@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Analytics\Measured;
+use App\Enums\Locale;
 use App\Settings\PilotSettings;
 use App\Support\Brand;
+use App\Support\Locales;
+use App\Support\LocalizedRoutes;
 use App\Support\Translations;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -49,8 +52,31 @@ final class HandleInertiaRequests extends Middleware
             // pied de page. Les passer page par page finirait par produire
             // deux prix différents sur deux écrans du même parcours.
             'pilot' => self::pilot(),
-            'i18n' => Translations::forRequest($request),
-            'locale' => app()->getLocale(),
+            /*
+             * Des fermetures, et non des valeurs.
+             *
+             * Inertia appelle `share()` **avant** le contrôleur, donc avant
+             * les intergiciels de route : sur une page à jeton, la langue du
+             * projet n'est pas encore connue quand cette ligne s'exécute
+             * (`ResolveAccessToken`). Une fermeture est résolue au moment où
+             * la réponse se construit, quand elle l'est. Sans cela, une
+             * narratrice italienne recevait la page en français.
+             */
+            'i18n' => fn (): array => Translations::forRequest($request),
+            /*
+             * La langue de la page, et de quoi en changer.
+             *
+             * `tag` est ce que reçoit `Intl` côté client : il porte le marché
+             * (`fr-CH`) là où `language` ne porte que la langue (`fr`). Les
+             * deux sont partagés parce que le front en a besoin des deux —
+             * l'un pour formater une date, l'autre pour choisir une règle de
+             * grammaire (`useT`).
+             *
+             * `alternates` est vide hors des pages publiques déclinées :
+             * l'espace n'a qu'une adresse, et son sélecteur passe alors par
+             * `POST /langue` plutôt que par un lien.
+             */
+            'locale' => fn (): array => self::locale($request),
             // Messages d'une action réussie. Les pages narrateur et famille
             // n'ont pas de barre de notifications : elles affichent ce
             // message à l'endroit où l'action a été demandée.
@@ -84,6 +110,37 @@ final class HandleInertiaRequests extends Middleware
              */
             'googleAnalytics' => self::googleAnalytics($request),
             'metaPixel' => self::metaPixel($request),
+        ];
+    }
+
+    /**
+     * La langue de la page, et les autres langues qu'elle a.
+     *
+     * @return array{
+     *     current: string, language: string, tag: string, currency: string,
+     *     locales: list<array{value: string, name: string, url: string|null}>,
+     *     urls: array<string, string>
+     * }
+     */
+    private static function locale(Request $request): array
+    {
+        $current = Locales::current();
+        $alternates = LocalizedRoutes::alternates($request->route());
+
+        return [
+            'current' => $current->value,
+            'language' => $current->language(),
+            'tag' => $current->tag(),
+            'currency' => $current->currency()->value,
+            'locales' => array_map(static fn (Locale $locale): array => [
+                'value' => $locale->value,
+                'name' => $locale->nativeName(),
+                'url' => $alternates[$locale->value] ?? null,
+            ], Locale::cases()),
+            // Les adresses des pages publiques dans la langue courante : sans
+            // elles, le front écrirait `/acheter` en dur et renverrait un
+            // visiteur italien sur la page française (T-238).
+            'urls' => LocalizedRoutes::urls($current),
         ];
     }
 

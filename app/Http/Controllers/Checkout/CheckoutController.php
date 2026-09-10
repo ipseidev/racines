@@ -18,6 +18,7 @@ use App\Http\Controllers\Public\WelcomeOfferController;
 use App\Models\CheckoutDraft;
 use App\Models\Lead;
 use App\Settings\PilotSettings;
+use App\Support\LocalizedRoutes;
 use App\Support\Options;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
@@ -67,7 +68,7 @@ final readonly class CheckoutController
         if ($step === self::ACCOUNT_STEP && $request->user() === null) {
             $request->session()->put(
                 'url.intended',
-                route('checkout.show', ['step' => self::ACCOUNT_STEP + 1]),
+                LocalizedRoutes::route('checkout.show', ['step' => self::ACCOUNT_STEP + 1]),
             );
         }
 
@@ -118,13 +119,13 @@ final readonly class CheckoutController
             $this->discounts->handle($draft, (string) $validated['code']);
         } catch (DiscountCodeUnavailable $exception) {
             return redirect()
-                ->route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP])
+                ->to(LocalizedRoutes::route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP]))
                 ->withErrors(['code' => __('public.checkout.discount.errors.'.$exception->reason())])
                 ->withCookie(self::draftCookie($draft));
         }
 
         return redirect()
-            ->route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP])
+            ->to(LocalizedRoutes::route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP]))
             ->withCookie(self::draftCookie($draft));
     }
 
@@ -135,7 +136,7 @@ final readonly class CheckoutController
         $this->discounts->remove($draft);
 
         return redirect()
-            ->route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP])
+            ->to(LocalizedRoutes::route('checkout.show', ['step' => SaveCheckoutStep::LAST_STEP]))
             ->withCookie(self::draftCookie($draft));
     }
 
@@ -157,7 +158,7 @@ final readonly class CheckoutController
         $this->steps->handle($draft, $step, $validated);
 
         return redirect()
-            ->route('checkout.show', ['step' => min(SaveCheckoutStep::LAST_STEP, $step + 1)])
+            ->to(LocalizedRoutes::route('checkout.show', ['step' => min(SaveCheckoutStep::LAST_STEP, $step + 1)]))
             ->withCookie(self::draftCookie($draft));
     }
 
@@ -174,7 +175,7 @@ final readonly class CheckoutController
         $missing = SaveCheckoutStep::missingSteps($draft);
 
         if ($missing !== []) {
-            return redirect()->route('checkout.show', ['step' => min($missing)]);
+            return redirect()->to(LocalizedRoutes::route('checkout.show', ['step' => min($missing)]));
         }
 
         /*

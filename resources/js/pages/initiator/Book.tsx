@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { TextAreaField } from '@/components/form/TextAreaField';
 import { IconButton } from '@/components/space/IconButton';
@@ -70,15 +71,6 @@ type Props = {
     familyCodeSet: boolean;
 };
 
-const date = (iso: string | null) =>
-    iso === null
-        ? '—'
-        : new Date(iso).toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-          });
-
 /**
  * Le livre, vu par l'Initiateur·rice.
  *
@@ -105,6 +97,8 @@ export default function Book({
     familyCodeSet,
 }: Props) {
     const t = useT();
+    const fmt = useFormat();
+    const date = (iso: string | null) => (iso === null ? '—' : fmt.date(iso));
 
     const [rows, setRows] = useState<Chapter[]>(chapters);
     const [foreword, setForeword] = useState(book.foreword ?? '');
@@ -778,11 +772,10 @@ export default function Book({
                         </label>
                         <p className="text-brand-muted mt-1 text-[0.9375rem]">
                             {t('initiator.book.tracking.extra_copies_price', {
-                                price: (
-                                    extraCopyPriceCents / 100
-                                ).toLocaleString('fr-FR', {
-                                    minimumFractionDigits: 2,
-                                }),
+                                // Le prix passe par le même formateur que
+                                // partout ailleurs : un séparateur décimal
+                                // différent d'un écran à l'autre se remarque.
+                                price: fmt.price(extraCopyPriceCents),
                             })}
                         </p>
 

@@ -7,6 +7,7 @@ import {
     type ReactNode,
 } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import { CheckField } from '@/components/form/CheckField';
 import { ChoiceCard } from '@/components/form/ChoiceCard';
@@ -18,10 +19,7 @@ import { Stepper } from '@/components/form/Stepper';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { TextAreaField } from '@/components/form/TextAreaField';
 import { TextField } from '@/components/form/TextField';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
-import { formatPercent } from '@/lib/format';
-import { nationalPhone } from '@/lib/french';
 
 type Props = {
     step: number;
@@ -90,37 +88,6 @@ function isoDate(daysFromNow: number): string {
     return date.toISOString().slice(0, 10);
 }
 
-/** « vendredi 5 septembre 2026 », à partir d'une date ISO. */
-export function formatDate(iso: string, locale = 'fr-FR'): string {
-    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-
-    if (match === null) {
-        return iso;
-    }
-
-    const [, year, month, day] = match;
-
-    return new Intl.DateTimeFormat(locale, {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    }).format(new Date(Number(year), Number(month) - 1, Number(day)));
-}
-
-/** « 9 h », « 18 h 30 », à partir de « 09:00 » ou « 18:30 ». */
-export function formatTime(time: string): string {
-    const match = /^(\d{2}):(\d{2})$/.exec(time);
-
-    if (match === null) {
-        return time;
-    }
-
-    const hour = Number(match[1]);
-
-    return match[2] === '00' ? `${hour} h` : `${hour} h ${match[2]}`;
-}
-
 /**
  * Le tunnel d'achat, en six étapes.
  *
@@ -154,6 +121,10 @@ export default function Checkout({
     isAuthenticated,
     discount,
 }: Props) {
+    const fmt = useFormat();
+    const formatPercent = fmt.percent;
+    const formatPrice = fmt.price;
+    const nationalPhone = fmt.phone;
     const t = useT();
     const page = usePage();
 
@@ -594,7 +565,7 @@ export default function Checkout({
                                                 )}
                                                 options={TIMES.map((time) => ({
                                                     value: time,
-                                                    label: formatTime(time),
+                                                    label: fmt.time(time),
                                                 }))}
                                                 value={String(
                                                     form.data.gift_send_time,
@@ -942,13 +913,13 @@ export default function Checkout({
                                                 value={t(
                                                     'public.checkout.summary.gift_line',
                                                     {
-                                                        date: formatDate(
+                                                        date: fmt.longDate(
                                                             String(
                                                                 form.data
                                                                     .gift_send_at,
                                                             ),
                                                         ),
-                                                        time: formatTime(
+                                                        time: fmt.time(
                                                             String(
                                                                 form.data
                                                                     .gift_send_time,
@@ -1274,6 +1245,9 @@ function OrderSummary({
     discountCents: number;
     total: number;
 }) {
+    const fmt = useFormat();
+    const formatPercent = fmt.percent;
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
 

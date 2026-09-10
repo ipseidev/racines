@@ -1,9 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 
-import {
-    index as confirmOptions,
-    store as confirmStore,
-} from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyConfirmationController';
+import { confirm as confirmStore, confirmOptions } from '@/routes/passkey';
 import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';

@@ -222,6 +222,10 @@ final readonly class FulfillOrder
         $project = new Project([
             'offer' => $settings->isPrevente() ? Offer::Prevente : Offer::Pilot,
             'address_form' => AddressForm::from((string) $draft->value('address_form', AddressForm::Vous->value)),
+            // La langue du tunnel où l'achat vient de se faire : c'est celle
+            // que la personne qui offre a lue, donc celle qu'elle a choisie
+            // pour sa famille. Elle se change ensuite dans les réglages.
+            'locale' => $buyer->locale,
             'cadence' => Cadence::Weekly,
             'prompt_day' => 1,
             'prompt_slot' => PromptSlot::Morning,

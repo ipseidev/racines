@@ -1,11 +1,11 @@
 import { Head } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import { BuyButton, SHELL } from '@/components/landing/primitives';
 import Testimonials from '@/components/landing/Testimonials';
 import Newsletter from '@/components/marketing/Newsletter';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
@@ -54,6 +54,8 @@ const INCLUDES = [
  * d'écran de ce qu'il vient de changer.
  */
 export default function Books({ price, variant, welcomeOffer }: Props) {
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
     const [tab, setTab] = useState(0);

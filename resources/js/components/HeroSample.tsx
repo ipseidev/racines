@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import Wave from '@/components/Wave';
 import { useT } from '@/hooks/useT';
-import { formatDuration } from '@/lib/format';
 
 type Sample = {
     src: string;
@@ -53,6 +53,8 @@ function PlayIcon({ playing }: { playing: boolean }) {
  * jamais un bouton qui ne joue rien.
  */
 export default function HeroSample({ sample }: Props) {
+    const fmt = useFormat();
+    const formatDuration = fmt.duration;
     const t = useT();
     const audio = useRef<HTMLAudioElement>(null);
     const [playing, setPlaying] = useState(false);

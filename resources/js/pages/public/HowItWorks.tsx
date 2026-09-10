@@ -1,12 +1,13 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState, type KeyboardEvent } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import HeroSample from '@/components/HeroSample';
 import { Check } from '@/components/marketing/Check';
 import Newsletter from '@/components/marketing/Newsletter';
 import { H2, LEDE, PRIMARY } from '@/components/marketing/styles';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
@@ -98,6 +99,9 @@ const TEXT_LINK =
  * (T-151).
  */
 export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
     const [audience, setAudience] = useState<Audience>('gift');
@@ -347,7 +351,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                         </div>
                     ))}
                 </dl>
-                <a href="/questions-frequentes" className={TEXT_LINK}>
+                <a href={urls.faq} className={TEXT_LINK}>
                     {t('public.how_it_works.questions.all')}
                     <span aria-hidden="true">→</span>
                 </a>
@@ -369,7 +373,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                         {t(`public.how_it_works.cta.${audience}.body`)}
                     </p>
                     <Link
-                        href="/acheter"
+                        href={urls.checkout_show}
                         className={`${PRIMARY} w-full sm:w-auto`}
                     >
                         {buy} · {formatPrice(price)}
@@ -501,7 +505,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                                 {t('public.how_it_works.more.faq.body')}
                             </p>
                             <a
-                                href="/questions-frequentes"
+                                href={urls.faq}
                                 className={`${TEXT_LINK} mt-auto`}
                             >
                                 {t('public.how_it_works.more.faq.cta')}
@@ -518,7 +522,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                                 </p>
                                 {/* Un `<a>` ordinaire, pour que le micro puisse être demandé (T-151). */}
                                 <a
-                                    href="/essai"
+                                    href={urls.demo}
                                     className={`${TEXT_LINK} mt-auto`}
                                 >
                                     {t('public.how_it_works.more.try.cta')}
@@ -526,7 +530,7 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                                 </a>
                             </div>
                             <a
-                                href="/essai"
+                                href={urls.demo}
                                 aria-label={t(
                                     'public.how_it_works.more.try.cta',
                                 )}
@@ -589,7 +593,10 @@ export default function HowItWorks({ price, welcomeOffer, heroSample }: Props) {
                                 </li>
                             ))}
                         </ul>
-                        <Link href="/acheter" className={`${PRIMARY} w-fit`}>
+                        <Link
+                            href={urls.checkout_show}
+                            className={`${PRIMARY} w-fit`}
+                        >
                             {audience === 'gift'
                                 ? t('public.landing.cta')
                                 : t('public.how_it_works.together.self.button')}

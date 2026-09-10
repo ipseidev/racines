@@ -10,6 +10,7 @@ use App\Actions\RequestPause;
 use App\Actions\ScheduleNextPrompt;
 use App\Enums\AddressForm;
 use App\Enums\Cadence;
+use App\Enums\Locale;
 use App\Enums\PromptSlot;
 use App\Features\MandateDelegation;
 use App\Models\LexiconEntry;
@@ -53,6 +54,7 @@ final readonly class ProjectSettingsController
                 'promptDay' => $project->prompt_day,
                 'promptSlot' => $project->prompt_slot->value,
                 'addressForm' => $project->address_form->value,
+                'locale' => $project->locale->value,
                 'timezone' => $project->timezone,
                 'pausedUntil' => $project->paused_until?->toIso8601String(),
                 'nextPromptAt' => $project->next_prompt_at?->toIso8601String(),
@@ -70,6 +72,10 @@ final readonly class ProjectSettingsController
             'cadences' => Options::of(Cadence::class),
             'slots' => Options::of(PromptSlot::class),
             'addressForms' => Options::of(AddressForm::class),
+            // La langue des pages du narrateur et des proches. Elle vit sur le
+            // projet et non sur le compte : la personne qui raconte n'en a pas,
+            // et son téléphone ne dit pas la langue de sa famille (T-238).
+            'locales' => Options::of(Locale::class),
             // Le mandat n'apparaît que si le drapeau est ouvert : une
             // fonctionnalité fermée ne s'annonce pas (T-82).
             'mandateOpen' => MandateDelegation::isOpenFor($project),
@@ -97,6 +103,30 @@ final readonly class ProjectSettingsController
         $project->save();
 
         return back()->with('status', __('initiator.settings.saved'));
+    }
+
+    /**
+     * La langue du projet : celle des pages du narrateur et des proches.
+     *
+     * Sa propre action, et non un champ du rythme : la carte du rythme parle
+     * d'un jour et d'une heure, et un réglage qui n'a rien à voir avec elle
+     * partirait au même clic. La page suit sa règle — une carte, un geste.
+     */
+    public function setLocale(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_if($user === null, 403);
+
+        $project = InitiatorProject::forOrFail($user);
+
+        $validated = $request->validate([
+            'locale' => ['required', new Enum(Locale::class)],
+        ]);
+
+        $project->locale = Locale::from((string) $validated['locale']);
+        $project->save();
+
+        return back()->with('status', __('initiator.settings.locale_saved'));
     }
 
     public function addLexicon(Request $request): RedirectResponse

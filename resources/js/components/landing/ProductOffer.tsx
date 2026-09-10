@@ -1,11 +1,12 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import { BAND, Section, SHELL } from '@/components/landing/primitives';
 import SampleAudio from '@/components/landing/SampleAudio';
 import { track } from '@/components/landing/track';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
@@ -140,6 +141,9 @@ export default function ProductOffer({
     price: number;
     sample: Sample | null;
 }) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
     const [view, setView] = useState(0);
@@ -359,7 +363,7 @@ export default function ProductOffer({
                     </ul>
 
                     <Link
-                        href="/acheter"
+                        href={urls.checkout_show}
                         onClick={() =>
                             track('lp_buy_click', { variant, section: 'offer' })
                         }

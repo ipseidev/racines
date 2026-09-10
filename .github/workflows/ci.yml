@@ -135,7 +135,7 @@ jobs:
       # Wayfinder écrit resources/js/routes et resources/js/actions, ignorés par
       # git : sans cette étape, tsc ne trouve pas les modules « @/routes ».
       - name: Générer les routes typées
-        run: php artisan wayfinder:generate --with-form
+        run: php artisan wayfinder:generate --with-form --skip-actions
 
       - name: Format, lint et types (front)
         run: |

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Enums\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Lang;
 
@@ -13,6 +14,11 @@ use Illuminate\Support\Facades\Lang;
  * On ne pousse que le fichier de l'espace courant plus le fichier commun :
  * les pages narrateur et famille doivent rester légères, elles sont ouvertes
  * en 4G sur de vieux téléphones (PRD US-01).
+ *
+ * Dans la langue de la requête (`app()->getLocale()`), avec le français en
+ * dessous : une clé qui manquerait dans `lang/it` s'affiche en français
+ * plutôt qu'en clé brute. Le test de parité (`I18nKeysTest`) interdit qu'il
+ * en manque ; ceci est le filet, pas la règle.
  */
 final class Translations
 {
@@ -23,7 +29,8 @@ final class Translations
      *
      * Les pages de compte n'ont pas de préfixe commun : Fortify nomme ses
      * routes `login`, `register`, `password.*`, `verification.*`,
-     * `two-factor.*`. Elles sont énumérées, et partagent un seul fichier.
+     * `two-factor.*`. Elles sont énumérées, et partagent un seul fichier avec
+     * les réglages du compte (`profile.*`, `security.*`, `passkeys.*`).
      */
     private const SPACES = [
         'narrator.' => 'narrator',
@@ -34,6 +41,10 @@ final class Translations
         'password.' => 'auth',
         'verification.' => 'auth',
         'two-factor.' => 'auth',
+        'profile.' => 'auth',
+        'security.' => 'auth',
+        'user-password.' => 'auth',
+        'passkeys.' => 'auth',
     ];
 
     /**
@@ -47,12 +58,13 @@ final class Translations
     /**
      * @return array<string, array<string, mixed>>
      */
-    public static function forSpace(string $space): array
+    public static function forSpace(string $space, ?string $language = null): array
     {
-        $translations = [self::COMMON => self::file(self::COMMON)];
+        $language ??= app()->getLocale();
+        $translations = [self::COMMON => self::file(self::COMMON, $language)];
 
         if ($space !== self::COMMON) {
-            $translations[$space] = self::file($space);
+            $translations[$space] = self::file($space, $language);
         }
 
         return $translations;
@@ -60,7 +72,9 @@ final class Translations
 
     private static function spaceFor(Request $request): string
     {
-        $name = $request->route()?->getName() ?? '';
+        // Sans le préfixe de locale : `it.checkout.show` est une page
+        // publique comme `checkout.show`.
+        $name = LocalizedRoutes::baseName($request->route()?->getName()) ?? '';
 
         foreach (self::SPACES as $prefix => $space) {
             if (str_starts_with($name, $prefix)) {
@@ -74,9 +88,24 @@ final class Translations
     /**
      * @return array<string, mixed>
      */
-    private static function file(string $name): array
+    private static function file(string $name, string $language): array
     {
-        $lines = Lang::get($name);
+        $lines = self::lines($name, $language);
+        $fallback = Locale::default()->language();
+
+        if ($language === $fallback) {
+            return $lines;
+        }
+
+        return array_replace_recursive(self::lines($name, $fallback), $lines);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function lines(string $name, string $language): array
+    {
+        $lines = Lang::get($name, [], $language, false);
 
         return is_array($lines) ? $lines : [];
     }

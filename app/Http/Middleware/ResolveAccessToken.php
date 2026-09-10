@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Enums\TokenType;
 use App\Exceptions\Domain\TokenNotFound;
 use App\Services\Tokens\TokenService;
+use App\Support\Locales;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,6 +59,33 @@ final readonly class ResolveAccessToken
         $request->attributes->set('access_token', $token);
         $request->attributes->set('token_subject', $token->subject);
 
+        self::speakTheProjectLanguage($request, $token->subject);
+
         return $next($request);
+    }
+
+    /**
+     * Une page à jeton parle la langue du projet, pas celle du téléphone.
+     *
+     * La personne qui raconte n'a pas de compte et n'a rien choisi : son
+     * `Accept-Language` dit la langue de son appareil, qui peut être
+     * l'anglais sur un téléphone acheté à l'étranger. La personne qui offre,
+     * elle, a désigné une langue au tunnel — c'est celle-là qui vaut.
+     *
+     * Un choix explicite du visiteur (le sélecteur, donc le témoin) l'emporte
+     * quand même : qui a demandé l'italien sur cette page l'a demandé pour de
+     * bon.
+     */
+    private static function speakTheProjectLanguage(Request $request, mixed $subject): void
+    {
+        if (SetLocale::hasExplicitChoice($request)) {
+            return;
+        }
+
+        $project = Locales::projectOf($subject);
+
+        if ($project !== null) {
+            Locales::set($project->locale);
+        }
     }
 }

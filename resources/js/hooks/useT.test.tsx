@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { translate, useT } from './useT';
 
 vi.mock('@inertiajs/react', () => ({
-    usePage: () => ({ props: { i18n: catalogue } }),
+    usePage: () => ({ props: { i18n: catalogue, locale: { language: 'fr' } } }),
 }));
 
 const catalogue = {
@@ -122,5 +122,75 @@ describe('élision', () => {
                 names: 'Odette et Camille',
             }),
         ).toBe('Les histoires d’Odette et Camille');
+    });
+});
+
+describe('pluriels', () => {
+    const catalogue = {
+        initiator: {
+            photos: ':count photo|:count photos',
+            listened: '{0} personne|{1} une personne|[2,*] :count personnes',
+            pipe: 'Appuyez sur | pour continuer',
+        },
+    };
+
+    it('choisit le singulier ou le pluriel selon le compte', () => {
+        expect(translate(catalogue, 'initiator.photos', { count: 1 })).toBe(
+            '1 photo',
+        );
+        expect(translate(catalogue, 'initiator.photos', { count: 3 })).toBe(
+            '3 photos',
+        );
+    });
+
+    it('compte zéro au singulier en français, au pluriel ailleurs', () => {
+        // « 0 photo » en français, « 0 fotos » en espagnol : la règle vit dans
+        // le code, pas dans les catalogues, sinon chaque chaîne la redirait.
+        expect(translate(catalogue, 'initiator.photos', { count: 0 })).toBe(
+            '0 photo',
+        );
+        expect(
+            translate(catalogue, 'initiator.photos', { count: 0 }, 'es'),
+        ).toBe('0 photos');
+    });
+
+    it('respecte les intervalles explicites', () => {
+        expect(translate(catalogue, 'initiator.listened', { count: 0 })).toBe(
+            'personne',
+        );
+        expect(translate(catalogue, 'initiator.listened', { count: 1 })).toBe(
+            'une personne',
+        );
+        expect(translate(catalogue, 'initiator.listened', { count: 7 })).toBe(
+            '7 personnes',
+        );
+    });
+
+    it('laisse une barre verticale tranquille quand rien ne se compte', () => {
+        // Sans `count`, la barre est un caractère comme un autre.
+        expect(translate(catalogue, 'initiator.pipe')).toBe(
+            'Appuyez sur | pour continuer',
+        );
+    });
+});
+
+describe('élision selon la langue', () => {
+    const catalogue = {
+        initiator: { title: 'Le projet de :name' },
+        it: { title: 'Le storie di :name' },
+        es: { title: 'Las historias de :name' },
+    };
+
+    it('n’élide qu’en français', () => {
+        expect(
+            translate(catalogue, 'initiator.title', { name: 'Odette' }),
+        ).toBe('Le projet d’Odette');
+        // L'usage écrit italien et espagnol garde « di Anna », « de Ana ».
+        expect(translate(catalogue, 'it.title', { name: 'Anna' }, 'it')).toBe(
+            'Le storie di Anna',
+        );
+        expect(translate(catalogue, 'es.title', { name: 'Ana' }, 'es')).toBe(
+            'Las historias de Ana',
+        );
     });
 });

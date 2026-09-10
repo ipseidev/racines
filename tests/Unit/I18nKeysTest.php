@@ -49,6 +49,44 @@ function translationKeysUsedInFront(): array
     return array_values(array_unique($keys));
 }
 
+/**
+ * Les fichiers de langue que **nous** écrivons, par langue.
+ *
+ * Ceux de `laravel-lang` (validation, pagination, mots de passe, statuts HTTP,
+ * actions) ne sont pas les nôtres : ils arrivent par `lang:add`, et exiger
+ * qu'ils soient à parité de clés avec le français reviendrait à corriger la
+ * bibliothèque.
+ *
+ * @return list<string>
+ */
+function ourLanguageFiles(): array
+{
+    return ['auth', 'book', 'common', 'enums', 'errors', 'exports', 'family',
+        'initiator', 'narrator', 'public', 'routes'];
+}
+
+/**
+ * @return array<string, string> clé pointée → texte
+ */
+function flatTranslations(string $language, string $file): array
+{
+    $lines = require base_path("lang/{$language}/{$file}.php");
+
+    $flatten = function (array $values, string $prefix = '') use (&$flatten): array {
+        $flat = [];
+
+        foreach ($values as $key => $value) {
+            $flat += is_array($value)
+                ? $flatten($value, $prefix.$key.'.')
+                : [$prefix.$key => (string) $value];
+        }
+
+        return $flat;
+    };
+
+    return $flatten($lines);
+}
+
 it('a une traduction française pour chaque clé utilisée dans le front', function (): void {
     $missing = array_values(array_filter(
         translationKeysUsedInFront(),
@@ -186,3 +224,78 @@ it('appelle des clés qui existent', function (): void {
 
     expect($missing)->toBe([], 'Clés appelées mais absentes : '.implode(', ', $missing));
 });
+
+/*
+|--------------------------------------------------------------------------
+| La parité entre les langues (T-238)
+|--------------------------------------------------------------------------
+|
+| Une clé qui manque dans `lang/it` ne casse rien : `Translations` retombe sur
+| le français, et la page s'affiche à moitié traduite — le genre de défaut
+| qu'on ne voit que si l'on parle la langue. Ces trois tests remplacent cette
+| relecture-là.
+|
+*/
+
+it('traduit dans chaque langue exactement les clés du français', function (string $language): void {
+    $missing = [];
+    $extra = [];
+
+    foreach (ourLanguageFiles() as $file) {
+        expect(is_file(base_path("lang/{$language}/{$file}.php")))
+            ->toBeTrue("lang/{$language}/{$file}.php manque.");
+
+        $french = flatTranslations('fr', $file);
+        $translated = flatTranslations($language, $file);
+
+        foreach (array_diff(array_keys($french), array_keys($translated)) as $key) {
+            $missing[] = "{$file}.{$key}";
+        }
+
+        foreach (array_diff(array_keys($translated), array_keys($french)) as $key) {
+            $extra[] = "{$file}.{$key}";
+        }
+    }
+
+    expect($missing)->toBe([], "Clés absentes de lang/{$language} : ".implode(', ', array_slice($missing, 0, 20)))
+        ->and($extra)->toBe([], "Clés en trop dans lang/{$language} : ".implode(', ', array_slice($extra, 0, 20)));
+})->with(['it', 'es']);
+
+it('garde les mêmes paramètres dans chaque langue', function (string $language): void {
+    // Un `:price` perdu à la traduction affiche « à partir de  » sans prix, et
+    // un `:name` inventé affiche « :name » en toutes lettres à l'écran.
+    $offenders = [];
+
+    foreach (ourLanguageFiles() as $file) {
+        $french = flatTranslations('fr', $file);
+        $translated = flatTranslations($language, $file);
+
+        foreach ($french as $key => $text) {
+            preg_match_all('/:[a-z_]+/i', $text, $expected);
+            preg_match_all('/:[a-z_]+/i', $translated[$key] ?? '', $actual);
+
+            sort($expected[0]);
+            sort($actual[0]);
+
+            if ($expected[0] !== $actual[0]) {
+                $offenders[] = "{$file}.{$key}";
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], "Paramètres divergents en {$language} : ".implode(', ', array_slice($offenders, 0, 20)));
+})->with(['it', 'es']);
+
+it('ne laisse aucune traduction vide', function (string $language): void {
+    $empty = [];
+
+    foreach (ourLanguageFiles() as $file) {
+        foreach (flatTranslations($language, $file) as $key => $text) {
+            if (trim($text) === '') {
+                $empty[] = "{$file}.{$key}";
+            }
+        }
+    }
+
+    expect($empty)->toBe([], "Traductions vides en {$language} : ".implode(', ', array_slice($empty, 0, 20)));
+})->with(['it', 'es']);

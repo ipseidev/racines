@@ -11,7 +11,7 @@ import {
 import GiftOverture from './GiftOverture';
 
 const beats = {
-    title: 'Narrae',
+    title: 'Marque',
     lines: ['Bonjour Odette,', 'Camille vous a offert quelque chose.'],
 };
 
@@ -47,7 +47,7 @@ describe('l’ouverture du cadeau', () => {
     it('commence par le nom de marque, seul', () => {
         render(<GiftOverture {...beats} />);
 
-        expect(screen.getByText('Narrae')).toBeTruthy();
+        expect(screen.getByText('Marque')).toBeTruthy();
         expect(screen.queryByText('Bonjour Odette,')).toBeNull();
     });
 
@@ -56,9 +56,9 @@ describe('l’ouverture du cadeau', () => {
 
         render(<GiftOverture {...beats} onDone={onDone} />);
 
-        wholeBeat('Narrae');
+        wholeBeat('Marque');
         expect(screen.getByText('Bonjour Odette,')).toBeTruthy();
-        expect(screen.queryByText('Narrae')).toBeNull();
+        expect(screen.queryByText('Marque')).toBeNull();
 
         wholeBeat('Bonjour Odette,');
         expect(
@@ -143,7 +143,7 @@ describe('l’ouverture du cadeau', () => {
         );
 
         scrollTo.mockClear();
-        wholeBeat('Narrae');
+        wholeBeat('Marque');
         wholeBeat('Bonjour Odette,');
         wholeBeat('Camille vous a offert quelque chose.');
 

@@ -1,12 +1,15 @@
 import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
-import { formatPrice, usePilot } from '@/hooks/usePilot';
+import { usePilot } from '@/hooks/usePilot';
 import ConsentBanner from '@/components/ConsentBanner';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
+import type { LocalizedUrls } from '@/types/locale';
 
 /*
  * Les entrées de la barre. Même règle qu'au pied de page : une vraie page se
@@ -17,13 +20,13 @@ import PublicFooter from '@/layouts/public-footer';
  * contenu de repli, l'écran passait par le vide avant que React ne monte. Le
  * clignotement venait de là, pas de la page.
  */
-const NAV = [
+const navOf = (urls: LocalizedUrls) => [
     // La page dédiée depuis T-213 ; l'accueil garde son résumé en quatre étapes.
-    { href: '/comment-ca-marche', key: 'how', inertia: true },
-    { href: '/nos-livres', key: 'book', inertia: true },
-    { href: '/#notre-histoire', key: 'story', inertia: false },
-    { href: '/questions-frequentes', key: 'faq', inertia: true },
-] as const;
+    { href: urls.how_it_works, key: 'how', inertia: true },
+    { href: urls.books, key: 'book', inertia: true },
+    { href: `${urls.home}#notre-histoire`, key: 'story', inertia: false },
+    { href: urls.faq, key: 'faq', inertia: true },
+];
 
 /**
  * Mise en page des pages publiques.
@@ -44,6 +47,9 @@ const NAV = [
  * colonne de lecture.
  */
 export default function PublicLayout({ children }: PropsWithChildren) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     // La mesure d'audience. Le serveur décide : sur une page à jeton, la prop
     // `analytics` vaut `null` et il n'y a rien à démarrer.
     useAnalytics();
@@ -63,7 +69,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
             <header className="border-brand-sand border-b">
                 <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-4">
                     <div className="flex items-center gap-8">
-                        <Link href="/" aria-label={brand.name}>
+                        <Link href={urls.home} aria-label={brand.name}>
                             <BrandLogo className="font-display text-brand text-[1.65rem] font-semibold" />
                         </Link>
 
@@ -71,7 +77,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                             aria-label="Sections"
                             className="hidden items-center gap-6 text-base lg:flex"
                         >
-                            {NAV.map((item) =>
+                            {navOf(urls).map((item) =>
                                 item.inertia ? (
                                     <Link
                                         key={item.key}
@@ -102,7 +108,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                         </Link>
 
                         <Link
-                            href="/acheter"
+                            href={urls.checkout_show}
                             className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep inline-flex min-h-[2.875rem] items-center justify-center rounded-md px-5 text-base font-semibold"
                         >
                             {t('public.landing.cta')}

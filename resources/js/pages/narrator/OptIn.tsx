@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import AudioPlayer from '@/components/AudioPlayer';
 import GiftOverture from '@/components/GiftOverture';
@@ -8,7 +9,6 @@ import { ChoiceCard } from '@/components/form/ChoiceCard';
 import { SelectField } from '@/components/form/SelectField';
 import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
-import { nationalPhone } from '@/lib/french';
 
 type Option = { value: string; label: string };
 
@@ -93,6 +93,8 @@ export default function OptIn({
     acceptAction,
     refuseAction,
 }: Props) {
+    const fmt = useFormat();
+    const nationalPhone = fmt.phone;
     const t = useT();
     const brand = useBrand();
     const [opened, setOpened] = useState<string | null>(null);

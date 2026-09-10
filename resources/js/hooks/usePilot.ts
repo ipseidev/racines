@@ -32,27 +32,3 @@ export function usePilot(): Pilot {
         ...((usePage().props.pilot ?? {}) as Partial<Pilot>),
     };
 }
-
-/**
- * Un prix en centimes, écrit comme le serveur l'écrit (`Money::euros`).
- *
- * Les prix voyagent en centimes entiers, comme en base : un prix en flottant
- * finit par afficher 48,99 € au lieu de 49 €. Un prix rond s'écrit « 49 € »
- * et non « 49,00 € » : la précision inutile fait paraître le prix plus lourd
- * qu'il n'est.
- *
- * Pas d'`Intl.NumberFormat` : l'espace qu'il met entre le nombre et le
- * symbole dépend de la version d'ICU — insécable fine sur les navigateurs
- * récents, insécable simple sur les anciens Safari — et le serveur de rendu
- * a la sienne. Deux caractères différents pour un même prix, c'est une
- * hydratation qui échoue sur la page d'accueil. La règle écrite ici donne le
- * même octet partout : l'espace fine insécable, comme en PHP.
- */
-export function formatPrice(cents: number): string {
-    const whole = Math.trunc(cents / 100);
-    const rest = Math.abs(cents % 100);
-    const amount =
-        rest === 0 ? `${whole}` : `${whole},${String(rest).padStart(2, '0')}`;
-
-    return `${amount}\u202f€`;
-}

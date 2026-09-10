@@ -7,11 +7,12 @@ import {
     type MouseEvent,
 } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { CheckField } from '@/components/form/CheckField';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
-import { formatPercent } from '@/lib/format';
 import { photo } from '@/lib/photo';
 import {
     readWelcomeOfferMemory,
@@ -53,6 +54,9 @@ export default function WelcomeOffer({
     discountPercent,
     atScroll = WELCOME_OFFER_SCROLL,
 }: Props) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPercent = fmt.percent;
     const t = useT();
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [open, setOpen] = useState(false);
@@ -347,7 +351,7 @@ export default function WelcomeOffer({
                                     {t('public.welcome_offer.sent_auto')}
                                 </p>
                                 <Link
-                                    href="/acheter"
+                                    href={urls.checkout_show}
                                     className="btn-primary press mt-1"
                                 >
                                     {t('public.welcome_offer.sent_cta')}

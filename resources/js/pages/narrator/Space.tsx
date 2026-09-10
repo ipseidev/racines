@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { Counter } from '@/components/form/Counter';
 import { TextField } from '@/components/form/TextField';
 import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
@@ -27,11 +28,6 @@ type Props = {
     printedCopiesWarning: string;
 };
 
-const longDate = (iso: string) =>
-    new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(
-        new Date(iso),
-    );
-
 /**
  * L'espace de la narratrice : ses histoires, et ce qu'elle peut en faire.
  *
@@ -46,6 +42,8 @@ export default function Space({
     printedCopiesWarning,
 }: Props) {
     const t = useT();
+    const fmt = useFormat();
+    const longDate = fmt.date;
     const status =
         (usePage().props.flash as { status?: string | null } | undefined)
             ?.status ?? null;

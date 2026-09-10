@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Enums\Locale;
 use App\Http\Controllers\Checkout\CheckoutController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalController;
 use App\Http\Controllers\Public\ManifestController;
 use App\Http\Controllers\Public\RobotsController;
 use App\Http\Controllers\Public\SitemapController;
 use App\Http\Controllers\Public\WelcomeOfferController;
+use App\Support\LocalizedRoutes;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,12 +25,44 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', LandingController::class)->name('home');
+/*
+ * Les pages publiques, une adresse par langue (T-238).
+ *
+ * Le corps ci-dessous est enregistré une fois par locale par
+ * `LocalizedRoutes::register()` : en français à la racine sous ses noms
+ * d'origine, puis sous `/it/`, `/es/`, `/fr-ch/`, `/it-ch/` avec un préfixe
+ * de nom (`it.home`). Les segments traduits vivent dans
+ * `lang/{langue}/routes.php`. Le témoin de la page de vente et les écritures
+ * du tunnel ne sont pas déclinés : voir plus bas.
+ */
+LocalizedRoutes::register(function (Locale $locale): void {
+    $uri = fn (string $name): string => LocalizedRoutes::uri($name, $locale);
 
-Route::get('/essai', [LandingController::class, 'demo'])->name('demo');
-Route::get('/comment-ca-marche', [LandingController::class, 'howItWorks'])->name('how_it_works');
-Route::get('/questions-frequentes', [LandingController::class, 'faq'])->name('faq');
-Route::get('/nos-livres', [LandingController::class, 'books'])->name('books');
+    Route::get($uri('home'), LandingController::class)->name('home');
+
+    Route::get($uri('demo'), [LandingController::class, 'demo'])->name('demo');
+    Route::get($uri('how_it_works'), [LandingController::class, 'howItWorks'])->name('how_it_works');
+    Route::get($uri('faq'), [LandingController::class, 'faq'])->name('faq');
+    Route::get($uri('books'), [LandingController::class, 'books'])->name('books');
+
+    // Pages légales, rendues depuis des fichiers markdown : elles sont relues
+    // par un conseil, et un conseil relit un texte, pas un composant React.
+    // Une traduction absente retombe sur le texte français, qui fait foi.
+    Route::get($uri('legal.terms'), [LegalController::class, 'terms'])->name('legal.terms');
+    Route::get($uri('legal.privacy'), [LegalController::class, 'privacy'])->name('legal.privacy');
+    Route::get($uri('legal.imprint'), [LegalController::class, 'imprint'])->name('legal.imprint');
+    Route::get($uri('legal.consents'), [LegalController::class, 'consents'])->name('legal.consents');
+
+    // Les deux pages du tunnel ; ses écritures sont plus bas, sans préfixe.
+    Route::get($uri('checkout.show'), [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::get($uri('checkout.thanks'), [CheckoutController::class, 'thanks'])->name('checkout.thanks');
+});
+
+// Le sélecteur de langue des pages sans adresse déclinée (espace, comptes,
+// pages à jeton) : pose le témoin, met le compte à jour, revient en arrière.
+Route::post('/langue', LocaleController::class)
+    ->middleware('not-a-page')
+    ->name('locale.switch');
 
 /*
  * Le témoin de la page de vente (T-219, T-220).
@@ -73,20 +108,15 @@ Route::post('/offre-de-bienvenue', WelcomeOfferController::class)
     ->middleware('throttle:welcome-offer')
     ->name('welcome_offer.claim');
 
-// Pages légales, rendues depuis des fichiers markdown : elles sont relues par
-// un conseil, et un conseil relit un texte, pas un composant React.
-Route::get('/cgv', [LegalController::class, 'terms'])->name('legal.terms');
-Route::get('/confidentialite', [LegalController::class, 'privacy'])->name('legal.privacy');
-Route::get('/mentions-legales', [LegalController::class, 'imprint'])->name('legal.imprint');
-Route::get('/consentements', [LegalController::class, 'consents'])->name('legal.consents');
-
 /*
  * Le tunnel d'achat. Les cinq premières étapes sont ouvertes : le compte se
  * crée à la quatrième, et exiger une connexion avant reviendrait à demander
  * un mot de passe à quelqu'un qui ne sait pas encore ce qu'il achète.
+ *
+ * Les deux pages (`/acheter`, `/acheter/merci`) sont déclinées par langue
+ * plus haut ; les écritures ci-dessous n'ont qu'une adresse, et leur langue
+ * vient du témoin posé par la page (`SetLocale`).
  */
-Route::get('/acheter', [CheckoutController::class, 'show'])->name('checkout.show');
-
 Route::post('/acheter/etape/{step}', [CheckoutController::class, 'store'])
     ->whereNumber('step')
     ->name('checkout.step');
@@ -102,8 +132,6 @@ Route::delete('/acheter/code', [CheckoutController::class, 'removeCode'])->name(
 Route::post('/acheter/payer', [CheckoutController::class, 'pay'])
     ->middleware('auth')
     ->name('checkout.pay');
-
-Route::get('/acheter/merci', [CheckoutController::class, 'thanks'])->name('checkout.thanks');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     // Le tableau de bord de l'Initiateur·rice est l'espace, pas la page

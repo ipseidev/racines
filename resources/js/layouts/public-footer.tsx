@@ -1,8 +1,11 @@
 import { Link } from '@inertiajs/react';
 
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
+import LocaleSwitcher from '@/components/LocaleSwitcher';
+import { useUrls } from '@/hooks/useLocale';
 import { useT } from '@/hooks/useT';
 import { openConsent } from '@/lib/consent';
+import type { LocalizedUrls } from '@/types/locale';
 
 type Item = { href: string; key: string; inertia: boolean };
 
@@ -34,33 +37,30 @@ const LINK = 'text-brand-muted hover:text-brand inline-block py-1 text-base';
  * sections de l'accueil ; l'essai est un `<a>` ordinaire, pour que le micro
  * puisse être demandé (T-151).
  */
-const DISCOVER = [
-    { href: '/', key: 'public.footer.home', inertia: true },
+/*
+ * Les adresses viennent du serveur, jamais d'une constante : une page
+ * publique a une adresse par langue, et un lien écrit en dur renverrait un
+ * visiteur italien sur la version française (T-238).
+ */
+const discoverOf = (urls: LocalizedUrls): Item[] => [
+    { href: urls.home, key: 'public.footer.home', inertia: true },
+    { href: urls.how_it_works, key: 'public.landing.nav.how', inertia: true },
+    { href: urls.books, key: 'public.landing.nav.book', inertia: true },
     {
-        href: '/comment-ca-marche',
-        key: 'public.landing.nav.how',
-        inertia: true,
-    },
-    { href: '/nos-livres', key: 'public.landing.nav.book', inertia: true },
-    {
-        href: '/#notre-histoire',
+        href: `${urls.home}#notre-histoire`,
         key: 'public.landing.nav.story',
         inertia: false,
     },
-    {
-        href: '/questions-frequentes',
-        key: 'public.landing.faq.title',
-        inertia: true,
-    },
-    { href: '/essai', key: 'public.footer.try', inertia: false },
-] as const;
+    { href: urls.faq, key: 'public.landing.faq.title', inertia: true },
+    { href: urls.demo, key: 'public.footer.try', inertia: false },
+];
 
-const LEGAL = [
-    { href: '/cgv', key: 'public.legal.terms' },
-    { href: '/confidentialite', key: 'public.legal.privacy' },
-    { href: '/mentions-legales', key: 'public.legal.imprint' },
-    { href: '/consentements', key: 'public.legal.consents' },
-] as const;
+const legalOf = (urls: LocalizedUrls) => [
+    { href: urls.legal_terms, key: 'public.legal.terms' },
+    { href: urls.legal_privacy, key: 'public.legal.privacy' },
+    { href: urls.legal_imprint, key: 'public.legal.imprint' },
+    { href: urls.legal_consents, key: 'public.legal.consents' },
+];
 
 /**
  * Le pied de page des pages publiques et du tunnel.
@@ -74,19 +74,20 @@ const LEGAL = [
  * qui s'apprête à payer doit pouvoir lire les conditions sans revenir en
  * arrière et perdre sa saisie.
  */
-export default function PublicFooter({
-    variant = 'full',
-    discover = DISCOVER,
-}: Props) {
+export default function PublicFooter({ variant = 'full', discover }: Props) {
     const t = useT();
     const brand = useBrand();
+    const urls = useUrls();
     const year = new Date().getFullYear();
+
+    const links = discover ?? discoverOf(urls);
+    const legal = legalOf(urls);
 
     return (
         <footer className="border-brand-sand bg-brand-linen text-brand-text border-t">
             <div className="mx-auto grid w-full max-w-6xl gap-12 px-6 py-14 lg:grid-cols-[5fr_7fr] lg:gap-16">
                 <div className="flex flex-col items-start gap-4">
-                    <Link href="/" aria-label={brand.name}>
+                    <Link href={urls.home} aria-label={brand.name}>
                         <BrandLogo className="font-display text-brand text-[1.65rem] font-semibold" />
                     </Link>
                     {brand.tagline !== '' && (
@@ -110,7 +111,7 @@ export default function PublicFooter({
                                 {t('public.footer.discover')}
                             </span>
                             <ul className="flex flex-col">
-                                {discover.map((item) => (
+                                {links.map((item) => (
                                     <li key={item.href}>
                                         {item.inertia ? (
                                             <Link
@@ -141,7 +142,7 @@ export default function PublicFooter({
                             {t('public.footer.information')}
                         </span>
                         <ul className="flex flex-col">
-                            {LEGAL.map((item) => (
+                            {legal.map((item) => (
                                 <li key={item.href}>
                                     <Link href={item.href} className={LINK}>
                                         {t(item.key)}
@@ -202,6 +203,12 @@ export default function PublicFooter({
                         })}
                     </span>
                     <span>{t('public.footer.hosting')}</span>
+                    {/* Le sélecteur de langue : cinq liens vers la même page,
+                        chacun nommé dans sa propre langue (T-238). */}
+                    <LocaleSwitcher
+                        tone="footer"
+                        className="w-full sm:w-auto"
+                    />
                 </div>
             </div>
         </footer>

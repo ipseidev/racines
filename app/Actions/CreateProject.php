@@ -28,6 +28,7 @@ final class CreateProject
         return DB::transaction(function () use ($owner, $offer, $attributes): Project {
             $project = new Project($attributes);
             $project->owner()->associate($owner);
+            $project->locale = $owner->locale;
             $project->offer = $offer;
             $project->status = ProjectStatus::Draft;
             $project->save();

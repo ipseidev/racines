@@ -336,4 +336,31 @@ return [
         'deleted' => 'Supprimée',
     ],
 
+    /*
+     * Les langues et les marchés que l'interface sait servir (T-238). Une
+     * locale est une langue **et** un marché : `it-CH` parle italien et
+     * formate ses montants à la suisse. Le sélecteur de langue, lui,
+     * n'utilise pas ces libellés : une langue se propose dans sa propre
+     * langue (`Locale::nativeName()`), sans quoi personne ne se reconnaît.
+     */
+    'locale' => [
+        'fr' => 'Français',
+        'it' => 'Italien',
+        'es' => 'Espagnol',
+        'fr-CH' => 'Français (Suisse)',
+        'it-CH' => 'Italien (Suisse)',
+    ],
+
+    'market' => [
+        'FR' => 'France',
+        'IT' => 'Italie',
+        'ES' => 'Espagne',
+        'CH' => 'Suisse',
+    ],
+
+    'currency' => [
+        'EUR' => 'Euro',
+        'CHF' => 'Franc suisse',
+    ],
+
 ];

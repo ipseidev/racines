@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { useT } from '@/hooks/useT';
 
 type Props = {
@@ -28,6 +29,7 @@ export default function AlreadyRecorded({
     restartAction,
 }: Props) {
     const t = useT();
+    const fmt = useFormat();
     const [confirmingHide, setConfirmingHide] = useState(false);
 
     // Le message d'une action qui vient d'aboutir, l'envoi d'une réponse
@@ -37,12 +39,7 @@ export default function AlreadyRecorded({
         (usePage().props.flash as { status?: string | null } | undefined)
             ?.status ?? null;
 
-    const date =
-        recordedAt === null
-            ? null
-            : new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(
-                  new Date(recordedAt),
-              );
+    const date = recordedAt === null ? null : fmt.date(recordedAt);
 
     return (
         <>

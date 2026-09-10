@@ -1,11 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import { useEffect } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { useT } from '@/hooks/useT';
 import { celebrateOnce } from '@/lib/celebrate';
-import { ofName } from '@/lib/french';
-
-import { formatDate, formatTime } from './Checkout';
 
 type Props = {
     sessionId?: string | null;
@@ -41,6 +39,8 @@ export default function CheckoutThanks({
     giftSendAt,
     giftSendTime,
 }: Props) {
+    const fmt = useFormat();
+    const ofName = fmt.of;
     const t = useT();
 
     useEffect(() => {
@@ -55,8 +55,8 @@ export default function CheckoutThanks({
     const of = ofName(name);
 
     const when = {
-        date: giftSendAt !== null ? formatDate(giftSendAt) : '',
-        time: formatTime(giftSendTime),
+        date: giftSendAt !== null ? fmt.longDate(giftSendAt) : '',
+        time: fmt.time(giftSendTime),
     };
 
     const steps = forSelf

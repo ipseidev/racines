@@ -1,9 +1,10 @@
 import { Link } from '@inertiajs/react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import { BAND, Section, SHELL } from '@/components/landing/primitives';
 import { track } from '@/components/landing/track';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
@@ -61,6 +62,9 @@ export default function OwnershipAndAccess({
     variant: string;
     price: number;
 }) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
 
@@ -146,7 +150,7 @@ export default function OwnershipAndAccess({
                             </span>
 
                             <Link
-                                href="/acheter"
+                                href={urls.checkout_show}
                                 onClick={() =>
                                     track('lp_buy_click', {
                                         variant,

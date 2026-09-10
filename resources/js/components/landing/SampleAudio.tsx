@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { track } from '@/components/landing/track';
 import Wave from '@/components/Wave';
 import { useT } from '@/hooks/useT';
-import { formatDuration } from '@/lib/format';
 
 type Sample = { src: string; disclosed: boolean };
 
@@ -52,6 +52,8 @@ export default function SampleAudio({
     sample: Sample | null;
     variant: string;
 }) {
+    const fmt = useFormat();
+    const formatDuration = fmt.duration;
     const t = useT();
     const audio = useRef<HTMLAudioElement>(null);
     const started = useRef(false);

@@ -3,13 +3,18 @@
  * et un médaillon vide se remarque plus qu'un médaillon absent.
  */
 export function initials(name: string): string {
-    return name
-        .trim()
-        .split(/\s+/)
-        .filter((part) => part !== '')
-        .slice(0, 2)
-        .map((part) => part[0].toLocaleUpperCase('fr-FR'))
-        .join('');
+    return (
+        name
+            .trim()
+            .split(/\s+/)
+            .filter((part) => part !== '')
+            .slice(0, 2)
+            // Sans locale : le français, l'italien et l'espagnol mettent en
+            // capitale de la même façon, et seule une locale turque changerait
+            // quelque chose — la fixer ici serait une fausse précision.
+            .map((part) => part[0].toLocaleUpperCase())
+            .join('')
+    );
 }
 
 export function Avatar({ name }: { name: string }) {

@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 
 import { BrandLogo } from '@/brand/BrandProvider';
+import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { Toasts } from '@/components/space/Toasts';
 import { useStatusToast } from '@/hooks/useStatusToast';
 import ConsentBanner from '@/components/ConsentBanner';
@@ -89,6 +90,13 @@ export default function InitiatorLayout({ children }: PropsWithChildren) {
             >
                 <div key={path}>{children}</div>
             </main>
+
+            {/* La langue de l'espace. Elle est retenue sur le compte, donc
+                elle suit la personne d'un appareil à l'autre (T-238). */}
+            <footer className="mx-auto w-full max-w-2xl px-6 pb-8">
+                <LocaleSwitcher />
+            </footer>
+
             <ConsentBanner />
 
             <Toasts />

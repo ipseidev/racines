@@ -1,5 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import HeroSample from '@/components/HeroSample';
 import { Check, Lock } from '@/components/marketing/Check';
@@ -7,7 +9,6 @@ import Newsletter from '@/components/marketing/Newsletter';
 import { H2, LEDE, PRIMARY, SECONDARY } from '@/components/marketing/styles';
 import Wave from '@/components/Wave';
 import WelcomeOffer from '@/components/WelcomeOffer';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
@@ -216,6 +217,9 @@ export default function Landing({
     welcomeOffer,
     heroSample,
 }: Props) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
 
@@ -264,7 +268,7 @@ export default function Landing({
 
                     <div className="flex flex-wrap items-center gap-3.5">
                         <Link
-                            href="/acheter"
+                            href={urls.checkout_show}
                             className={`${PRIMARY} w-full sm:w-auto`}
                         >
                             {t('public.landing.cta')}
@@ -434,7 +438,7 @@ export default function Landing({
                 {/* Quatre étapes suffisent ici ; la page dédiée en déroule six (T-213). */}
                 <div className="mt-12 flex justify-start lg:justify-center">
                     <Link
-                        href="/comment-ca-marche"
+                        href={urls.how_it_works}
                         className={`${SECONDARY} w-full sm:w-auto`}
                     >
                         {t('public.landing.how.more')} →
@@ -488,7 +492,7 @@ export default function Landing({
                      * apparaître la demande (T-151).
                      */}
                     <a
-                        href="/essai"
+                        href={urls.demo}
                         className="bg-brand-surface text-brand hover:bg-brand-linen inline-flex min-h-[3.5rem] items-center justify-center gap-2 rounded-md px-7 text-[1.05rem] font-semibold"
                     >
                         <span className="bg-brand-accent size-2.5 rounded-full" />
@@ -559,7 +563,7 @@ export default function Landing({
                         ))}
                     </ul>
 
-                    <Link href="/acheter" className={PRIMARY}>
+                    <Link href={urls.checkout_show} className={PRIMARY}>
                         {t('public.landing.cta')} · {formatPrice(price)}
                     </Link>
 
@@ -630,7 +634,10 @@ export default function Landing({
                                 <span className="text-brand-muted text-base">
                                     {t('public.landing.forever.per')}
                                 </span>
-                                <Link href="/acheter" className={PRIMARY}>
+                                <Link
+                                    href={urls.checkout_show}
+                                    className={PRIMARY}
+                                >
                                     {t('public.landing.cta_start')} →
                                 </Link>
                                 <p className="text-brand-muted flex items-center gap-2 text-[0.95rem]">
@@ -706,7 +713,7 @@ export default function Landing({
                     <p className={`${LEDE} max-w-[36em]`}>
                         {t('public.landing.book.body')}
                     </p>
-                    <Link href="/acheter" className={PRIMARY}>
+                    <Link href={urls.checkout_show} className={PRIMARY}>
                         {t('public.landing.cta')}
                     </Link>
 
@@ -818,7 +825,10 @@ export default function Landing({
                         <p className="text-brand-text text-lg leading-relaxed">
                             {t('public.landing.gift.body')}
                         </p>
-                        <Link href="/acheter" className={`${PRIMARY} w-fit`}>
+                        <Link
+                            href={urls.checkout_show}
+                            className={`${PRIMARY} w-fit`}
+                        >
                             {t('public.landing.cta')}
                         </Link>
                     </div>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Payments;
 
+use App\Support\Locales;
 use Stripe\StripeClient;
 
 /**
@@ -38,7 +39,11 @@ final class StripeCheckoutSessions implements CheckoutSessions
             'metadata' => $metadata,
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
-            'locale' => 'fr',
+            // La page de Stripe parle la langue de celle qu'on quitte : un
+            // tunnel en italien qui s'achève sur un formulaire français perd
+            // la personne au moment où elle sort sa carte. Stripe ne connaît
+            // que la langue, pas le marché.
+            'locale' => Locales::current()->stripe(),
         ];
 
         // Un coupon posé par nous, et pas de champ « code promo » sur la page

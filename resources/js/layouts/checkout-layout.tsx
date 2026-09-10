@@ -4,6 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { BrandLogo, useBrand } from '@/brand/BrandProvider';
 import ConsentBanner from '@/components/ConsentBanner';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useUrls } from '@/hooks/useLocale';
 import { useT } from '@/hooks/useT';
 import PublicFooter from '@/layouts/public-footer';
 
@@ -45,6 +46,7 @@ function Lock() {
 export default function CheckoutLayout({ children }: PropsWithChildren) {
     const t = useT();
     const brand = useBrand();
+    const urls = useUrls();
 
     useAnalytics();
 
@@ -52,7 +54,7 @@ export default function CheckoutLayout({ children }: PropsWithChildren) {
         <div className="bg-brand-background text-brand-text flex min-h-screen flex-col text-[1.125rem] leading-relaxed">
             <header className="border-brand-sand border-b">
                 <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-4">
-                    <Link href="/" aria-label={brand.name}>
+                    <Link href={urls.home} aria-label={brand.name}>
                         <BrandLogo className="font-display text-brand text-[1.65rem] font-semibold" />
                     </Link>
 

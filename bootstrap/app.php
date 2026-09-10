@@ -12,7 +12,9 @@ use App\Http\Middleware\NotAPage;
 use App\Http\Middleware\RequireSensitiveGrant;
 use App\Http\Middleware\ResolveAccessToken;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use App\Support\Links;
+use App\Support\Locales;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -64,6 +66,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['sidebar_state', 'consentement', '_fbp', '_fbc']);
 
         $middleware->web(append: [
+            // En tête : la langue décide de ce que rendent tous les autres —
+            // les traductions partagées par Inertia, les libellés d'erreur,
+            // les dates. Après le routage, parce qu'une page publique tient
+            // sa langue de son adresse (`/it/come-funziona`).
+            SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             SecurityHeaders::class,
@@ -79,6 +86,25 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        /*
+         * Une page d'erreur parle la langue de l'adresse demandée.
+         *
+         * Une adresse qui n'existe pas n'a pas de route, donc pas de groupe
+         * « web » et pas de `SetLocale` : sans cette ligne, `/it/inexistante`
+         * répondait en français. Le préfixe suffit — il n'y a ni session ni
+         * témoin déchiffré à ce stade. La fermeture ne rend rien : elle pose
+         * la langue et laisse le rendu ordinaire suivre son cours.
+         */
+        $exceptions->render(function (Throwable $exception, Request $request): null {
+            $locale = SetLocale::fromPath($request);
+
+            if ($locale !== null) {
+                Locales::set($locale);
+            }
+
+            return null;
+        });
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

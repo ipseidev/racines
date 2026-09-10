@@ -403,10 +403,45 @@ candidat. La correction vit dans `terminate()` et non au retour de `handle()` :
 
 ## 10. Internationalisation
 
-- Toutes les chaînes visibles vivent dans `lang/fr/*.php`, un fichier par espace : `public.php`, `initiator.php`, `narrator.php`, `family.php`, `notifications.php`, `admin.php`, `legal.php`.
-- Le front reçoit l'objet de traduction de la page courante via la prop Inertia partagée `i18n` et l'utilise avec le hook `useT()` (`resources/js/hooks/useT.ts`, bloc 01). Pas de bibliothèque tierce.
-- Test `tests/Unit/I18nKeysTest.php` : toute clé appelée dans `resources/js/**/*.tsx` existe dans `lang/fr`. Test `tests/Unit/ForbiddenVocabularyTest.php` : aucune expression de R-11 dans `lang/fr`, `resources/views`, `resources/playbooks`.
-- Pluriels et genres : utiliser la syntaxe `trans_choice` et la forme inclusive « Initiateur·rice », « Narrateur·rice » dans l'interface Initiateur ; l'interface narrateur tutoie-vouvoie selon le réglage du projet (`Project::address_form` : `vous` par défaut).
+**Cinq locales, trois langues** (T-238) : `fr`, `it`, `es`, `fr-CH`, `it-CH`. Une locale est **une langue et un marché** : `it-CH` lit `lang/it` et formate ses montants et ses dates à la suisse. `App\Enums\Locale` porte les deux, `Market` le pays, `Currency` la monnaie. Le français est la locale par défaut ; l'allemand n'est pas servi, et un navigateur `de-CH` reçoit `fr-CH`.
+
+### Les textes
+
+- Toutes les chaînes visibles vivent dans `lang/{langue}/*.php`, un fichier par espace : `public.php`, `initiator.php`, `narrator.php`, `family.php`, `notifications.php`, `admin.php`, `errors.php`, `enums.php`, `common.php`, `book.php`, `exports.php`, `auth.php`, `routes.php`.
+- **`lang/fr` est la source.** On ajoute une clé en français d'abord, puis dans les deux autres langues — jamais l'inverse, et jamais dans une seule.
+- `admin.php` n'est **pas** traduit : le back-office est l'outil d'une équipe française, et l'intergiciel `AdminLocale` force le français sur tout le panneau.
+- Les courriels et les SMS restent en français : ils passent par `__()` et suivraient la locale, mais aucun `lang/{it,es}/notifications.php` n'est encore relu par une personne qui parle la langue.
+- Les traductions du framework viennent de `laravel-lang/common` : `sail artisan lang:add <langue>` puis `lang:update`. Ne pas les corriger à la main.
+
+### Le front
+
+- Le front reçoit `i18n` (le fichier de l'espace courant plus `common`, dans la langue de la page, avec le français en dessous) et `locale` (langue, étiquette, monnaie, les cinq langues et leurs adresses, les adresses publiques de la langue courante). **Les deux sont partagées par des fermetures** : Inertia résout `share()` avant les intergiciels de route, et une page à jeton n'y connaît pas encore la langue de son projet.
+- `useT()` (`resources/js/hooks/useT.ts`) traduit, interpole, choisit le pluriel et élide. Pas de bibliothèque tierce.
+- `useFormat()` (`resources/js/hooks/useFormat.ts`) formate prix, dates, heures, durées, pourcentages et prénoms. **Un hook, pas des fonctions libres** : le rendu serveur traite plusieurs langues dans le même processus, et une variable de module porterait la langue de la requête précédente.
+- `useUrls()` donne les adresses des pages publiques dans la langue courante. **Aucun `href="/acheter"` en dur** : un lien écrit en dur renvoie un visiteur italien sur la page française.
+- Les règles de prix sont écrites à la main des deux côtés (`App\Support\Money` et `resources/js/lib/intl.ts`) et doivent donner **le même octet** : l'espace qu'`Intl` met devant un symbole dépend de la version d'ICU, et deux caractères différents pour un même prix font échouer l'hydratation.
+
+### Les adresses
+
+- Une page publique a **une adresse par langue** : le français à la racine (`/cgv`), les autres sous un préfixe et avec un segment traduit (`/it/condizioni-di-vendita`). Les segments vivent dans `lang/{langue}/routes.php`, les routes sont enregistrées une fois par langue par `LocalizedRoutes::register()`, et les noms portent le préfixe (`it.legal.terms`).
+- Tout le reste — l'espace, les comptes, les pages à jeton, les écritures du tunnel — n'a **qu'une** adresse. Sa langue vient du témoin, du projet ou du compte.
+- Chaque page déclinée déclare ses sœurs en `hreflang`, elle comprise, plus `x-default` vers le français ; le plan de site les répète en `xhtml:link`.
+
+### Qui décide de la langue
+
+`App\Http\Middleware\SetLocale`, dans cet ordre : **l'adresse** (une page indexée sert toujours la même langue), **le témoin** `locale` (le dernier choix explicite), **le projet** sur une page à jeton (`ResolveAccessToken`), **le compte**, **`Accept-Language`**, le français. Le témoin est fonctionnel : il n'est posé que quand il porte une information, jamais pour dire « français » à qui n'a rien choisi.
+
+### Ce que les tests garantissent
+
+| Test | Garantit |
+|---|---|
+| `tests/Unit/I18nKeysTest.php` | Toute clé appelée dans le front existe ; aucune clé définie deux fois ; **`lang/it` et `lang/es` ont exactement les clés de `lang/fr`, les mêmes paramètres, et aucune valeur vide** |
+| `tests/Unit/ForbiddenVocabularyTest.php` | Aucune expression de R-11 dans les trois langues, ni dans `resources/views`, `resources/playbooks` |
+| `tests/Feature/Locale/LocaleResolutionTest.php` | L'ordre de décision ci-dessus, cran par cran |
+| `tests/Feature/Locale/LocalizedRoutesTest.php` | Cinq adresses par page, toutes distinctes, `hreflang`, canonique, plan de site |
+| `tests/Unit/Support/MoneyTest.php` et `resources/js/lib/intl.test.ts` | Les mêmes chaînes de prix des deux côtés |
+
+- Pluriels et genres : `trans_choice` côté PHP, la même syntaxe côté front (`:count photo|:count photos`, `{0} … |[2,*] …`). Le zéro compte au singulier en français, au pluriel en italien et en espagnol — la règle est dans le code, pas dans les catalogues. Forme inclusive « Initiateur·rice », « Narrateur·rice » dans l'interface française ; en italien et en espagnol, une tournure neutre (« chi organizza », « quien narra »), jamais de schwa ni d'astérisque. L'interface narrateur tutoie-vouvoie selon le réglage du projet (`Project::address_form` : `vous` par défaut).
 
 ## 11. Accessibilité
 

@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Concerns\StoresDatesWithOffset;
 use App\Enums\AddressForm;
 use App\Enums\Cadence;
+use App\Enums\Locale;
 use App\Enums\Offer;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
@@ -33,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property ProjectStatus $status
  * @property Offer $offer
  * @property AddressForm $address_form
+ * @property Locale $locale
  * @property Cadence $cadence
  * @property int $prompt_day
  * @property PromptSlot $prompt_slot
@@ -77,13 +79,14 @@ final class Project extends Model
         'prompt_day' => 1,
         'prompt_slot' => PromptSlot::Morning->value,
         'timezone' => 'Europe/Paris',
+        'locale' => Locale::French->value,
         'validation_variant' => ValidationVariant::Immediate->value,
     ];
 
     /** @var list<string> */
     protected $fillable = [
         'cohort_id', 'status', 'offer', 'address_form', 'cadence', 'prompt_day',
-        'prompt_slot', 'timezone', 'gift_message', 'gift_send_at', 'validation_variant',
+        'prompt_slot', 'timezone', 'locale', 'gift_message', 'gift_send_at', 'validation_variant',
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -255,6 +258,7 @@ final class Project extends Model
             'status' => ProjectStatus::class,
             'offer' => Offer::class,
             'address_form' => AddressForm::class,
+            'locale' => Locale::class,
             'cadence' => Cadence::class,
             'prompt_slot' => PromptSlot::class,
             'validation_variant' => ValidationVariant::class,

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 
+import { useUrls } from '@/hooks/useLocale';
 import { useBrand } from '@/brand/BrandProvider';
 import { BAND, Heading, Section, SHELL } from '@/components/landing/primitives';
 import { SECONDARY } from '@/components/marketing/styles';
@@ -29,6 +30,7 @@ type Video = {
  * produit filme les souvenirs.
  */
 export default function ExperienceMedia({ videos }: { videos: Video[] }) {
+    const urls = useUrls();
     const t = useT();
     const brand = useBrand();
 
@@ -85,7 +87,7 @@ export default function ExperienceMedia({ videos }: { videos: Video[] }) {
                         })}
                     />
                     <Link
-                        href="/comment-ca-marche"
+                        href={urls.how_it_works}
                         className={`${SECONDARY} w-full sm:w-fit`}
                     >
                         {t('public.lp.experience.cta')}

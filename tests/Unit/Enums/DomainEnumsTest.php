@@ -11,7 +11,10 @@ use App\Enums\CohortPhase;
 use App\Enums\ConsentChannel;
 use App\Enums\ConsentKind;
 use App\Enums\ConsentStatus;
+use App\Enums\Currency;
 use App\Enums\DeletionRequestedBy;
+use App\Enums\Locale;
+use App\Enums\Market;
 use App\Enums\Offer;
 use App\Enums\OtpPurpose;
 use App\Enums\OutboundMessageStatus;
@@ -45,7 +48,10 @@ function domainEnums(): array
         ConsentChannel::class,
         ConsentKind::class,
         ConsentStatus::class,
+        Currency::class,
         DeletionRequestedBy::class,
+        Locale::class,
+        Market::class,
         Offer::class,
         OtpPurpose::class,
         OutboundMessageStatus::class,

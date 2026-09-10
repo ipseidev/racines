@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Enums\Locale;
 use App\Settings\PilotSettings;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Lang;
 
 /**
- * Le titre, la description et l'indexation de chaque page publique (T-225).
+ * Le titre, la description, la langue et l'indexation de chaque page
+ * publique (T-225, étendu aux cinq langues par T-238).
  *
  * Ce qui se jouait ici avant : **une** description pour toutes les pages, et
  * un titre de document réduit au nom de la marque. Les deux sont des défauts
@@ -26,64 +29,47 @@ use Illuminate\Support\Facades\Lang;
  * Le titre rendu par le serveur doit dire la même chose que celui du `<Head>`
  * Inertia, sinon le document en affiche deux à la suite : les deux lisent donc
  * la même clé de catalogue.
+ *
+ * **La clé vient du nom de route, pas du chemin.** `/cgv`, `/it/condizioni-di-vendita`
+ * et `/es/condiciones-de-venta` sont la même page dans trois langues : le
+ * chemin change, `legal.terms` non.
  */
 final class Seo
 {
     /**
-     * Composant Inertia vers sa clé de catalogue et son indexation.
+     * Nom de route (sans préfixe de langue) vers clé de catalogue.
      *
-     * Les pages absentes de cette table ne reçoivent ni description ni
+     * Les routes absentes de cette table ne reçoivent ni description ni
      * canonique : ce sont les pages à jeton et l'espace, qui n'ont rien à
      * donner à lire à un moteur.
      *
-     * @var array<string, array{key: string, indexable: bool}>
+     * @var array<string, string>
      */
-    private const PAGES = [
-        'public/Landing' => ['key' => 'home', 'indexable' => true],
-        'public/HowItWorks' => ['key' => 'how', 'indexable' => true],
-        'public/Books' => ['key' => 'books', 'indexable' => true],
-        'public/Faq' => ['key' => 'faq', 'indexable' => true],
-        'public/Demo' => ['key' => 'demo', 'indexable' => true],
-        'public/Legal' => ['key' => 'legal', 'indexable' => true],
-        'public/Consents' => ['key' => 'consents', 'indexable' => true],
+    private const BY_ROUTE = [
+        'home' => 'home',
+        'how_it_works' => 'how',
+        'books' => 'books',
+        'faq' => 'faq',
+        'demo' => 'demo',
+        'legal.terms' => 'terms',
+        'legal.privacy' => 'privacy',
+        'legal.imprint' => 'imprint',
+        'legal.consents' => 'consents',
         // Le tunnel et le remerciement : suivis, jamais indexés. Une étape de
         // paiement dans les résultats de recherche n'aide personne.
-        'public/Checkout' => ['key' => 'checkout', 'indexable' => false],
-        'public/CheckoutThanks' => ['key' => 'checkout', 'indexable' => false],
+        'checkout.show' => 'checkout',
+        'checkout.thanks' => 'checkout',
         // Le témoin du test : hors index, sans quoi il se disputerait le
         // trafic de l'accueil, qui sert la même offre (T-219).
-        'public/LandingTemoin' => ['key' => 'home', 'indexable' => false],
+        'lp.temoin' => 'home',
     ];
 
     /**
-     * Les pages qui entrent au plan de site, dans l'ordre d'importance.
+     * Les routes qui n'entrent pas dans l'index.
      *
-     * @var array<string, string>
+     * @var list<string>
      */
-    public const SITEMAP = [
-        '/' => 'home',
-        '/comment-ca-marche' => 'how',
-        '/nos-livres' => 'books',
-        '/questions-frequentes' => 'faq',
-        '/essai' => 'demo',
-        '/cgv' => 'legal',
-        '/confidentialite' => 'legal',
-        '/mentions-legales' => 'legal',
-        '/consentements' => 'legal',
-    ];
-
-    /**
-     * Les quatre pages légales sortent d'un seul composant : sans le chemin,
-     * elles partageaient un titre et une description, ce qui est exactement le
-     * défaut qu'on corrige ici.
-     *
-     * @var array<string, string>
-     */
-    private const BY_PATH = [
-        'cgv' => 'terms',
-        'confidentialite' => 'privacy',
-        'mentions-legales' => 'imprint',
-    ];
+    private const NOT_INDEXED = ['checkout.show', 'checkout.thanks', 'lp.temoin'];
 
     /**
      * Les pages qui désignent une autre adresse comme canonique.
@@ -93,76 +79,98 @@ final class Seo
      *
      * @var array<string, string>
      */
-    private const CANONICAL = [
-        'public/LandingTemoin' => '/',
+    private const CANONICAL = ['lp.temoin' => 'home'];
+
+    /**
+     * Les pages du plan de site, dans l'ordre d'importance. Chacune y figure
+     * une fois par langue, avec ses sœurs déclarées en `hreflang`.
+     *
+     * @var list<string>
+     */
+    public const SITEMAP = [
+        'home',
+        'how_it_works',
+        'books',
+        'faq',
+        'demo',
+        'legal.terms',
+        'legal.privacy',
+        'legal.imprint',
+        'legal.consents',
     ];
 
     /**
-     * @return array{title: string, description: string, indexable: bool, brand: bool, canonical: string}
+     * Tout ce que la vue racine doit écrire dans l'en-tête du document.
+     *
+     * @return array{
+     *     title: string, description: string, indexable: bool, brand: bool,
+     *     canonical: string, lang: string, openGraph: string,
+     *     alternates: array<string, string>
+     * }
      */
-    public static function forComponent(string $component, string $path = ''): array
+    public static function forPage(?Route $route): array
     {
-        $page = self::PAGES[$component] ?? null;
+        $locale = Locales::current();
+        $name = LocalizedRoutes::baseName($route?->getName()) ?? '';
+        $key = self::BY_ROUTE[$name] ?? null;
 
-        if ($page === null) {
+        if ($key === null) {
             return [
                 'title' => '',
                 'description' => '',
                 'indexable' => false,
                 'brand' => false,
                 'canonical' => '',
+                'lang' => $locale->tag(),
+                'openGraph' => $locale->openGraph(),
+                'alternates' => [],
             ];
         }
 
-        $key = self::BY_PATH[trim($path, '/')] ?? $page['key'];
-        $canonical = self::CANONICAL[$component] ?? null;
+        $canonical = self::CANONICAL[$name] ?? null;
 
         return [
             'title' => self::line($key, 'title'),
             'description' => self::line($key, 'description'),
-            'indexable' => $page['indexable'],
+            'indexable' => ! in_array($name, self::NOT_INDEXED, true),
             // La page de marque : son titre porte déjà le nom, on ne le
             // suffixe pas une seconde fois.
             'brand' => $key === 'home',
-            'canonical' => $canonical === null ? url()->current() : url($canonical),
+            'canonical' => $canonical === null
+                ? url()->current()
+                : LocalizedRoutes::route($canonical, [], $locale),
+            'lang' => $locale->tag(),
+            'openGraph' => $locale->openGraph(),
+            // Les autres langues de **cette** page. Vides sur le témoin et
+            // sur toute route non déclinée : déclarer un `hreflang` vers une
+            // adresse qui sert une autre page est pire que ne rien déclarer.
+            'alternates' => LocalizedRoutes::alternates($route),
         ];
     }
 
     /**
-     * Les données structurées de la page, en JSON-LD.
-     *
-     * Trois choses, et pas une de plus. L'**organisation**, pour que le nom de
-     * marque désigne une entité et non une suite de lettres — c'est ce qui
-     * rattache les liens de site à un résultat de marque. Le **site**, pour
-     * lier le nom au domaine. Et sur les deux pages qui vendent, le
-     * **produit** avec son offre, prix lu dans les réglages.
-     *
-     * Ce qu'on n'y met pas, et c'est délibéré : aucune note agrégée. La page
-     * affiche « 4,9 » sur décision du fondateur, mais une note déclarée en
-     * donnée structurée sans avis vérifiables se paie d'une action manuelle,
-     * et celle-ci coûte tout le référencement de marque, pas seulement
-     * l'étoile.
-     *
      * @return list<array<string, mixed>>
      */
-    public static function jsonLd(string $component): array
+    public static function jsonLd(?Route $route): array
     {
-        $page = self::PAGES[$component] ?? null;
+        $key = self::BY_ROUTE[LocalizedRoutes::baseName($route?->getName()) ?? ''] ?? null;
 
-        if ($page === null) {
+        if ($key === null) {
             return [];
         }
 
+        $locale = Locales::current();
         $brand = Brand::nameSafe();
-        $home = url('/');
+        $site = LocalizedRoutes::route('home', [], Locale::default());
+        $home = LocalizedRoutes::route('home', [], $locale);
 
         $graph = [
             [
                 '@context' => 'https://schema.org',
                 '@type' => 'Organization',
-                '@id' => $home.'#organisation',
+                '@id' => $site.'#organisation',
                 'name' => $brand,
-                'url' => $home,
+                'url' => $site,
                 'email' => Brand::supportEmail(),
                 'logo' => url('/favicon.svg'),
             ],
@@ -172,12 +180,12 @@ final class Seo
                 '@id' => $home.'#site',
                 'name' => $brand,
                 'url' => $home,
-                'inLanguage' => 'fr-FR',
-                'publisher' => ['@id' => $home.'#organisation'],
+                'inLanguage' => $locale->tag(),
+                'publisher' => ['@id' => $site.'#organisation'],
             ],
         ];
 
-        if (in_array($page['key'], ['home', 'books'], true)) {
+        if (in_array($key, ['home', 'books'], true)) {
             $cents = app(PilotSettings::class)->pilot_price_cents;
 
             $graph[] = [
@@ -190,9 +198,13 @@ final class Seo
                 'offers' => [
                     '@type' => 'Offer',
                     'price' => Money::decimal($cents),
+                    // La devise de facturation, qui reste l'euro partout tant
+                    // que la grille suisse n'est pas décidée (T-238) : une
+                    // donnée structurée annonce ce qui sera débité, pas ce que
+                    // le marché a l'habitude de lire.
                     'priceCurrency' => 'EUR',
                     'availability' => 'https://schema.org/InStock',
-                    'url' => url('/acheter'),
+                    'url' => LocalizedRoutes::route('checkout.show', [], $locale),
                 ],
             ];
         }
@@ -200,12 +212,6 @@ final class Seo
         return $graph;
     }
 
-    /**
-     * Une ligne du catalogue, avec le nom de marque et le prix substitués.
-     *
-     * Le prix vient des réglages : une description qui l'écrirait en dur
-     * mentirait le jour où il change, et c'est la ligne que Google affiche.
-     */
     private static function line(string $key, string $field): string
     {
         $value = Lang::get("public.seo.{$key}.{$field}", [

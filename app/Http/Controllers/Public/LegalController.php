@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public;
 
 use App\Enums\ConsentKind;
+use App\Enums\Locale;
 use App\Models\ConsentText;
 use App\Settings\PilotSettings;
 use App\Support\Brand;
+use App\Support\Locales;
 use Illuminate\Support\Facades\File;
 use Inertia\Response;
 use League\CommonMark\CommonMarkConverter;
@@ -76,9 +78,9 @@ final class LegalController
 
     private static function page(string $file, string $titleKey): Response
     {
-        $path = resource_path("views/legal/{$file}.md");
+        $path = self::pathFor($file);
 
-        abort_unless(File::exists($path), 404);
+        abort_unless($path !== null, 404);
 
         $converter = new CommonMarkConverter([
             'html_input' => 'escape',
@@ -104,6 +106,31 @@ final class LegalController
      * adresse contenant un caractère spécial soit échappée par le convertisseur
      * (`html_input => escape`) comme le reste du texte.
      */
+    /**
+     * Le texte dans la langue de la page, ou le texte français.
+     *
+     * Les traductions sont informatives et le disent elles-mêmes : le contrat
+     * est régi par le droit français, et c'est la version française qui fait
+     * foi. Un texte manquant retombe donc sur elle plutôt que sur un 404 —
+     * une page légale absente est pire qu'une page légale en français.
+     */
+    private static function pathFor(string $file): ?string
+    {
+        $language = Locales::current()->language();
+
+        foreach ([$language, Locale::default()->language()] as $candidate) {
+            $path = $candidate === Locale::default()->language()
+                ? resource_path("views/legal/{$file}.md")
+                : resource_path("views/legal/{$candidate}/{$file}.md");
+
+            if (File::exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
     private static function withBrand(string $markdown): string
     {
         $brand = Brand::settings();

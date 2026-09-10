@@ -1,5 +1,10 @@
+{{-- Le titre, la description, la langue et les langues sœurs de la page,
+     dérivés du **nom** de sa route : `/cgv` et `/it/condizioni-di-vendita`
+     sont la même page (T-238). Calculés avant le document, l'attribut `lang`
+     de la balise `<html>` en dépend. --}}
+@php($seo = \App\Support\Seo::forPage(request()->route()))
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ $seo['lang'] }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +17,6 @@
              narrateur la refusait (T-75). --}}
         <meta name="csp-nonce" content="{{ Vite::cspNonce() }}">
 
-@php($seo = \App\Support\Seo::forComponent($page['component'], request()->path()))
 @if ($seo['description'] !== '')
         {{-- Titre, description et canonique **par page** (T-225).
              Rendus par le serveur : le titre du `<Head>` Inertia n'existe
@@ -28,15 +32,25 @@
         <meta property="og:title" content="{{ $seo['brand'] ? $seo['title'] : $seo['title'].' · '.$brandName }}">
         <meta property="og:description" content="{{ $seo['description'] }}">
         <meta property="og:image" content="{{ url('/img/landing/hero.jpg') }}">
-        <meta property="og:locale" content="fr_FR">
+        <meta property="og:locale" content="{{ $seo['openGraph'] }}">
         <meta name="twitter:card" content="summary_large_image">
 @endif
-@php($graph = \App\Support\Seo::jsonLd($page['component']))
+@php($graph = \App\Support\Seo::jsonLd(request()->route()))
 @if ($graph !== [])
         {{-- Données structurées. Le nonce est obligatoire : la politique de
              contenu refuse un script en ligne sans lui, et le refus est
              silencieux. --}}
         <script type="application/ld+json" nonce="{{ Vite::cspNonce() }}">{!! json_encode($graph, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endif
+@if ($seo['alternates'] !== [])
+        {{-- La même page dans les autres langues (T-238). Chacune se déclare
+             elle-même en plus des autres, faute de quoi Google ignore le
+             groupe entier ; `x-default` désigne le français, qui est la
+             version servie à qui ne demande aucune de ces langues. --}}
+@foreach ($seo['alternates'] as $code => $href)
+        <link rel="alternate" hreflang="{{ $code }}" href="{{ $href }}">
+@endforeach
+        <link rel="alternate" hreflang="x-default" href="{{ $seo['alternates']['fr'] }}">
 @endif
 @unless ($seo['indexable'])
         {{-- Le tunnel, le remerciement et le témoin : suivis, jamais indexés.

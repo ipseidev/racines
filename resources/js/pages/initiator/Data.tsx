@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { Check } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
@@ -23,15 +24,6 @@ type Props = {
     printInProgress: boolean;
 };
 
-const date = (iso: string | null) =>
-    iso === null
-        ? '—'
-        : new Date(iso).toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-          });
-
 /**
  * « Vos données ».
  *
@@ -50,6 +42,8 @@ export default function Data({
     printInProgress,
 }: Props) {
     const t = useT();
+    const fmt = useFormat();
+    const date = (iso: string | null) => (iso === null ? '—' : fmt.date(iso));
     const [ouvert, setOuvert] = useState(false);
 
     const demande = useForm({ kind: 'full' });

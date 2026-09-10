@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { CheckField } from '@/components/form/CheckField';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { TextField } from '@/components/form/TextField';
@@ -11,7 +12,6 @@ import { PageHeader } from '@/components/space/PageHeader';
 import { Pill } from '@/components/space/Pill';
 import { ShareSheet } from '@/components/space/ShareSheet';
 import { useT } from '@/hooks/useT';
-import { formatDate } from '@/lib/dates';
 import { stagger } from '@/lib/motion';
 
 type Member = {
@@ -42,6 +42,8 @@ type Props = {
  * là où l'on a cliqué (T-149).
  */
 export default function Family({ members, copiedLink, copiedFor }: Props) {
+    const fmt = useFormat();
+    const formatDate = fmt.date;
     const t = useT();
     const [removing, setRemoving] = useState<Member | null>(null);
 

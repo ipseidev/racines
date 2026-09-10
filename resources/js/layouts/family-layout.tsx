@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react';
 import { usePage } from '@inertiajs/react';
 
 import { BrandLogo } from '@/brand/BrandProvider';
+import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { Toasts } from '@/components/space/Toasts';
 import { useStatusToast } from '@/hooks/useStatusToast';
 import { useT } from '@/hooks/useT';
@@ -54,6 +55,10 @@ export default function FamilyLayout({ children }: PropsWithChildren) {
                  */}
                 <div key={path}>{children}</div>
             </main>
+
+            <footer className="mx-auto w-full max-w-xl px-6 pb-8">
+                <LocaleSwitcher />
+            </footer>
 
             <Toasts />
         </div>

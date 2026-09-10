@@ -17,8 +17,8 @@ describe('le temps de lecture d’une phrase de l’ouverture', () => {
 
     it('ne descend jamais sous un plancher, même pour un mot seul', () => {
         // Le nom de marque, seul à l'écran, doit être vu et non aperçu.
-        expect(holdFor('Narrae')).toBe(holdFor(''));
-        expect(holdFor('Narrae')).toBeGreaterThanOrEqual(1200);
+        expect(holdFor('Marque')).toBe(holdFor(''));
+        expect(holdFor('Marque')).toBeGreaterThanOrEqual(1200);
     });
 
     it('ne dépasse jamais un plafond, même pour une phrase longue', () => {
@@ -30,7 +30,7 @@ describe('le temps de lecture d’une phrase de l’ouverture', () => {
 
 describe('la durée entière de l’ouverture', () => {
     it('additionne l’entrée, la lecture et la sortie de chaque phrase, puis le rideau', () => {
-        const beats = ['Narrae', 'Bonjour Odette,'];
+        const beats = ['Marque', 'Bonjour Odette,'];
 
         expect(overtureDuration(beats)).toBe(
             beats.reduce(
@@ -51,7 +51,7 @@ describe('la durée entière de l’ouverture', () => {
         // comptent sur ce plafond.
         expect(
             overtureDuration([
-                'Narrae',
+                'Marque',
                 'Bonjour Odette,',
                 'Camille vous a offert quelque chose.',
                 'Vos souvenirs, de votre voix, pour les vôtres.',

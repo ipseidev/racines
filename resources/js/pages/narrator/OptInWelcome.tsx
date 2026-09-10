@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { useT } from '@/hooks/useT';
 import { celebrate } from '@/lib/celebrate';
 
@@ -10,20 +11,6 @@ type Props = {
     vcardUrl: string;
     directivesRecorded: boolean;
 };
-
-function formatWhen(iso: string | null, fallback: string): string {
-    if (iso === null) {
-        return fallback;
-    }
-
-    return new Intl.DateTimeFormat('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(iso));
-}
 
 /**
  * Juste après le oui : quand arrive la première question, comment nous
@@ -44,6 +31,15 @@ export default function OptInWelcome({
     directivesRecorded,
 }: Props) {
     const t = useT();
+    const fmt = useFormat();
+
+    /*
+     * « lundi 7 septembre à 09:00 », dans la langue de la page. Repli quand
+     * l'heure n'est pas encore connue : la première question part la nuit qui
+     * suit l'acceptation, et le planificateur ne l'a pas encore posée.
+     */
+    const formatWhen = (iso: string | null, fallback: string): string =>
+        iso === null ? fallback : fmt.dateTime(iso);
     const status =
         (usePage().props.flash as { status?: string | null } | undefined)
             ?.status ?? null;

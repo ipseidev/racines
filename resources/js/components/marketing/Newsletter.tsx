@@ -1,13 +1,13 @@
 import { useForm } from '@inertiajs/react';
 import { useState, type FormEvent } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { track } from '@/components/landing/track';
 import { CheckField } from '@/components/form/CheckField';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { TextField } from '@/components/form/TextField';
 import { Lock } from '@/components/marketing/Check';
 import { useT } from '@/hooks/useT';
-import { formatPercent } from '@/lib/format';
 import { rememberWelcomeOffer } from '@/lib/welcomeOffer';
 
 type Props = {
@@ -28,6 +28,8 @@ type Props = {
  * la variante de structure (T-219).
  */
 export default function Newsletter({ enabled, discountPercent }: Props) {
+    const fmt = useFormat();
+    const formatPercent = fmt.percent;
     const t = useT();
     const [sent, setSent] = useState(false);
     const form = useForm({ email: '', news: false, website: '' });

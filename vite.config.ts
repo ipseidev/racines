@@ -28,7 +28,19 @@ export default defineConfig({
             presets: [reactCompilerPreset()],
         }),
         tailwindcss(),
+        /*
+         * Les aides de route, oui ; les aides « par action », non.
+         *
+         * Depuis T-238, une même méthode de contrôleur sert cinq routes — une
+         * par langue — et Wayfinder ne sait pas nommer cela : il produit un
+         * objet indexé par URL, puis lui accroche les autres méthodes du
+         * contrôleur, et le fichier qu'il écrit ne compile pas. Les aides par
+         * **nom** de route, elles, restent justes : les noms sont uniques
+         * (`home`, `it.home`). Le dépôt n'utilisait les premières que pour
+         * cinq formulaires de compte, passés aux secondes.
+         */
         wayfinder({
+            actions: false,
             formVariants: true,
         }),
     ]),

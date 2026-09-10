@@ -174,3 +174,17 @@ Deux exceptions au préfixe `/i/`, ajoutées au bloc 10 : `/i/{token}/bienvenue`
 Un jeton fait exactement 43 caractères de base64url (32 octets aléatoires) : `Route::pattern('token', '[A-Za-z0-9_-]{43}')` refuse tout le reste par un 404, **avant** la moindre requête. Chaque route de `narrator.php` et de `family.php` porte `resolve.token:<type>`, `throttle:tokens` et `no-store` ; un test parcourt la table de routage et échoue si l'une y échappe. Seule exception documentée : `POST /r/{token}/request-new-link`, qui agit justement parce que le lien est mort.
 
 Les espaces `/a/` (action en un tap) et `/x/` (export) servent l'Initiateur·rice, mais leur page d'erreur est celle des proches : elle ne propose pas de renvoi automatique, l'Initiateur·rice ayant un compte pour se reconnecter.
+
+## Langues et marchés (T-238)
+
+| Français | Code | Note |
+|---|---|---|
+| locale | `Locale` | Une **langue et un marché** : `fr`, `it`, `es`, `fr-CH`, `it-CH` |
+| langue | `Locale::language()` | Ce que lit `App::setLocale()` et ce que nomme `lang/{langue}` : `fr`, `it`, `es` |
+| marché | `Market` | Le pays dont on suit les usages de formatage : `FR`, `IT`, `ES`, `CH` |
+| monnaie | `Currency` | `EUR` partout aujourd'hui ; `CHF` préparé, pas facturé (D-13) |
+| étiquette | `Locale::tag()` | La forme BCP 47 pour `Intl` et `lang=` : `it-CH` |
+| préfixe d'adresse | `Locale::urlPrefix()` | `null` pour le français, `it`, `es`, `fr-ch`, `it-ch` pour les autres |
+| segment d'adresse | `lang/{langue}/routes.php` | Le mot traduit d'une page : `come-funziona` |
+| page sœur | `hreflang` / `LocalizedRoutes::alternates()` | La même page dans une autre langue |
+| sélecteur de langue | `LocaleSwitcher` | Des liens sur une page publique, un `POST /langue` ailleurs |

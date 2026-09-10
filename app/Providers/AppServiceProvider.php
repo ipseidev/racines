@@ -45,7 +45,7 @@ use App\Services\Transcription\FakeTranscriptionProvider;
 use App\Services\Transcription\GladiaProvider;
 use App\Services\Transcription\TranscriptionProvider;
 use App\Support\Brand;
-use App\Support\Seo;
+use App\Support\LocalizedRoutes;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\View\View as ViewContract;
@@ -171,16 +171,15 @@ final class AppServiceProvider extends ServiceProvider
      */
     private function configureSsr(): void
     {
-        $pages = array_map(
-            fn (string $path): string => trim($path, '/') === '' ? '/' : trim($path, '/'),
-            array_keys(Seo::SITEMAP),
-        );
-
         // La condition remplace le drapeau de configuration au lieu de s'y
         // ajouter : sans le relire ici, une suite de tests tenterait une
         // connexion vers le renderer à chaque page publique (T-107).
+        // La liste est construite **dans** la fermeture : `boot()` s'exécute
+        // avant l'enregistrement des routes, et `LocalizedRoutes::paths()`
+        // les interroge. Toutes les langues y figurent — une entrée par page
+        // et par langue, au format de `Request::is()`.
         Inertia::disableSsr(fn (): bool => ! config('inertia.ssr.enabled')
-            || ! request()->is([...$pages, 'lp/temoin']));
+            || ! request()->is([...LocalizedRoutes::paths(), 'lp/temoin']));
     }
 
     /**

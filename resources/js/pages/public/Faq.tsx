@@ -1,9 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
 import { useEffect } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import { BuyButton, SHELL } from '@/components/landing/primitives';
-import { formatPrice, usePilot } from '@/hooks/usePilot';
+import { usePilot } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 
 type Props = {
@@ -92,6 +94,9 @@ const SECTIONS = [
  * visée par un lien profond.
  */
 export default function Faq({ price, variant, ebookPrice }: Props) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
     const pilot = usePilot();
@@ -282,7 +287,7 @@ export default function Faq({ price, variant, ebookPrice }: Props) {
                     </p>
 
                     <Link
-                        href="/comment-ca-marche"
+                        href={urls.how_it_works}
                         className="text-brand mt-1 inline-flex min-h-[2.75rem] items-center text-[1rem] font-semibold underline decoration-2 underline-offset-4"
                     >
                         {t('public.lp.experience.cta')}

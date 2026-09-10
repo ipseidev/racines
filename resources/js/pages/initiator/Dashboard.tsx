@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 
+import { useFormat } from '@/hooks/useFormat';
 import PhotoGallery from '@/components/PhotoGallery';
 import PhotoUploader from '@/components/PhotoUploader';
 import { External, Headphones, Pause, Send } from '@/components/space/Icons';
@@ -7,7 +8,6 @@ import { PageHeader } from '@/components/space/PageHeader';
 import { Pill, type PillTone } from '@/components/space/Pill';
 import { ShareSheet } from '@/components/space/ShareSheet';
 import { useT } from '@/hooks/useT';
-import { formatDate, formatDateTime } from '@/lib/dates';
 import { stagger } from '@/lib/motion';
 
 type Photo = {
@@ -118,6 +118,9 @@ export default function Dashboard({
     copiedWhatsapp,
     copiedSms,
 }: Props) {
+    const fmt = useFormat();
+    const formatDate = fmt.date;
+    const formatDateTime = fmt.dateTime;
     const t = useT();
     const name = project.narratorFirstName;
 

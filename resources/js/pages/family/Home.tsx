@@ -1,10 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { Chevron, Headphones } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
 import { Pill } from '@/components/space/Pill';
 import { useT } from '@/hooks/useT';
-import { formatDate } from '@/lib/dates';
 import { stagger } from '@/lib/motion';
 
 type Card = {
@@ -41,6 +41,8 @@ export default function Home({
     inviterName,
     stories,
 }: Props) {
+    const fmt = useFormat();
+    const formatDate = fmt.date;
     const t = useT();
 
     const title =

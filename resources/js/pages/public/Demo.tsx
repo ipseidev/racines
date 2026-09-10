@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useT } from '@/hooks/useT';
 import {
@@ -95,6 +96,7 @@ function Meter({ levels }: { levels: number[] }) {
  * n'avons pas entendu son essai, nous n'avons donc rien à en écrire.
  */
 export default function Demo({ limits }: Props) {
+    const urls = useUrls();
     const t = useT();
 
     const [phase, setPhase] = useState<Phase>('idle');
@@ -424,7 +426,7 @@ export default function Demo({ limits }: Props) {
              * emporterait cette permission sur toutes les suivantes.
              */}
             <a
-                href="/acheter"
+                href={urls.checkout_show}
                 className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press mt-4 inline-block min-h-[3rem] rounded-md px-8 py-3.5 text-lg font-semibold"
             >
                 {t('public.demo.cta')}

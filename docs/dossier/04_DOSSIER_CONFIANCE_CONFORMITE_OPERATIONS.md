@@ -1,5 +1,5 @@
 # NARRAE — Dossier Confiance, Conformité, Sécurité & Opérations
-**v2.8 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
+**v2.9 — Septembre 2026 — Le socle des §2, 2bis, 3, 4, 7 et 12 conditionne le PILOTE (pas seulement le MVP). Validation par conseil juridique requise avant tout lancement payant.**
 
 ## 1. Principes fondateurs
 1. **Le narrateur est souverain** : consentement préalable, **validation explicite — jamais tacite —**, veto par histoire, retrait à tout moment. L'Initiateur·rice organise et paie ; il/elle n'outrepasse jamais.

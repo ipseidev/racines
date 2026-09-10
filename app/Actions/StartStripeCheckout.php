@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Payments\CheckoutSession;
 use App\Services\Payments\CheckoutSessions;
 use App\Settings\PilotSettings;
+use App\Support\LocalizedRoutes;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
@@ -64,8 +65,11 @@ final readonly class StartStripeCheckout
                 'discount_code' => $lead instanceof Lead ? $lead->discount_code : '',
                 ...$click,
             ],
-            successUrl: route('checkout.thanks').'?session_id={CHECKOUT_SESSION_ID}',
-            cancelUrl: route('checkout.show', ['step' => 6]),
+            // Dans la langue du tunnel qu'on quitte : Stripe renvoie sur ces
+            // deux adresses, et revenir en français après avoir payé en
+            // italien serait une sortie de route (T-238).
+            successUrl: LocalizedRoutes::route('checkout.thanks').'?session_id={CHECKOUT_SESSION_ID}',
+            cancelUrl: LocalizedRoutes::route('checkout.show', ['step' => 6]),
             discounts: self::discountsFor($lead),
         );
 

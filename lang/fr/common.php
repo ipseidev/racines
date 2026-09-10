@@ -3,6 +3,15 @@
 declare(strict_types=1);
 
 return [
+    /*
+     * Le sélecteur de langue. Dans `common` parce qu'il vit dans les quatre
+     * espaces : le pied de page public, l'espace, la page famille et la page
+     * narrateur.
+     */
+    'locale' => [
+        'label' => 'Choisir la langue',
+    ],
+
     'actions' => [
         'back' => 'Retour',
         'cancel' => 'Annuler',

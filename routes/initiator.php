@@ -93,6 +93,7 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
 
         Route::get('/reglages', [ProjectSettingsController::class, 'index'])->name('settings');
         Route::post('/reglages', [ProjectSettingsController::class, 'update'])->name('settings.update');
+        Route::post('/reglages/langue', [ProjectSettingsController::class, 'setLocale'])->name('settings.locale');
         Route::post('/reglages/lexique', [ProjectSettingsController::class, 'addLexicon'])->name('settings.lexicon');
         Route::delete('/reglages/lexique/{entry}', [ProjectSettingsController::class, 'removeLexicon'])->name('settings.lexicon.remove');
         Route::post('/reglages/pause', [ProjectSettingsController::class, 'pause'])->name('settings.pause');

@@ -62,13 +62,13 @@ function translatedStrings(string $file): array
  *
  * @return list<string>
  */
-function productLangFiles(): array
+function productLangFiles(string $language = 'fr'): array
 {
     $ours = ['actions.php', 'admin.php', 'common.php', 'enums.php', 'family.php',
         'narrator.php', 'notifications.php', 'public.php'];
 
     return array_values(array_filter(
-        array_map(fn (string $name): string => base_path('lang/fr/'.$name), $ours),
+        array_map(fn (string $name): string => base_path("lang/{$language}/".$name), $ours),
         'is_file',
     ));
 }
@@ -175,3 +175,57 @@ it('n’écrit jamais un pluriel entre parenthèses dans un texte visible', func
 
     expect($offenders)->toBe([], 'Pluriels entre parenthèses : '.implode(' | ', $offenders));
 });
+
+/*
+|--------------------------------------------------------------------------
+| R-11 dans les autres langues (T-238)
+|--------------------------------------------------------------------------
+|
+| Une promesse intenable ne devient pas tenable parce qu'elle est écrite en
+| italien. Les expressions sont les équivalents usuels de la liste R-11 ; le
+| périmètre est **le même** que pour le français, sections de vente comprises
+| (voir `translatedStrings()`, qui dit pourquoi elles en sortent).
+|
+*/
+
+it('n’emploie aucune expression interdite dans les autres langues', function (string $language, string $expression): void {
+    $offenders = [];
+
+    foreach (productLangFiles($language) as $file) {
+        foreach (translatedStrings($file) as $string) {
+            if (mb_stripos($string, $expression) !== false) {
+                $offenders[] = $language.'/'.basename($file).' : « '.mb_substr($string, 0, 60).' »';
+            }
+        }
+    }
+
+    $directory = base_path("resources/views/legal/{$language}");
+
+    if (is_dir($directory)) {
+        foreach (Finder::create()->files()->in($directory)->name('*.md') as $file) {
+            if (mb_stripos($file->getContents(), $expression) !== false) {
+                $offenders[] = $file->getRelativePathname();
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], "« {$expression} » est interdit (R-11) : ".implode(', ', $offenders));
+})->with([
+    ['it', 'per sempre'],
+    ['it', 'illimitat'],
+    ['it', 'garantito a vita'],
+    ['it', 'appartengono alla famiglia'],
+    ['it', 'convalida tacita'],
+    ['it', 'convalida automatica'],
+    ['it', 'QR autonomi'],
+    ['es', 'para siempre'],
+    ['es', 'ilimitad'],
+    // « garantizado de por vida » et non « de por vida » seul : la page dit
+    // « No prometemos una conservación de por vida », qui est exactement la
+    // prudence que R-11 demande.
+    ['es', 'garantizado de por vida'],
+    ['es', 'pertenecen a la familia'],
+    ['es', 'validación tácita'],
+    ['es', 'validación automática'],
+    ['es', 'QR autónomos'],
+]);

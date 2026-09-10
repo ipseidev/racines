@@ -1,10 +1,11 @@
 import { Link } from '@inertiajs/react';
 import { useEffect, type ReactNode } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
+import { useFormat } from '@/hooks/useFormat';
 import { useBrand } from '@/brand/BrandProvider';
 import { BAND, H2, Section, SHELL } from '@/components/landing/primitives';
 import { track } from '@/components/landing/track';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
 
 /*
@@ -48,6 +49,9 @@ export default function LandingFaq({
     variant: string;
     price: number;
 }) {
+    const urls = useUrls();
+    const fmt = useFormat();
+    const formatPrice = fmt.price;
     const t = useT();
     const brand = useBrand();
 
@@ -87,14 +91,14 @@ export default function LandingFaq({
         protection: (
             <>
                 <Link
-                    href="/confidentialite"
+                    href={urls.legal_privacy}
                     className="text-brand inline-flex min-h-[2.75rem] items-center font-semibold underline decoration-2 underline-offset-4"
                 >
                     {t('public.lp.faq.protection.privacy_link')}
                 </Link>
                 {' · '}
                 <Link
-                    href="/consentements"
+                    href={urls.legal_consents}
                     className="text-brand inline-flex min-h-[2.75rem] items-center font-semibold underline decoration-2 underline-offset-4"
                 >
                     {t('public.lp.faq.protection.consents_link')}
@@ -103,7 +107,7 @@ export default function LandingFaq({
         ),
         guarantee: (
             <Link
-                href="/cgv"
+                href={urls.legal_terms}
                 className="text-brand inline-flex min-h-[2.75rem] items-center font-semibold underline decoration-2 underline-offset-4"
             >
                 {t('public.lp.faq.guarantee.link')}

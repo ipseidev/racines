@@ -1,13 +1,12 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useFormat } from '@/hooks/useFormat';
 import { ConfirmDialog } from '@/components/space/ConfirmDialog';
 import { External, Message } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
 import { Pill, type PillTone } from '@/components/space/Pill';
-import { formatPrice } from '@/hooks/usePilot';
 import { useT } from '@/hooks/useT';
-import { formatDate } from '@/lib/dates';
 import { stagger } from '@/lib/motion';
 
 type Item = {
@@ -61,6 +60,9 @@ const TONES: Record<string, PillTone> = {
  * explique la garantie et donne le contact.
  */
 export default function Orders({ orders, supportEmail }: Props) {
+    const fmt = useFormat();
+    const formatDate = fmt.date;
+    const formatPrice = fmt.price;
     const t = useT();
     const [withdrawing, setWithdrawing] = useState<Order | null>(null);
     const [processing, setProcessing] = useState(false);

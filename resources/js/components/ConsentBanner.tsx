@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
+import { useUrls } from '@/hooks/useLocale';
 import { useT } from '@/hooks/useT';
 import {
     CONSENT_OPEN,
@@ -36,6 +37,7 @@ type Shared = {
  * montage ferait un écart d'hydratation.
  */
 export default function ConsentBanner() {
+    const urls = useUrls();
     const t = useT();
     const { analytics, googleAnalytics, metaPixel } = usePage<Shared>().props;
     const [open, setOpen] = useState(false);
@@ -96,7 +98,7 @@ export default function ConsentBanner() {
                     <p className="text-brand-muted text-[0.95rem] leading-relaxed">
                         {t('public.consent.body')}{' '}
                         <Link
-                            href="/confidentialite"
+                            href={urls.legal_privacy}
                             className="text-brand font-semibold underline decoration-2 underline-offset-4"
                         >
                             {t('public.consent.more')}
