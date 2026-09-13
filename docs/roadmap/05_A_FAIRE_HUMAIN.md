@@ -367,6 +367,7 @@ Le seul endroit à tenir à jour.
 | 16 | Devis imprimeur | bloc 13 | ☐ |
 | 17 | PostHog UE | bloc 15 | ☐ |
 | 18 | DigitalOcean UE, Forge, Flare, Oh Dear — **et `sudo apt-get install -y ffmpeg` sur le serveur** : sans lui la voix est conservée et n'atteint jamais le texte, donc ni relecture, ni livre (T-230) | bloc 16 | ☐ |
+| 18bis | **Nettoyer le projet d'Agate** : le moteur y a posé une « question plus légère » et un lien d'enregistrement le jour de l'achat (T-241). L'histoire proposée en trop se retire depuis l'administration ; la question qu'elle a consommée revient alors au corpus. Rien ne presse — elle est sans danger, elle fausse seulement le compte. | bloc 09 | ☐ |
 | 19 | **Socle juridique validé par conseil** | bloc 17 | ☐ |
 | 20 | DPA signés (11 sous-traitants) | bloc 17 | ☐ |
 

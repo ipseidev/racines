@@ -57,6 +57,14 @@ final class NarratorSilence21d extends BaseRule
             ->with(['owner', 'primaryNarrator'])
             ->where('status', ProjectStatus::Active->value)
             ->whereNotNull('accepted_at')
+            /*
+             * Le silence se compte à partir du démarrage, pas depuis le
+             * commencement du monde : un projet sans aucune histoire
+             * satisfait la condition ci-dessous dès sa première seconde, et
+             * l'Initiateur·rice recevait « n'a pas enregistré depuis trois
+             * semaines » le matin même de son achat (T-241).
+             */
+            ->where('accepted_at', '<=', $now->subDays($days))
             ->whereDoesntHave(
                 'stories',
                 // Strictement plus récente : à dix jours pile, le silence

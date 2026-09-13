@@ -93,9 +93,17 @@ final readonly class AcceptInvitation
             $project->collection_ends_at = now()->addWeeks(12);
             $project->finalization_ends_at = now()->addWeeks(16);
 
-            // Le lendemain, au créneau choisi : une question dans la minute
-            // donne l'impression d'une machine qui attendait.
-            $project->next_prompt_at = $this->schedule->handle($project, now()->addDay());
+            /*
+             * Le lendemain, au créneau choisi : une question dans la minute
+             * donne l'impression d'une machine qui attendait.
+             *
+             * Sans point de départ : `ScheduleNextPrompt` ajoute **déjà** le
+             * jour pour une première question (c'est ce que son test épingle).
+             * Lui passer `now()->addDay()` en plus le repoussait au
+             * surlendemain — contre ce que disent les deux commentaires, et
+             * contre les 72 heures du dossier (T-241).
+             */
+            $project->next_prompt_at = $this->schedule->handle($project);
             $project->save();
 
             Invitation::query()

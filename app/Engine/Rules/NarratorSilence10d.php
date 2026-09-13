@@ -51,6 +51,18 @@ final class NarratorSilence10d extends BaseRule
             // Le projet a démarré : une invitation jamais acceptée relève
             // d'une autre règle.
             ->whereNotNull('accepted_at')
+            /*
+             * Et il a démarré depuis assez longtemps pour qu'un silence
+             * puisse durer dix jours.
+             *
+             * Sans cette ligne, la condition ci-dessous — « aucune histoire
+             * enregistrée depuis dix jours » — est vraie **à la seconde** où
+             * le projet est accepté, puisqu'il n'a alors aucune histoire du
+             * tout. Une narratrice qui venait de dire oui le matin recevait
+             * sa « question plus légère » dans l'heure, avant même la
+             * première vraie question (T-241).
+             */
+            ->where('accepted_at', '<=', $now->subDays($days))
             ->whereDoesntHave(
                 'stories',
                 // Strictement plus récente : à dix jours pile, le silence

@@ -39,6 +39,25 @@ function silentProject(int $daysAgo): Project
     return $project->refresh();
 }
 
+/**
+ * Un projet accepté il y a `$daysAgo` jours et qui n'a **jamais** rien
+ * enregistré : le cas que `silentProject()` ne pouvait pas produire, puisqu'il
+ * date toujours l'acceptation de deux mois et pose toujours une histoire.
+ */
+function neverRecordedProject(int $acceptedDaysAgo): Project
+{
+    $project = Project::factory()->create(['status' => ProjectStatus::Active]);
+    $project->forceFill(['accepted_at' => now()->subDays($acceptedDaysAgo)])->save();
+
+    Narrator::factory()->primary()->create([
+        'project_id' => $project->id,
+        'first_name' => 'Agate',
+        'email' => 'agate@example.test',
+    ]);
+
+    return $project->refresh();
+}
+
 beforeEach(function (): void {
     Notification::fake();
 });
@@ -99,6 +118,35 @@ describe('dix jours de silence', function (): void {
         runLightRule();
 
         expect(EngineEvent::query()->count())->toBe(0);
+    });
+
+    /*
+     * Le défaut T-241, trouvé sur un vrai achat : commande passée le matin,
+     * question reçue le jour même. Un projet accepté à l'instant n'a aucune
+     * histoire, ce qui satisfaisait « rien depuis dix jours » sur-le-champ.
+     */
+    it('se taît pour un projet accepté ce matin', function (): void {
+        neverRecordedProject(0);
+
+        runLightRule();
+
+        expect(EngineEvent::query()->count())->toBe(0);
+    });
+
+    it('se taît encore la veille du dixième jour', function (): void {
+        neverRecordedProject(9);
+
+        runLightRule();
+
+        expect(EngineEvent::query()->count())->toBe(0);
+    });
+
+    it('parle au dixième jour, même sans une seule histoire enregistrée', function (): void {
+        neverRecordedProject(10);
+
+        runLightRule();
+
+        expect(EngineEvent::query()->count())->toBe(1);
     });
 
     it('se taît pour un projet jamais accepté', function (): void {
@@ -201,6 +249,24 @@ describe('vingt-et-un jours de silence', function (): void {
         runAlertRule();
 
         // Au-delà, ce n'est plus une alerte, c'est un rappel de son échec.
+        expect(EngineEvent::query()->count())->toBe(1);
+    });
+
+    it('n’alerte pas l’Initiateur·rice le matin de son achat', function (): void {
+        neverRecordedProject(0);
+
+        runAlertRule();
+
+        // « Agate n'a pas enregistré depuis trois semaines », reçu le jour
+        // de la commande : le défaut T-241, mot pour mot.
+        expect(EngineEvent::query()->count())->toBe(0);
+    });
+
+    it('alerte au vingt-et-unième jour, même sans une seule histoire', function (): void {
+        neverRecordedProject(21);
+
+        runAlertRule();
+
         expect(EngineEvent::query()->count())->toBe(1);
     });
 

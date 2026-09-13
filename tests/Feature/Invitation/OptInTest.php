@@ -203,10 +203,13 @@ it('active le projet et planifie la première question le lendemain', function (
         ->toBe(now()->addWeeks(12)->toDateString())
         ->and($project->finalization_ends_at?->toDateString())
         ->toBe(now()->addWeeks(16)->toDateString())
-        // Le lendemain, pas dans l'heure : une question qui arrive dans la
-        // minute donne l'impression d'une machine qui attendait.
+        // Le lendemain, pas dans l'heure ni le surlendemain : une question
+        // qui arrive dans la minute donne l'impression d'une machine qui
+        // attendait, et une qui met deux jours perd les 72 heures (T-241).
         ->and($project->next_prompt_at)->not->toBeNull()
         ->and($project->next_prompt_at?->greaterThan(now()))->toBeTrue()
+        ->and($project->next_prompt_at?->setTimezone($project->timezone)->toDateString())
+        ->toBe(now($project->timezone)->addDay()->toDateString())
         // Les préférences choisies à l'opt-in gagnent contre celles saisies
         // par l'acheteur : c'est la personne qui raconte qui décide du rythme.
         ->and($project->prompt_day)->toBe(3)
