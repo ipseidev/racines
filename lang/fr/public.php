@@ -517,8 +517,8 @@ return [
         'seo_title' => 'Offrez le livre de sa vie, et retrouvez sa voix',
 
         'cta' => [
-            'buy' => 'J’offre son livre',
-            'buy_price' => 'J’offre son livre · :price',
+            'buy' => 'J’offre ce livre',
+            'buy_price' => 'J’offre ce livre · :price',
             'start' => 'Je commence son livre',
             'how' => 'Comment ça marche',
         ],
@@ -541,12 +541,12 @@ return [
         // S01. Le héros : la promesse, l'action, la preuve visuelle.
         'hero' => [
             'title' => 'Un livre de souvenirs qui vous permet d’entendre leur voix pour toujours.',
-            'lede' => 'Ils ne font que parler. :brand le capture, l’écrit et le regroupe en une belle couverture cartonnée avec leur voix sur chaque page. Aucune écriture requise. Juste leurs histoires, dans leur propre voix, dans un livre que ta famille gardera depuis des générations.',
+            'lede' => 'Votre proche n’a qu’à raconter. :brand écoute, met son récit par écrit et en fait un livre relié où chaque page porte ses mots et chaque chapitre rejoue sa voix. Rien à écrire, rien à installer : ses histoires, dans un livre qui se transmet.',
             'checks' => [
-                'voice' => 'Leur voix et la transcription sur chaque page',
-                'no_app' => 'Fonctionne sur n’importe quel téléphone, aucune application ou connexion requise',
-                'digital' => 'Livraison numérique disponible',
-                'no_writing' => 'Pas besoin d’écrire, ils parlent juste',
+                'no_app' => 'Votre proche répond depuis son téléphone : aucune application, aucun compte à créer.',
+                'choice' => 'Parler, se filmer ou écrire : le choix est le sien, à chaque question.',
+                'rhythm' => 'Une question par semaine, à son rythme, configurable.',
+                'refund' => 'Si votre proche ne souhaite pas participer, nous vous remboursons intégralement.',
             ],
             // La vignette posée sur la photo : le livre, pour qu'il ne
             // disparaisse pas du cadrage. Aucun faux badge d'avis.
@@ -590,8 +590,8 @@ return [
         // gauche, le paragraphe à droite.
         'what' => [
             'eyebrow' => 'Qu’est-ce que :brand',
-            'title' => 'Un livre sur la vie de votre proche, racontée dans sa voix.',
-            'body' => ':brand transforme une année de souvenirs parlés hebdomadaires en un livre relié d’histoires magnifiquement écrites. Chaque chapitre a un code QR qui lit l’enregistrement original, de sorte que vous pouvez lire à la fois l’histoire racontée par votre proche et l’entendre la raconter.',
+            'title' => 'Un livre sur la vie de votre proche, racontée avec sa voix.',
+            'body' => 'Une question après l’autre, les souvenirs de votre proche deviennent les chapitres d’un livre. :brand met ses réponses par écrit sans les réécrire : ses mots restent les siens. Chaque chapitre porte un code à scanner qui rejoue l’enregistrement d’origine. On lit son histoire, et on l’entend la raconter.',
         ],
 
         /*
@@ -606,23 +606,23 @@ return [
             'eyebrow' => 'Comment ça marche',
             'step' => 'Étape :number',
             'one' => [
-                'title' => "Choisissez les questions.\nRendez-les personnelles.",
+                'title' => "Choisissez les questions.\nOu posez les vôtres.",
                 // La carte posée sur la photo de la première étape.
-                'card_label' => 'Question de la semaine',
+                'card_label' => 'Question du jour',
                 'card_question' => 'Quelle odeur vous ramène à votre enfance ?',
-                'body' => 'Piochez parmi des centaines de suggestions conçues pour faire émerger des histoires que votre famille n’a jamais entendues. Ou importez vos photos pour découvrir l’histoire derrière chacune d’elles.',
+                'body' => 'Plus de quatre-vingt-dix questions, écrites pour faire remonter un souvenir précis plutôt qu’un résumé de vie. Gardez celles qui lui ressemblent, écartez les autres, ajoutez les vôtres.',
             ],
             'two' => [
-                'title' => "Une question arrive.\nIls n’ont plus qu’à parler.",
-                'body' => 'Chaque semaine, :brand leur envoie une question par e-mail ou par SMS. Pas d’application. Pas de compte. Pas de mot de passe. Deux clics et l’enregistrement démarre, sur n’importe quel appareil.',
+                'title' => "Une question arrive.\nIl n’y a qu’à répondre.",
+                'body' => 'Le lien part par SMS ou par courriel, le jour et au moment choisis. Rien à installer, aucun compte à créer : votre proche touche le lien et répond, en parlant, en se filmant ou en écrivant.',
             ],
             'three' => [
-                'title' => "Leurs mots deviennent\nune histoire écrite.",
-                'body' => 'Speech-to-Story™ transforme chaque enregistrement en un chapitre soigné. Transcription mot à mot ou récit fluide. Entièrement modifiable.',
+                'title' => "Ses mots deviennent\nun chapitre.",
+                'body' => 'Nous transcrivons l’enregistrement, puis nous le mettons au propre : les hésitations en moins, ses tournures intactes. Le mot à mot reste à côté, et rien ne part avant sa relecture.',
             ],
             'four' => [
-                'title' => "Votre famille la découvre\ndès qu’elle est prête.",
-                'body' => 'Chaque nouvelle histoire est partagée instantanément avec toute la famille. On la lit, on l’écoute, on y réagit. Pour beaucoup de familles, ça devient le meilleur moment de la semaine.',
+                'title' => "Votre proche décide.\nSa famille découvre.",
+                'body' => 'Rien n’est visible avant sa décision : ni pour la famille, ni pour vous. Une fois l’histoire partagée, chacun peut la lire, l’écouter et y répondre. Pour beaucoup de familles, ça devient le meilleur moment de la semaine.',
             ],
             'more' => 'Voir le parcours en détail',
         ],
@@ -673,7 +673,7 @@ return [
             ],
             'read' => [
                 'title' => 'Lisez l’histoire.',
-                'body' => 'Chaque chapitre est une histoire racontée par votre proche, transformée en un texte élégant par le Speech-to-Story™ de :brand.',
+                'body' => 'Chaque chapitre est une histoire racontée par votre proche, mise au propre par :brand, sans être réécrite.',
             ],
             'hear' => [
                 'title' => 'Écoutez-la de vive voix.',
@@ -1125,7 +1125,7 @@ return [
             ],
             'printed' => [
                 'q' => 'Qu’est-ce qui est imprimé exactement dans le livre ?',
-                'a' => ':brand transforme la transcription des enregistrements en texte écrit, selon votre préférence : soit la transcription mise au propre, soit un récit rédigé par le Speech-to-Story™.',
+                'a' => ':brand transforme la transcription des enregistrements en texte écrit, selon votre préférence : soit la transcription mise au propre, soit un récit fluide, rédigé à partir de ce qu’elle a dit.',
             ],
             'shipping' => [
                 'q' => 'Où :brand livre-t-il ?',
@@ -1133,7 +1133,7 @@ return [
             ],
             'language' => [
                 'q' => 'Quelles langues :brand prend-il en charge ?',
-                'a' => 'Le Speech-to-Story™ prend en charge le français. D’autres langues suivront.',
+                'a' => 'La mise au propre prend en charge le français. D’autres langues suivront.',
             ],
             'seniors' => [
                 'q' => 'Est-ce que :brand est simple à utiliser pour les personnes âgées de la famille ?',
@@ -1178,7 +1178,7 @@ return [
         'recording' => [
             'submit' => [
                 'q' => 'Comment j’envoie mon histoire ?',
-                'a' => 'C’est simple : il suffit de toucher le lien reçu par courriel ou par message. Aucune application à télécharger, aucun mot de passe. N’importe quel appareil connecté fait l’affaire, et le Speech-to-Story™ se charge de la suite.',
+                'a' => 'C’est simple : il suffit de toucher le lien reçu par courriel ou par message. Aucune application à télécharger, aucun mot de passe. N’importe quel appareil connecté fait l’affaire, et :brand se charge de la suite.',
             ],
             'writing' => [
                 'q' => 'Comment :brand transforme-t-il un enregistrement en texte ?',
@@ -1198,7 +1198,7 @@ return [
             ],
             'languages' => [
                 'q' => 'Quelles langues sont prises en charge ?',
-                'a' => 'Le Speech-to-Story™ prend en charge le français. Les enregistrements sont transcrits fidèlement, imprimés dans le livre relié, et le QR code de chaque chapitre rejoue l’enregistrement d’origine.',
+                'a' => ':brand prend en charge le français. Les enregistrements sont transcrits fidèlement, imprimés dans le livre relié, et le QR code de chaque chapitre rejoue l’enregistrement d’origine.',
             ],
         ],
 
@@ -1228,7 +1228,7 @@ return [
             ],
             'printed' => [
                 'q' => 'Qu’est-ce qui est imprimé exactement ?',
-                'a' => 'Vous choisissez, pour chaque histoire, entre la transcription mise au propre et le récit rédigé par le Speech-to-Story™.',
+                'a' => 'Vous choisissez, pour chaque histoire, entre le mot à mot et le récit mis au propre.',
             ],
             'edit' => [
                 'q' => 'Peut-on corriger ou compléter ses histoires ?',
@@ -1313,7 +1313,7 @@ return [
         'other' => [
             'storyworth' => [
                 'q' => 'En quoi :brand est-il différent de Storyworth ?',
-                'a' => ':brand capte la voix et la personnalité par des souvenirs enregistrés, là où Storyworth recueille des réponses écrites. Le Speech-to-Story™ transforme les enregistrements en histoires écrites, et un QR code rejoue la voix à côté du texte imprimé.',
+                'a' => ':brand capte la voix et la personnalité par des souvenirs enregistrés, là où Storyworth recueille des réponses écrites. :brand transforme les enregistrements en histoires écrites, et un QR code rejoue la voix à côté du texte imprimé.',
             ],
             'my_life' => [
                 'q' => 'En quoi :brand est-il différent de My Life In A Book ?',
@@ -1570,21 +1570,19 @@ return [
      */
     'welcome_offer' => [
         'aria' => 'Une réduction de bienvenue',
-        'eyebrow' => 'Pour commencer',
         'title' => ':amount offerts',
-        'subtitle' => 'sur le livre de ses souvenirs',
+        'subtitle' => 'sur votre prochaine commande',
         // Le même service en bandeau de bas de page, sur l'accueil et sur
         // « Comment ça marche » (T-213).
         'band_title' => ':amount offerts pour commencer',
         'teaser' => 'Laissez-nous votre adresse : nous vous envoyons un code de réduction de :amount, valable un an sur toute votre commande.',
-        'claim' => 'Je prends ma réduction',
         'no_thanks' => 'Non merci',
-        'email_label' => 'Votre adresse de courriel',
+        'email_label' => 'Votre adresse email',
         'email_placeholder' => 'prenom@exemple.fr',
-        'news' => 'Je souhaite aussi recevoir vos nouvelles, de temps en temps.',
+        'news' => 'Je veux être tenu·e au courant des prochaines promotions.',
         'send' => 'Recevoir mon code',
         'waiting' => 'Un instant…',
-        'fine_print' => 'Votre adresse sert à vous envoyer le code, et à rien d’autre si vous ne cochez pas la case. Un lien pour arrêter figure dans chaque message.',
+        'fine_print' => 'Votre adresse sert à vous envoyer le code, et à rien d’autre si vous décochez la case. Un lien pour arrêter figure dans chaque message.',
         'sent_title' => 'C’est envoyé',
         'sent_body' => 'Votre code part vers :email. S’il n’arrive pas, regardez dans les indésirables.',
         'sent_auto' => 'Si vous commandez depuis cet appareil, la réduction s’appliquera toute seule au récapitulatif.',

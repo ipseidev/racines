@@ -23,7 +23,7 @@ final class ConsentTextFactory extends Factory
             'kind' => ConsentKind::VoiceRecording,
             'version' => '1.0',
             'locale' => 'fr',
-            'body' => 'Texte provisoire de consentement. [À VALIDER PAR CONSEIL]',
+            'body' => 'Texte provisoire de consentement.',
             'effective_from' => now()->subDay(),
         ];
     }

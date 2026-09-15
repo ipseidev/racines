@@ -55,9 +55,32 @@ final class BrandSettings extends Settings
 
     public ?string $favicon_path;
 
+    /*
+     * L'identité de l'éditeur, au sens de la LCEN : ce que la page des
+     * mentions légales, les CGV, la politique de confidentialité et le pied
+     * des courriels donnent à lire. Aucune n'est nullable, et
+     * UpdateBrandSettings les exige non vides : le défaut T-242 n'était pas
+     * une substitution cassée mais une valeur vide substituée sans bruit.
+     */
     public string $legal_entity;
 
+    public string $legal_form;
+
     public string $legal_address;
+
+    public string $legal_siren;
+
+    public string $legal_siret;
+
+    public string $legal_vat;
+
+    public string $legal_publication_director;
+
+    public string $legal_host;
+
+    public string $legal_host_media;
+
+    public string $legal_host_location;
 
     public static function group(): string
     {

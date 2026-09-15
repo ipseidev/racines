@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\Settings\BrandSettings;
 use App\Support\Contrast;
+use Closure;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -51,7 +52,7 @@ final class UpdateBrandSettings
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, string|Closure>>
      */
     private function rules(): array
     {
@@ -80,8 +81,23 @@ final class UpdateBrandSettings
             'mark_path' => ['sometimes', 'nullable', 'string', 'max:255'],
             'logo_path' => ['sometimes', 'nullable', 'string', 'max:255'],
             'favicon_path' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'legal_entity' => ['sometimes', 'nullable', 'string', 'max:120'],
-            'legal_address' => ['sometimes', 'nullable', 'string', 'max:255'],
+            /*
+             * L'identité de l'éditeur : jamais vide (T-242). Une chaîne vide
+             * ne fait pas échouer une page, elle l'ampute — « Le représentant
+             * légal de . » — et personne ne relit ses propres mentions
+             * légales. `required` est donc ici une règle de conformité, pas
+             * de confort.
+             */
+            'legal_entity' => ['sometimes', 'required', 'string', 'max:120'],
+            'legal_form' => ['sometimes', 'required', 'string', 'max:120'],
+            'legal_address' => ['sometimes', 'required', 'string', 'max:255'],
+            'legal_siren' => ['sometimes', 'required', 'string', 'max:20', $this->immatriculation(9)],
+            'legal_siret' => ['sometimes', 'required', 'string', 'max:25', $this->immatriculation(14)],
+            'legal_vat' => ['sometimes', 'required', 'string', 'max:20'],
+            'legal_publication_director' => ['sometimes', 'required', 'string', 'max:120'],
+            'legal_host' => ['sometimes', 'required', 'string', 'max:255'],
+            'legal_host_media' => ['sometimes', 'required', 'string', 'max:255'],
+            'legal_host_location' => ['sometimes', 'required', 'string', 'max:120'],
             ...$colours,
         ];
     }
@@ -94,7 +110,68 @@ final class UpdateBrandSettings
         return [
             'sms_sender_id.regex' => 'L’expéditeur SMS doit comporter 3 à 11 caractères alphanumériques, dont au moins une lettre.',
             'links_domain.regex' => 'Le domaine ne peut contenir que des minuscules, des chiffres, des points et des tirets.',
+            'legal_entity.required' => 'La raison sociale est obligatoire : sans elle, les mentions légales ne nomment personne.',
+            'legal_form.required' => 'La forme juridique est obligatoire ; un entrepreneur individuel doit faire suivre son nom de « EI ».',
+            'legal_address.required' => 'L’adresse de l’éditeur est obligatoire (LCEN, article 6 III-1).',
+            'legal_siren.required' => 'Le numéro SIREN est obligatoire (LCEN, article 6 III-1).',
+            'legal_siret.required' => 'Le numéro SIRET du siège est obligatoire.',
+            'legal_vat.required' => 'Le numéro de TVA intracommunautaire est obligatoire pour une vente en ligne (LCEN, article 19).',
+            'legal_publication_director.required' => 'Le directeur ou la directrice de la publication est obligatoire (LCEN, article 6 III-1 c).',
+            'legal_host.required' => 'L’hébergeur doit être nommé, avec son adresse et son téléphone : « communiqué sur demande » ne satisfait pas la LCEN.',
+            'legal_host_media.required' => 'L’hébergeur des médias doit être nommé lui aussi : c’est là que vivent les enregistrements.',
+            'legal_host_location.required' => 'Le lieu des serveurs est l’engagement d’hébergement européen : il doit être écrit.',
         ];
+    }
+
+    /**
+     * Un numéro d'immatriculation français : le bon nombre de chiffres, et la
+     * clé de Luhn qui les vérifie.
+     *
+     * Un chiffre transposé dans un SIREN donne un numéro d'apparence valide
+     * qui désigne une autre entreprise ou personne. La clé le refuse, et c'est
+     * le seul contrôle qu'on puisse faire sans interroger l'INSEE.
+     */
+    private function immatriculation(int $chiffres): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail) use ($chiffres): void {
+            $digits = preg_replace('/\s+/', '', is_string($value) ? $value : '') ?? '';
+
+            if (preg_match('/^\d{'.$chiffres.'}$/', $digits) !== 1) {
+                $fail(sprintf('Ce numéro doit comporter %d chiffres.', $chiffres));
+
+                return;
+            }
+
+            if (! self::luhn($digits)) {
+                $fail('La clé de contrôle de ce numéro est fausse : vérifiez la saisie.');
+            }
+        };
+    }
+
+    /**
+     * La clé de Luhn, celle qui valide un SIREN comme un SIRET.
+     */
+    private static function luhn(string $digits): bool
+    {
+        $sum = 0;
+        $double = false;
+
+        for ($i = strlen($digits) - 1; $i >= 0; $i--) {
+            $digit = (int) $digits[$i];
+
+            if ($double) {
+                $digit *= 2;
+
+                if ($digit > 9) {
+                    $digit -= 9;
+                }
+            }
+
+            $sum += $digit;
+            $double = ! $double;
+        }
+
+        return $sum % 10 === 0;
     }
 
     /**

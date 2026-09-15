@@ -78,3 +78,56 @@ it('expose les variables CSS attendues par le front', function (): void {
         '--brand-font-body',
     );
 });
+
+/*
+|--------------------------------------------------------------------------
+| L'identité de l'éditeur (T-242)
+|--------------------------------------------------------------------------
+|
+| Le défaut n'était pas une substitution cassée : c'était une valeur vide,
+| substituée sans bruit, qui faisait dire aux mentions légales « Le
+| représentant légal de . ». Une page légale amputée ne lève rien, ne
+| journalise rien, et personne ne relit ses propres mentions légales.
+|
+*/
+
+it('renseigne l’identité de l’éditeur que la LCEN réclame', function (string $property): void {
+    expect(trim(app(BrandSettings::class)->{$property}))->not->toBe('', "brand.{$property} est vide.");
+})->with([
+    'legal_entity', 'legal_form', 'legal_address', 'legal_siren', 'legal_siret',
+    'legal_vat', 'legal_publication_director', 'legal_host', 'legal_host_media',
+    'legal_host_location',
+]);
+
+it('refuse de vider un champ de l’identité légale', function (string $property): void {
+    expect(fn () => app(UpdateBrandSettings::class)->handle([$property => '']))
+        ->toThrow(ValidationException::class);
+})->with([
+    'legal_entity', 'legal_form', 'legal_address', 'legal_siren', 'legal_siret',
+    'legal_vat', 'legal_publication_director', 'legal_host', 'legal_host_media',
+    'legal_host_location',
+]);
+
+it('refuse un SIREN ou un SIRET dont la clé est fausse', function (array $payload): void {
+    // Un chiffre transposé donne un numéro d'apparence valide qui désigne
+    // quelqu'un d'autre ; la clé de Luhn est le seul contrôle possible sans
+    // interroger l'INSEE.
+    expect(fn () => app(UpdateBrandSettings::class)->handle($payload))
+        ->toThrow(ValidationException::class);
+})->with([
+    'SIREN trop court' => [['legal_siren' => '84329975']],
+    'SIREN aux chiffres inversés' => [['legal_siren' => '843 299 715']],
+    'SIREN alphabétique' => [['legal_siren' => 'SIREN 843']],
+    'SIRET trop court' => [['legal_siret' => '843 299 751 0001']],
+    'SIRET aux chiffres inversés' => [['legal_siret' => '843 299 751 00091']],
+]);
+
+it('accepte un SIREN et un SIRET justes, espaces compris', function (): void {
+    app(UpdateBrandSettings::class)->handle([
+        'legal_siren' => '843 299 751',
+        'legal_siret' => '84329975100019',
+    ]);
+
+    expect(app(BrandSettings::class)->legal_siren)->toBe('843 299 751')
+        ->and(app(BrandSettings::class)->legal_siret)->toBe('84329975100019');
+});

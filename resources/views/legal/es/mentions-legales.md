@@ -2,30 +2,38 @@
 
 _Traducción informativa del texto francés, que es el que prevalece._
 
-_Versión 1.0 — 3 de septiembre de 2026._
+_Versión 1.1 — 15 de septiembre de 2026._
 
 ## Editor
 
-{{ legal_entity }}
+El sitio está editado por {{ legal_entity }}, {{ legal_form }}.
+
 {{ legal_address }}
+
+Inscripción en el Registre national des entreprises (registro nacional francés
+de empresas): SIREN {{ legal_siren }}.
+SIRET de la sede: {{ legal_siret }}.
+Número de IVA intracomunitario: {{ legal_vat }}.
 
 Correo electrónico: {{ support_email }}
 
 ## Responsable de la publicación
 
-El representante legal de {{ legal_entity }}.
+{{ legal_publication_director }}.
 
 ## Alojamiento
 
-El servicio se aloja en la Unión Europea. El nombre y la dirección del
-proveedor de alojamiento se comunican previa solicitud a {{ support_email }}.
+El sitio y la base de datos están alojados por {{ legal_host }}, en servidores
+situados en {{ legal_host_location }}. Las grabaciones, las fotografías y las
+copias de seguridad las conserva {{ legal_host_media }}, en su infraestructura
+R2, en la Unión Europea.
 
 ## Propiedad intelectual
 
 Los relatos, las grabaciones y las fotografías depositados siguen siendo
-propiedad de sus respectivos titulares. {{ legal_entity }} no adquiere ningún
-derecho de propiedad sobre esos contenidos: recibe una licencia limitada a las
-operaciones necesarias para la prestación del servicio.
+propiedad de sus respectivos titulares. El editor no adquiere ningún derecho de
+propiedad sobre esos contenidos: recibe una licencia limitada a las operaciones
+necesarias para la prestación del servicio.
 
 Los elementos de la interfaz, los textos de presentación y el nombre
 {{ product_name }} están protegidos.
@@ -39,8 +47,8 @@ protección de datos puede contactarse en {{ support_email }}.
 
 Conforme al Code de la consommation (Código de Consumo francés), usted puede
 recurrir gratuitamente a un mediador de consumo con vistas a la resolución
-amistosa de un litigio. Los datos del mediador figuran en nuestras condiciones
-generales de venta y se comunican previa solicitud.
+amistosa de un litigio. Las modalidades figuran en el artículo 13 de nuestras
+condiciones generales de venta.
 
 ## Notificaciones
 

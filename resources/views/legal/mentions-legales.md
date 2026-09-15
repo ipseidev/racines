@@ -1,29 +1,36 @@
 # Mentions légales
 
-_Version 1.0 — 3 septembre 2026._
+_Version 1.1 — 15 septembre 2026._
 
 ## Éditeur
 
-{{ legal_entity }}
+Le site est édité par {{ legal_entity }}, {{ legal_form }}.
+
 {{ legal_address }}
+
+Immatriculation au Registre national des entreprises : SIREN {{ legal_siren }}.
+SIRET du siège : {{ legal_siret }}.
+Numéro de TVA intracommunautaire : {{ legal_vat }}.
 
 Courriel : {{ support_email }}
 
-## Responsable de la publication
+## Directeur de la publication
 
-Le représentant légal de {{ legal_entity }}.
+{{ legal_publication_director }}.
 
 ## Hébergement
 
-Le service est hébergé dans l'Union européenne. Le nom et l'adresse de
-l'hébergeur sont communiqués sur demande à {{ support_email }}.
+Le site et la base de données sont hébergés par {{ legal_host }}, sur des
+serveurs situés à {{ legal_host_location }}. Les enregistrements, les
+photographies et les sauvegardes sont conservés par {{ legal_host_media }}, sur
+son infrastructure R2, dans l'Union européenne.
 
 ## Propriété intellectuelle
 
 Les récits, les enregistrements et les photographies déposés restent la
-propriété de leurs titulaires respectifs. {{ legal_entity }} n'acquiert aucun
-droit de propriété sur ces contenus : elle reçoit une licence limitée aux
-opérations nécessaires à la fourniture du service.
+propriété de leurs titulaires respectifs. L'éditeur n'acquiert aucun droit de
+propriété sur ces contenus : il reçoit une licence limitée aux opérations
+nécessaires à la fourniture du service.
 
 Les éléments d'interface, les textes de présentation et le nom {{ product_name }}
 sont protégés.
@@ -37,8 +44,7 @@ la protection des données est joignable à {{ support_email }}.
 
 Conformément au code de la consommation, vous pouvez recourir gratuitement à un
 médiateur de la consommation en vue de la résolution amiable d'un litige. Les
-coordonnées du médiateur figurent dans nos conditions générales de vente et sont
-communiquées sur demande.
+modalités figurent à l'article 13 de nos conditions générales de vente.
 
 ## Signalement
 

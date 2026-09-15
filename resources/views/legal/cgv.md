@@ -1,10 +1,12 @@
 # Conditions générales de vente
 
-_Version 1.0 — 3 septembre 2026. Ces conditions s'appliquent à l'offre pilote._
+_Version 1.1 — 15 septembre 2026. Ces conditions s'appliquent à l'offre pilote._
 
 ## 1. Qui vend
 
-Le service est édité par {{ legal_entity }}, {{ legal_address }}. Contact : {{ support_email }}.
+Le service est vendu par {{ legal_entity }}, {{ legal_form }}, dont l'adresse est
+{{ legal_address }}. SIREN {{ legal_siren }}, SIRET du siège {{ legal_siret }},
+numéro de TVA intracommunautaire {{ legal_vat }}. Contact : {{ support_email }}.
 
 Les présentes conditions régissent la vente du service {{ product_name }} aux
 personnes physiques agissant à des fins non professionnelles, résidant en

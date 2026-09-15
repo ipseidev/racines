@@ -12,6 +12,7 @@ use App\Support\Brand;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Mail\Markdown;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Le gabarit commun des courriels (T-237).
@@ -109,10 +110,14 @@ it('met dans le pied l’adresse du support, le domaine des liens et la mention 
         ->and($html)->toContain('Données hébergées dans l’Union européenne');
 });
 
-it('tait la mention légale tant qu’elle n’est pas renseignée', function (): void {
-    app(UpdateBrandSettings::class)->handle(['legal_entity' => '', 'legal_address' => '']);
+it('porte toujours la mention légale, qui ne peut plus être vidée', function (): void {
+    // Elle l'a été : `BRAND_LEGAL_ENTITY=` vide dans l'environnement, et le
+    // pied des courriels comme les mentions légales ne nommaient personne
+    // (T-242). L'action refuse désormais la chaîne vide.
+    expect(fn () => app(UpdateBrandSettings::class)->handle(['legal_entity' => '', 'legal_address' => '']))
+        ->toThrow(ValidationException::class);
 
-    expect(renderedMail())->not->toContain('footer-legal">'.' · ');
+    expect(renderedMail())->toContain(Brand::settings()->legal_entity);
 });
 
 it('écrit en français ce que le framework écrivait en anglais', function (): void {

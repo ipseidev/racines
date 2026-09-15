@@ -2,15 +2,15 @@
 
 _Traducción informativa del texto francés, que es el que prevalece._
 
-_Versión 1.0 — 3 de septiembre de 2026._
+_Versión 1.1 — 15 de septiembre de 2026._
 
 Este texto dice qué hacemos con sus datos, por qué, con quién y durante cuánto
 tiempo. Está escrito para ser leído, no para ser esgrimido.
 
 ## 1. Quién es responsable
 
-{{ legal_entity }}, {{ legal_address }}, es responsable de los tratamientos
-descritos aquí. Nuestro delegado de protección de datos puede contactarse en
+{{ legal_entity }}, {{ legal_form }}, {{ legal_address }} (SIREN
+{{ legal_siren }}), es responsable de los tratamientos descritos aquí. Nuestro delegado de protección de datos puede contactarse en
 {{ support_email }} indicando «DPO» en el asunto.
 
 ## 2. Qué tratamos, y por qué
@@ -93,10 +93,15 @@ solución de sustitución documentada.
 
 ## 7. Dónde se alojan sus datos
 
-Sus grabaciones y sus textos se alojan en la Unión Europea. El único tratamiento
-fuera de la Unión Europea es la puesta en limpio del texto, enmarcada por las
-cláusulas contractuales tipo de la Comisión Europea y referida a texto separado
-de los identificadores de la persona.
+El sitio y la base de datos están alojados por {{ legal_host }}, en servidores
+situados en {{ legal_host_location }}. Las grabaciones, las fotografías y las
+copias de seguridad las conserva {{ legal_host_media }}, en su infraestructura
+R2, en la Unión Europea.
+
+Sus grabaciones y sus textos viven por tanto en servidores situados en la Unión
+Europea. El único tratamiento fuera de la Unión Europea es la puesta en limpio
+del texto, enmarcada por las cláusulas contractuales tipo de la Comisión Europea
+y referida a texto separado de los identificadores de la persona.
 
 ## 8. Durante cuánto tiempo
 

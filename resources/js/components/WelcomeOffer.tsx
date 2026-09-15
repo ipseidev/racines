@@ -30,14 +30,17 @@ type Props = {
     atScroll?: number;
 };
 
-type Step = 'teaser' | 'form' | 'sent';
+type Step = 'form' | 'sent';
 
 /**
  * La fenêtre de bienvenue : une réduction contre une adresse (T-141).
  *
- * Empruntée au leader dans sa forme, en deux temps : d'abord la promesse et
- * un seul bouton, puis le champ. Le second temps ne s'ouvre qu'à qui a dit
- * oui au premier, et c'est ce qui fait qu'on remplit le champ.
+ * Elle était en deux temps — la promesse et un bouton, puis le champ. Elle
+ * n'en fait plus qu'un (décision du fondateur, 15 septembre 2026) : la
+ * promesse et le champ ensemble. Le premier temps demandait un clic pour
+ * obtenir un formulaire, c'est-à-dire un pas de plus vers la même chose ; qui
+ * n'a pas envie de laisser son adresse ferme aussi bien à la seconde fenêtre
+ * qu'à la première.
  *
  * Un `<dialog>` natif et pas une bibliothèque : le navigateur tient le
  * piège du focus, la touche Échap, l'arrière-plan inerte, et il n'injecte
@@ -60,11 +63,21 @@ export default function WelcomeOffer({
     const t = useT();
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [open, setOpen] = useState(false);
-    const [step, setStep] = useState<Step>('teaser');
+    const [step, setStep] = useState<Step>('form');
 
     const form = useForm({
         email: '',
-        news: false,
+        /*
+         * Cochée à l'ouverture (demande du fondateur, 15 septembre 2026).
+         *
+         * À signaler et à trancher par le conseil : une case pré-cochée ne
+         * vaut pas consentement au sens du RGPD (considérant 32, arrêt
+         * Planet49), et `ClaimWelcomeOffer` enregistre justement une preuve —
+         * version du texte, empreinte d'IP, agent — qui serait alors une
+         * preuve de rien. Le décochage reste possible d'un geste, et l'adresse
+         * ne sert qu'au code si la case est décochée.
+         */
+        news: true,
         // Le champ que personne ne voit : rempli, le serveur remercie et ne
         // garde rien.
         website: '',
@@ -125,9 +138,12 @@ export default function WelcomeOffer({
         if (open && !dialog.open) {
             dialog.showModal();
             document.documentElement.classList.add('overflow-hidden');
-            // Le navigateur pose le focus sur le premier bouton, la croix : on
-            // le met sur l'action, qui est ce qu'on propose.
-            dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus();
+            /*
+             * Le focus reste où le navigateur le pose, sur la croix. Il allait
+             * au bouton « Je prends ma réduction », qui n'existe plus ; le
+             * mettre dans le champ ouvrirait le clavier d'un téléphone et
+             * cacherait la promesse au moment de demander l'adresse.
+             */
         } else if (!open && dialog.open) {
             dialog.close();
         }
@@ -207,12 +223,12 @@ export default function WelcomeOffer({
                     </button>
 
                     <div className="flex flex-col gap-5 px-7 py-9 sm:px-10 sm:py-12">
-                        {step === 'teaser' && (
-                            <>
-                                <span className="eyebrow">
-                                    {t('public.welcome_offer.eyebrow')}
-                                </span>
-                                <p className="font-display text-brand text-[2.6rem] leading-[1.05] font-medium sm:text-5xl">
+                        {step === 'form' && (
+                            <form
+                                onSubmit={submit}
+                                className="enter flex flex-col gap-5"
+                            >
+                                <p className="font-display text-brand text-[2.4rem] leading-[1.05] font-medium sm:text-5xl">
                                     {t('public.welcome_offer.title', {
                                         amount,
                                     })}
@@ -221,42 +237,13 @@ export default function WelcomeOffer({
                                         {t('public.welcome_offer.subtitle')}
                                     </span>
                                 </p>
-                                <p className="text-brand-muted text-lg leading-snug">
-                                    {t('public.welcome_offer.teaser', {
-                                        amount,
-                                    })}
-                                </p>
-                                <button
-                                    type="button"
-                                    data-autofocus
-                                    onClick={() => setStep('form')}
-                                    className="btn-primary press mt-1"
-                                >
-                                    {t('public.welcome_offer.claim')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={dismiss}
-                                    className="text-brand-muted hover:text-brand self-center text-base underline underline-offset-4"
-                                >
-                                    {t('public.welcome_offer.no_thanks')}
-                                </button>
-                            </>
-                        )}
-
-                        {step === 'form' && (
-                            <form
-                                onSubmit={submit}
-                                className="enter flex flex-col gap-5"
-                            >
-                                <p className="font-display text-brand text-[2rem] leading-[1.1] font-medium sm:text-4xl">
-                                    {t('public.welcome_offer.title', {
-                                        amount,
-                                    })}
-                                </p>
-
+                                {/*
+                                 * Pas de focus automatique sur le champ : sur
+                                 * un téléphone, le clavier s'ouvrirait aussitôt
+                                 * et cacherait la promesse au moment même où
+                                 * l'on demande l'adresse.
+                                 */}
                                 <TextField
-                                    autoFocus
                                     type="email"
                                     name="email"
                                     autoComplete="email"
@@ -319,9 +306,28 @@ export default function WelcomeOffer({
                                     {t('public.welcome_offer.send')}
                                 </SubmitButton>
 
-                                <p className="text-brand-muted text-[0.9rem] leading-snug">
+                                {/*
+                                 * Plus petite et plus claire que le reste
+                                 * (demande du fondateur, deux fois) : 12 px et
+                                 * 82 % du gris secondaire, soit 4,64:1 sur le
+                                 * fond de la fenêtre. C'est la limite : à 80 %
+                                 * on tombe à 4,44:1, sous le seuil AA de 4,5
+                                 * que le dossier tient (doc 04, WCAG 2.2 AA),
+                                 * et cette phrase est justement celle qui dit
+                                 * ce qu'on fait de l'adresse. La taille, elle,
+                                 * n'est bornée par aucune règle.
+                                 */}
+                                <p className="text-brand-muted/82 text-[0.75rem] leading-snug">
                                     {t('public.welcome_offer.fine_print')}
                                 </p>
+
+                                <button
+                                    type="button"
+                                    onClick={dismiss}
+                                    className="text-brand-muted hover:text-brand self-center text-base underline underline-offset-4"
+                                >
+                                    {t('public.welcome_offer.no_thanks')}
+                                </button>
                             </form>
                         )}
 

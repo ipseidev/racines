@@ -9,12 +9,24 @@ use App\Models\ConsentText;
 use Illuminate\Database\Seeder;
 
 /**
- * Version 1.0 de chaque texte de consentement.
+ * Le texte en vigueur de chaque consentement.
  *
- * Les textes sont provisoires et marqués comme tels : les formulations
- * définitives, opposables, arrivent au bloc 10 après relecture juridique. Ce
- * qui compte dès maintenant, c'est qu'une ligne de `consents` puisse pointer
- * une version précise de ce qui a été lu.
+ * La version 1.0 portait la mention `[À VALIDER PAR CONSEIL]`, qui s'affichait
+ * à la fin de chaque paragraphe sur la page des accords et dans le tunnel. Une
+ * note de fabrication n'a rien à faire sous les yeux de quelqu'un à qui l'on
+ * demande son accord : elle dit « ce texte n'est pas arrêté » au moment précis
+ * où l'on attend un engagement. Elle disparaît en 1.1 (T-242).
+ *
+ * **Une nouvelle version, et non une réécriture de la 1.0.** `consents`
+ * pointe une version précise et la promesse du dossier est de pouvoir
+ * réafficher ce qui a été lu : corriger le texte de la 1.0 changerait
+ * rétroactivement ce que quelqu'un a accepté. Les lignes déjà signées gardent
+ * donc leur 1.0, mot pour mot, et les pages publiques affichent la 1.1 —
+ * `ConsentText::current()` prend la plus récente entrée en vigueur.
+ *
+ * La relecture par un conseil, elle, reste due : elle est un acte posé dans
+ * l'administration (`PilotSettings::legal_validated_at`), que `golive:check`
+ * vérifie, et non une note en bas d'un paragraphe.
  */
 final class ConsentTextSeeder extends Seeder
 {
@@ -34,13 +46,16 @@ final class ConsentTextSeeder extends Seeder
         ConsentKind::MarketingEmail->value => 'Vous acceptez de recevoir de nos nouvelles par courriel. Ce n’est jamais nécessaire pour acheter ni pour utiliser le service, et un lien de désinscription figure dans chaque message.',
     ];
 
+    /** La version que ce semis met en vigueur. */
+    public const VERSION = '1.1';
+
     public function run(): void
     {
         foreach (ConsentKind::cases() as $kind) {
             ConsentText::query()->updateOrCreate(
-                ['kind' => $kind->value, 'version' => '1.0', 'locale' => 'fr'],
+                ['kind' => $kind->value, 'version' => self::VERSION, 'locale' => 'fr'],
                 [
-                    'body' => self::BODIES[$kind->value].' [À VALIDER PAR CONSEIL]',
+                    'body' => self::BODIES[$kind->value],
                     'effective_from' => now()->startOfDay(),
                 ],
             );

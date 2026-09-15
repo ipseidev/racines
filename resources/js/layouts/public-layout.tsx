@@ -38,10 +38,6 @@ const navOf = (urls: LocalizedUrls) => [
  * Le pied de page légal est partagé avec le tunnel (`public-footer.tsx`),
  * qui a sa propre mise en page depuis T-135.
  *
- * Le bandeau « à valider par conseil » est global et non propre aux pages
- * légales. Tant que le conseil n'a pas relu, la phase est expérimentale, et
- * une page de vente qui le tairait mentirait par omission.
- *
  * Le contenu n'est pas contraint en largeur ici : la page d'accueil compose
  * des sections pleine largeur, et les autres pages posent elles-mêmes leur
  * colonne de lecture.

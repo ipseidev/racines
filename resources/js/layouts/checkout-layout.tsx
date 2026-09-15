@@ -32,9 +32,6 @@ function Lock() {
  * leur place, ce que quelqu'un qui va payer veut lire : la marque, le cadenas,
  * la garantie.
  *
- * Le bandeau « à valider par conseil » reste : tant que le conseil n'a pas
- * relu, une page de vente qui le tairait mentirait par omission.
- *
  * Le tunnel est mesuré comme le reste du site public. Il l'était côté serveur
  * seulement — les événements d'entonnoir de `App\Analytics\Track` — et cette
  * moitié suffit à savoir qui achète, pas à savoir qui renonce : une mesure

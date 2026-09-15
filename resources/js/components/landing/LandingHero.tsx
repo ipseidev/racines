@@ -7,7 +7,17 @@ import { SECONDARY } from '@/components/marketing/styles';
 import { useT } from '@/hooks/useT';
 import { photo } from '@/lib/photo';
 
-const CHECKS = ['voice', 'no_app', 'digital', 'no_writing'] as const;
+/*
+ * Les quatre coches, refaites.
+ *
+ * Les précédentes répondaient au chapô au lieu de le compléter — « rien à
+ * écrire » y était déjà — et deux d'entre elles étaient fausses : la voix est
+ * au chapitre et non à chaque page, et le livre numérique est une option à
+ * part, annoncée sous un bandeau qui dit « le tout pour 89 € ». Restent les
+ * questions que l'acheteur se pose : est-ce qu'elle va y arriver, qu'est-ce
+ * qu'on lui demande au juste, comment ça se passe, et si elle refuse.
+ */
+const CHECKS = ['no_app', 'choice', 'rhythm', 'refund'] as const;
 
 /** Une coche à l'échelle de ces lignes-là : celle de `marketing/Check` est fixée à 22 px. */
 function Tick() {

@@ -20,8 +20,28 @@ return [
         'product_name' => 'Nom du produit',
         'short_name' => 'Nom court',
         'tagline' => 'Promesse',
-        'legal_entity' => 'Entité légale',
-        'legal_address' => 'Adresse légale',
+
+        /*
+         * L'éditeur du site : ce que la LCEN veut lire sur la page des
+         * mentions légales, et ce que Google cherche pour savoir qui répond
+         * de ce qui est publié. Rien ici n'est facultatif.
+         */
+        'publisher' => 'Éditeur',
+        'publisher_help' => 'Ce que la loi exige sur les mentions légales, les CGV et les factures. Tous ces champs sont affichés publiquement.',
+        'legal_entity' => 'Raison sociale ou nom',
+        'legal_form' => 'Forme juridique',
+        'legal_form_help' => 'Un entrepreneur individuel doit faire suivre son nom de « EI » ou « entrepreneur individuel ».',
+        'legal_address' => 'Adresse de l’éditeur',
+        'legal_siren' => 'Numéro SIREN',
+        'legal_siret' => 'Numéro SIRET du siège',
+        'legal_vat' => 'TVA intracommunautaire',
+        'legal_publication_director' => 'Directeur·rice de la publication',
+        'legal_host' => 'Hébergeur du site',
+        'legal_host_help' => 'Nom, adresse et téléphone. « Communiqué sur demande » ne satisfait pas la LCEN.',
+        'legal_host_media' => 'Hébergeur des médias',
+        'legal_host_media_help' => 'Là où vivent les enregistrements, les photos et les sauvegardes.',
+        'legal_host_location' => 'Lieu des serveurs',
+        'legal_host_location_help' => 'La ville et le pays, pas la région du fournisseur : c’est l’engagement d’hébergement européen.',
 
         'contacts' => 'Domaine et contacts',
         'contacts_help' => 'Un seul domaine court et stable pour tous les liens envoyés aux narrateurs.',

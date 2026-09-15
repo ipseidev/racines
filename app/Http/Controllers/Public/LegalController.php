@@ -95,18 +95,6 @@ final class LegalController
     }
 
     /**
-     * Substitue les variables de marque avant le rendu.
-     *
-     * Le nom de l'entreprise, son adresse et son courriel ne sont pas écrits
-     * dans les textes : ils viennent de `BrandSettings`, comme partout
-     * ailleurs. Un texte juridique qui nomme la mauvaise entité est un texte
-     * inopposable, et le nom n'est pas encore arrêté.
-     *
-     * La substitution est faite **avant** la conversion markdown, pour qu'une
-     * adresse contenant un caractère spécial soit échappée par le convertisseur
-     * (`html_input => escape`) comme le reste du texte.
-     */
-    /**
      * Le texte dans la langue de la page, ou le texte français.
      *
      * Les traductions sont informatives et le disent elles-mêmes : le contrat
@@ -131,14 +119,58 @@ final class LegalController
         return null;
     }
 
+    /**
+     * Substitue les variables de marque avant le rendu.
+     *
+     * L'identité de l'éditeur n'est pas écrite dans les textes : elle vient de
+     * `BrandSettings`, comme partout ailleurs. Un texte juridique qui nomme la
+     * mauvaise entité est un texte inopposable.
+     *
+     * La substitution est faite **avant** la conversion markdown, pour qu'une
+     * adresse contenant un caractère spécial soit échappée par le convertisseur
+     * (`html_input => escape`) comme le reste du texte.
+     */
     private static function withBrand(string $markdown): string
+    {
+        $tokens = self::tokens();
+
+        return str_replace(
+            array_map(static fn (string $name): string => '{{ '.$name.' }}', array_keys($tokens)),
+            array_values($tokens),
+            $markdown,
+        );
+    }
+
+    /**
+     * Les valeurs que les textes légaux peuvent appeler, et la seule table qui
+     * en fasse la liste.
+     *
+     * Elle est publique parce qu'un test la relit : `LegalTest` extrait les
+     * gabarits de chaque fichier markdown, refuse celui que cette table ne
+     * connaît pas — il s'afficherait tel quel, accolades comprises — et refuse
+     * surtout une valeur **vide**. C'est le défaut T-242 : la substitution
+     * marchait, la valeur était vide, et les mentions légales annonçaient
+     * « Le représentant légal de . » sans que rien n'échoue.
+     *
+     * @return array<string, string>
+     */
+    public static function tokens(): array
     {
         $brand = Brand::settings();
 
-        return str_replace(
-            ['{{ product_name }}', '{{ legal_entity }}', '{{ legal_address }}', '{{ support_email }}'],
-            [$brand->product_name, $brand->legal_entity, $brand->legal_address, $brand->support_email],
-            $markdown,
-        );
+        return [
+            'product_name' => $brand->product_name,
+            'legal_entity' => $brand->legal_entity,
+            'legal_form' => $brand->legal_form,
+            'legal_address' => $brand->legal_address,
+            'legal_siren' => $brand->legal_siren,
+            'legal_siret' => $brand->legal_siret,
+            'legal_vat' => $brand->legal_vat,
+            'legal_publication_director' => $brand->legal_publication_director,
+            'legal_host' => $brand->legal_host,
+            'legal_host_media' => $brand->legal_host_media,
+            'legal_host_location' => $brand->legal_host_location,
+            'support_email' => $brand->support_email,
+        ];
     }
 }

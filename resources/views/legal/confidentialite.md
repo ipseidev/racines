@@ -1,15 +1,15 @@
 # Politique de confidentialité
 
-_Version 1.0 — 3 septembre 2026._
+_Version 1.1 — 15 septembre 2026._
 
 Ce texte dit ce que nous faisons de vos données, pourquoi, avec qui, et pendant
 combien de temps. Il est écrit pour être lu, pas pour être opposé.
 
 ## 1. Qui est responsable
 
-{{ legal_entity }}, {{ legal_address }}, est responsable des traitements décrits
-ici. Notre délégué à la protection des données est joignable à
-{{ support_email }} avec la mention « DPO » en objet.
+{{ legal_entity }}, {{ legal_form }}, {{ legal_address }} (SIREN {{ legal_siren }}),
+est responsable des traitements décrits ici. Notre délégué à la protection des
+données est joignable à {{ support_email }} avec la mention « DPO » en objet.
 
 ## 2. Ce que nous traitons, et pourquoi
 
@@ -90,10 +90,15 @@ solution de remplacement documentée.
 
 ## 7. Où vos données sont hébergées
 
-Vos enregistrements et vos textes sont hébergés dans l'Union européenne. Le seul
-traitement hors Union européenne est la mise au propre du texte, encadrée par
-les clauses contractuelles types de la Commission européenne, et portant sur du
-texte séparé des identifiants de la personne.
+Le site et la base de données sont hébergés par {{ legal_host }}, sur des
+serveurs situés à {{ legal_host_location }}. Les enregistrements, les
+photographies et les sauvegardes sont conservés par {{ legal_host_media }}, sur
+son infrastructure R2, dans l'Union européenne.
+
+Vos enregistrements et vos textes vivent donc sur des serveurs situés dans
+l'Union européenne. Le seul traitement hors Union européenne est la mise au
+propre du texte, encadrée par les clauses contractuelles types de la Commission
+européenne, et portant sur du texte séparé des identifiants de la personne.
 
 ## 8. Combien de temps
 

@@ -13,6 +13,7 @@ use App\Exceptions\Domain\MissingConsentText;
 use App\Models\ConsentText;
 use App\Models\Narrator;
 use App\Models\User;
+use Database\Seeders\ConsentTextSeeder;
 
 it('enregistre un consentement accordé avec la version du texte en vigueur', function (): void {
     $narrator = Narrator::factory()->primary()->create();
@@ -27,7 +28,7 @@ it('enregistre un consentement accordé avec la version du texte en vigueur', fu
     );
 
     expect($consent->status)->toBe(ConsentStatus::Granted)
-        ->and($consent->text_version)->toBe('1.0')
+        ->and($consent->text_version)->toBe(ConsentTextSeeder::VERSION)
         ->and($consent->subject_id)->toBe($narrator->id)
         ->and($consent->subject_type)->toBe('narrator')
         ->and($consent->granted_at)->not->toBeNull()
@@ -165,5 +166,5 @@ it('ignore un texte qui n’est pas encore en vigueur', function (): void {
         ConsentChannel::Web,
     );
 
-    expect($consent->text_version)->toBe('1.0');
+    expect($consent->text_version)->toBe(ConsentTextSeeder::VERSION);
 });

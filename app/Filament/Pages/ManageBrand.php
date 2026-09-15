@@ -64,8 +64,50 @@ final class ManageBrand extends SettingsPage
                     TextInput::make('tagline')
                         ->label(__('admin.brand.tagline'))
                         ->maxLength(200)->columnSpanFull(),
-                    TextInput::make('legal_entity')->label(__('admin.brand.legal_entity'))->maxLength(120),
-                    TextInput::make('legal_address')->label(__('admin.brand.legal_address'))->maxLength(255),
+                ])->columns(2),
+
+            /*
+             * L'éditeur, au sens de la LCEN. Tous ces champs sont
+             * obligatoires : une identité légale à moitié remplie ne se voit
+             * pas — la page s'affiche, simplement amputée (T-242).
+             */
+            Section::make(__('admin.brand.publisher'))
+                ->description(__('admin.brand.publisher_help'))
+                ->schema([
+                    TextInput::make('legal_entity')
+                        ->label(__('admin.brand.legal_entity'))
+                        ->required()->maxLength(120),
+                    TextInput::make('legal_form')
+                        ->label(__('admin.brand.legal_form'))
+                        ->helperText(__('admin.brand.legal_form_help'))
+                        ->required()->maxLength(120),
+                    TextInput::make('legal_address')
+                        ->label(__('admin.brand.legal_address'))
+                        ->required()->maxLength(255)->columnSpanFull(),
+                    TextInput::make('legal_siren')
+                        ->label(__('admin.brand.legal_siren'))
+                        ->required()->maxLength(20),
+                    TextInput::make('legal_siret')
+                        ->label(__('admin.brand.legal_siret'))
+                        ->required()->maxLength(25),
+                    TextInput::make('legal_vat')
+                        ->label(__('admin.brand.legal_vat'))
+                        ->required()->maxLength(20),
+                    TextInput::make('legal_publication_director')
+                        ->label(__('admin.brand.legal_publication_director'))
+                        ->required()->maxLength(120),
+                    TextInput::make('legal_host')
+                        ->label(__('admin.brand.legal_host'))
+                        ->helperText(__('admin.brand.legal_host_help'))
+                        ->required()->maxLength(255)->columnSpanFull(),
+                    TextInput::make('legal_host_media')
+                        ->label(__('admin.brand.legal_host_media'))
+                        ->helperText(__('admin.brand.legal_host_media_help'))
+                        ->required()->maxLength(255)->columnSpanFull(),
+                    TextInput::make('legal_host_location')
+                        ->label(__('admin.brand.legal_host_location'))
+                        ->helperText(__('admin.brand.legal_host_location_help'))
+                        ->required()->maxLength(120),
                 ])->columns(2),
 
             Section::make(__('admin.brand.contacts'))

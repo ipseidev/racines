@@ -2,11 +2,13 @@
 
 _Traducción informativa del texto francés, que es el que prevalece._
 
-_Versión 1.0 — 3 de septiembre de 2026. Estas condiciones se aplican a la oferta piloto._
+_Versión 1.1 — 15 de septiembre de 2026. Estas condiciones se aplican a la oferta piloto._
 
 ## 1. Quién vende
 
-El servicio es editado por {{ legal_entity }}, {{ legal_address }}. Contacto: {{ support_email }}.
+El servicio lo vende {{ legal_entity }}, {{ legal_form }}, con domicilio en
+{{ legal_address }}. SIREN {{ legal_siren }}, SIRET de la sede {{ legal_siret }},
+número de IVA intracomunitario {{ legal_vat }}. Contacto: {{ support_email }}.
 
 Las presentes condiciones rigen la venta del servicio {{ product_name }} a las
 personas físicas que actúan con fines no profesionales y residen en Francia o en
