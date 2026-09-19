@@ -540,7 +540,7 @@ return [
 
         // S01. Le héros : la promesse, l'action, la preuve visuelle.
         'hero' => [
-            'title' => 'Un libro de recuerdos que te permite oír su voz para siempre.',
+            'title' => 'El libro de sus recuerdos, con su voz en cada capítulo.',
             'lede' => 'A tu ser querido le basta con contar lo que recuerda. :brand escucha, lo pone por escrito y hace un libro encuadernado en el que cada página lleva sus palabras y cada capítulo reproduce su voz. Nada que escribir, nada que instalar: sus historias, en un libro que se transmite.',
             'checks' => [
                 'no_app' => 'Tu ser querido responde desde su teléfono: sin aplicación y sin cuenta que crear.',
@@ -572,16 +572,16 @@ return [
         'benefits' => [
             'title' => 'Tres razones para regalarlo',
             'discover' => [
-                'title' => 'Descubrir lo que aún no sabes',
-                'body' => 'Los recuerdos de infancia, los encuentros, los pequeños detalles: dale la ocasión de contártelos.',
+                'title' => 'Descubrir lo que nunca se preguntó',
+                'body' => 'Los primeros amores, las despedidas, las pequeñas cosas que no se cuentan si nadie las pregunta. Basta una pregunta para hacerlas volver.',
             ],
             'voice' => [
                 'title' => 'Recuperar su forma de contar',
-                'body' => 'El libro guarda el relato. La grabación permite recuperar la voz, los silencios y las risas.',
+                'body' => 'El libro conserva el relato. La grabación devuelve la voz, los silencios y las risas.',
             ],
             'share' => [
-                'title' => 'Compartir mucho más que un regalo',
-                'body' => 'Una pregunta cada semana abre una nueva conversación con tu ser querido.',
+                'title' => 'Darle a alguien que escucha',
+                'body' => 'El libro es lo que queda. Lo que pasa antes es que alguien le hace una pregunta, y escucha la respuesta hasta el final.',
             ],
             'quotes_title' => 'Lo que dicen las familias',
         ],
@@ -660,7 +660,7 @@ return [
             'rating' => '4,9',
             'stars' => 'Cinco estrellas sobre cinco',
             'title' => 'El libro de una vida que se puede escuchar',
-            'lede' => 'Un año de preguntas que convierten los recuerdos contados por tu ser querido en un bonito libro encuadernado.',
+            'lede' => 'Todo lo que nunca se nos ocurrió preguntar, y que nunca se le ocurrió contar.',
             'gallery' => [
                 'aria' => 'Vistas del libro',
                 'thumb' => 'Ver: :label',
@@ -672,29 +672,29 @@ return [
                 'family' => 'El libro regalado en familia',
             ],
             'read' => [
-                'title' => 'Lee la historia.',
+                'title' => 'Sus palabras, no las nuestras.',
                 'body' => 'Cada capítulo es una historia contada por tu ser querido, pasada a limpio por :brand, sin reescribirla.',
             ],
             'hear' => [
-                'title' => 'Escúchala de viva voz.',
-                'body' => 'Un código QR en cada página reproduce la grabación original. Su voz. Para siempre.',
+                'title' => 'Su voz, en cada capítulo.',
+                'body' => 'Un código para escanear en cada capítulo reproduce la grabación original. Su voz, tal como la contó.',
             ],
             'bound' => [
                 'title' => 'Hecho para durar.',
-                'body' => 'Tapa dura, todo en color, formato 20 × 25 cm. Hasta 380 páginas. Impresión profesional en papel de doble grosor.',
+                'body' => 'Tapa dura, todo en color, formato 16 × 24 cm. Impresión profesional en papel de doble grosor.',
             ],
             'includes' => [
-                'questions' => '1 año de preguntas ilimitadas',
-                'book' => '1 libro impreso en color',
-                'device' => 'Grabación desde cualquier dispositivo',
-                'qr' => 'Códigos QR que reproducen las grabaciones',
-                'download' => 'Descarga y vuelve a escuchar las grabaciones en cualquier momento',
-                'family' => 'Invita a la familia a participar por el camino',
+                'questions' => 'Una pregunta por semana, a su ritmo',
+                'book' => 'Un libro encuadernado en color, con sus fotos',
+                'text' => 'Sus respuestas transcritas y pasadas a limpio',
+                'qr' => 'Un código para escanear por capítulo',
+                'shipping' => 'La entrega en Francia',
+                'family' => 'La familia invitada a escuchar y a reaccionar',
             ],
             'buy' => 'Comprar • :price',
             'guarantees' => [
                 'refund' => 'Garantía de satisfacción o devolución en 30 días',
-                'yours' => 'Tus historias son tuyas para siempre',
+                'yours' => 'Tus grabaciones y tus textos siguen siendo tuyos',
                 'download' => 'Descargables en cualquier momento',
             ],
             'player' => [
@@ -716,29 +716,28 @@ return [
          * face à une image —, et une bande de confiance dessous.
          */
         'access' => [
-            'title' => 'Las historias de tu familia pertenecen a tu familia. Para siempre.',
-            'lede' => ':brand incluye un año completo de relatos, un libro encuadernado y un acceso permanente a los recuerdos que crees. Aunque no renueves.',
+            'title' => 'Te lo quedas todo. Para siempre.',
+            'lede' => ':brand incluye las preguntas, el libro encuadernado y el acceso en línea a todo lo que tu ser querido ha grabado. Las grabaciones originales y los textos se descargan cuando quieras, en formatos que cualquier dispositivo sabe leer.',
             'includes_label' => 'Tu compra incluye',
             'forever' => [
                 'title' => 'Un acceso a tus historias para siempre',
                 'body' => 'Todo lo que tu ser querido grabe y cree durante el año es tuyo, aunque no renueves.',
             ],
             'download' => [
-                'title' => 'Descargas en un clic',
-                'body' => 'Guarda los archivos originales en tu dispositivo cuando quieras. Tus datos nunca se retienen como rehenes.',
+                'title' => 'Todo se descarga',
+                'body' => 'Las grabaciones originales, los textos y el libro en PDF. Los guardas donde quieras, en tu ordenador o en una memoria USB.',
             ],
             'renew' => [
-                'title' => 'Renueva para contar nuevas historias',
+                'title' => 'No es una suscripción',
                 'badge' => 'Opcional',
-                'body' => 'Compra un año más para seguir contando nuevas historias.',
-                'link' => 'Saber más',
+                'body' => 'Pagas una sola vez. Nada se renueva, nada se cobra al final del año. Si quieres empezar otro ciclo, vuelves a comprar, y solo si tú lo decides.',
             ],
-            'banner' => 'Tus historias son tuyas para siempre. Al cabo de un año, renueva solo si quieres grabar nuevas.',
-            'buy' => 'Empezar su libro',
+            'banner' => 'Tus grabaciones siguen siendo tuyas. Al cabo de un año, renuevas solo si quieres seguir contando.',
+            'buy' => 'Empiezo su libro',
             'checks' => [
                 'refund' => 'Garantía de satisfacción o devolución en 30 días',
                 'shipping' => 'Envío gratuito en todos los pedidos en Francia',
-                'book' => 'Incluye un libro encuadernado impreso en color',
+                'payment' => 'Pago seguro',
             ],
             'photo_alt' => 'Un libro abierto por una doble página, y un teléfono que reproduce la grabación del capítulo.',
         ],
@@ -839,12 +838,12 @@ return [
          * n'avons ni étude ni témoignage à mettre derrière.
          */
         'easy' => [
-            'title' => 'Pensado para los abuelos. Aprobado por la familia.',
+            'title' => 'Pensado para los padres. Aprobado por la familia.',
             'lede' => 'Para quienes cuentan, de 9 a 99 años.',
             'marks' => [
                 'no_writing' => 'Nada que escribir.',
                 'no_app' => 'Nada que instalar.',
-                'no_password' => 'Ninguna contraseña.',
+                'no_password' => 'Nada que recordar.',
             ],
             'cta' => 'Probar: solo lleva 60 segundos',
             'photo_alt' => 'Una mujer mayor y su hija se abrazan en un sofá, con el libro encuadernado que acaban de desenvolver entre ellas.',

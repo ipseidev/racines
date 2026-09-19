@@ -540,7 +540,7 @@ return [
 
         // S01. Le héros : la promesse, l'action, la preuve visuelle.
         'hero' => [
-            'title' => 'Un livre de souvenirs qui vous permet d’entendre leur voix pour toujours.',
+            'title' => 'Le livre de ses souvenirs, avec sa voix à chaque chapitre.',
             'lede' => 'Votre proche n’a qu’à raconter. :brand écoute, met son récit par écrit et en fait un livre relié où chaque page porte ses mots et chaque chapitre rejoue sa voix. Rien à écrire, rien à installer : ses histoires, dans un livre qui se transmet.',
             'checks' => [
                 'no_app' => 'Votre proche répond depuis son téléphone : aucune application, aucun compte à créer.',
@@ -572,16 +572,16 @@ return [
         'benefits' => [
             'title' => 'Trois raisons de l’offrir',
             'discover' => [
-                'title' => 'Découvrir ce que vous ne savez pas encore',
-                'body' => 'Les souvenirs d’enfance, les rencontres, les petits détails : donnez-lui l’occasion de vous les raconter.',
+                'title' => 'Apprendre ce qu’on n’a jamais demandé',
+                'body' => 'Les premières amours, les départs, les petites choses qu’on ne raconte pas si personne ne les demande. Une question suffit à les faire venir.',
             ],
             'voice' => [
                 'title' => 'Retrouver sa façon de raconter',
-                'body' => 'Le livre garde le récit. L’enregistrement permet d’en retrouver la voix, les silences et les rires.',
+                'body' => 'Le livre garde le récit. L’enregistrement en rend la voix, les silences et les rires.',
             ],
             'share' => [
-                'title' => 'Partager bien plus qu’un cadeau',
-                'body' => 'Une question chaque semaine ouvre une nouvelle conversation avec votre proche.',
+                'title' => 'Lui donner quelqu’un qui écoute',
+                'body' => 'Le livre est ce qui reste. Ce qui se passe avant, c’est qu’on lui pose une question, et qu’on écoute la réponse en entier.',
             ],
             'quotes_title' => 'Ce qu’en disent les familles',
         ],
@@ -660,7 +660,7 @@ return [
             'rating' => '4,9',
             'stars' => 'Cinq étoiles sur cinq',
             'title' => 'Le livre de vie que l’on peut écouter',
-            'lede' => 'Un an de questions qui transforment les souvenirs racontés par votre proche en un beau livre relié.',
+            'lede' => 'Tout ce qu’on n’a jamais pensé à lui demander, et qu’elle n’a jamais pensé à raconter.',
             'gallery' => [
                 'aria' => 'Vues du livre',
                 'thumb' => 'Voir : :label',
@@ -672,29 +672,29 @@ return [
                 'family' => 'Le livre offert en famille',
             ],
             'read' => [
-                'title' => 'Lisez l’histoire.',
+                'title' => 'Ses mots, pas les nôtres.',
                 'body' => 'Chaque chapitre est une histoire racontée par votre proche, mise au propre par :brand, sans être réécrite.',
             ],
             'hear' => [
-                'title' => 'Écoutez-la de vive voix.',
-                'body' => 'Un QR code sur chaque page rejoue l’enregistrement d’origine. Sa voix. Pour toujours.',
+                'title' => 'Sa voix, à chaque chapitre.',
+                'body' => 'Un code à scanner à chaque chapitre rejoue l’enregistrement d’origine. Sa voix, telle qu’elle l’a dite.',
             ],
             'bound' => [
                 'title' => 'Fait pour durer.',
-                'body' => 'Couverture rigide, tout en couleur, format 20 × 25 cm. Jusqu’à 380 pages. Impression professionnelle sur papier double épaisseur.',
+                'body' => 'Couverture rigide, tout en couleur, format 16 × 24 cm. Impression professionnelle sur papier double épaisseur.',
             ],
             'includes' => [
-                'questions' => '1 an de questions illimitées',
-                'book' => '1 livre imprimé en couleur',
-                'device' => 'Enregistrement depuis n’importe quel appareil',
-                'qr' => 'Des QR codes qui lisent les enregistrements',
-                'download' => 'Téléchargez et réécoutez les enregistrements à tout moment',
-                'family' => 'Invitez la famille à participer en chemin',
+                'questions' => 'Une question par semaine, à son rythme',
+                'book' => 'Un livre relié en couleur, avec ses photos',
+                'text' => 'Ses réponses transcrites et mises au propre',
+                'qr' => 'Un code à scanner par chapitre',
+                'shipping' => 'La livraison en France',
+                'family' => 'La famille invitée à écouter et à réagir',
             ],
             'buy' => 'Acheter • :price',
             'guarantees' => [
                 'refund' => 'Garantie satisfait ou remboursé sous 30 jours',
-                'yours' => 'Vos histoires vous appartiennent pour toujours',
+                'yours' => 'Vos enregistrements et vos textes restent les vôtres',
                 'download' => 'Téléchargeables à tout moment',
             ],
             'player' => [
@@ -716,29 +716,28 @@ return [
          * face à une image —, et une bande de confiance dessous.
          */
         'access' => [
-            'title' => 'Les histoires de votre famille appartiennent à votre famille. Pour toujours.',
-            'lede' => ':brand comprend une année complète de récits, un livre relié et un accès permanent aux souvenirs que vous créez. Même si vous ne renouvelez pas.',
+            'title' => 'Vous gardez tout. Pour toujours.',
+            'lede' => ':brand comprend les questions, le livre relié, et l’accès en ligne à tout ce que votre proche a enregistré. Les enregistrements d’origine et les textes se téléchargent quand vous voulez, dans des formats que n’importe quel appareil sait lire.',
             'includes_label' => 'Votre achat comprend',
             'forever' => [
                 'title' => 'Un accès à vos histoires pour toujours',
                 'body' => 'Tout ce que votre proche enregistre et crée pendant l’année vous appartient, même si vous ne renouvelez pas.',
             ],
             'download' => [
-                'title' => 'Téléchargements en un clic',
-                'body' => 'Enregistrez les fichiers d’origine sur votre appareil quand vous le souhaitez. Vos données ne sont jamais retenues en otage.',
+                'title' => 'Tout se télécharge',
+                'body' => 'Les enregistrements d’origine, les textes et le livre en PDF. Vous les rangez où vous voulez, sur votre ordinateur ou sur une clé.',
             ],
             'renew' => [
-                'title' => 'Renouvelez pour raconter de nouvelles histoires',
+                'title' => 'Ce n’est pas un abonnement',
                 'badge' => 'Facultatif',
-                'body' => 'Achetez une année supplémentaire pour continuer à raconter de nouvelles histoires.',
-                'link' => 'En savoir plus',
+                'body' => 'Vous payez une fois. Rien ne se reconduit, rien n’est prélevé à la fin de l’année. Si vous voulez repartir pour un cycle, vous rachetez, et seulement si vous le décidez.',
             ],
-            'banner' => 'Vos histoires sont à vous pour toujours. Au bout d’un an, renouvelez seulement si vous souhaitez en enregistrer de nouvelles.',
-            'buy' => 'Commencer son livre',
+            'banner' => 'Vos enregistrements restent les vôtres. Au bout d’un an, vous ne renouvelez que si vous voulez continuer à raconter.',
+            'buy' => 'Je commence son livre',
             'checks' => [
                 'refund' => 'Garantie satisfait ou remboursé sous 30 jours',
                 'shipping' => 'Livraison offerte sur toutes les commandes en France',
-                'book' => 'Comprend un livre relié imprimé en couleur',
+                'payment' => 'Paiement sécurisé',
             ],
             'photo_alt' => 'Un livre ouvert sur une double page, et un téléphone qui rejoue l’enregistrement du chapitre.',
         ],
@@ -839,12 +838,12 @@ return [
          * n'avons ni étude ni témoignage à mettre derrière.
          */
         'easy' => [
-            'title' => 'Pensé pour les grands-parents. Approuvé par la famille.',
+            'title' => 'Pensé pour les parents. Approuvé par la famille.',
             'lede' => 'Pour celles et ceux qui racontent, de 9 à 99 ans.',
             'marks' => [
                 'no_writing' => 'Rien à écrire.',
                 'no_app' => 'Rien à installer.',
-                'no_password' => 'Aucun mot de passe.',
+                'no_password' => 'Rien à retenir.',
             ],
             'cta' => 'Essayer : ça prend 60 secondes',
             'photo_alt' => 'Une femme âgée et sa fille s’embrassent sur un canapé, le livre relié qu’elles viennent de déballer posé entre elles.',

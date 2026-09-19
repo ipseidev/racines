@@ -25,7 +25,7 @@ const COLUMNS = [
     },
 ] as const;
 
-const CHECKS = ['refund', 'shipping', 'book'] as const;
+const CHECKS = ['refund', 'shipping', 'payment'] as const;
 
 function Icon({ path, className }: { path: string; className: string }) {
     return (

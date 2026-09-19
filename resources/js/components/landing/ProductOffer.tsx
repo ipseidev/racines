@@ -56,9 +56,9 @@ const BENEFITS = [
 const INCLUDES = [
     'questions',
     'book',
-    'device',
+    'text',
     'qr',
-    'download',
+    'shipping',
     'family',
 ] as const;
 
@@ -66,7 +66,9 @@ const GUARANTEES = [
     { key: 'refund', icon: 'M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3Z' },
     {
         key: 'yours',
-        icon: 'M7 9a3 3 0 0 0 0 6c2 0 3-3 5-3s3 3 5 3a3 3 0 0 0 0-6c-2 0-3 3-5 3s-3-3-5-3Z',
+        // Un cadenas, et plus le signe de l'infini : celui-ci disait « pour
+        // toujours » en dessin, quand le texte à côté ne le dit plus.
+        icon: 'M7 10V7a5 5 0 0 1 10 0v3M6 10h12v10H6V10Z',
     },
     { key: 'download', icon: 'M12 4v11m0 0-4-4m4 4 4-4M5 19h14' },
 ] as const;
