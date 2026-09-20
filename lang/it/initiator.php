@@ -254,6 +254,7 @@ return [
         'rhythm' => 'Il ritmo',
         'cadence' => 'Frequenza delle domande',
         'day' => 'Giorno di invio',
+        'days_hint' => 'Le domande partiranno ogni settimana: :days.',
         'slot' => 'Momento della giornata',
         'address_form' => 'Dare del tu o del lei',
         'locale' => 'Lingua del progetto',

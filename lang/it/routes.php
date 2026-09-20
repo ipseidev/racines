@@ -5,6 +5,7 @@ declare(strict_types=1);
 // Les segments d'adresse des pages publiques en italien (voir lang/fr/routes.php).
 return [
     'home' => '/',
+    'quiz' => 'iniziare',
     'demo' => 'prova',
     'how_it_works' => 'come-funziona',
     'faq' => 'domande-frequenti',

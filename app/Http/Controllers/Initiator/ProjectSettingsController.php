@@ -70,6 +70,9 @@ final readonly class ProjectSettingsController
                 ])
                 ->all()),
             'cadences' => Options::of(Cadence::class),
+            // Les jours d'envoi de chaque rythme : la phrase qui les nomme se
+            // recompose à chaque changement de choix, sans aller-retour.
+            'cadenceDays' => Cadence::dayOffsetsByValue(),
             'slots' => Options::of(PromptSlot::class),
             'addressForms' => Options::of(AddressForm::class),
             // La langue des pages du narrateur et des proches. Elle vit sur le

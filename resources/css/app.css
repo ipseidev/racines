@@ -1202,6 +1202,168 @@
     .legal-prose td {
         @apply border-brand-sand border px-3 py-2 text-left align-top;
     }
+
+    /*
+     * Le livre du tunnel de découverte (T-241).
+     *
+     * Un aplat de couleur avec un dégradé sur le bord ne dit pas « livre » :
+     * il dit « rectangle ». Ce qui le dit tient en cinq choses, et aucune
+     * n'est une image — le poids d'une photographie par teinte serait payé à
+     * chaque visite, et il en faudrait une par prénom.
+     *
+     * La tranche est une **vraie face** : un plan tourné d'un quart de tour
+     * autour de son bord gauche, qu'on voit parce que le livre est lui-même
+     * tourné du bon côté. C'était l'erreur de la première version — elle
+     * penchait dans l'autre sens, et la tranche peinte par-dessus le plat
+     * était géométriquement impossible.
+     *
+     * Puis la gouttière, ce pli du cartonnage à quelques millimètres du dos,
+     * que tout cartonné porte et qu'aucune maquette ne dessine ; la toile,
+     * deux trames d'un pixel ; la lumière, qui vient du haut à gauche et
+     * passe **par-dessus** le titre, comme sur un vrai plat ; et le titre
+     * marqué en creux plutôt qu'imprimé.
+     *
+     * Les trois teintes et les deux ombres du marquage viennent du serveur,
+     * de `BookCover` : l'écran et l'imprimeur tirent du même endroit.
+     */
+    .case-scene {
+        perspective: 1100px;
+        perspective-origin: 58% 42%;
+        /*
+         * Deux ombres et non une : la serrée pose l'objet, la large le
+         * détache du fond. Avec la seule large, le livre flottait ; avec la
+         * seule serrée, il était collé.
+         */
+        filter: drop-shadow(0 3px 4px rgba(38, 33, 28, 0.22))
+            drop-shadow(0 22px 30px rgba(38, 33, 28, 0.26));
+    }
+
+    .case {
+        position: relative;
+        aspect-ratio: 3 / 4.25;
+        transform-style: preserve-3d;
+        /*
+         * Positif : le bord gauche vient vers l'œil, et c'est là qu'est le
+         * dos. Deux degrés de bascule pour poser l'objet sur une table
+         * plutôt que de le faire flotter de face.
+         */
+        transform: rotateY(19deg) rotateX(2deg);
+    }
+
+    .case-front,
+    .case-spine {
+        position: absolute;
+        background: var(--case-tint);
+    }
+
+    .case-front {
+        inset: 0;
+        transform: translateZ(var(--case-thickness));
+        border-radius: 2px 6px 6px 2px;
+        overflow: hidden;
+        /*
+         * L'arête du cartonnage. Invisible sur une toile sombre, elle sauve
+         * les claires : sur le fond crème de la page, l'ivoire n'avait pas de
+         * bord et le livre se dissolvait par la droite.
+         */
+        box-shadow: inset 0 0 0 1px rgba(38, 33, 28, 0.16);
+    }
+
+    /* La tranche prend moins de lumière que le plat, et pas également. */
+    .case-spine {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: var(--case-thickness);
+        transform-origin: left center;
+        transform: rotateY(-90deg);
+        border-radius: 2px 0 0 2px;
+        background:
+            linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.34),
+                rgba(0, 0, 0, 0.1) 55%,
+                rgba(0, 0, 0, 0.24)
+            ),
+            var(--case-tint);
+    }
+
+    /* La gouttière : le pli du cartonnage, le long du dos. */
+    .case-front::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 4.5%;
+        width: 3.5%;
+        background: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.2),
+            rgba(0, 0, 0, 0.03) 60%,
+            rgba(255, 255, 255, 0.06)
+        );
+    }
+
+    /*
+     * La toile et la lumière, **par-dessus** le titre : sur un vrai plat, la
+     * lumière tombe aussi sur le marquage. Les alphas sont bas — au-delà, la
+     * trame salit les lettres au lieu de faire une matière.
+     */
+    .case-front::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            repeating-linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.04) 0 1px,
+                transparent 1px 3px
+            ),
+            repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.03) 0 1px,
+                transparent 1px 3px
+            ),
+            linear-gradient(
+                112deg,
+                rgba(255, 255, 255, 0.15),
+                rgba(255, 255, 255, 0.03) 30%,
+                transparent 56%,
+                rgba(0, 0, 0, 0.14)
+            );
+    }
+
+    /* Le filet aveugle, marqué dans la toile et non imprimé. */
+    .case-rule {
+        position: absolute;
+        inset: 7% 8%;
+        border: 1px solid var(--case-recess);
+        box-shadow:
+            0 1px 0 var(--case-emboss),
+            inset 0 1px 0 var(--case-emboss);
+    }
+
+    .case-marking {
+        text-shadow:
+            0 1px 0 var(--case-emboss),
+            0 -1px 1px var(--case-recess);
+    }
+
+    /* L'ombre portée au sol, décalée du côté opposé à la lumière. */
+    .case-shadow {
+        position: absolute;
+        right: 0;
+        bottom: -3%;
+        left: 8%;
+        height: 6%;
+        background: radial-gradient(
+            50% 50% at 50% 50%,
+            rgba(38, 33, 28, 0.5),
+            transparent 72%
+        );
+        filter: blur(5px);
+    }
 }
 
 @keyframes wave {

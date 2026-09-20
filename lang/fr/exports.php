@@ -21,6 +21,6 @@ return [
 
     'building' => [
         'title' => 'Votre dossier est en cours de préparation',
-        'body' => 'Rassembler les enregistrements prend quelques minutes. Vous recevrez un courriel dès qu’il sera prêt : inutile de rester sur cette page.',
+        'body' => 'Rassembler les enregistrements prend quelques minutes. Vous recevrez un email dès qu’il sera prêt : inutile de rester sur cette page.',
     ],
 ];

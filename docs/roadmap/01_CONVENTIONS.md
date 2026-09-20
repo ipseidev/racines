@@ -255,7 +255,7 @@ aucun de ces échecs n'a jamais désigné un défaut — ils désignaient la
 modification qu'on venait de demander. Ce qui reste couvert :
 
 - que la page **réponde** (`tests/Feature/SmokeTest.php`, `tests/e2e/smoke.spec.ts` : un 200 et un titre, rien sur le contenu) ;
-- que le **vocabulaire interdit** R-11 n'entre pas dans `lang/fr/public.php` (`tests/Unit/ForbiddenVocabularyTest.php`, qui lit les valeurs traduites de tous les fichiers du produit) ;
+- que le **vocabulaire interdit** R-11 n'entre pas dans `lang/fr/public.php` (`tests/Unit/ForbiddenVocabularyTest.php`, qui lit les valeurs traduites de tous les fichiers du produit), et que « courriel » n'y entre pas non plus — le mot de la marque est « email » (§10) ;
 - que ce qui est **derrière** un bouton marche : `WelcomeOfferTest` pour la réduction contre une adresse, `DiscountCodeTest` pour son code, `checkout-pilot.spec.ts` pour le tunnel, `public-a11y.spec.ts` pour le tunnel et les pages légales.
 
 Conséquence assumée : **la relecture d'une page de vente est humaine.** On la
@@ -410,7 +410,8 @@ candidat. La correction vit dans `terminate()` et non au retour de `handle()` :
 - Toutes les chaînes visibles vivent dans `lang/{langue}/*.php`, un fichier par espace : `public.php`, `initiator.php`, `narrator.php`, `family.php`, `notifications.php`, `admin.php`, `errors.php`, `enums.php`, `common.php`, `book.php`, `exports.php`, `auth.php`, `routes.php`.
 - **`lang/fr` est la source.** On ajoute une clé en français d'abord, puis dans les deux autres langues — jamais l'inverse, et jamais dans une seule.
 - `admin.php` n'est **pas** traduit : le back-office est l'outil d'une équipe française, et l'intergiciel `AdminLocale` force le français sur tout le panneau.
-- Les courriels et les SMS restent en français : ils passent par `__()` et suivraient la locale, mais aucun `lang/{it,es}/notifications.php` n'est encore relu par une personne qui parle la langue.
+- **En français, « email » — jamais « courriel »** (19 septembre 2026). Le mot est du français correct et personne ne l'emploie : sur une page lue à 75 ans, un mot qu'on ne dit pas fait hésiter là où il n'y avait rien à comprendre. La règle tient sur tout le produit, **pages de vente comprises**, et `tests/Unit/ForbiddenVocabularyTest.php` la garde. Les commentaires du code restent libres.
+- Les emails et les SMS restent en français : ils passent par `__()` et suivraient la locale, mais aucun `lang/{it,es}/notifications.php` n'est encore relu par une personne qui parle la langue.
 - Les traductions du framework viennent de `laravel-lang/common` : `sail artisan lang:add <langue>` puis `lang:update`. Ne pas les corriger à la main.
 
 ### Le front

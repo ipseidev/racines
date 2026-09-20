@@ -28,6 +28,7 @@ const LAYOUTS: Record<LayoutKey, () => Promise<{ default: Layout }>> = {
     lp: () => import('@/layouts/lp-layout'),
     narrator: () => import('@/layouts/narrator-layout'),
     public: () => import('@/layouts/public-layout'),
+    quiz: () => import('@/layouts/quiz-layout'),
     settings: () => import('@/layouts/settings/layout'),
 };
 

@@ -36,6 +36,7 @@ final class LocalizedRoutes
      */
     public const PAGES = [
         'home',
+        'quiz',
         'how_it_works',
         'books',
         'faq',

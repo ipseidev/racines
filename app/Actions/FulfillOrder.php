@@ -7,6 +7,8 @@ namespace App\Actions;
 use App\Analytics\Track;
 use App\Enums\AddressForm;
 use App\Enums\AnalyticsEvent;
+use App\Enums\BookCover;
+use App\Enums\BookTitle;
 use App\Enums\Cadence;
 use App\Enums\Channel;
 use App\Enums\ConsentChannel;
@@ -228,6 +230,12 @@ final readonly class FulfillOrder
         $project = new Project([
             'offer' => $settings->isPrevente() ? Offer::Prevente : Offer::Pilot,
             'address_form' => AddressForm::from((string) $draft->value('address_form', AddressForm::Vous->value)),
+            // La couverture choisie au tunnel de découverte. Elle attend ici
+            // des mois : le livre n'existe qu'à la fin de la collecte, et
+            // `RenderBookHtml` vient la lire au moment du BAT.
+            'book_cover' => BookCover::tryFrom((string) $draft->value('book_cover', '')) ?? BookCover::default(),
+            'book_title' => BookTitle::tryFrom((string) $draft->value('book_title', '')) ?? BookTitle::default(),
+            'book_title_custom' => $draft->value('book_title_custom'),
             // La langue du tunnel où l'achat vient de se faire : c'est celle
             // que la personne qui offre a lue, donc celle qu'elle a choisie
             // pour sa famille. Elle se change ensuite dans les réglages.

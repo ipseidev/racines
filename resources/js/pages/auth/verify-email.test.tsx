@@ -6,9 +6,9 @@ import VerifyEmail from './verify-email';
 const catalogue = {
     common: {},
     auth: {
-        pages: { verify_email: { title: 'Vérifiez votre courriel' } },
+        pages: { verify_email: { title: 'Vérifiez votre email' } },
         actions: {
-            resend: 'Renvoyer le courriel',
+            resend: 'Renvoyer l’email',
             waiting: 'Un instant…',
             logout: 'Se déconnecter',
         },
@@ -54,7 +54,7 @@ describe('la page de confirmation d’adresse', () => {
     /*
      * Les deux motifs de T-240 : la personne n'a rien demandé, elle a cliqué
      * un lien qui ne marchait plus. La page doit expliquer lequel des deux,
-     * parce que le remède diffère — attendre le nouveau courriel, ou changer
+     * parce que le remède diffère — attendre le nouvel email, ou changer
      * de compte.
      */
     it('explique un lien périmé, et dit que le remplaçant est parti', () => {

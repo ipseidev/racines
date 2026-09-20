@@ -47,6 +47,7 @@ final class Seo
      */
     private const BY_ROUTE = [
         'home' => 'home',
+        'quiz' => 'quiz',
         'how_it_works' => 'how',
         'books' => 'books',
         'faq' => 'faq',
@@ -89,6 +90,7 @@ final class Seo
      */
     public const SITEMAP = [
         'home',
+        'quiz',
         'how_it_works',
         'books',
         'faq',

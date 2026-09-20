@@ -10,6 +10,7 @@ import { IconButton } from '@/components/space/IconButton';
 import { Check, Pause, Plus, Trash } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
 import { useT } from '@/hooks/useT';
+import { promptDays, uncapitalize } from '@/lib/cadence';
 import { stagger } from '@/lib/motion';
 
 type Option = { value: string; label: string };
@@ -35,6 +36,8 @@ type Props = {
     };
     lexicon: LexiconEntry[];
     cadences: Option[];
+    /** Les jours d'envoi de chaque rythme, en décalage depuis le jour choisi. */
+    cadenceDays: Record<string, number[]>;
     slots: Option[];
     addressForms: Option[];
     locales: Option[];
@@ -53,6 +56,7 @@ export default function Settings({
     project,
     lexicon,
     cadences,
+    cadenceDays,
     slots,
     addressForms,
     locales,
@@ -76,6 +80,24 @@ export default function Settings({
     const pause = useForm({ weeks: 2 });
 
     const [saved, setSaved] = useState(false);
+
+    // Les jours que le rythme choisi occupe : le champ d'à côté n'en demande
+    // qu'un, et deux questions par semaine en occupent deux.
+    const days = promptDays(
+        cadenceDays[rhythm.data.cadence] ?? [0],
+        rhythm.data.prompt_day,
+    );
+
+    const sendingDays =
+        days.length > 1
+            ? t('initiator.settings.days_hint', {
+                  days: fmt.list(
+                      days.map((day) =>
+                          uncapitalize(t(`initiator.days.${day}`)),
+                      ),
+                  ),
+              })
+            : undefined;
 
     useEffect(() => {
         if (!saved) {
@@ -146,6 +168,7 @@ export default function Settings({
 
                         <SelectField
                             label={t('initiator.settings.day')}
+                            hint={sendingDays}
                             options={DAYS.map((day) => ({
                                 value: String(day),
                                 label: t(`initiator.days.${day}`),

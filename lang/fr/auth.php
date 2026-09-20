@@ -26,14 +26,14 @@ return [
         ],
         'forgot_password' => [
             'title' => 'Mot de passe oublié',
-            'description' => 'Donnez votre courriel : nous vous envoyons un lien pour en choisir un nouveau.',
+            'description' => 'Donnez votre email : nous vous envoyons un lien pour en choisir un nouveau.',
         ],
         'reset_password' => [
             'title' => 'Nouveau mot de passe',
             'description' => 'Choisissez un mot de passe que vous retiendrez.',
         ],
         'verify_email' => [
-            'title' => 'Vérifiez votre courriel',
+            'title' => 'Vérifiez votre email',
             'description' => 'Nous venons de vous envoyer un lien. Cliquez dessus pour confirmer votre adresse, puis revenez ici.',
         ],
         'two_factor_challenge' => [
@@ -48,7 +48,7 @@ return [
 
     'fields' => [
         'name' => 'Votre nom',
-        'email' => 'Votre courriel',
+        'email' => 'Votre email',
         'password' => 'Mot de passe',
         'new_password' => 'Nouveau mot de passe',
         'password_confirmation' => 'Confirmez le mot de passe',
@@ -64,14 +64,14 @@ return [
         'register' => 'Créer mon compte',
         'send_link' => 'Envoyer le lien',
         'reset' => 'Enregistrer le mot de passe',
-        'resend' => 'Renvoyer le courriel',
+        'resend' => 'Renvoyer l’email',
         'logout' => 'Se déconnecter',
         'confirm' => 'Confirmer',
         'continue' => 'Continuer',
         'passkey' => 'Me connecter avec une clé d’accès',
         'passkey_confirm' => 'Confirmer avec une clé d’accès',
         'passkey_waiting' => 'Vérification…',
-        'or_email' => 'ou avec un courriel',
+        'or_email' => 'ou avec un email',
         'or_password' => 'ou avec le mot de passe',
         'waiting' => 'Un instant…',
     ],

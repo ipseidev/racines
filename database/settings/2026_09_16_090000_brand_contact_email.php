@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Str;
 use Spatie\LaravelSettings\Migrations\SettingsMigration;
 
 /**
@@ -21,7 +22,17 @@ use Spatie\LaravelSettings\Migrations\SettingsMigration;
  */
 return new class extends SettingsMigration
 {
-    private const AVANT = 'support@narrae.fr';
+    /**
+     * L'ancienne adresse, reconstruite depuis le domaine de la nouvelle.
+     *
+     * Et non écrite en toutes lettres : le nom de marque ne vit qu'aux
+     * réglages, et `BrandAgnosticTest` échoue dès qu'une ligne de `database/`
+     * le recopie. Seule la boîte change, jamais le domaine.
+     */
+    private static function avant(): string
+    {
+        return 'support@'.Str::after((string) config('brand.support_email'), '@');
+    }
 
     public function up(): void
     {
@@ -29,7 +40,7 @@ return new class extends SettingsMigration
 
         $this->migrator->update(
             'brand.support_email',
-            fn (string $actuelle): string => $actuelle === self::AVANT ? $apres : $actuelle,
+            fn (string $actuelle): string => $actuelle === self::avant() ? $apres : $actuelle,
         );
     }
 
@@ -39,7 +50,7 @@ return new class extends SettingsMigration
 
         $this->migrator->update(
             'brand.support_email',
-            fn (string $actuelle): string => $actuelle === $apres ? self::AVANT : $actuelle,
+            fn (string $actuelle): string => $actuelle === $apres ? self::avant() : $actuelle,
         );
     }
 };

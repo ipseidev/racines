@@ -17,6 +17,7 @@ import { custom as metaCustom, standard as metaStandard } from '@/lib/meta';
 const META_STANDARD: Record<string, string> = {
     lp_buy_click: 'InitiateCheckout',
     welcome_offer_claimed: 'Lead',
+    quiz_email_submitted: 'Lead',
 };
 
 /**

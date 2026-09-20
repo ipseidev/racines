@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Books;
 
+use App\Enums\BookCover;
 use App\Models\Book;
 use App\Models\BookChapter;
 use App\Models\Story;
@@ -63,7 +64,7 @@ final readonly class RenderBookHtml
             'title' => $this->title($book),
             'subtitle' => $this->subtitle($book),
             'brandName' => Brand::nameSafe(),
-            'css' => $this->css(),
+            'css' => $this->css($book->project->book_cover),
             'pagedJs' => $this->pagedJs(),
             'foreword' => $this->paragraphs((string) $book->foreword) ?: null,
             'chapters' => $chapters,
@@ -187,11 +188,33 @@ final readonly class RenderBookHtml
      * écrit à leur place, et un livre de famille n'appartient pas à son
      * éditeur. Le nom de marque n'est le titre que faute de mieux.
      */
+    /**
+     * Le titre de la couverture, composé depuis la formule choisie à l'achat.
+     *
+     * Composé ici et pas enregistré au tunnel : le prénom peut avoir été
+     * corrigé entre-temps — une coquille trouvée le premier mois —, et un
+     * titre figé garderait la coquille jusqu'à l'impression.
+     *
+     * Sans prénom, la marque : une couverture doit porter quelque chose.
+     */
     private function title(Book $book): string
     {
-        $firstName = $book->project->primaryNarrator?->first_name;
+        $project = $book->project;
+        // Sans `??` : l'analyse statique tient la relation pour non nulle —
+        // un projet a un narrateur principal — et signalerait le `?->` comme
+        // inutile. Il ne l'est pas : un projet peut n'en avoir aucun le temps
+        // d'un test ou d'une reprise, et le rendu ne doit pas s'y arrêter.
+        $firstName = trim((string) $project->primaryNarrator?->first_name);
 
-        return $firstName === null || trim($firstName) === '' ? Brand::nameSafe() : $firstName;
+        if ($firstName === '') {
+            return Brand::nameSafe();
+        }
+
+        return $project->book_title->compose(
+            $firstName,
+            $project->book_title_custom,
+            $project->locale->language(),
+        );
     }
 
     /**
@@ -213,8 +236,8 @@ final readonly class RenderBookHtml
         return __('book.collected', ['year' => $start->format('Y')]);
     }
 
-    /** Le CSS du gabarit, polices incrustées. */
-    private function css(): string
+    /** Le CSS du gabarit, polices incrustées et couverture teintée. */
+    private function css(BookCover $cover): string
     {
         $css = (string) file_get_contents(resource_path('css/book-classic.css'));
         $faces = '';
@@ -233,10 +256,23 @@ final readonly class RenderBookHtml
             );
         }
 
+        /*
+         * La teinte choisie à l'achat, des mois plus tôt (T-241). Posée en
+         * variables plutôt qu'en remplaçant les règles : la feuille reste
+         * lisible et modifiable par un typographe, et le jour où une seconde
+         * maquette arrivera, elle lira les mêmes trois variables.
+         */
+        $tint = sprintf(
+            ":root{--cover-background:%s;--cover-ink:%s;--cover-muted-ink:%s}\n",
+            $cover->background(),
+            $cover->ink(),
+            $cover->mutedInk(),
+        );
+
         // Les `@font-face` en tête : une police déclarée après son usage
         // n'est pas appliquée au premier rendu, et Paged.py pagine sur ce
         // premier rendu — le livre sortirait composé dans la police de repli.
-        return $faces.$css;
+        return $faces.$tint.$css;
     }
 
     /** Paged.js, lu dans `node_modules` plutôt que servi par une URL. */

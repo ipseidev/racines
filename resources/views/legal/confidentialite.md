@@ -13,17 +13,17 @@ données est joignable à {{ support_email }} avec la mention « DPO » en objet
 
 ## 2. Ce que nous traitons, et pourquoi
 
-| Ce que nous traitons                                                                          | Pourquoi                                                                          | Base légale                                                     |
-| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Nom, prénom, courriel, mot de passe de l'acheteur                                             | Tenir son compte, facturer, l'informer                                            | Exécution du contrat                                            |
-| Prénom, lien de parenté, courriel ou téléphone de la personne invitée, fournis par l'acheteur | Lui envoyer l'invitation, et rien d'autre                                         | Intérêt légitime, avec les garde-fous de l'article 3            |
-| Enregistrements de la voix                                                                    | Construire le récit et le livre                                                   | Consentement, recueilli séparément                              |
-| Transcriptions et textes mis au propre                                                        | Rendre les récits lisibles par les proches                                        | Consentement, recueilli séparément                              |
-| Récits pouvant révéler la santé, les convictions, les origines ou l'intimité                  | Ce sont les récits eux-mêmes ; nous ne pouvons pas les traiter sans les conserver | Consentement explicite aux catégories particulières             |
-| Photos déposées                                                                               | Illustrer les récits et le livre                                                  | Consentement du déposant, qui garantit ses droits               |
-| Adresse postale                                                                               | Livrer le livre                                                                   | Exécution du contrat                                            |
-| Journaux techniques, mesures d'usage                                                          | Faire fonctionner, sécuriser et améliorer le service                              | Intérêt légitime                                                |
-| Enregistrements d'appels, si l'option téléphone est souscrite                                 | Recueillir le récit par téléphone                                                 | Consentement, recueilli à l'oral en début d'appel et journalisé |
+| Ce que nous traitons                                                                       | Pourquoi                                                                          | Base légale                                                     |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Nom, prénom, email, mot de passe de l'acheteur                                             | Tenir son compte, facturer, l'informer                                            | Exécution du contrat                                            |
+| Prénom, lien de parenté, email ou téléphone de la personne invitée, fournis par l'acheteur | Lui envoyer l'invitation, et rien d'autre                                         | Intérêt légitime, avec les garde-fous de l'article 3            |
+| Enregistrements de la voix                                                                 | Construire le récit et le livre                                                   | Consentement, recueilli séparément                              |
+| Transcriptions et textes mis au propre                                                     | Rendre les récits lisibles par les proches                                        | Consentement, recueilli séparément                              |
+| Récits pouvant révéler la santé, les convictions, les origines ou l'intimité               | Ce sont les récits eux-mêmes ; nous ne pouvons pas les traiter sans les conserver | Consentement explicite aux catégories particulières             |
+| Photos déposées                                                                            | Illustrer les récits et le livre                                                  | Consentement du déposant, qui garantit ses droits               |
+| Adresse postale                                                                            | Livrer le livre                                                                   | Exécution du contrat                                            |
+| Journaux techniques, mesures d'usage                                                       | Faire fonctionner, sécuriser et améliorer le service                              | Intérêt légitime                                                |
+| Enregistrements d'appels, si l'option téléphone est souscrite                              | Recueillir le récit par téléphone                                                 | Consentement, recueilli à l'oral en début d'appel et journalisé |
 
 Nous ne faisons **aucun profilage**, **aucune publicité** et **aucune décision
 automatisée** ayant un effet sur vous.
@@ -77,7 +77,7 @@ données :
 | Hébergement applicatif et base de données | Union européenne                              | L'ensemble des données du service                                        |
 | Stockage des médias                       | Union européenne, juridiction restreinte      | Enregistrements et photos                                                |
 | Envoi des SMS                             | Union européenne                              | Numéro et texte du message                                               |
-| Envoi des courriels                       | Union européenne                              | Adresse et contenu du message                                            |
+| Envoi des emails                          | Union européenne                              | Adresse et contenu du message                                            |
 | Transcription automatique                 | Union européenne                              | L'audio le temps de la transcription                                     |
 | Mise au propre du texte                   | États-Unis, avec clauses contractuelles types | Le texte, sans identifiant de la personne                                |
 | Paiement                                  | Union européenne                              | Coordonnées de facturation ; nous ne voyons jamais votre numéro de carte |

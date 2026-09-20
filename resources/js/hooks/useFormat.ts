@@ -5,6 +5,7 @@ import {
     formatDate,
     formatDateTime,
     formatDuration,
+    formatList,
     formatLongDate,
     formatPercent,
     formatPrice,
@@ -40,6 +41,8 @@ export function useFormat() {
             longDate: (iso: string) => formatLongDate(iso, current),
             /** « 9 h », « 18 h 30 » en français ; « 9:00 », « 18:30 » ailleurs. */
             time: (value: string) => formatTime(value, current),
+            /** « mardi et vendredi », « mardi, jeudi et samedi ». */
+            list: (items: string[]) => formatList(items, current),
             /** « de Marie », « d'Odette », « di Marco ». */
             of: (name: string) => ofName(name, current),
             phone: (e164: string) => nationalPhone(e164),

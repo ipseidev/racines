@@ -8,6 +8,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalController;
 use App\Http\Controllers\Public\ManifestController;
+use App\Http\Controllers\Public\QuizController;
 use App\Http\Controllers\Public\RobotsController;
 use App\Http\Controllers\Public\SitemapController;
 use App\Http\Controllers\Public\WelcomeOfferController;
@@ -44,6 +45,16 @@ LocalizedRoutes::register(function (Locale $locale): void {
     Route::get($uri('how_it_works'), [LandingController::class, 'howItWorks'])->name('how_it_works');
     Route::get($uri('faq'), [LandingController::class, 'faq'])->name('faq');
     Route::get($uri('books'), [LandingController::class, 'books'])->name('books');
+
+    /*
+     * Le tunnel de découverte (T-240).
+     *
+     * Une seule adresse pour ses quatorze écrans **et** pour l'aperçu : celui-ci
+     * n'est pas une page, c'est l'état du quiz une fois répondu, lu dans le
+     * brouillon. Une seconde adresse aurait donné une page indexable qui ne
+     * montre rien à qui la découvre, et un `hreflang` vers du vide.
+     */
+    Route::get($uri('quiz'), [QuizController::class, 'show'])->name('quiz');
 
     // Pages légales, rendues depuis des fichiers markdown : elles sont relues
     // par un conseil, et un conseil relit un texte, pas un composant React.
@@ -101,6 +112,20 @@ Route::get('/site.webmanifest', ManifestController::class)
 // comme un ensemble (T-225). robots.txt le déclare.
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
+
+/*
+ * Les écritures du tunnel de découverte : une adresse, la même dans toutes
+ * les langues, comme celles du tunnel d'achat. Leur langue vient du témoin.
+ */
+Route::post('/commencer', [QuizController::class, 'store'])->name('quiz.store');
+
+Route::delete('/commencer', [QuizController::class, 'restart'])->name('quiz.restart');
+
+// L'adresse laissée sous l'aperçu. Bornée comme celle de l'accueil : une
+// liste de contacts est une cible.
+Route::post('/commencer/adresse', [QuizController::class, 'email'])
+    ->middleware('throttle:welcome-offer')
+    ->name('quiz.email');
 
 // La fenêtre de bienvenue : une adresse contre un code de réduction (T-141).
 // Bornée par adresse et par IP : une liste de contacts est une cible.

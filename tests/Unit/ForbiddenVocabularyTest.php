@@ -138,6 +138,89 @@ it('n’emploie aucune tournure culpabilisante dans les messages', function (str
     'avant qu’il ne soit trop tard',
 ]);
 
+/*
+|--------------------------------------------------------------------------
+| Le mot de la marque : « email », jamais « courriel »
+|--------------------------------------------------------------------------
+|
+| Décision du 19 septembre 2026. « Courriel » est du français correct et
+| personne ne l'emploie : sur une page lue par quelqu'un de 75 ans, un mot
+| qu'on ne dit pas fait hésiter là où il n'y avait rien à comprendre.
+|
+| Ce n'est pas une promesse intenable, donc pas du R-11 — d'où un test à part.
+| Son périmètre est en revanche **plus large** : les pages de vente y sont
+| soumises, alors que R-11 les laisse au fondateur. Un mot de marque ne change
+| pas de valeur selon la page où il tombe.
+|
+| Les commentaires restent libres, ici comme pour R-11 : celui qui explique la
+| règle doit pouvoir citer le mot qu'elle bannit.
+|
+*/
+
+/**
+ * Toutes les valeurs d'un fichier de langue, sections de vente comprises.
+ *
+ * @return list<string>
+ */
+function everyTranslatedString(string $file): array
+{
+    $values = require $file;
+
+    if (! is_array($values)) {
+        return [];
+    }
+
+    $flat = [];
+
+    array_walk_recursive($values, function (mixed $value) use (&$flat): void {
+        if (is_string($value)) {
+            $flat[] = $value;
+        }
+    });
+
+    return $flat;
+}
+
+/**
+ * Une vue Blade sans ses commentaires, qui eux ont le droit de citer le mot.
+ *
+ * Deux formes à retirer, et non une : le commentaire Blade, et le bloc de
+ * commentaire PHP des en-têtes `@php` — c'est là que vit l'explication du
+ * thème des messages, et elle parle forcément de ce qu'elle habille.
+ */
+function bladeWithoutComments(string $contents): string
+{
+    $withoutBlade = (string) preg_replace('/\{\{--.*?--\}\}/s', '', $contents);
+
+    return (string) preg_replace('#/\*.*?\*/#s', '', $withoutBlade);
+}
+
+it('écrit « email » et jamais « courriel » dans les textes visibles en français', function (): void {
+    $offenders = [];
+
+    foreach (productLangFiles('fr') as $file) {
+        foreach (everyTranslatedString($file) as $string) {
+            if (mb_stripos($string, 'courriel') !== false) {
+                $offenders[] = basename($file).' : « '.mb_substr($string, 0, 60).' »';
+            }
+        }
+    }
+
+    // Les pages légales sont lues par le client : rien à en retirer. Les vues
+    // Blade perdent leurs commentaires, pas leur texte.
+    foreach (Finder::create()->files()->in(base_path('resources/views'))->name(['*.md', '*.blade.php']) as $file) {
+        $contents = str_ends_with($file->getFilename(), '.blade.php')
+            ? bladeWithoutComments($file->getContents())
+            : $file->getContents();
+
+        if (mb_stripos($contents, 'courriel') !== false) {
+            $offenders[] = $file->getRelativePathname();
+        }
+    }
+
+    expect($offenders)->toBe([], '« courriel » est banni : on écrit « email ». '.implode(', ', $offenders));
+});
+
 it('parcourt bien les valeurs, et non le contenu brut des fichiers', function (): void {
     // Garde-fou du garde-fou : si `translatedStrings` rendait un tableau vide,
     // les deux tests ci-dessus passeraient sans rien vérifier.

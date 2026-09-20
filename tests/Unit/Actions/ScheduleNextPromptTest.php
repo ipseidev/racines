@@ -86,6 +86,111 @@ it('espace de quinze jours quand la cadence le demande', function (): void {
     expect(schedule($project)?->setTimezone('Europe/Paris')->toDateString())->toBe('2026-09-23');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Les rythmes intra-semaine
+|--------------------------------------------------------------------------
+|
+| Le jour choisi n'est plus le seul jour d'envoi mais le premier : deux
+| questions par semaine ajoutent un jour trois jours plus loin, trois en
+| ajoutent deux, écartés de deux jours. Ce qui compte et que ces tests
+| gardent, c'est qu'aucune paire ne se retrouve à vingt-quatre heures
+| d'écart — deux questions collées se lisent comme une relance.
+|
+*/
+
+it('pose la seconde question de la semaine trois jours après la première', function (): void {
+    // Mardi 8 septembre 2026, 9 h 05 : la question du mardi vient de partir.
+    $this->travelTo(CarbonImmutable::parse('2026-09-08 09:05', 'Europe/Paris'));
+
+    $project = Project::factory()->create([
+        'prompt_day' => 2,           // mardi
+        'prompt_slot' => PromptSlot::Morning,
+        'cadence' => Cadence::TwiceWeekly,
+        'next_prompt_at' => now(),
+    ]);
+
+    $paris = schedule($project)?->setTimezone('Europe/Paris');
+
+    // Vendredi, et non mardi prochain.
+    expect($paris?->toDateString())->toBe('2026-09-11')
+        ->and($paris?->hour)->toBe(9);
+});
+
+it('revient au jour choisi après la seconde question de la semaine', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-09-11 09:05', 'Europe/Paris'));
+
+    $project = Project::factory()->create([
+        'prompt_day' => 2,
+        'prompt_slot' => PromptSlot::Morning,
+        'cadence' => Cadence::TwiceWeekly,
+        'next_prompt_at' => now(),
+    ]);
+
+    expect(schedule($project)?->setTimezone('Europe/Paris')->toDateString())
+        ->toBe('2026-09-15');
+});
+
+it('étale trois questions par semaine sans jamais en coller deux', function (
+    string $depuis,
+    string $attendu,
+): void {
+    $this->travelTo(CarbonImmutable::parse($depuis.' 09:05', 'Europe/Paris'));
+
+    $project = Project::factory()->create([
+        'prompt_day' => 2,           // mardi, jeudi, samedi
+        'prompt_slot' => PromptSlot::Morning,
+        'cadence' => Cadence::ThriceWeekly,
+        'next_prompt_at' => now(),
+    ]);
+
+    expect(schedule($project)?->setTimezone('Europe/Paris')->toDateString())
+        ->toBe($attendu);
+})->with([
+    'mardi → jeudi' => ['2026-09-08', '2026-09-10'],
+    'jeudi → samedi' => ['2026-09-10', '2026-09-12'],
+    'samedi → mardi suivant' => ['2026-09-12', '2026-09-15'],
+]);
+
+it('n’envoie jamais deux questions coup sur coup quand le jour change', function (): void {
+    // La question du mercredi vient de partir, et le jour passe au jeudi.
+    $this->travelTo(CarbonImmutable::parse('2026-09-09 09:05', 'Europe/Paris'));
+
+    $project = Project::factory()->create([
+        'prompt_day' => 4,           // jeudi, à partir de maintenant
+        'prompt_slot' => PromptSlot::Morning,
+        'cadence' => Cadence::Weekly,
+        'next_prompt_at' => now(),
+    ]);
+
+    $next = schedule($project);
+
+    // Jeudi **prochain**, pas demain : l'écart minimal d'une cadence
+    // hebdomadaire est de sept jours, et il prime sur le jour choisi.
+    expect($next?->setTimezone('Europe/Paris')->toDateString())->toBe('2026-09-17')
+        ->and($next?->greaterThanOrEqualTo(now()->addDays(7)))->toBeTrue();
+});
+
+it('ne saute pas un cycle pour les quelques minutes qui séparent l’envoi du créneau', function (): void {
+    /*
+     * Le cœur du calcul en jours. La question est partie à 9 h 05 — le
+     * planificateur tourne après l'envoi — et le créneau du mercredi suivant
+     * est 9 h 00. Comparé à l'heure près, il est « en avance » de cinq
+     * minutes, et l'échéance partait une semaine plus loin.
+     */
+    $this->travelTo(CarbonImmutable::parse('2026-09-09 09:05', 'Europe/Paris'));
+
+    $project = Project::factory()->create([
+        'prompt_day' => 3,
+        'prompt_slot' => PromptSlot::Morning,
+        'cadence' => Cadence::Weekly,
+        'next_prompt_at' => now(),
+    ]);
+
+    expect(schedule($project)?->setTimezone('Europe/Paris')->toDateString())
+        ->toBe('2026-09-16');
+});
+
 it('respecte une pause et ne planifie rien avant sa fin', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-09 09:05', 'Europe/Paris'));
 

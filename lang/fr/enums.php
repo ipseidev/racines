@@ -39,6 +39,8 @@ return [
 
     'cadence' => [
         'weekly' => 'Une question par semaine',
+        'twice_weekly' => 'Deux questions par semaine',
+        'thrice_weekly' => 'Trois questions par semaine',
         'biweekly' => 'Une question tous les quinze jours',
     ],
 
@@ -60,8 +62,8 @@ return [
 
     'channel' => [
         'sms' => 'SMS',
-        'email' => 'Courriel',
-        'both' => 'SMS et courriel',
+        'email' => 'Email',
+        'both' => 'SMS et email',
         'phone_operator' => 'Téléphone (opérateur)',
     ],
 
@@ -223,7 +225,7 @@ return [
         'declared_sharing' => 'Partage de mes histoires dès qu’elles sont prêtes',
         'mandate_delegation' => 'Délégation de la validation à un proche',
         'early_service_start' => 'Démarrage immédiat du service numérique',
-        'marketing_email' => 'Réception de nos nouvelles par courriel',
+        'marketing_email' => 'Réception de nos nouvelles par email',
     ],
 
     'consent_status' => [
@@ -361,6 +363,115 @@ return [
     'currency' => [
         'EUR' => 'Euro',
         'CHF' => 'Franc suisse',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Le tunnel de découverte (T-240)
+    |--------------------------------------------------------------------------
+    |
+    | Les réponses des dix questions. Elles sont à la première personne quand
+    | elles sont un choix qu'on tape (« Ma mère »), et à la deuxième quand
+    | elles servent de sujet à la phrase d'un écran (« votre mère »).
+    |
+    | Le possessif français s'accorde avec l'objet, pas avec le possesseur :
+    | « ses convictions » convient à un grand-père comme à une grand-mère. On
+    | s'appuie sur cette règle partout plutôt que d'écrire deux jeux de textes.
+    |
+    */
+
+    /*
+     * Les six teintes de couverture. Le nom se lit sous la pastille, pour
+     * qui ne distingue pas les couleurs — et parce qu'une matière se nomme.
+     */
+    /*
+     * Les libellés courts du choix de titre : ce qu'on tape, pas ce qui
+     * s'imprime. La formule complète vit dans `book.title` et se voit sur la
+     * couverture, en direct.
+     */
+    'book_title' => [
+        'first_name' => 'Son prénom, seul',
+        'story' => 'L’histoire de…',
+        'stories' => 'Les histoires de…',
+        'life' => 'La vie de…',
+        'memories' => 'Les souvenirs de…',
+        'custom' => 'Un titre à moi',
+    ],
+
+    'book_cover' => [
+        'ivory' => 'Ivoire',
+        'sand' => 'Sable',
+        'forest' => 'Vert forêt',
+        'terracotta' => 'Terre cuite',
+        'midnight' => 'Bleu nuit',
+        'plum' => 'Prune',
+    ],
+
+    'quiz_relationship' => [
+        'mother' => 'Ma mère',
+        'father' => 'Mon père',
+        'grandmother' => 'Ma grand-mère',
+        'grandfather' => 'Mon grand-père',
+        'partner' => 'Mon conjoint, ma conjointe',
+        'other' => 'Quelqu’un d’autre',
+        'myself' => 'Pour moi — c’est mon histoire',
+    ],
+
+    'quiz_subject' => [
+        'mother' => 'votre mère',
+        'father' => 'votre père',
+        'grandmother' => 'votre grand-mère',
+        'grandfather' => 'votre grand-père',
+        'partner' => 'la personne qui partage votre vie',
+        'other' => 'cette personne',
+        'myself' => 'vous',
+    ],
+
+    'quiz_age_band' => [
+        'under_60' => 'Moins de 60 ans',
+        'sixties' => 'Entre 60 et 69 ans',
+        'seventies' => 'Entre 70 et 79 ans',
+        'eighties' => 'Entre 80 et 89 ans',
+        'ninety_plus' => '90 ans ou plus',
+    ],
+
+    'quiz_distance' => [
+        'same_town' => 'Dans la même ville',
+        'few_hours' => 'À une heure ou deux',
+        'far_away' => 'À l’autre bout du pays',
+        'abroad' => 'Dans un autre pays',
+    ],
+
+    'quiz_storyteller_style' => [
+        'endless' => 'Intarissable : on ne l’arrête plus',
+        'needs_nudge' => 'Il faut lancer la conversation, mais après ça vient',
+        'nothing_to_tell' => '« Oh, il n’y a rien à raconter »',
+        'never_tried' => 'On n’a jamais vraiment essayé',
+    ],
+
+    'quiz_occasion' => [
+        'birthday' => 'Son anniversaire',
+        'christmas' => 'Noël',
+        'parents_day' => 'La fête des mères, ou des pères',
+        'no_occasion' => 'Non, c’est juste le bon moment',
+    ],
+
+    /*
+     * Les mêmes thèmes que le corpus, dits à quelqu'un qui hésite à acheter
+     * plutôt qu'à quelqu'un qui administre des questions. « Son enfance »
+     * plutôt que « Enfance ».
+     */
+    'quiz_theme' => [
+        'childhood' => 'Son enfance',
+        'family_origins' => 'D’où vient la famille',
+        'youth' => 'Sa jeunesse, ses vingt ans',
+        'work' => 'Son métier',
+        'love' => 'L’amour, la rencontre, les enfants',
+        'places' => 'Les lieux, les maisons, le pays quitté',
+        'joys' => 'Ses joies, ses fous rires',
+        'hardships' => 'Les épreuves traversées',
+        'beliefs_values' => 'Ses convictions, ce qui compte à ses yeux',
+        'legacy' => 'Ses conseils, ce qui doit rester',
     ],
 
 ];

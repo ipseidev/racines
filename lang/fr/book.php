@@ -22,6 +22,22 @@ return [
     // Ce qu'on cherche sur un livre de famille trente ans plus tard.
     'collected' => 'Récits recueillis en :year',
 
+    /*
+     * Les formules de titre de couverture (T-241).
+     *
+     * `:of` arrive déjà élidé — « de Jeanne », « d'Odette » —, composé par
+     * `Names::of()` côté serveur et par son jumeau `ofName()` côté écran. Une
+     * formule ne colle donc jamais « de » elle-même : elle recevrait
+     * « L'histoire de Odette ».
+     */
+    'title' => [
+        'first_name' => ':name',
+        'story' => 'L’histoire :of',
+        'stories' => 'Les histoires :of',
+        'life' => 'La vie :of',
+        'memories' => 'Les souvenirs :of',
+    ],
+
     'colophon' => [
         // La mention D-8 : une durée annoncée, jamais « pour toujours »
         // (R-11). Le pack hors-ligne est la contrepartie de cette durée.

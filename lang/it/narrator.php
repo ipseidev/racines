@@ -474,6 +474,7 @@ return [
             'email_required' => 'Ci serve un indirizzo per inviarle le e-mail.',
             'cadence' => 'Con che frequenza?',
             'day' => 'Che giorno?',
+            'days_hint' => 'Le sue domande arriveranno ogni settimana: :days.',
             'slot' => 'In che momento della giornata?',
             'address_form' => 'Preferisce che le diamo del “lei” o del “tu”?',
         ],

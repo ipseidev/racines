@@ -69,7 +69,7 @@ return [
         'greeting' => 'Bonjour :name,',
         'button' => 'Télécharger mes données',
         'signature' => 'À bientôt, l’équipe :brand.',
-        'sms' => ':brand : vos données sont prêtes. Le lien vous a été envoyé par courriel.',
+        'sms' => ':brand : vos données sont prêtes. Le lien vous a été envoyé par email.',
         'expiry' => 'Ce lien fonctionne pendant :days jours. Passé ce délai, vous pouvez en demander un nouveau depuis votre espace, sans frais et autant de fois que vous le voulez.',
         'keep' => 'Conservez ce dossier ailleurs que sur un seul ordinateur : une clé USB rangée chez quelqu’un d’autre vaut mieux qu’une sauvegarde dont on oublie le mot de passe.',
         'ready' => [

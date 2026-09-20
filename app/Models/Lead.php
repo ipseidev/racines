@@ -44,6 +44,9 @@ final class Lead extends Model
 
     public const SOURCE_LANDING = 'landing_popup';
 
+    /** L'aperçu de fin du tunnel de découverte. */
+    public const SOURCE_QUIZ = 'quiz_preview';
+
     /** Un an, comme le leader l'annonce : « valid all year long ». */
     public const CODE_LIFETIME_DAYS = 365;
 

@@ -18,6 +18,7 @@ export type LocaleOption = {
  */
 export type LocalizedUrls = {
     home: string;
+    quiz: string;
     how_it_works: string;
     books: string;
     faq: string;

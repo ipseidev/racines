@@ -207,6 +207,34 @@ export function formatTime(time: string, locale: LocaleTag = 'fr'): string {
 }
 
 /**
+ * Une liste en toutes lettres : « mardi et vendredi », « mardi, jeudi et samedi ».
+ *
+ * `Intl.ListFormat` manque encore sur quelques Safari que la matrice du bloc
+ * 04 couvre, et une liste rendue « undefined » vaut moins qu'une liste
+ * séparée par des virgules : le repli joint à la main, avec la conjonction
+ * de la langue. Les trois que nous servons s'écrivent de la même façon —
+ * virgules, puis un mot avant le dernier terme.
+ */
+const CONJUNCTION: Record<string, string> = { fr: 'et', it: 'e', es: 'y' };
+
+export function formatList(items: string[], locale: LocaleTag = 'fr'): string {
+    if (items.length < 2) {
+        return items[0] ?? '';
+    }
+
+    if (typeof Intl.ListFormat === 'function') {
+        return new Intl.ListFormat(tagOf(locale), {
+            style: 'long',
+            type: 'conjunction',
+        }).format(items);
+    }
+
+    const word = CONJUNCTION[languageOf(locale)] ?? CONJUNCTION.fr;
+
+    return `${items.slice(0, -1).join(', ')} ${word} ${items[items.length - 1]}`;
+}
+
+/**
  * « de Marie », « d'Odette », « di Marco », « de Ana ».
  *
  * Le français élide devant une voyelle ou un h muet ; l'italien fait de même

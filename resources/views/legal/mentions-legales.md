@@ -12,7 +12,7 @@ Immatriculation au Registre national des entreprises : SIREN {{ legal_siren }}.
 SIRET du siège : {{ legal_siret }}.
 Numéro de TVA intracommunautaire : {{ legal_vat }}.
 
-Courriel : {{ support_email }}
+Email : {{ support_email }}
 
 ## Directeur de la publication
 

@@ -23,6 +23,11 @@
 # Les valeurs d'origine du `.env` sont sauvegardées dans .laradev.state et
 # restaurées par larakill. Laisser LINKS_DOMAIN pointer sur un tunnel mort
 # casserait tous les liens à jeton au test suivant.
+#
+# Le `.env` ne suffit pourtant pas : le domaine court est un **réglage**,
+# editable dans l'administration, et `config('brand.links_domain')` n'en est
+# que la valeur de semis. Le script corrige donc aussi la table des réglages,
+# et larakill la remet en place.
 
 set -euo pipefail
 
@@ -45,7 +50,7 @@ for arg in "$@"; do
         --clamav)  WITH_CLAMAV=1 ;;
         --fresh)   FRESH=1 ;;
         -h|--help)
-            sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+            sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
             printf '\nOptions :\n'
             printf '  --tunnel   Deux tunnels Cloudflare + .env corrigé (téléphones, webhooks)\n'
             printf '  --clamav   Démarre aussi l’antivirus (premier lancement : ~3 min)\n'
@@ -88,6 +93,20 @@ env_set() {
     else
         printf '\n%s=%s\n' "${key}" "${value}" >> "${ENV_FILE}"
     fi
+}
+
+# Le domaine court des liens vit dans la **table des réglages**, jamais lu
+# depuis le `.env` une fois la base semée : `App\Support\Links` passe par
+# `Brand::linksDomain()`. Corriger le seul `.env` laissait donc tous les liens
+# à jeton pointer sur le tunnel de la session précédente — mort — pendant que
+# la page d'accueil, elle, répondait 200. Le symptôme est un lien qui ne
+# s'ouvre pas sur le téléphone, et l'heure se passe à chercher côté tunnel.
+brand_links_domain() {
+    "${SAIL}" artisan tinker --execute="echo app(\App\Settings\BrandSettings::class)->links_domain;" 2>/dev/null | tr -d '\r\n'
+}
+
+set_brand_links_domain() {
+    "${SAIL}" artisan tinker --execute="\$s = app(\App\Settings\BrandSettings::class); \$s->links_domain = '$1'; \$s->save();" >/dev/null 2>&1
 }
 
 APP_PORT="$(env_value APP_PORT)"
@@ -157,6 +176,7 @@ if [[ ${USE_TUNNEL} -eq 1 ]]; then
         printf 'LINKS_DOMAIN=%s\n' "$(env_value LINKS_DOMAIN)"
         printf 'R2_PUBLIC_ENDPOINT=%s\n' "$(env_value R2_PUBLIC_ENDPOINT)"
         printf 'ANTIVIRUS_SCANNER=%s\n' "$(env_value ANTIVIRUS_SCANNER)"
+        printf 'BRAND_LINKS_DOMAIN=%s\n' "$(brand_links_domain)"
     } > "${STATE_FILE}"
 
     log "Ouverture du tunnel de l'application…"
@@ -187,6 +207,13 @@ if [[ ${FRESH} -eq 1 ]]; then
     "${SAIL}" artisan migrate:fresh --seed
 else
     "${SAIL}" artisan migrate --force >/dev/null
+fi
+
+# Le réglage s'écrit **après** la base : un `--fresh` vient de la recréer, et
+# le semis y aurait remis l'ancienne valeur.
+if [[ ${USE_TUNNEL} -eq 1 ]]; then
+    log "Domaine court des liens → ${APP_TUNNEL#https://}"
+    set_brand_links_domain "${APP_TUNNEL#https://}"
 fi
 
 # --- 6. Le bandeau -----------------------------------------------------------

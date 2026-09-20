@@ -60,7 +60,7 @@ pilote, nous accompagnons prioritairement un proche.
 ## 5. Comment la commande se forme
 
 La commande est formée lorsque le paiement est accepté. Vous recevez alors une
-confirmation par courriel qui récapitule ce que vous avez commandé et ce que
+confirmation par email qui récapitule ce que vous avez commandé et ce que
 vous avez accepté.
 
 Le service ne démarre réellement qu'après l'acceptation de la personne qui
@@ -92,7 +92,7 @@ intégralement, sans discussion.
 ## 7. Nos engagements
 
 Ces phrases sont des engagements contractuels. Elles figurent à l'identique sur
-notre site, dans nos courriels et ici.
+notre site, dans nos emails et ici.
 
 - **La validation est explicite, jamais tacite** : rien n'est visible des
   proches sans l'accord de la personne qui a raconté. Un silence, un délai

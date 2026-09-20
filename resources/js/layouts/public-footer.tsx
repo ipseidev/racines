@@ -44,6 +44,7 @@ const LINK = 'text-brand-muted hover:text-brand inline-block py-1 text-base';
  */
 const discoverOf = (urls: LocalizedUrls): Item[] => [
     { href: urls.home, key: 'public.footer.home', inertia: true },
+    { href: urls.quiz, key: 'public.footer.quiz', inertia: true },
     { href: urls.how_it_works, key: 'public.landing.nav.how', inertia: true },
     { href: urls.books, key: 'public.landing.nav.book', inertia: true },
     {

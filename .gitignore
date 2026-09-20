@@ -55,3 +55,5 @@ test-results/
 # Environnement (Laravel ignore déjà .env)
 .env.testing
 !.env.example
+# Feuille des tests sur téléphone, fabriquée par session (URL de tunnel)
+/public/test-telephone.html

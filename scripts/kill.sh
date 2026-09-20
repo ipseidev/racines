@@ -6,7 +6,9 @@
 #   1. Les tunnels Cloudflare, côté hôte.
 #   2. Le superviseur « concurrently », côté hôte.
 #   3. Les processus longs dans le conteneur : pail, vite (+ esbuild), serve.
-#   4. La restauration du `.env` si dev.sh l'avait corrigé pour un tunnel.
+#   4. La restauration du `.env` — et du domaine court des liens, qui vit
+#      dans la table des réglages et non dans le `.env` — si dev.sh les
+#      avait corrigés pour un tunnel.
 #   5. L'attente que le port de Vite soit réellement libre — Docker ne
 #      propage pas les signaux de façon fiable, et la fermeture d'une socket
 #      TCP peut traîner au-delà d'un simple sleep.
@@ -69,6 +71,11 @@ fi
 if [[ ${KEEP_ENV} -eq 0 && -f "${STATE_FILE}" ]]; then
     log "Restauration des valeurs d'origine du .env…"
 
+    # Lu avant la boucle, qui consomme le fichier puis l'efface. Cette
+    # valeur-là ne va pas dans le `.env` : elle retourne dans la table des
+    # réglages, plus bas.
+    BRAND_DOMAIN="$(grep -E '^BRAND_LINKS_DOMAIN=' "${STATE_FILE}" | head -1 | cut -d= -f2- || true)"
+
     while IFS='=' read -r key value; do
         [[ -z "${key}" ]] && continue
 
@@ -82,6 +89,16 @@ if [[ ${KEEP_ENV} -eq 0 && -f "${STATE_FILE}" ]]; then
     # Sans ce vidage, la configuration en cache garderait l'URL d'un tunnel
     # mort et tous les liens à jeton répondraient 404.
     [[ -x "${SAIL}" ]] && "${SAIL}" artisan config:clear >/dev/null 2>&1 || true
+
+    # Le domaine court est un réglage, pas une variable d'environnement : sans
+    # cette remise en place il resterait sur le tunnel qu'on vient de fermer,
+    # et la session suivante fabriquerait des liens morts sans rien signaler
+    # — la page d'accueil répond, le lien à jeton non.
+    if [[ -n "${BRAND_DOMAIN:-}" ]] && [[ -x "${SAIL}" ]] \
+        && "${SAIL}" ps --services --filter status=running 2>/dev/null | grep -q '^laravel.test$'; then
+        log "Restauration du domaine court des liens : ${BRAND_DOMAIN}"
+        "${SAIL}" artisan tinker --execute="\$s = app(\App\Settings\BrandSettings::class); \$s->links_domain = '${BRAND_DOMAIN}'; \$s->save();" >/dev/null 2>&1 || true
+    fi
 fi
 
 # --- 3. Dans le conteneur ----------------------------------------------------

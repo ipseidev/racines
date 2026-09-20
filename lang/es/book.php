@@ -22,6 +22,15 @@ return [
     // Ce qu'on cherche sur un livre de famille trente ans plus tard.
     'collected' => 'Relatos recogidos en :year',
 
+    /* Voir lang/fr/book.php : `:of` arrive déjà composé (« de Ana »). */
+    'title' => [
+        'first_name' => ':name',
+        'story' => 'La historia :of',
+        'stories' => 'Las historias :of',
+        'life' => 'La vida :of',
+        'memories' => 'Los recuerdos :of',
+    ],
+
     'colophon' => [
         // La mention D-8 : une durée annoncée, jamais « pour toujours »
         // (R-11). Le pack hors-ligne est la contrepartie de cette durée.

@@ -92,6 +92,10 @@ return [
             'title' => 'Il libro di una vita che si può ascoltare',
             'description' => 'Un anno di domande, le storie della persona cara messe in bella copia, e un libro rilegato a colori con un codice QR per capitolo che riproduce la sua voce.',
         ],
+        'quiz' => [
+            'title' => 'Da dove cominciare: due minuti di domande',
+            'description' => 'Dieci domande per capire se il libro fa al caso della persona a cui tieni, e uscirne con il piano delle prime settimane: il messaggio che riceverà e le sue prime domande.',
+        ],
         'checkout' => [
             'title' => 'Regala il libro',
             'description' => 'Il percorso d’acquisto di :brand.',
@@ -571,6 +575,7 @@ return [
         // S03. Trois raisons de l'offrir. Nos phrases, sans guillemets.
         'benefits' => [
             'title' => 'Tre motivi per regalarlo',
+            'quiz' => 'Da dove cominciare',
             'discover' => [
                 'title' => 'Scoprire quello che non si è mai chiesto',
                 'body' => 'I primi amori, le partenze, le piccole cose che non si raccontano se nessuno le chiede. Basta una domanda per farle riaffiorare.',
@@ -1676,6 +1681,150 @@ return [
         'unsupported' => 'Questo browser non è in grado di registrare. Prova con Safari su iPhone o Chrome su Android.',
         'refused' => 'Il microfono non è stato autorizzato. Si può rimediare: nelle impostazioni del browser, autorizza il microfono per questo sito, poi ricarica la pagina.',
         'cta' => 'Regalalo a una persona cara',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Le tunnel de découverte (T-240) — voir lang/fr/public.php
+    |--------------------------------------------------------------------------
+    */
+
+    'quiz' => [
+        'of' => 'Schermata :step di :total',
+        'progress' => 'Avanzamento del questionario',
+        'back' => 'Torna indietro',
+        'next' => 'Continua',
+        'sending' => 'Un attimo…',
+        'choose' => 'Scegli: :label',
+
+        'relationship' => [
+            'title' => 'Di chi vorresti conservare la storia?',
+            'lede' => 'Dieci domande, due minuti. Niente da installare, e nessun indirizzo richiesto prima della fine.',
+            'self_note' => 'Vuoi raccontare la tua storia? Il percorso è un po’ diverso: ti ci portiamo subito.',
+        ],
+
+        'voice' => [
+            'title' => 'La voce conta quanto le parole',
+            'body' => 'Fra dieci anni, quello che i tuoi figli vorranno riascoltare non sarà solo la storia: sarà il modo in cui :subject la racconta. Il modo di ridere a metà frase. Le espressioni che esistono solo nella vostra famiglia.',
+            'listen' => 'Venti secondi di una registrazione vera, fatta con un telefono qualunque.',
+        ],
+
+        'age' => [
+            'title' => 'Quanti anni ha :subject?',
+            'hint' => 'Non si chiedono le stesse cose a chi è nato nel 1935 e a chi è nato nel 1955. Serve a questo.',
+        ],
+
+        'distance' => [
+            'title' => 'Quanto siete lontani l’uno dall’altra?',
+        ],
+
+        'closeness' => [
+            'far_title' => 'Si riattacca sempre prima di aver fatto la domanda',
+            'far_body' => 'Ci si dice che ci sarà tempo la prossima volta, e la prossima volta si parla del tempo e dei nipoti. Una domanda a settimana è un appuntamento che non dipende più da chi chiama chi.',
+            'near_title' => 'Si crede di avere tempo perché ci si vede',
+            'near_body' => 'È proprio quando ci si vede spesso che non si chiede mai niente: le domande grandi sembrano troppo solenni in mezzo a un pranzo della domenica. Per iscritto, una domanda si risponde senza cerimonie, la sera, quando viene voglia.',
+        ],
+
+        'themes' => [
+            'title' => 'Di cosa vorresti che :subject parlasse?',
+            'hint' => 'Almeno tre. Potrai cambiare tutto dopo, e aggiungerne strada facendo.',
+            'remaining' => 'Ancora un tema|Ancora :count temi',
+            'chosen' => ':count tema scelto|:count temi scelti',
+        ],
+
+        'storyteller' => [
+            'title' => 'Quando :subject racconta, è piuttosto…',
+        ],
+
+        'nothing' => [
+            'title' => '« Non c’è niente da raccontare » è la frase più comune',
+            'body' => 'È quasi sempre falsa, e quasi sempre per lo stesso motivo: nessuno ha fatto la domanda giusta. « Raccontami la tua vita » non dà niente. « Che odore aveva la casa della tua infanzia? » dà venti minuti.',
+            'body_2' => 'Le nostre sessanta domande sono scritte per questo. Sono precise, cominciano dalle più facili, e diventano intime solo quando l’abitudine è presa.',
+        ],
+
+        'tech' => [
+            'title' => ':subject se la cava con il telefono?',
+            'hint' => 'Rispondi con franchezza: è questa risposta a decidere cosa ti proporremo dopo.',
+        ],
+
+        'install' => [
+            'title' => 'Non c’è niente da installare',
+            'body' => 'Nessuna app, nessun account, nessuna password. :subject riceve un messaggio con un link, lo tocca, tocca un pulsante grande e parla. Se la registrazione si interrompe — una telefonata, un campanello — riprende da dove era rimasta. E se un giorno scrivere è più semplice che parlare, la pagina lo permette lo stesso.',
+            'help_title' => 'Allora è meglio saperlo adesso',
+            'help_body' => 'Tutto si regge su un link aperto da un telefono: se quel gesto non è acquisito, meglio parlarne prima di comprare che dopo. Due cose lo rendono comunque possibile. Qualcuno della famiglia apre il link e resta accanto per la prima registrazione — dopo, il gesto è preso. Oppure chiamiamo noi, ogni settimana, all’ora concordata: questa opzione è a pagamento e i posti sono limitati; te la proporremo all’ordine se sarà ancora aperta.',
+        ],
+
+        'channel' => [
+            'title' => 'Come si raggiunge :subject con più sicurezza?',
+            'hint' => 'È da lì che partiranno l’invito e poi una domanda a settimana.',
+        ],
+
+        'name' => [
+            'title' => 'Come si chiama :subject?',
+            'first_name' => 'Il suo nome',
+            'first_name_placeholder' => 'Giovanna',
+            'nickname' => 'E tu, come la chiami?',
+            'nickname_placeholder' => 'Nonna',
+            'nickname_hint' => 'Mamma, nonna, o semplicemente il suo nome. È quella parola che finirà nel messaggio — non la nostra.',
+        ],
+
+        'cover' => [
+            'title' => 'Ecco il libro di :name',
+            'hint' => 'Scegli il titolo e la copertina. Potrai ancora cambiarli prima della stampa.',
+            'titles' => 'Titoli possibili',
+            'custom' => 'Il tuo titolo',
+            'custom_placeholder' => 'Le domeniche da Giovanna',
+            'custom_hint' => 'Ottanta caratteri al massimo: oltre, la riga esce troppo piccola per leggersi sul dorso.',
+            'swatches' => 'Tinte della copertina',
+            'note' => 'Copertina rigida, stampa a colori, un QR per capitolo per riascoltare la sua voce.',
+        ],
+
+        'occasion' => [
+            'title' => 'È per un’occasione?',
+            'date' => 'Che giorno deve partire l’invito?',
+            'date_hint' => 'Data e ora restano modificabili fino al pagamento.',
+        ],
+
+        'preview' => [
+            'eyebrow' => 'Il tuo piano',
+            'title' => 'Ecco cosa riceverà :name',
+            'when' => 'Il :date alle :time, via :channel.',
+            'from' => 'Da: :sender',
+
+            'book_label' => 'Alla fine, questo',
+            'book_note' => 'Copertina :cover, un capitolo per storia, un QR che rimette la sua voce.',
+
+            'invitation_label' => 'Prima, l’invito',
+            'invitation' => ':name, :inviter ti regala un libro dei tuoi ricordi con :brand. Per scoprirlo: :link. Questo link non chiederà mai una password né un pagamento.',
+            'inviter_placeholder' => '[il tuo nome]',
+            'link_placeholder' => '[il tuo link]',
+            'invitation_note' => 'È il messaggio vero, parola per parola. Manca solo il tuo nome. L’invito non chiede nulla: propone di scoprire.',
+
+            'first_label' => 'Poi, appena :name avrà accettato, la sua prima domanda',
+            'first_note' => 'Non è un esempio: è la domanda che il corpus sceglie per :name, in base ai temi che hai appena spuntato. Sempre una domanda facile per prima — una domanda intima, la prima settimana, fa riattaccare.',
+
+            'next_label' => 'E le successive',
+            'next_note' => 'Una a settimana, nei tuoi temi. Potrai riordinarle, toglierne, e scriverne di nuove.',
+
+            'themes_label' => 'I tuoi temi',
+            'empty' => 'Il corpus di domande non è ancora caricato su questo ambiente: il piano comparirà appena lo sarà.',
+
+            'validation_note' => 'Nulla di ciò che :name registra è visibile prima che l’abbia riletto e approvato. La decisione è sua — non tua, e non nostra.',
+
+            'cta' => 'Regala questo libro a :name',
+            'restart' => 'Rifai il questionario',
+
+            'email' => [
+                'title' => 'Preferisci pensarci?',
+                'body' => 'Lascia il tuo indirizzo: ti inviamo il codice di benvenuto. Il piano resta qui — questa pagina si riaprirà sulle tue risposte da questo dispositivo.',
+                'label' => 'Il tuo indirizzo email',
+                'submit' => 'Ricevi il mio codice',
+                'news' => 'Voglio ricevere anche le vostre notizie',
+                'news_hint' => 'Rare, e con un link per smettere in ogni messaggio. Questa casella non è mai obbligatoria.',
+                'privacy' => 'Il tuo indirizzo serve a inviarti questo codice, e a nient’altro se la casella qui sopra resta vuota.',
+                'saved' => 'Fatto. Il codice è nella tua casella — guarda anche nello spam.',
+            ],
+        ],
     ],
 
     'checkout' => [

@@ -72,7 +72,14 @@ body {
     height: 240mm;
     padding: 0 22mm;
     text-align: center;
-    background: #faf7f2;
+    /*
+     * Les trois teintes de la couverture viennent du projet, et sont posées
+     * par `RenderBookHtml` en tête de feuille. Les valeurs de repli sont
+     * l'ivoire — celle qu'avaient toutes les couvertures avant qu'on laisse
+     * le choix —, pour qu'une feuille lue hors de ce rendu montre encore
+     * quelque chose de juste.
+     */
+    background: var(--cover-background, #faf7f2);
 }
 
 .cover-title {
@@ -80,11 +87,12 @@ body {
     font-size: 30pt;
     line-height: 1.15;
     margin: 0 0 10mm;
+    color: var(--cover-ink, #2a231e);
 }
 
 .cover-subtitle {
     font-size: 13pt;
-    color: #5a5049;
+    color: var(--cover-muted-ink, #5a5049);
     margin: 0;
 }
 
@@ -94,7 +102,7 @@ body {
     font-size: 9pt;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #5a5049;
+    color: var(--cover-muted-ink, #5a5049);
 }
 
 /* Avant-propos et sommaire ============================================== */

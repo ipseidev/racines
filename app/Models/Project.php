@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Concerns\StoresDatesWithOffset;
 use App\Enums\AddressForm;
+use App\Enums\BookCover;
+use App\Enums\BookTitle;
 use App\Enums\Cadence;
 use App\Enums\Locale;
 use App\Enums\Offer;
@@ -34,6 +36,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property ProjectStatus $status
  * @property Offer $offer
  * @property AddressForm $address_form
+ * @property BookCover $book_cover
+ * @property BookTitle $book_title
+ * @property string|null $book_title_custom
  * @property Locale $locale
  * @property Cadence $cadence
  * @property int $prompt_day
@@ -81,12 +86,18 @@ final class Project extends Model
         'timezone' => 'Europe/Paris',
         'locale' => Locale::French->value,
         'validation_variant' => ValidationVariant::Immediate->value,
+        // Posée ici et pas seulement en base : le défaut de colonne ne
+        // s'applique qu'à l'insertion, et `RenderBookHtml` lit `book_cover`
+        // sur des instances qui viennent parfois d'ailleurs.
+        'book_cover' => 'ivory',
+        'book_title' => 'first_name',
     ];
 
     /** @var list<string> */
     protected $fillable = [
         'cohort_id', 'status', 'offer', 'address_form', 'cadence', 'prompt_day',
         'prompt_slot', 'timezone', 'locale', 'gift_message', 'gift_send_at', 'validation_variant',
+        'book_cover', 'book_title', 'book_title_custom',
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -258,6 +269,8 @@ final class Project extends Model
             'status' => ProjectStatus::class,
             'offer' => Offer::class,
             'address_form' => AddressForm::class,
+            'book_cover' => BookCover::class,
+            'book_title' => BookTitle::class,
             'locale' => Locale::class,
             'cadence' => Cadence::class,
             'prompt_slot' => PromptSlot::class,

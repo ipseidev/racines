@@ -79,6 +79,10 @@ describe('PublicFooter', () => {
                 .map((link) => link.getAttribute('href')),
         ).toEqual([
             '/',
+            // Le tunnel de découverte, juste après l'accueil : une page au
+            // plan de site que rien ne lie depuis le site est une page que
+            // Google trouve et qu'un visiteur non.
+            '/commencer',
             '/comment-ca-marche',
             '/nos-livres',
             '/#notre-histoire',

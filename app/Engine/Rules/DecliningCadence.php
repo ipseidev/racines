@@ -33,6 +33,10 @@ use Illuminate\Support\Collection;
  *
  * Hebdomadaire, et une proposition toutes les huit semaines : deux fois de
  * suite, ce serait insister sur un refus.
+ *
+ * Elle regarde tous les rythmes sauf le quinzomadaire, qui est déjà l'issue
+ * qu'elle propose : on ne demande pas à quelqu'un de ralentir vers le rythme
+ * qu'il a déjà.
  */
 final class DecliningCadence extends BaseRule
 {
@@ -57,7 +61,11 @@ final class DecliningCadence extends BaseRule
         return Project::query()
             ->with('primaryNarrator')
             ->where('status', ProjectStatus::Active->value)
-            ->where('cadence', Cadence::Weekly->value)
+            // Tout rythme au-dessus du quinzomadaire : depuis qu'il en existe
+            // deux et trois par semaine, viser le seul `weekly` aurait laissé
+            // sans issue ceux qui reçoivent le plus de questions — c'est-à-dire
+            // exactement ceux que le rythme peut épuiser.
+            ->whereIn('cadence', Cadence::atLeastWeeklyValues())
             ->get()
             ->filter(function (Project $project) use ($recentFrom, $previousFrom): bool {
                 $recent = self::recordedBetween($project, $recentFrom, null);

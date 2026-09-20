@@ -39,6 +39,8 @@ return [
 
     'cadence' => [
         'weekly' => 'Una pregunta por semana',
+        'twice_weekly' => 'Dos preguntas por semana',
+        'thrice_weekly' => 'Tres preguntas por semana',
         'biweekly' => 'Una pregunta cada quince días',
     ],
 
@@ -361,6 +363,96 @@ return [
     'currency' => [
         'EUR' => 'Euro',
         'CHF' => 'Franco suizo',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Le tunnel de découverte (T-240)
+    |--------------------------------------------------------------------------
+    |
+    | Voir lang/fr/enums.php. Les réponses tapées sont à la première personne,
+    | les sujets de phrase à la deuxième.
+    |
+    */
+
+    'book_title' => [
+        'first_name' => 'Solo su nombre',
+        'story' => 'La historia de…',
+        'stories' => 'Las historias de…',
+        'life' => 'La vida de…',
+        'memories' => 'Los recuerdos de…',
+        'custom' => 'Un título mío',
+    ],
+
+    'book_cover' => [
+        'ivory' => 'Marfil',
+        'sand' => 'Arena',
+        'forest' => 'Verde bosque',
+        'terracotta' => 'Terracota',
+        'midnight' => 'Azul noche',
+        'plum' => 'Ciruela',
+    ],
+
+    'quiz_relationship' => [
+        'mother' => 'Mi madre',
+        'father' => 'Mi padre',
+        'grandmother' => 'Mi abuela',
+        'grandfather' => 'Mi abuelo',
+        'partner' => 'Mi pareja',
+        'other' => 'Otra persona',
+        'myself' => 'Para mí — es mi historia',
+    ],
+
+    'quiz_subject' => [
+        'mother' => 'tu madre',
+        'father' => 'tu padre',
+        'grandmother' => 'tu abuela',
+        'grandfather' => 'tu abuelo',
+        'partner' => 'la persona que comparte tu vida',
+        'other' => 'esa persona',
+        'myself' => 'ti',
+    ],
+
+    'quiz_age_band' => [
+        'under_60' => 'Menos de 60 años',
+        'sixties' => 'Entre 60 y 69 años',
+        'seventies' => 'Entre 70 y 79 años',
+        'eighties' => 'Entre 80 y 89 años',
+        'ninety_plus' => '90 años o más',
+    ],
+
+    'quiz_distance' => [
+        'same_town' => 'En la misma ciudad',
+        'few_hours' => 'A una o dos horas',
+        'far_away' => 'Al otro lado del país',
+        'abroad' => 'En otro país',
+    ],
+
+    'quiz_storyteller_style' => [
+        'endless' => 'No hay quien la pare cuando empieza',
+        'needs_nudge' => 'Hay que arrancar la conversación, después sale solo',
+        'nothing_to_tell' => '« Uy, si no tengo nada que contar »',
+        'never_tried' => 'Nunca lo hemos intentado de verdad',
+    ],
+
+    'quiz_occasion' => [
+        'birthday' => 'Su cumpleaños',
+        'christmas' => 'Navidad',
+        'parents_day' => 'El Día de la Madre, o del Padre',
+        'no_occasion' => 'No, es simplemente el buen momento',
+    ],
+
+    'quiz_theme' => [
+        'childhood' => 'Su infancia',
+        'family_origins' => 'De dónde viene la familia',
+        'youth' => 'Su juventud, sus veinte años',
+        'work' => 'Su oficio',
+        'love' => 'El amor, el encuentro, los hijos',
+        'places' => 'Los lugares, las casas, el país que dejó',
+        'joys' => 'Sus alegrías, sus risas',
+        'hardships' => 'Las pruebas que ha atravesado',
+        'beliefs_values' => 'Sus convicciones, lo que le importa',
+        'legacy' => 'Sus consejos, lo que debe quedar',
     ],
 
 ];

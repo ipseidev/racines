@@ -16,7 +16,7 @@ return [
         'saved_help' => 'Les pages publiques et les messages utilisent déjà ces valeurs.',
 
         'identity' => 'Identité',
-        'identity_help' => 'Le nom affiché partout : pages publiques, courriels, SMS, livre.',
+        'identity_help' => 'Le nom affiché partout : pages publiques, emails, SMS, livre.',
         'product_name' => 'Nom du produit',
         'short_name' => 'Nom court',
         'tagline' => 'Promesse',
@@ -47,7 +47,7 @@ return [
         'contacts_help' => 'Un seul domaine court et stable pour tous les liens envoyés aux narrateurs.',
         'links_domain' => 'Domaine des liens',
         'links_domain_help' => 'Annoncé dès l’invitation. Ne jamais utiliser de raccourcisseur.',
-        'support_email' => 'Courriel du support',
+        'support_email' => 'Email du support',
         'support_phone' => 'Téléphone du support',
         'sms_sender_id' => 'Expéditeur des SMS',
         'sms_sender_id_help' => '3 à 11 caractères alphanumériques, au moins une lettre. Constant, pour être reconnu.',
@@ -410,7 +410,7 @@ return [
         'title' => 'Les comptes',
         'singular' => 'Compte',
         'name' => 'Nom',
-        'email' => 'Courriel',
+        'email' => 'Email',
         'role' => 'Rôle',
         'mfa' => 'Double authentification',
         'actions' => [

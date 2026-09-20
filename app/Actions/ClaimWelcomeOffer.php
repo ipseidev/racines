@@ -28,18 +28,27 @@ final readonly class ClaimWelcomeOffer
 {
     /**
      * @param  array{ip?: string|null, user_agent?: string|null}  $context
+     * @param  string  $source  D'où vient l'adresse : la fenêtre de l'accueil,
+     *                          ou l'aperçu du tunnel de découverte. Gardée
+     *                          parce qu'une adresse laissée après dix
+     *                          questions ne vaut pas la même chose qu'une
+     *                          adresse laissée en trois secondes.
      */
-    public function handle(string $email, bool $wantsNews, array $context = []): Lead
-    {
+    public function handle(
+        string $email,
+        bool $wantsNews,
+        array $context = [],
+        string $source = Lead::SOURCE_LANDING,
+    ): Lead {
         $settings = app(PilotSettings::class);
 
-        $lead = DB::transaction(function () use ($email, $wantsNews, $context, $settings): Lead {
+        $lead = DB::transaction(function () use ($email, $wantsNews, $context, $settings, $source): Lead {
             $lead = Lead::query()->where('email_hash', Lead::hashEmail($email))->lockForUpdate()->first();
 
             if (! $lead instanceof Lead) {
                 $lead = new Lead([
                     'email' => trim($email),
-                    'source' => Lead::SOURCE_LANDING,
+                    'source' => $source,
                     // Copié, jamais relu : changer le réglage ne change pas
                     // ce qu'on a promis à quelqu'un.
                     'discount_percent' => $settings->welcome_offer_discount_percent,
@@ -75,6 +84,7 @@ final readonly class ClaimWelcomeOffer
 
         Log::info('welcome_offer.claimed', [
             'lead_id' => $lead->id,
+            'source' => $lead->source,
             'wants_news' => $wantsNews,
             'code_status' => $lead->codeStatus(),
         ]);

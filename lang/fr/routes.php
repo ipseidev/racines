@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 return [
     'home' => '/',
+    'quiz' => 'commencer',
     'demo' => 'essai',
     'how_it_works' => 'comment-ca-marche',
     'faq' => 'questions-frequentes',

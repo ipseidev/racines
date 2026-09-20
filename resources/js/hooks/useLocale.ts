@@ -18,6 +18,7 @@ const FALLBACK: LocaleProp = {
     locales: [],
     urls: {
         home: '/',
+        quiz: '/commencer',
         how_it_works: '/comment-ca-marche',
         books: '/nos-livres',
         faq: '/questions-frequentes',

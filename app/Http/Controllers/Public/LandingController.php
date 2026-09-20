@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Public;
 use App\Features\PreventePrice;
 use App\Http\Controllers\Public\WelcomeOfferController as WelcomeOffer;
 use App\Settings\PilotSettings;
+use App\Support\AudioSample;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
@@ -220,16 +221,7 @@ final class LandingController
      */
     private static function heroSample(): ?array
     {
-        $path = (string) config('product.landing.hero_sample');
-
-        if ($path === '' || ! is_file(public_path($path))) {
-            return null;
-        }
-
-        return [
-            'src' => '/'.ltrim($path, '/'),
-            'disclosed' => (bool) config('product.landing.hero_sample_disclosed'),
-        ];
+        return AudioSample::hero();
     }
 
     /**

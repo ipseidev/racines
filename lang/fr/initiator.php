@@ -237,9 +237,9 @@ return [
             'waiting' => 'Un instant…',
             'name' => 'Son prénom',
             'relationship' => 'Son lien de parenté',
-            'email' => 'Son courriel',
+            'email' => 'Son email',
             'phone' => 'Son numéro de téléphone',
-            'contact_hint' => 'Un courriel ou un numéro suffit.',
+            'contact_hint' => 'Un email ou un numéro suffit.',
             'can_contribute' => 'L’autoriser à ajouter des photos et des souvenirs',
             'submit' => 'Envoyer l’invitation',
         ],
@@ -254,6 +254,7 @@ return [
         'rhythm' => 'Le rythme',
         'cadence' => 'Fréquence des questions',
         'day' => 'Jour d’envoi',
+        'days_hint' => 'Les questions partiront chaque semaine : :days.',
         'slot' => 'Moment de la journée',
         'address_form' => 'Forme d’adresse',
         'locale' => 'Langue du projet',
@@ -460,7 +461,7 @@ return [
 
         'export' => [
             'title' => 'Télécharger mes données',
-            'help' => 'Nous préparons un dossier complet — les voix, les textes, les photos, le livre s’il existe. Vous recevrez un courriel dès qu’il est prêt : cela prend quelques minutes.',
+            'help' => 'Nous préparons un dossier complet — les voix, les textes, les photos, le livre s’il existe. Vous recevrez un email dès qu’il est prêt : cela prend quelques minutes.',
             'full' => 'Tout ce que j’ai enregistré',
             'offline' => 'Tout, avec un lecteur qui fonctionne sans connexion',
             'gdpr' => 'Tout, plus mes consentements et le journal de mes données',
@@ -485,7 +486,7 @@ return [
             'submit' => 'Demander l’effacement',
         ],
 
-        'export_queued' => 'Votre dossier est en préparation. Vous recevrez un courriel dès qu’il est prêt.',
+        'export_queued' => 'Votre dossier est en préparation. Vous recevrez un email dès qu’il est prêt.',
         'erasure_requested' => 'Votre demande est enregistrée. Nous vous répondons sous trente jours au plus.',
     ],
 ];

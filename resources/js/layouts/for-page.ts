@@ -12,6 +12,7 @@ export type LayoutKey =
     | 'lp'
     | 'narrator'
     | 'public'
+    | 'quiz'
     | 'settings';
 
 /**
@@ -47,6 +48,12 @@ export function layoutKeysFor(name: string): LayoutKey[] {
         // (T-135).
         case name.startsWith('public/Checkout'):
             return ['checkout'];
+        // Le tunnel de découverte a la sienne aussi, et pour la même raison
+        // en plus forte : ni navigation ni bouton d'achat au-dessus de la
+        // première question. Avant ce cas, `public/` l'attrapait et la page
+        // portait deux en-têtes, un bandeau de prix et deux pieds de page.
+        case name === 'public/Quiz':
+            return ['quiz'];
         // L'accueil et ses pages sœurs ont leur propre barre : ses ancres
         // pointent dans la page (T-219, T-220). Le témoin retombe sur
         // `public` par le cas suivant, comme il l'a toujours fait.

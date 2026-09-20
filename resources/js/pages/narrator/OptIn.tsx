@@ -9,6 +9,7 @@ import { ChoiceCard } from '@/components/form/ChoiceCard';
 import { SelectField } from '@/components/form/SelectField';
 import { TextField } from '@/components/form/TextField';
 import { useT } from '@/hooks/useT';
+import { promptDays, uncapitalize } from '@/lib/cadence';
 
 type Option = { value: string; label: string };
 
@@ -35,6 +36,8 @@ type Props = {
     consents: Consent[];
     channels: Option[];
     cadences: Option[];
+    /** Les jours d'envoi de chaque rythme, en décalage depuis le jour choisi. */
+    cadenceDays: Record<string, number[]>;
     slots: Option[];
     addressForms: Option[];
     refusalReasons: Option[];
@@ -84,6 +87,7 @@ export default function OptIn({
     consents,
     channels,
     cadences,
+    cadenceDays,
     slots,
     addressForms,
     refusalReasons,
@@ -129,6 +133,31 @@ export default function OptIn({
     });
 
     const refusal = useForm<{ reason: string }>({ reason: '' });
+
+    /*
+     * Les jours d'envoi, nommés.
+     *
+     * « Deux questions par semaine » ne dit pas lesquelles, et le champ
+     * d'à côté ne demande qu'**un** jour : sans cette phrase, la personne
+     * choisit mardi et découvre le vendredi qu'il y en avait un second.
+     * Rien à afficher quand le rythme tient en un jour — la liste
+     * déroulante le dit déjà.
+     */
+    const days = promptDays(
+        cadenceDays[String(form.data.cadence)] ?? [0],
+        Number(form.data.prompt_day),
+    );
+
+    const sendingDays =
+        days.length > 1
+            ? t('narrator.optin.settings.days_hint', {
+                  days: fmt.list(
+                      days.map((day) =>
+                          uncapitalize(t(`narrator.optin.days.${day}`)),
+                      ),
+                  ),
+              })
+            : undefined;
 
     // Les deux boutons du oui et du non : les mêmes classes, le même parent.
     const pair =
@@ -411,6 +440,7 @@ export default function OptIn({
 
                                     <SelectField
                                         label={t('narrator.optin.settings.day')}
+                                        hint={sendingDays}
                                         options={DAYS.map((day) => ({
                                             value: String(day),
                                             label: t(

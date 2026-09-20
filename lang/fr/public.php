@@ -92,6 +92,10 @@ return [
             'title' => 'Le livre de vie que l’on peut écouter',
             'description' => 'Une année de questions, les histoires de votre proche mises au propre, et un livre relié en couleur avec un QR code par chapitre qui rejoue sa voix.',
         ],
+        'quiz' => [
+            'title' => 'Par où commencer : deux minutes de questions',
+            'description' => 'Dix questions pour savoir si le livre convient à votre proche, et repartir avec le plan de ses premières semaines : le message qu’il recevra, et ses premières questions.',
+        ],
         'checkout' => [
             'title' => 'Offrir le livre',
             'description' => 'Le parcours d’achat de :brand.',
@@ -251,7 +255,7 @@ return [
             ],
             'two' => [
                 'title' => 'Une question arrive. Elle parle.',
-                'body' => 'Chaque semaine, par SMS ou par courriel. Ni application, ni compte, ni mot de passe. Elle ouvre le lien et elle raconte, depuis son téléphone.',
+                'body' => 'Chaque semaine, par SMS ou par email. Ni application, ni compte, ni mot de passe. Elle ouvre le lien et elle raconte, depuis son téléphone.',
                 'alt' => 'Une femme âgée, près d’une fenêtre, parle en souriant au téléphone qu’elle tient devant elle.',
             ],
             'three' => [
@@ -436,7 +440,7 @@ return [
          */
         'commitments' => [
             'title' => 'Nos engagements',
-            'lede' => 'Les mêmes mots ici, dans les conditions générales et dans nos courriels.',
+            'lede' => 'Les mêmes mots ici, dans les conditions générales et dans nos emails.',
             'validation' => 'La validation est explicite, jamais tacite : rien n’est visible des proches sans l’accord de la personne qui a raconté.',
             'no_cloning' => 'Pas de clonage vocal : nous n’imitons jamais une voix, et nous n’en fabriquons pas.',
             'ai_arranges' => 'L’IA range, elle n’invente pas : elle enlève les hésitations et ajoute la ponctuation. Elle n’ajoute aucun fait.',
@@ -571,6 +575,7 @@ return [
         // S03. Trois raisons de l'offrir. Nos phrases, sans guillemets.
         'benefits' => [
             'title' => 'Trois raisons de l’offrir',
+            'quiz' => 'Par où commencer',
             'discover' => [
                 'title' => 'Apprendre ce qu’on n’a jamais demandé',
                 'body' => 'Les premières amours, les départs, les petites choses qu’on ne raconte pas si personne ne les demande. Une question suffit à les faire venir.',
@@ -614,7 +619,7 @@ return [
             ],
             'two' => [
                 'title' => "Une question arrive.\nIl n’y a qu’à répondre.",
-                'body' => 'Le lien part par SMS ou par courriel, le jour et au moment choisis. Rien à installer, aucun compte à créer : votre proche touche le lien et répond, en parlant, en se filmant ou en écrivant.',
+                'body' => 'Le lien part par SMS ou par email, le jour et au moment choisis. Rien à installer, aucun compte à créer : votre proche touche le lien et répond, en parlant, en se filmant ou en écrivant.',
             ],
             'three' => [
                 'title' => "Ses mots deviennent\nun chapitre.",
@@ -967,7 +972,7 @@ return [
             ],
             'no_app' => [
                 'q' => 'Mon proche doit-il écrire ou installer une application ?',
-                'a' => 'Non. Votre proche reçoit une question par SMS ou par courriel, ouvre le lien et répond en parlant. Le parcours ne nécessite pas d’application à installer ni de mot de passe à retenir.',
+                'a' => 'Non. Votre proche reçoit une question par SMS ou par email, ouvre le lien et répond en parlant. Le parcours ne nécessite pas d’application à installer ni de mot de passe à retenir.',
             ],
             'questions' => [
                 'q' => 'Peut-on choisir les questions ?',
@@ -1147,7 +1152,7 @@ return [
             ],
             'how' => [
                 'q' => 'Comment fonctionne :brand ?',
-                'a' => 'Chaque semaine, la personne qui raconte reçoit une question par courriel ou par SMS. Elle y répond en parlant, depuis n’importe quel appareil connecté, sans identifiant ni application à installer. L’enregistrement devient une histoire écrite, partagée avec les proches autorisés. Des photos peuvent s’y ajouter. Au bout d’un an, les histoires sont réunies dans un livre relié, avec un QR code par chapitre qui rejoue l’enregistrement d’origine.',
+                'a' => 'Chaque semaine, la personne qui raconte reçoit une question par email ou par SMS. Elle y répond en parlant, depuis n’importe quel appareil connecté, sans identifiant ni application à installer. L’enregistrement devient une histoire écrite, partagée avec les proches autorisés. Des photos peuvent s’y ajouter. Au bout d’un an, les histoires sont réunies dans un livre relié, avec un QR code par chapitre qui rejoue l’enregistrement d’origine.',
             ],
             'shutdown' => [
                 'q' => 'Que se passe-t-il si :brand cesse son activité ?',
@@ -1177,7 +1182,7 @@ return [
         'recording' => [
             'submit' => [
                 'q' => 'Comment j’envoie mon histoire ?',
-                'a' => 'C’est simple : il suffit de toucher le lien reçu par courriel ou par message. Aucune application à télécharger, aucun mot de passe. N’importe quel appareil connecté fait l’affaire, et :brand se charge de la suite.',
+                'a' => 'C’est simple : il suffit de toucher le lien reçu par email ou par message. Aucune application à télécharger, aucun mot de passe. N’importe quel appareil connecté fait l’affaire, et :brand se charge de la suite.',
             ],
             'writing' => [
                 'q' => 'Comment :brand transforme-t-il un enregistrement en texte ?',
@@ -1216,7 +1221,7 @@ return [
             ],
             'not_tech' => [
                 'q' => 'Est-ce simple pour quelqu’un qui n’est pas à l’aise avec la technologie ?',
-                'a' => 'Oui. La personne qui raconte touche un lien reçu par courriel ou par message : rien à télécharger, aucun mot de passe à créer. Beaucoup de nos narrateurs ont entre 70 et 90 ans.',
+                'a' => 'Oui. La personne qui raconte touche un lien reçu par email ou par message : rien à télécharger, aucun mot de passe à créer. Beaucoup de nos narrateurs ont entre 70 et 90 ans.',
             ],
         ],
 
@@ -1266,19 +1271,19 @@ return [
         'gifting' => [
             'when' => [
                 'q' => 'Puis-je choisir la date d’envoi du cadeau à son destinataire ?',
-                'a' => 'Oui. À l’achat, vous choisissez le jour exact où votre proche reçoit le courriel. Une carte à imprimer permet aussi de remettre le cadeau en main propre.',
+                'a' => 'Oui. À l’achat, vous choisissez le jour exact où votre proche reçoit l’email. Une carte à imprimer permet aussi de remettre le cadeau en main propre.',
             ],
             'gift_card' => [
                 'q' => 'Peut-on acheter une carte cadeau :brand ?',
-                'a' => 'Oui. La carte cadeau porte un code qui donne accès à l’offre complète. Son destinataire crée son espace, choisit ses réglages et la date de la première question. La carte s’envoie par courriel ou s’imprime chez vous.',
+                'a' => 'Oui. La carte cadeau porte un code qui donne accès à l’offre complète. Son destinataire crée son espace, choisit ses réglages et la date de la première question. La carte s’envoie par email ou s’imprime chez vous.',
             ],
             'printable' => [
                 'q' => 'Y a-t-il quelque chose à imprimer et à offrir ?',
-                'a' => 'Oui. Après votre achat, vous recevez un courriel avec le lien d’une carte cadeau soignée, prête à imprimer.',
+                'a' => 'Oui. Après votre achat, vous recevez un email avec le lien d’une carte cadeau soignée, prête à imprimer.',
             ],
             'delivery' => [
                 'q' => 'Combien de temps prend la livraison ?',
-                'a' => ':brand fait un très bon cadeau de dernière minute : l’année de récits peut être remise le jour même, par courriel. Le livre relié, lui, est imprimé et expédié à la fin de l’année de questions.',
+                'a' => ':brand fait un très bon cadeau de dernière minute : l’année de récits peut être remise le jour même, par email. Le livre relié, lui, est imprimé et expédié à la fin de l’année de questions.',
             ],
         ],
 
@@ -1422,12 +1427,12 @@ return [
                 // le dossier interdit de promettre avant le spike navigateur.
                 'gift' => [
                     'title' => 'Une question arrive. Elle parle.',
-                    'body' => 'Chaque semaine, au moment qu’elle a choisi, votre proche reçoit un SMS ou un courriel : une seule question, et un lien. Elle l’ouvre, elle touche un bouton, elle raconte. Ni application, ni compte, ni mot de passe. Elle peut s’arrêter, souffler et reprendre. Et si elle préfère écrire ce jour-là, elle écrit.',
+                    'body' => 'Chaque semaine, au moment qu’elle a choisi, votre proche reçoit un SMS ou un email : une seule question, et un lien. Elle l’ouvre, elle touche un bouton, elle raconte. Ni application, ni compte, ni mot de passe. Elle peut s’arrêter, souffler et reprendre. Et si elle préfère écrire ce jour-là, elle écrit.',
                     'link' => 'Essayer l’écran qu’elle verra',
                 ],
                 'self' => [
                     'title' => 'Chaque semaine, une question. Vous parlez.',
-                    'body' => 'Au moment que vous avez choisi, vous recevez un SMS ou un courriel : une seule question, et un lien. Vous l’ouvrez, vous touchez un bouton, vous racontez. Ni application, ni compte, ni mot de passe. Vous pouvez vous arrêter, souffler et reprendre. Et si vous préférez écrire ce jour-là, vous écrivez.',
+                    'body' => 'Au moment que vous avez choisi, vous recevez un SMS ou un email : une seule question, et un lien. Vous l’ouvrez, vous touchez un bouton, vous racontez. Ni application, ni compte, ni mot de passe. Vous pouvez vous arrêter, souffler et reprendre. Et si vous préférez écrire ce jour-là, vous écrivez.',
                     'link' => 'Essayer l’écran que vous verrez',
                 ],
                 'alt' => 'Une femme âgée sourit en parlant à son téléphone, devant une fenêtre.',
@@ -1678,6 +1683,173 @@ return [
         'cta' => 'Offrir à un proche',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Le tunnel de découverte (T-240)
+    |--------------------------------------------------------------------------
+    |
+    | Quatorze écrans puis un aperçu : dix questions, quatre écrans-miroir qui
+    | ne demandent rien, et le plan des premières semaines.
+    |
+    | Deux règles de rédaction tiennent tout le parcours. La première : le
+    | sujet est un paramètre (`:subject` — « votre mère »), jamais un pronom,
+    | ce qui évite d'écrire deux jeux de textes selon le genre. La seconde :
+    | rien ici ne peut être faux. Pas d'avis inventés, pas de « 96 % des
+    | personnes comme vous », pas de barre d'analyse qui simule un calcul,
+    | pas de compte à rebours. Ce qu'on montre à la fin est le vrai message
+    | et les vraies questions du corpus.
+    |
+    */
+
+    'quiz' => [
+        'of' => 'Écran :step sur :total',
+        'progress' => 'Avancement du questionnaire',
+        'back' => 'Revenir',
+        'next' => 'Continuer',
+        'sending' => 'Un instant…',
+        'choose' => 'Choisir : :label',
+
+        'relationship' => [
+            'title' => 'De qui aimeriez-vous garder l’histoire ?',
+            'lede' => 'Dix questions, deux minutes. Rien à installer, et aucune adresse demandée avant la fin.',
+            'self_note' => 'Vous racontez votre propre histoire ? Le parcours est un peu différent : on vous y emmène directement.',
+        ],
+
+        'voice' => [
+            'title' => 'La voix compte autant que les mots',
+            'body' => 'Dans dix ans, ce que vos enfants voudront réentendre, ce n’est pas seulement l’histoire : c’est la façon dont :subject la raconte. Sa manière de rire au milieu d’une phrase. Les tournures qui n’existent que dans votre famille.',
+            'listen' => 'Vingt secondes d’un enregistrement réel, fait depuis un téléphone ordinaire.',
+        ],
+
+        'age' => [
+            'title' => 'Quel âge a :subject ?',
+            'hint' => 'On ne demande pas la même chose à quelqu’un né en 1935 et à quelqu’un né en 1955. C’est à cela que sert cette réponse.',
+        ],
+
+        'distance' => [
+            'title' => 'Vous vivez à quelle distance l’un de l’autre ?',
+        ],
+
+        'closeness' => [
+            'far_title' => 'On raccroche toujours avant d’avoir posé la question',
+            'far_body' => 'On se dit qu’on aura le temps la prochaine fois, et la prochaine fois on parle de la météo et des petits-enfants. Une question par semaine, c’est un rendez-vous qui ne dépend plus de qui appelle qui.',
+            'near_title' => 'On croit qu’on a le temps parce qu’on se voit',
+            'near_body' => 'C’est justement quand on se voit souvent qu’on ne demande jamais rien : les grandes questions ont l’air trop solennelles au milieu d’un déjeuner du dimanche. Posée par écrit, une question se répond sans cérémonie, le soir, quand l’envie vient.',
+        ],
+
+        'themes' => [
+            'title' => 'Qu’aimeriez-vous que :subject raconte ?',
+            'hint' => 'Trois au moins. Vous pourrez tout changer ensuite, et en ajouter en cours de route.',
+            'remaining' => 'Encore un thème|Encore :count thèmes',
+            'chosen' => ':count thème choisi|:count thèmes choisis',
+        ],
+
+        'storyteller' => [
+            'title' => 'Quand :subject raconte, c’est plutôt…',
+        ],
+
+        'nothing' => [
+            'title' => '« Il n’y a rien à raconter » est la phrase la plus courante',
+            'body' => 'Elle est presque toujours fausse, et c’est presque toujours la même cause : personne n’a posé la bonne question. « Raconte-moi ta vie » ne donne rien. « Quelle était l’odeur de la maison de ton enfance ? » donne vingt minutes.',
+            'body_2' => 'Nos soixante questions sont écrites pour cela. Elles sont précises, elles commencent par les plus faciles, et elles ne deviennent intimes que lorsque l’habitude est prise.',
+        ],
+
+        'tech' => [
+            'title' => ':subject est à l’aise avec un téléphone ?',
+            'hint' => 'Répondez franchement : c’est cette réponse-là qui décide de ce qu’on vous proposera ensuite.',
+        ],
+
+        'install' => [
+            'title' => 'Il n’y a rien à installer',
+            'body' => 'Aucune application, aucun compte, aucun mot de passe. :subject reçoit un message avec un lien, appuie dessus, appuie sur un gros bouton, et parle. Si l’enregistrement s’interrompt — un appel, une sonnette —, il reprend où il en était. Et si un jour écrire est plus simple que parler, la page le permet aussi.',
+            'help_title' => 'Alors autant le savoir maintenant',
+            'help_body' => 'Tout repose sur un lien ouvert depuis un téléphone : si ce geste n’est pas acquis, mieux vaut en parler avant d’acheter qu’après. Deux choses le rendent possible quand même. Quelqu’un de la famille ouvre le lien et reste à côté le temps du premier enregistrement — ensuite, le geste est pris. Ou bien nous appelons nous-mêmes, chaque semaine, à l’heure convenue : cette option est payante et le nombre de places est limité ; nous vous la proposerons à la commande si elle est encore ouverte.',
+        ],
+
+        'channel' => [
+            'title' => 'Comment joindre :subject le plus sûrement ?',
+            'hint' => 'C’est par là que partiront l’invitation, puis une question par semaine.',
+        ],
+
+        'name' => [
+            'title' => 'Comment s’appelle :subject ?',
+            'first_name' => 'Son prénom',
+            'first_name_placeholder' => 'Jeanne',
+            'nickname' => 'Et vous, comment l’appelez-vous ?',
+            'nickname_placeholder' => 'Mamie',
+            'nickname_hint' => 'Maman, Mamie, Mémé, ou simplement son prénom. C’est ce mot-là qui sera dans le message — pas le nôtre.',
+        ],
+
+        /*
+         * L'écran de la couverture. Le seul du parcours qui ne demande rien
+         * d'utile au produit et qui pourtant compte autant : jusque-là on a
+         * parlé de questions et de voix, et personne n'a encore vu l'objet.
+         * La teinte, elle, est bien réelle — elle part à l'impression.
+         */
+        'cover' => [
+            'title' => 'Voici le livre de :name',
+            'hint' => 'Choisissez son titre et sa couverture. Vous pourrez encore les changer avant l’impression.',
+            'titles' => 'Titres possibles',
+            'custom' => 'Votre titre',
+            'custom_placeholder' => 'Les dimanches chez Jeanne',
+            'custom_hint' => 'Quatre-vingts signes au plus : au-delà, la ligne se compose trop petit pour se lire sur un dos de livre.',
+            'swatches' => 'Teintes de couverture',
+            'note' => 'Couverture rigide, impression couleur, un QR par chapitre pour réécouter sa voix.',
+        ],
+
+        'occasion' => [
+            'title' => 'C’est pour une occasion ?',
+            'date' => 'Quel jour l’invitation doit-elle partir ?',
+            'date_hint' => 'La date et l’heure restent modifiables jusqu’au paiement.',
+        ],
+
+        /*
+         * L'aperçu. Le leader termine par une maquette de couverture au
+         * prénom du client ; nous montrons le message réel et les vraies
+         * questions du corpus. Ce n'est plus une promesse, c'est le produit.
+         */
+        'preview' => [
+            'eyebrow' => 'Votre plan',
+            'title' => 'Voici ce que :name recevra',
+            'when' => 'Le :date à :time, par :channel.',
+            'from' => 'De : :sender',
+
+            'book_label' => 'Au bout, ceci',
+            'book_note' => 'Couverture :cover, un chapitre par histoire, un QR qui rejoue sa voix.',
+
+            'invitation_label' => 'D’abord, l’invitation',
+            'invitation' => ':name, :inviter vous offre un livre de vos souvenirs avec :brand. Pour découvrir : :link. Ce lien ne demandera jamais de mot de passe ni de paiement.',
+            'inviter_placeholder' => '[votre prénom]',
+            'link_placeholder' => '[votre lien]',
+            'invitation_note' => 'C’est le message réel, mot pour mot. Il n’y manque que votre prénom. L’invitation ne demande rien : elle propose de découvrir.',
+
+            'first_label' => 'Puis, dès que :name aura accepté, sa première question',
+            'first_note' => 'Ce n’est pas un exemple : c’est la question que le corpus choisit pour :name, d’après les thèmes que vous venez de cocher. Toujours une question facile en premier — une question intime, la première semaine, fait raccrocher.',
+
+            'next_label' => 'Et les suivantes',
+            'next_note' => 'Une par semaine, dans vos thèmes. Vous pourrez les réordonner, en retirer, et en écrire de nouvelles.',
+
+            'themes_label' => 'Vos thèmes',
+            'empty' => 'Le corpus de questions n’est pas encore chargé sur cet environnement : le plan s’affichera dès qu’il le sera.',
+
+            'validation_note' => 'Rien de ce que :name enregistre n’est visible avant relecture et validation de sa part. La décision lui appartient — pas à vous, et pas à nous.',
+
+            'cta' => 'Offrir ce livre à :name',
+            'restart' => 'Refaire le questionnaire',
+
+            'email' => [
+                'title' => 'Vous préférez y réfléchir ?',
+                'body' => 'Laissez votre adresse : nous vous envoyons votre code de bienvenue. Le plan, lui, reste ici — cette page se rouvrira sur vos réponses depuis cet appareil.',
+                'label' => 'Votre email',
+                'submit' => 'Recevoir mon code',
+                'news' => 'Je souhaite aussi recevoir vos nouvelles',
+                'news_hint' => 'Rares, et un lien pour arrêter dans chaque message. Cette case n’est jamais requise.',
+                'privacy' => 'Votre adresse sert à vous envoyer ce code, et à rien d’autre si la case ci-dessus reste décochée.',
+                'saved' => 'C’est parti. Le code est dans votre boîte — regardez aussi les indésirables.',
+            ],
+        ],
+    ],
+
     'checkout' => [
         'title' => 'Offrir',
         'step_of' => 'Étape :step sur :total',
@@ -1727,10 +1899,10 @@ return [
             'last_name_self' => 'Votre nom (facultatif)',
             'relationship' => 'Votre lien avec elle',
             'relationship_hint' => 'Ma mère, mon grand-père, une amie de toujours.',
-            'contact_hint' => 'Un courriel ou un numéro suffit.',
-            'contact_hint_self' => 'Un courriel ou un numéro suffit : c’est là que les questions arriveront.',
-            'email' => 'Son courriel',
-            'email_self' => 'Votre courriel',
+            'contact_hint' => 'Un email ou un numéro suffit.',
+            'contact_hint_self' => 'Un email ou un numéro suffit : c’est là que les questions arriveront.',
+            'email' => 'Son email',
+            'email_self' => 'Votre email',
             'phone' => 'Son numéro de téléphone',
             'phone_self' => 'Votre numéro de téléphone',
             'channel' => 'Comment la joindre ?',
@@ -1758,7 +1930,7 @@ return [
             'create' => 'Créer un compte',
             'have' => 'J’ai déjà un compte',
             'name' => 'Votre nom',
-            'email' => 'Votre courriel',
+            'email' => 'Votre email',
             'password' => 'Un mot de passe',
             'password_hint' => 'Huit caractères au moins. Vous pouvez l’afficher pour vérifier.',
             'show' => 'Afficher',
@@ -1861,10 +2033,10 @@ return [
             'headline' => 'Merci. Le livre :of commence ici.',
             'headline_anonymous' => 'Merci. Le livre commence ici.',
             'headline_self' => 'Merci. Votre livre commence ici.',
-            'body' => 'Votre paiement est passé. Vous recevez un courriel avec le détail, et l’invitation partira à la date que vous avez choisie.',
+            'body' => 'Votre paiement est passé. Vous recevez un email avec le détail, et l’invitation partira à la date que vous avez choisie.',
             'next_title' => 'Ce qui se passe maintenant',
             'next' => [
-                'email' => 'Vous recevez un courriel de confirmation dans quelques minutes.',
+                'email' => 'Vous recevez un email de confirmation dans quelques minutes.',
                 'invite' => 'L’invitation part le :date à :time, avec votre mot.',
                 'invite_soon' => 'L’invitation part à la date et à l’heure que vous avez choisies, avec votre mot.',
                 'invite_self' => 'Votre première question arrive le :date à :time.',

@@ -76,6 +76,9 @@ final readonly class OptInController
             // l'option D-9 et ne se choisit pas depuis une invitation (T-234).
             'channels' => Options::only(Channel::class, Channel::narratorPreferences()),
             'cadences' => Options::of(Cadence::class),
+            // Les jours d'envoi de chaque rythme : la phrase qui les nomme se
+            // recompose à chaque changement de choix, sans aller-retour.
+            'cadenceDays' => Cadence::dayOffsetsByValue(),
             'slots' => Options::of(PromptSlot::class),
             'addressForms' => Options::of(AddressForm::class),
             'refusalReasons' => Options::of(RefusalReason::class),

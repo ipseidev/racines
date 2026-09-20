@@ -469,11 +469,12 @@ return [
             'phone_hint' => 'Comme vous le tapez, par exemple 06 12 34 56 78.',
             'phone_confirm' => 'Nous vous écrirons à ce numéro : est-il correct ?',
             'phone_required' => 'Il nous faut un numéro pour vous envoyer des SMS.',
-            'email' => 'Votre adresse de courriel',
+            'email' => 'Votre adresse email',
             'email_hint' => 'Nous y enverrons chaque question.',
-            'email_required' => 'Il nous faut une adresse pour vous envoyer des courriels.',
+            'email_required' => 'Il nous faut une adresse pour vous envoyer des emails.',
             'cadence' => 'À quelle fréquence ?',
             'day' => 'Quel jour ?',
+            'days_hint' => 'Vos questions arriveront chaque semaine : :days.',
             'slot' => 'À quel moment de la journée ?',
             'address_form' => 'Préférez-vous qu’on vous dise « vous » ou « tu » ?',
         ],
@@ -491,7 +492,7 @@ return [
             'wishes_title' => 'Vos souhaits pour plus tard',
             'wishes_body' => 'Ce qu’il faudra faire de vos histoires après votre décès. Vos souhaits passent avant la demande de vos proches, et vous pourrez les changer quand vous voudrez.',
             'referent' => 'La personne à qui nous nous adresserons (facultatif)',
-            'referent_contact' => 'Comment la joindre, téléphone ou courriel (facultatif)',
+            'referent_contact' => 'Comment la joindre, téléphone ou email (facultatif)',
         ],
 
         'days' => [

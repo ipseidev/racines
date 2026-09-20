@@ -46,10 +46,11 @@ const catalogue = {
                 channel: 'Par quel moyen ?',
                 phone: 'Votre numéro de téléphone',
                 phone_hint: 'Au format international.',
-                email: 'Votre adresse de courriel',
+                email: 'Votre adresse email',
                 email_hint: 'Nous y enverrons chaque question.',
                 cadence: 'À quelle fréquence ?',
                 day: 'Quel jour ?',
+                days_hint: 'Vos questions arriveront chaque semaine : :days.',
                 slot: 'À quel moment ?',
                 address_form: 'Vous ou tu ?',
             },
@@ -160,12 +161,18 @@ const props = {
     ],
     channels: [
         { value: 'sms', label: 'SMS' },
-        { value: 'email', label: 'Courriel' },
+        { value: 'email', label: 'Email' },
     ],
     cadences: [
         { value: 'weekly', label: 'Une question par semaine' },
+        { value: 'twice_weekly', label: 'Deux questions par semaine' },
         { value: 'biweekly', label: 'Une question tous les quinze jours' },
     ],
+    cadenceDays: {
+        weekly: [0],
+        twice_weekly: [0, 3],
+        biweekly: [0],
+    },
     slots: [
         { value: 'morning', label: 'Matin' },
         { value: 'evening', label: 'Soir' },
@@ -250,10 +257,10 @@ describe('la page d’opt-in', () => {
     });
 
     it('montre le champ de contact du canal choisi, déjà rempli', () => {
-        // Courriel : l'adresse, et pas le numéro.
+        // Email : l'adresse, et pas le numéro.
         const byEmail = render(<OptIn {...props} preferredChannel="email" />);
 
-        expect(screen.getByLabelText('Votre adresse de courriel')).toHaveValue(
+        expect(screen.getByLabelText('Votre adresse email')).toHaveValue(
             'jeanne@example.test',
         );
         expect(screen.queryByLabelText('Votre numéro de téléphone')).toBeNull();
@@ -266,7 +273,7 @@ describe('la page d’opt-in', () => {
         expect(screen.getByLabelText('Votre numéro de téléphone')).toHaveValue(
             '06 12 34 56 78',
         );
-        expect(screen.queryByLabelText('Votre adresse de courriel')).toBeNull();
+        expect(screen.queryByLabelText('Votre adresse email')).toBeNull();
 
         bySms.unmount();
 
@@ -274,7 +281,7 @@ describe('la page d’opt-in', () => {
         render(<OptIn {...props} preferredChannel="both" />);
 
         expect(screen.getByLabelText('Votre numéro de téléphone')).toBeTruthy();
-        expect(screen.getByLabelText('Votre adresse de courriel')).toBeTruthy();
+        expect(screen.getByLabelText('Votre adresse email')).toBeTruthy();
     });
 
     it('replie les souhaits pour plus tard sous les accords, « transmettre » proposé d’avance', () => {

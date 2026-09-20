@@ -18,6 +18,7 @@ use App\Http\Controllers\Public\WelcomeOfferController;
 use App\Models\CheckoutDraft;
 use App\Models\Lead;
 use App\Settings\PilotSettings;
+use App\Support\Drafts;
 use App\Support\LocalizedRoutes;
 use App\Support\Options;
 use App\Support\Phone;
@@ -40,7 +41,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 final readonly class CheckoutController
 {
-    public const DRAFT_COOKIE = 'checkout_draft';
+    public const DRAFT_COOKIE = Drafts::COOKIE;
 
     /** L'étape où l'on crée son compte, ou l'on se connecte. */
     public const ACCOUNT_STEP = 4;
@@ -318,81 +319,23 @@ final readonly class CheckoutController
     /**
      * Le brouillon de ce visiteur : celui de son compte, sinon celui de son
      * cookie, sinon un neuf.
+     *
+     * Le détail vit dans `Drafts` depuis que le tunnel de découverte écrit
+     * dans le même brouillon : deux copies de cette recherche auraient fini
+     * par diverger sur le rattachement au compte.
      */
     private static function draftFor(Request $request): CheckoutDraft
     {
-        $existing = self::existingDraft($request);
-
-        if ($existing instanceof CheckoutDraft) {
-            return $existing;
-        }
-
-        $user = $request->user();
-
-        $draft = new CheckoutDraft([
-            'step' => 1,
-            'payload' => [],
-            'price_variant' => PreventePrice::forRequest($request),
-            'expires_at' => now()->addDays(CheckoutDraft::LIFETIME_DAYS),
-        ]);
-
-        if ($user !== null) {
-            $draft->user()->associate($user);
-        }
-
-        $draft->save();
-
-        return $draft;
+        return Drafts::open($request);
     }
 
-    /**
-     * Le brouillon déjà là, sans en créer : celui du compte, sinon celui du
-     * cookie. Rattaché au compte dès qu'il en a un : le brouillon suit la
-     * personne, pas le navigateur.
-     */
     private static function existingDraft(Request $request): ?CheckoutDraft
     {
-        $user = $request->user();
-
-        if ($user !== null) {
-            $existing = CheckoutDraft::query()
-                ->where('user_id', $user->id)
-                ->where('expires_at', '>', now())
-                ->latest()
-                ->first();
-
-            if ($existing instanceof CheckoutDraft) {
-                return $existing;
-            }
-        }
-
-        $id = $request->cookie(self::DRAFT_COOKIE);
-
-        if (! is_string($id) || $id === '') {
-            return null;
-        }
-
-        $draft = CheckoutDraft::query()->whereKey($id)->first();
-
-        if (! $draft instanceof CheckoutDraft || $draft->isExpired()) {
-            return null;
-        }
-
-        if ($user !== null && $draft->user_id === null) {
-            $draft->user()->associate($user);
-            $draft->save();
-        }
-
-        return $draft;
+        return Drafts::current($request);
     }
 
     private static function draftCookie(CheckoutDraft $draft): Cookie
     {
-        return cookie(
-            name: self::DRAFT_COOKIE,
-            value: $draft->id,
-            minutes: CheckoutDraft::LIFETIME_DAYS * 24 * 60,
-            httpOnly: true,
-        );
+        return Drafts::cookie($draft);
     }
 }
