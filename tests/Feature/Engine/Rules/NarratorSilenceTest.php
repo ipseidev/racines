@@ -186,6 +186,37 @@ describe('dix jours de silence', function (): void {
 
         expect($rule->resumed($event, CarbonImmutable::now()))->toBeTrue();
     });
+
+    /*
+     * Le défaut T-242, trouvé chez la même narratrice que T-241 : trois
+     * questions restées sans réponse, et le moteur en poussait une quatrième.
+     *
+     * La règle ne lisait que `recorded_at` — « rien d'enregistré depuis dix
+     * jours » — sans jamais demander combien de questions attendaient déjà.
+     * Changer de question aide celle qui bute sur une question trop lourde ;
+     * cela n'aide plus personne quand la pile en compte trois, et c'est
+     * l'alerte à l'Initiateur·rice qui prend le relais à vingt-et-un jours.
+     */
+    it('propose encore une question plus légère quand une seule attend', function (): void {
+        $project = silentProject(10);
+        Story::factory()->forProject($project)->proposed()->create();
+
+        runLightRule();
+
+        expect(EngineEvent::query()->count())->toBe(1);
+    });
+
+    it('se taît quand les questions sans réponse s’empilent', function (): void {
+        $project = silentProject(10);
+        Story::factory()->forProject($project)->proposed()->create();
+        Story::factory()->forProject($project->refresh())->proposed()->create();
+
+        runLightRule();
+
+        // Une quatrième question ne se lit plus comme une proposition : elle
+        // se lit comme une insistance.
+        expect(EngineEvent::query()->count())->toBe(0);
+    });
 });
 
 describe('vingt-et-un jours de silence', function (): void {

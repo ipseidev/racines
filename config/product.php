@@ -79,11 +79,16 @@ return [
         'no_reaction_story_count' => 3,
         'react_suggestion_min_interval_days' => 30,
         'silence_light_question_days' => 10,
+        // Au-delà, changer de question n'aide plus : la pile de questions
+        // sans réponse se lit comme une insistance (T-242).
+        'silence_light_question_max_pending' => 1,
         'silence_alert_days' => 21,
         'silence_alert_min_interval_days' => 30,
         'declining_window_weeks' => 4,
         'declining_offer_min_interval_weeks' => 8,
         'initiator_max_requests_per_month' => 4,
+        // La question promise, et au plus une relance (T-242).
+        'narrator_max_messages_per_week' => 2,
     ],
 
     // Book-ready : critères de production, jamais un compte d'histoires (R-6)

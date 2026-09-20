@@ -14,6 +14,7 @@ use App\Enums\ProjectStatus;
 use App\Models\EngineEvent;
 use App\Models\Project;
 use App\Models\Story;
+use App\States\Story\Proposed;
 use App\Support\Links;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -27,6 +28,10 @@ use Illuminate\Support\Collection;
  *
  * Le message le dit franchement : « une minute suffit, et vous pouvez tout
  * aussi bien la laisser de côté ». Le narrateur n'a rien promis.
+ *
+ * Encore faut-il qu'il reste de la place pour une question de plus : au-delà
+ * d'une seule question en attente, la règle se taît et laisse l'alerte de
+ * vingt-et-un jours faire son travail (T-242).
  */
 final class NarratorSilence10d extends BaseRule
 {
@@ -68,6 +73,21 @@ final class NarratorSilence10d extends BaseRule
                 // Strictement plus récente : à dix jours pile, le silence
                 // dure bien dix jours, et la règle doit parler.
                 fn ($query) => $query->where('recorded_at', '>', $now->subDays($days)),
+            )
+            /*
+             * Et les questions sans réponse ne se sont pas empilées.
+             *
+             * Changer de question aide celle qui bute sur une question trop
+             * lourde. Cela n'aide plus personne quand trois attendent déjà :
+             * une quatrième ne se lit plus comme une proposition, elle se lit
+             * comme une insistance — et c'est l'alerte à l'Initiateur·rice, à
+             * vingt-et-un jours, qui prend le relais (T-242).
+             */
+            ->whereHas(
+                'stories',
+                fn ($query) => $query->where('state', Proposed::$name),
+                '<=',
+                (int) config('product.engine.silence_light_question_max_pending'),
             )
             ->get()
             ->map(fn (Project $project): Occurrence => new Occurrence(

@@ -238,3 +238,67 @@ it('enregistre l’échéance sur le projet quand on la lui applique', function 
 
     expect($project->refresh()->next_prompt_at?->getTimestamp())->toBe($next?->getTimestamp());
 });
+
+/*
+|--------------------------------------------------------------------------
+| Le défaut de production T-242
+|--------------------------------------------------------------------------
+|
+| Une narratrice à qui l'on avait promis « chaque lundi à 9 h » a reçu sa
+| question un samedi, puis la suivante le lundi — deux jours plus tard.
+|
+| La cause tenait à l'ancienne formule, `addWeeks(1)->startOfWeek(MONDAY)` :
+| ajouter une semaine puis **rembobiner au lundi de cette semaine-là** rend
+| un écart de `7 − (jour de la référence − jour choisi)`. Référence samedi,
+| jour choisi lundi : deux jours. L'écart minimal en jours, lui, ne se laisse
+| pas rembobiner.
+|
+| Le samedi n'était pas un hasard : la première question part le lendemain de
+| l'acceptation, quel que soit le jour, et c'est cette ancre décalée qui
+| armait le défaut. Le second test tient la réparation de l'ancre.
+|
+*/
+
+it('n’avance pas la question au lundi suivant quand la précédente est partie un samedi', function (): void {
+    // Samedi 12 septembre 2026, 9 h : la question vient de partir.
+    $this->travelTo(CarbonImmutable::parse('2026-09-12 09:00', 'Europe/Paris'));
+
+    $project = Project::factory()->create([
+        'prompt_day' => 1,           // lundi
+        'prompt_slot' => PromptSlot::Morning,
+        'cadence' => Cadence::Weekly,
+        'next_prompt_at' => now(),
+    ]);
+
+    $next = schedule($project);
+
+    // Le lundi 21, pas le lundi 14 : sept jours pleins, jamais deux.
+    expect($next?->setTimezone('Europe/Paris')->toDateString())->toBe('2026-09-21')
+        ->and($next?->greaterThanOrEqualTo(now()->addDays(7)))->toBeTrue();
+});
+
+it('ramène le rythme sur le jour choisi après une première question décalée', function (): void {
+    // Jeudi 10 septembre, 10 h 40 : la narratrice accepte l'invitation.
+    $this->travelTo(CarbonImmutable::parse('2026-09-10 10:40', 'Europe/Paris'));
+
+    $project = Project::factory()->create([
+        'prompt_day' => 1,           // lundi
+        'prompt_slot' => PromptSlot::Morning,
+        'cadence' => Cadence::Weekly,
+        'next_prompt_at' => null,
+    ]);
+
+    $first = app(ScheduleNextPrompt::class)->apply($project);
+
+    // Le lendemain : le dossier veut le premier enregistrement sous 72 h, et
+    // cette promesse prime sur le jour choisi.
+    expect($first?->setTimezone('Europe/Paris')->toDateString())->toBe('2026-09-11');
+
+    // La question part, et le planificateur repasse derrière elle.
+    $this->travelTo(CarbonImmutable::parse('2026-09-11 09:00', 'Europe/Paris'));
+    $second = app(ScheduleNextPrompt::class)->apply($project);
+
+    // Lundi, le jour promis : une ancre décalée se rattrape toute seule.
+    expect($second?->setTimezone('Europe/Paris')->dayOfWeekIso)->toBe(1)
+        ->and($second?->setTimezone('Europe/Paris')->toDateString())->toBe('2026-09-21');
+});

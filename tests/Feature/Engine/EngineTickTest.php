@@ -9,6 +9,8 @@ use App\Enums\EngineAudience;
 use App\Enums\EngineRuleId;
 use App\Enums\ProjectStatus;
 use App\Models\EngineEvent;
+use App\Models\Narrator;
+use App\Models\OutboundMessage;
 use App\Models\Project;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -290,4 +292,134 @@ it('rapporte ce qu’il a fait', function (): void {
     expect($report->fired)->toBe(1)
         ->and($report->suppressed)->toBe(1)
         ->and($report->failed)->toBe(0);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Le plafond hebdomadaire du narrateur (T-242)
+|--------------------------------------------------------------------------
+|
+| Le plafond quotidien protégeait une journée, pas une semaine : sept règles
+| différentes pouvaient parler sept jours de suite, et la question hebdo
+| s'ajoutait par-dessus sans que personne ne la compte. Une narratrice à qui
+| l'on avait promis « une question par semaine » en a reçu quatre.
+|
+| Le plafond se compte sur les messages **réellement partis** — la table
+| `outbound_messages` —, tous canaux confondus, parce que la personne qui
+| reçoit un SMS puis un courriel en a reçu deux. La question hebdo entre dans
+| le compte mais ne se laisse jamais supprimer : elle est la promesse, les
+| relances sont le supplément.
+|
+*/
+
+/**
+ * Un message déjà parti chez le narrateur de ce projet.
+ */
+function messageAlreadySent(Project $project, Narrator $narrator, string $template, int $daysAgo = 0): void
+{
+    OutboundMessage::factory()->create([
+        'project_id' => $project->id,
+        'template' => $template,
+        'created_at' => now()->subDays($daysAgo),
+        'to_hash' => OutboundMessage::hashRecipient((string) $narrator->email),
+    ]);
+}
+
+function activeProjectWithNarrator(): array
+{
+    $project = Project::factory()->create(['status' => ProjectStatus::Active]);
+    $narrator = Narrator::factory()->primary()->create([
+        'project_id' => $project->id,
+        'email' => 'odette@example.test',
+    ]);
+
+    return [$project->refresh(), $narrator];
+}
+
+it('laisse passer une relance quand la semaine ne porte que la question', function (): void {
+    [$project, $narrator] = activeProjectWithNarrator();
+    messageAlreadySent($project, $narrator, 'prompt', daysAgo: 2);
+
+    $rule = fakeRule(EngineRuleId::LinkNotOpened, collect([
+        new Occurrence($project, key: 'a', attempt: 1),
+    ]));
+
+    (new EngineTick([$rule]))->run(CarbonImmutable::now());
+
+    expect($rule->fired)->toBe(1);
+});
+
+it('se taît quand le narrateur a déjà reçu deux messages cette semaine', function (): void {
+    [$project, $narrator] = activeProjectWithNarrator();
+    messageAlreadySent($project, $narrator, 'prompt', daysAgo: 3);
+    messageAlreadySent($project, $narrator, 'engine_link_resend', daysAgo: 1);
+
+    $rule = fakeRule(EngineRuleId::NarratorSilence10d, collect([
+        new Occurrence($project, key: 'a', attempt: 1),
+    ]));
+
+    (new EngineTick([$rule]))->run(CarbonImmutable::now());
+
+    expect($rule->fired)->toBe(0);
+
+    // Consigné, pas oublié : savoir que la règle aurait parlé fait partie de
+    // la mesure, exactement comme pour le plafond quotidien.
+    $event = EngineEvent::query()->sole();
+
+    expect($event->wasSuppressed())->toBeTrue()
+        ->and($event->action_taken['suppressed_by'])->toBe('narrator_weekly_cap');
+});
+
+it('oublie les messages de la semaine précédente', function (): void {
+    [$project, $narrator] = activeProjectWithNarrator();
+    messageAlreadySent($project, $narrator, 'prompt', daysAgo: 8);
+    messageAlreadySent($project, $narrator, 'engine_link_resend', daysAgo: 9);
+
+    $rule = fakeRule(EngineRuleId::LinkNotOpened, collect([
+        new Occurrence($project, key: 'a', attempt: 1),
+    ]));
+
+    (new EngineTick([$rule]))->run(CarbonImmutable::now());
+
+    // Le plafond glisse, il ne se réinitialise pas le lundi : sinon deux
+    // messages le dimanche et deux le lundi feraient quatre en deux jours.
+    expect($rule->fired)->toBe(1);
+});
+
+it('ne compte pas un message que l’opérateur a refusé', function (): void {
+    [$project, $narrator] = activeProjectWithNarrator();
+    messageAlreadySent($project, $narrator, 'prompt', daysAgo: 2);
+
+    OutboundMessage::factory()->failed()->create([
+        'project_id' => $project->id,
+        'template' => 'engine_link_resend',
+        'to_hash' => OutboundMessage::hashRecipient((string) $narrator->email),
+    ]);
+
+    $rule = fakeRule(EngineRuleId::LinkNotOpened, collect([
+        new Occurrence($project, key: 'a', attempt: 1),
+    ]));
+
+    (new EngineTick([$rule]))->run(CarbonImmutable::now());
+
+    // Un message qui n'est jamais arrivé n'a fatigué personne.
+    expect($rule->fired)->toBe(1);
+});
+
+it('ne plafonne ni les proches ni l’Initiateur·rice sur le compte du narrateur', function (): void {
+    [$project, $narrator] = activeProjectWithNarrator();
+    messageAlreadySent($project, $narrator, 'prompt', daysAgo: 3);
+    messageAlreadySent($project, $narrator, 'engine_link_resend', daysAgo: 1);
+
+    $family = fakeRule(EngineRuleId::ValidatedNotListened, collect([
+        new Occurrence($project, key: 'a', attempt: 1),
+    ]), audience: EngineAudience::Family);
+    $initiator = fakeRule(EngineRuleId::ThreeStoriesNoReaction, collect([
+        new Occurrence($project, key: 'b', attempt: 1),
+    ]), audience: EngineAudience::Initiator);
+
+    (new EngineTick([$family, $initiator]))->run(CarbonImmutable::now());
+
+    expect($family->fired)->toBe(1)
+        ->and($initiator->fired)->toBe(1);
 });

@@ -33,12 +33,23 @@ use Throwable;
  *     veulent lui parler, celle qui vient en premier dans l'annexe C gagne ;
  *     l'autre est **consignée** comme supprimée, parce que savoir qu'elle
  *     aurait parlé fait partie de la mesure.
+ *  4. **Deux messages au narrateur par semaine**, question hebdomadaire
+ *     comprise (T-242). Le plafond quotidien protège une journée et pas une
+ *     semaine : sept règles peuvent parler sept jours de suite, et la
+ *     question promise s'ajoute par-dessus. Celle-ci ne se laisse jamais
+ *     supprimer — elle est la promesse, les relances sont le supplément.
  *
  * Une règle qui plante ne bloque pas les suivantes : dix familles n'ont pas à
  * perdre leurs relances parce qu'une requête a mal tourné.
  */
 final readonly class EngineTick
 {
+    /**
+     * Le motif consigné quand c'est le budget de la semaine qui manque, et
+     * non une règle plus prioritaire.
+     */
+    private const WEEKLY_CAP = 'narrator_weekly_cap';
+
     /**
      * Les états où le produit ne sollicite personne.
      *
@@ -130,8 +141,7 @@ final readonly class EngineTick
         $audience = $rule->audience($occurrence);
 
         $suppressedBy = $audience === EngineAudience::Narrator
-            ? $spokenToNarrator[$occurrence->project->id]
-                ?? self::narratorAlreadyToldToday($occurrence->project, $now)
+            ? self::narratorSuppression($occurrence->project, $now, $spokenToNarrator)
             : null;
 
         try {
@@ -145,7 +155,7 @@ final readonly class EngineTick
                     // de la vraie : sans ça il consommerait l'idempotence de
                     // l'occurrence, et le rappel qu'on a seulement différé ne
                     // partirait jamais.
-                    'dedupe_key' => $suppressedBy instanceof EngineRuleId
+                    'dedupe_key' => $suppressedBy !== null
                         ? $occurrence->dedupeKey($rule->id()).':suppressed:'.$now->toDateString()
                         : $occurrence->dedupeKey($rule->id()),
                     'fired_at' => $now,
@@ -159,12 +169,12 @@ final readonly class EngineTick
 
                 $event->save();
 
-                if ($suppressedBy instanceof EngineRuleId) {
+                if ($suppressedBy !== null) {
                     // Consigné, pas envoyé. La clé diffère de `told` exprès :
                     // un événement supprimé n'a parlé à personne, et ne doit
                     // donc pas compter comme un message du jour.
                     $event->action_taken = [
-                        'suppressed_by' => $suppressedBy->value,
+                        'suppressed_by' => $suppressedBy,
                         'would_have_told' => $audience->value,
                     ];
                     $event->save();
@@ -223,6 +233,29 @@ final readonly class EngineTick
         }
 
         return ! $project->isPaused();
+    }
+
+    /**
+     * Pourquoi le narrateur ne doit pas recevoir ce message, s'il y a lieu.
+     *
+     * Deux plafonds se lisent dans cet ordre, et l'ordre porte du sens : la
+     * règle qui a gagné la journée est un motif plus instructif qu'un compteur
+     * hebdomadaire, et c'est elle qu'on consigne quand les deux s'appliquent.
+     *
+     * @param  array<string, EngineRuleId>  $spokenToNarrator
+     */
+    private static function narratorSuppression(
+        Project $project,
+        CarbonImmutable $now,
+        array $spokenToNarrator,
+    ): ?string {
+        $today = $spokenToNarrator[$project->id] ?? self::narratorAlreadyToldToday($project, $now);
+
+        if ($today instanceof EngineRuleId) {
+            return $today->value;
+        }
+
+        return NarratorLoad::isSaturated($project, $now) ? self::WEEKLY_CAP : null;
     }
 
     /**

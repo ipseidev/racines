@@ -52,12 +52,35 @@ Le tick (`php artisan engine:tick`, toutes les heures à la minute 07) parcourt 
     'no_reaction_story_count' => 3,
     'react_suggestion_min_interval_days' => 30,
     'silence_light_question_days' => 10,
+    'silence_light_question_max_pending' => 1,
     'silence_alert_days' => 21,
     'silence_alert_min_interval_days' => 30,
     'declining_window_weeks' => 4,
     'declining_offer_min_interval_weeks' => 8,
+    'initiator_max_requests_per_month' => 4,
+    'narrator_max_messages_per_week' => 2,
 ],
 ```
+
+## Plafonds globaux, au-dessus des limites de chaque règle
+
+Les limites de la colonne « Limite » protègent une **occurrence** : un renvoi par question, deux rappels de validation, une alerte par mois. Elles ne se parlent pas entre elles, et c'est ce silence qui a submergé une narratrice en production (T-242) : quatre messages dans la semaine, tous conformes à leur propre limite.
+
+Le tick porte donc trois plafonds que les règles ignorent :
+
+| Plafond | Portée | Où il vit |
+| --- | --- | --- |
+| **1 message par jour** au narrateur | Un projet, une journée | `EngineTick::narratorAlreadyToldToday()` |
+| **2 messages par semaine** au narrateur, question hebdomadaire comprise | Un projet, sept jours glissants | `App\Engine\NarratorLoad` |
+| **4 sollicitations par mois** à l'Initiateur·rice (R-7) | Un projet, trente jours | `App\Engine\InitiatorLoad` |
+
+Trois précisions que le plafond hebdomadaire doit à l'incident :
+
+- il compte les **messages réellement partis** (`outbound_messages`), pas les déclenchements du moteur : la question hebdomadaire ne passe par aucune règle et occupe pourtant la moitié du budget ;
+- il compte **tous canaux confondus** : la personne qui reçoit un SMS puis un courriel en a reçu deux, même si le produit y voit deux adresses ;
+- il glisse sur sept jours et ne se remet pas à zéro le lundi, sinon deux messages le dimanche et deux le lundi en feraient quatre en deux jours.
+
+La question hebdomadaire, elle, ne se laisse jamais supprimer : elle est la promesse, les relances sont le supplément. `DispatchDuePrompts` ne consulte aucun de ces plafonds.
 
 ## Événements analytics émis (bloc 15)
 
