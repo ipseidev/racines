@@ -302,3 +302,31 @@ it('redirige normalement hors d’une requête Inertia', function (): void {
         ->post('/acheter/payer')
         ->assertRedirect('https://checkout.stripe.test/'.($sessions->last()['id'] ?? ''));
 });
+
+/*
+|--------------------------------------------------------------------------
+| L'écran d'après-paiement invite à deux gestes
+|--------------------------------------------------------------------------
+|
+| La page finissait sur un bouton qui menait à un tableau de bord vide : le
+| projet n'existe que quand le webhook arrive, le narrateur n'a pas encore
+| accepté, il n'y a rien à y voir. Or c'est le seul moment où l'acheteuse a du
+| temps — et deux gestes décident vraiment de la suite : quelle question part
+| en premier, et qui écoutera.
+|
+| Les deux adresses qu'elle propose sont **sans identifiant de projet** : celui
+| des adresses de l'espace n'existe pas encore. Que le composant les pointe est
+| gardé côté Vitest, où les liens sont réels ; ce qui se vérifie ici est
+| qu'elles répondent quand la commande n'est pas encore honorée.
+|
+*/
+
+it('sert une page qui explique, quand la commande n’est pas encore honorée', function (): void {
+    $acheteuse = User::factory()->create();
+    $acheteuse->markEmailAsVerified();
+
+    // Aucun projet : le webhook n'est pas passé. Ce n'est pas une erreur, et
+    // la page ne doit pas ressembler à une panne.
+    $this->actingAs($acheteuse)->get('/espace/questions')->assertOk();
+    $this->actingAs($acheteuse)->get('/espace/proches')->assertOk();
+});

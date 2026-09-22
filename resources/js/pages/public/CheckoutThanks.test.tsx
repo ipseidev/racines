@@ -14,7 +14,13 @@ vi.mock('./Checkout', () => ({
 
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
-    Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
+    Link: ({
+        children,
+        href,
+    }: {
+        children: React.ReactNode;
+        href?: string;
+    }) => <a href={href}>{children}</a>,
     usePage: () => ({ props: { i18n: {}, brand: { name: 'P' } } }),
 }));
 
@@ -61,5 +67,25 @@ describe('la page de merci', () => {
             vi.advanceTimersByTime(2000);
         });
         expect(celebrateOnce).not.toHaveBeenCalled();
+    });
+    /*
+     * Deux gestes, et des adresses **sans identifiant de projet**.
+     *
+     * Stripe ramène le navigateur ici avant que le webhook n'arrive : une
+     * adresse `/espace/projets/{id}/questions` répondrait 404 dans les
+     * secondes qui suivent le paiement. `/espace/questions` et
+     * `/espace/proches` résolvent le projet du compte, et servent une page qui
+     * explique quand il n'existe pas encore (T-199).
+     */
+    it('invite à choisir ses questions et à inviter ses proches', () => {
+        const { container } = render(<CheckoutThanks {...props} />);
+
+        const liens = Array.from(container.querySelectorAll('a')).map((a) =>
+            a.getAttribute('href'),
+        );
+
+        expect(liens).toContain('/espace/questions');
+        expect(liens).toContain('/espace/proches');
+        expect(liens.some((href) => href?.includes('/projets/'))).toBe(false);
     });
 });

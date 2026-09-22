@@ -2045,6 +2045,33 @@ return [
                 'first_self' => 'Vous répondez en parlant, depuis votre téléphone, quand vous voulez dans la semaine.',
                 'space' => 'Vous suivez tout depuis votre espace : les questions, les proches, les photos.',
             ],
+
+            /*
+             * Ce qu'on peut faire **maintenant**, et non « allez voir votre
+             * espace ».
+             *
+             * La page finissait sur un bouton qui menait à un tableau de bord
+             * vide : le projet n'existe que quand le webhook arrive, la
+             * narratrice n'a pas encore accepté, et il n'y a rien à y voir.
+             * Or ce moment-là est le seul où l'acheteuse a du temps et de
+             * l'élan — et deux gestes décident vraiment de la suite : quelle
+             * question part en premier, et qui écoutera.
+             *
+             * Les deux ont une échéance naturelle : ils doivent être faits
+             * avant l'acceptation, sans quoi la première question part sans
+             * eux. C'est ce que les sous-titres disent, sans presser.
+             */
+            'now_title' => 'Deux choses à faire pendant qu’il est temps',
+            'now' => [
+                'questions_title' => 'Choisir vos questions',
+                'questions_body' => 'La première partira dès qu’:name aura accepté. Vous pouvez décider laquelle, en écrire une vous-même, et changer l’ordre quand vous voulez.',
+                'questions_body_soon' => 'La première partira dès que l’invitation sera acceptée. Vous pouvez décider laquelle, en écrire une vous-même, et changer l’ordre quand vous voulez.',
+                'questions_body_self' => 'Vous décidez par quoi commencer, vous pouvez écrire vos propres questions, et changer l’ordre quand vous voulez.',
+                'questions_cta' => 'Voir les questions',
+                'family_title' => 'Inviter vos proches',
+                'family_body' => 'Chacun reçoit son propre lien d’écoute, jamais un lien commun. Vous choisissez qui peut, en plus, poser ses propres questions.',
+                'family_cta' => 'Inviter des proches',
+            ],
             'book_aria' => 'Un livre qui s’ouvre',
             'book_cover' => 'Les histoires :of',
             'book_cover_anonymous' => 'Ses histoires',

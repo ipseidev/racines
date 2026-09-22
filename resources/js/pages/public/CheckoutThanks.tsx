@@ -66,7 +66,6 @@ export default function CheckoutThanks({
                   ? t('public.checkout.thanks.next.invite_self', when)
                   : t('public.checkout.thanks.next.invite_self_soon'),
               t('public.checkout.thanks.next.first_self'),
-              t('public.checkout.thanks.next.space'),
           ]
         : [
               t('public.checkout.thanks.next.email'),
@@ -74,7 +73,6 @@ export default function CheckoutThanks({
                   ? t('public.checkout.thanks.next.invite', when)
                   : t('public.checkout.thanks.next.invite_soon'),
               t('public.checkout.thanks.next.first'),
-              t('public.checkout.thanks.next.space'),
           ];
 
     return (
@@ -119,10 +117,6 @@ export default function CheckoutThanks({
                             </li>
                         ))}
                     </ol>
-
-                    <Link href="/espace" className="btn-primary press mt-10">
-                        {t('public.checkout.thanks.orders')}
-                    </Link>
                 </div>
 
                 <Book
@@ -137,7 +131,105 @@ export default function CheckoutThanks({
                     aria={t('public.checkout.thanks.book_aria')}
                 />
             </div>
+
+            {/*
+             * Deux gestes, et non « allez voir votre espace ».
+             *
+             * La page finissait sur un bouton qui menait à un tableau
+             * de bord vide : le projet n'existe que quand le webhook
+             * arrive, la narratrice n'a pas encore accepté, il n'y a
+             * rien à y voir. Or c'est le seul moment où l'acheteuse a
+             * du temps et de l'élan — et deux gestes décident
+             * vraiment de la suite : quelle question part en premier,
+             * et qui écoutera.
+             *
+             * Les adresses ne portent pas de projet : `/espace/…`
+             * résout celui du compte et sert une page qui explique
+             * quand la commande n'est pas encore honorée (T-199).
+             * Une adresse avec un identifiant répondrait 404 dans les
+             * secondes qui suivent le paiement.
+             */}
+            <h2 className="mt-12 text-xl font-semibold">
+                {t('public.checkout.thanks.now_title')}
+            </h2>
+
+            <div className="mt-4 grid max-w-4xl gap-4 sm:grid-cols-2">
+                <NextStep
+                    title={t('public.checkout.thanks.now.questions_title')}
+                    body={
+                        forSelf
+                            ? t(
+                                  'public.checkout.thanks.now.questions_body_self',
+                              )
+                            : name !== ''
+                              ? t('public.checkout.thanks.now.questions_body', {
+                                    name,
+                                })
+                              : t(
+                                    'public.checkout.thanks.now.questions_body_soon',
+                                )
+                    }
+                    cta={t('public.checkout.thanks.now.questions_cta')}
+                    href="/espace/questions"
+                    primary
+                />
+
+                <NextStep
+                    title={t('public.checkout.thanks.now.family_title')}
+                    body={t('public.checkout.thanks.now.family_body')}
+                    cta={t('public.checkout.thanks.now.family_cta')}
+                    href="/espace/proches"
+                />
+            </div>
+
+            <p className="mt-8">
+                <Link
+                    href="/espace"
+                    className="text-brand-muted hover:text-brand underline underline-offset-4 transition-colors"
+                >
+                    {t('public.checkout.thanks.orders')}
+                </Link>
+            </p>
         </div>
+    );
+}
+
+/**
+ * Une des deux choses à faire, avec sa raison.
+ *
+ * Le titre dit le geste, le corps dit **pourquoi maintenant** : les deux ont
+ * une échéance naturelle — ils doivent être faits avant l'acceptation, sans
+ * quoi la première question part sans eux. Un bouton sans cette phrase ne
+ * serait qu'un lien de plus sur une page de remerciement.
+ */
+function NextStep({
+    title,
+    body,
+    cta,
+    href,
+    primary = false,
+}: {
+    title: string;
+    body: string;
+    cta: string;
+    href: string;
+    primary?: boolean;
+}) {
+    return (
+        <section className="card enter flex flex-col gap-3 p-5">
+            <h3 className="font-display text-brand text-xl leading-snug font-medium">
+                {title}
+            </h3>
+
+            <p className="text-brand-muted flex-1 text-base">{body}</p>
+
+            <Link
+                href={href}
+                className={`${primary ? 'btn-primary' : 'btn-secondary'} press self-start no-underline`}
+            >
+                {cta}
+            </Link>
+        </section>
     );
 }
 

@@ -2022,6 +2022,18 @@ return [
                 'first_self' => 'Rispondi parlando, dal tuo telefono, quando vuoi nel corso della settimana.',
                 'space' => 'Segui tutto dalla tua area personale: le domande, i familiari, le foto.',
             ],
+
+            'now_title' => 'Due cose da fare finché c’è tempo',
+            'now' => [
+                'questions_title' => 'Scegliere le tue domande',
+                'questions_body' => 'La prima partirà appena :name avrà accettato. Puoi decidere quale, scriverne una tu stesso e cambiare l’ordine quando vuoi.',
+                'questions_body_soon' => 'La prima partirà appena l’invito sarà accettato. Puoi decidere quale, scriverne una tu stesso e cambiare l’ordine quando vuoi.',
+                'questions_body_self' => 'Decidi tu da cosa cominciare, puoi scrivere le tue domande e cambiare l’ordine quando vuoi.',
+                'questions_cta' => 'Vedere le domande',
+                'family_title' => 'Invitare i tuoi cari',
+                'family_body' => 'Ognuno riceve il proprio link di ascolto, mai un link comune. Scegli tu chi può, in più, fare le proprie domande.',
+                'family_cta' => 'Invitare dei cari',
+            ],
             'book_aria' => 'Un libro che si apre',
             'book_cover' => 'Le storie :of',
             'book_cover_anonymous' => 'Le sue storie',
