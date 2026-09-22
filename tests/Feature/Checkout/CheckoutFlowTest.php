@@ -33,6 +33,7 @@ function completeDraft(array $overrides = []): CheckoutDraft
             'preferred_channel' => Channel::Email->value,
             'address_form' => 'vous',
             'narrator_tech_comfort' => 'daily',
+            'gift_when' => 'date',
             'gift_send_at' => now()->addDay()->toDateString(),
             'gift_send_time' => '09:00',
             'gift_message' => 'J’aimerais garder tes histoires.',
@@ -117,6 +118,7 @@ it('refuse un numéro qui ne ressemble à rien', function (): void {
 
 it('refuse une date d’envoi au-delà de quatre-vingt-dix jours', function (): void {
     $this->post('/acheter/etape/3', [
+        'gift_when' => 'date',
         'gift_send_at' => now()->addDays(120)->toDateString(),
         'gift_send_time' => '09:00',
         'gift_message' => 'Bonjour',

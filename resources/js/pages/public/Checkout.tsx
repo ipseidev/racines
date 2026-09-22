@@ -176,6 +176,9 @@ export default function Checkout({
         address_form:
             text(draft, 'address_form') || (addressForms[0]?.value ?? ''),
         narrator_tech_comfort: text(draft, 'narrator_tech_comfort'),
+        // « date » par défaut : un cadeau de Noël envoyé le jour de l'achat
+        // est une erreur qu'on ne rattrape pas (T-260).
+        gift_when: text(draft, 'gift_when') || 'date',
         gift_send_at: text(draft, 'gift_send_at').slice(0, 10) || isoDate(1),
         gift_send_time:
             text(draft, 'gift_send_time') ||
@@ -600,49 +603,126 @@ export default function Checkout({
                                                   )}
                                         </p>
 
-                                        <div className="grid gap-6 sm:grid-cols-2 sm:items-end">
-                                            <TextField
-                                                label={t(
-                                                    'public.checkout.gift.send_at',
-                                                )}
-                                                error={form.errors.gift_send_at}
-                                                type="date"
-                                                min={isoDate(0)}
-                                                max={isoDate(90)}
-                                                value={String(
-                                                    form.data.gift_send_at,
-                                                )}
-                                                onChange={(event) =>
-                                                    form.setData(
-                                                        'gift_send_at',
-                                                        event.target.value,
-                                                    )
-                                                }
-                                                required
-                                            />
+                                        {/*
+                                         * Tout de suite, ou à une date (T-260).
+                                         *
+                                         * Le tunnel n'offrait que la seconde :
+                                         * on achetait un cadeau pour sa mère
+                                         * un dimanche soir et il fallait lui
+                                         * donner une date, alors qu'on voulait
+                                         * l'appeler dans la foulée pour lui
+                                         * dire de regarder ses messages.
+                                         *
+                                         * Les champs de date disparaissent
+                                         * quand ils ne servent pas : les
+                                         * laisser grisés ferait deviner s'ils
+                                         * comptent encore.
+                                         */}
+                                        <fieldset className="flex flex-col gap-3">
+                                            <legend className="mb-1 font-medium">
+                                                {t('public.checkout.gift.when')}
+                                            </legend>
 
-                                            <SelectField
-                                                label={t(
-                                                    'public.checkout.gift.send_time',
-                                                )}
-                                                options={times.map((time) => ({
-                                                    value: time,
-                                                    label: fmt.time(time),
-                                                }))}
-                                                value={String(
-                                                    form.data.gift_send_time,
-                                                )}
+                                            <ChoiceCard
+                                                name="gift_when"
+                                                value="now"
+                                                checked={
+                                                    form.data.gift_when ===
+                                                    'now'
+                                                }
                                                 onChange={(value) =>
                                                     form.setData(
-                                                        'gift_send_time',
+                                                        'gift_when',
                                                         value,
                                                     )
                                                 }
-                                                error={
-                                                    form.errors.gift_send_time
-                                                }
+                                                title={t(
+                                                    forSelf
+                                                        ? 'public.checkout.gift.when_now_self'
+                                                        : 'public.checkout.gift.when_now',
+                                                )}
+                                                hint={t(
+                                                    forSelf
+                                                        ? 'public.checkout.gift.when_now_hint_self'
+                                                        : 'public.checkout.gift.when_now_hint',
+                                                )}
                                             />
-                                        </div>
+
+                                            <ChoiceCard
+                                                name="gift_when"
+                                                value="date"
+                                                checked={
+                                                    form.data.gift_when ===
+                                                    'date'
+                                                }
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'gift_when',
+                                                        value,
+                                                    )
+                                                }
+                                                title={t(
+                                                    'public.checkout.gift.when_date',
+                                                )}
+                                                hint={t(
+                                                    'public.checkout.gift.when_date_hint',
+                                                )}
+                                            />
+                                        </fieldset>
+
+                                        {form.data.gift_when === 'date' && (
+                                            <div className="enter grid gap-6 sm:grid-cols-2 sm:items-end">
+                                                <TextField
+                                                    label={t(
+                                                        'public.checkout.gift.send_at',
+                                                    )}
+                                                    error={
+                                                        form.errors.gift_send_at
+                                                    }
+                                                    type="date"
+                                                    min={isoDate(0)}
+                                                    max={isoDate(90)}
+                                                    value={String(
+                                                        form.data.gift_send_at,
+                                                    )}
+                                                    onChange={(event) =>
+                                                        form.setData(
+                                                            'gift_send_at',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                />
+
+                                                <SelectField
+                                                    label={t(
+                                                        'public.checkout.gift.send_time',
+                                                    )}
+                                                    options={times.map(
+                                                        (time) => ({
+                                                            value: time,
+                                                            label: fmt.time(
+                                                                time,
+                                                            ),
+                                                        }),
+                                                    )}
+                                                    value={String(
+                                                        form.data
+                                                            .gift_send_time,
+                                                    )}
+                                                    onChange={(value) =>
+                                                        form.setData(
+                                                            'gift_send_time',
+                                                            value,
+                                                        )
+                                                    }
+                                                    error={
+                                                        form.errors
+                                                            .gift_send_time
+                                                    }
+                                                />
+                                            </div>
+                                        )}
 
                                         {!forSelf && (
                                             <TextAreaField
@@ -972,23 +1052,32 @@ export default function Checkout({
                                                               'public.checkout.summary.gift',
                                                           )
                                                 }
-                                                value={t(
-                                                    'public.checkout.summary.gift_line',
-                                                    {
-                                                        date: fmt.longDate(
-                                                            String(
-                                                                form.data
-                                                                    .gift_send_at,
-                                                            ),
-                                                        ),
-                                                        time: fmt.time(
-                                                            String(
-                                                                form.data
-                                                                    .gift_send_time,
-                                                            ),
-                                                        ),
-                                                    },
-                                                )}
+                                                value={
+                                                    form.data.gift_when ===
+                                                    'now'
+                                                        ? t(
+                                                              'public.checkout.summary.gift_line_now',
+                                                          )
+                                                        : t(
+                                                              'public.checkout.summary.gift_line',
+                                                              {
+                                                                  date: fmt.longDate(
+                                                                      String(
+                                                                          form
+                                                                              .data
+                                                                              .gift_send_at,
+                                                                      ),
+                                                                  ),
+                                                                  time: fmt.time(
+                                                                      String(
+                                                                          form
+                                                                              .data
+                                                                              .gift_send_time,
+                                                                      ),
+                                                                  ),
+                                                              },
+                                                          )
+                                                }
                                                 editHref="/acheter?step=3"
                                                 editLabel={t(
                                                     'public.checkout.edit',

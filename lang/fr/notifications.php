@@ -310,15 +310,44 @@ return [
      * personne qui offre, son message personnel, et la phrase qui dit
      * qu'aucune page ne demandera de mot de passe ni de paiement.
      *
-     * Il ne demande **rien** : juste de découvrir de quoi il s'agit.
+     * Il ne demande **rien** : juste de regarder ce qu'on lui offre. Le bouton
+     * dit donc ce qu'il y a derrière — « Voir le cadeau » — et non ce qu'on
+     * n'exige pas : « Découvrir, sans engagement » est une phrase de tunnel de
+     * vente, et personne n'écrit ça à sa mère. La phrase qui suit dit déjà,
+     * mieux, que rien ne commence sans son oui.
      */
     'gift_invitation' => [
-        'subject' => ':inviter vous offre un livre de vos souvenirs',
+        /*
+         * L'objet dit ce qui commence, pas ce qui finit.
+         *
+         * « :inviter vous offre un livre de vos souvenirs » est vrai au bout
+         * d'un an, et faux à la seconde où on le lit : on ouvre en s'attendant
+         * à un objet, on trouve une proposition de raconter sa vie. Un objet
+         * de courriel se lit seul, dans une notification de téléphone, souvent
+         * sans le corps qui l'explique — c'est la seule phrase dont on soit
+         * sûr qu'elle sera lue, et elle doit donc être la plus juste.
+         */
+        'subject' => ':inviter vous invite à raconter vos souvenirs',
         'greeting' => 'Bonjour :name,',
         'line' => ':inviter aimerait recueillir vos souvenirs et en faire un livre, avec :brand. Vous répondez en parlant, quand vous voulez, et vous décidez de tout.',
-        'button' => 'Découvrir, sans engagement',
+        'button' => 'Voir le cadeau',
         'no_obligation' => 'Rien ne commence avant que vous ayez dit oui. Et vous pouvez dire non : c’est prévu, et c’est respecté.',
-        'sms' => ':name, :inviter vous offre un livre de vos souvenirs avec :brand. Pour découvrir : :link. Ce lien ne demandera jamais de mot de passe ni de paiement.',
+        /*
+         * Ce qui commence, avant ce qui finit.
+         *
+         * « :inviter vous offre un livre de vos souvenirs. Pour découvrir :
+         * … » faisait cliquer quelqu'un qui s'attendait à voir un livre, et
+         * qui trouvait une proposition de répondre à une question par semaine
+         * pendant un an. Le livre est vrai, mais il arrive au bout — et un
+         * message qui laisse croire à un objet immédiat achète un clic contre
+         * une déception.
+         *
+         * Deux segments dans les deux cas : la limite est de 306 caractères,
+         * et cette version en fait 256 avec un lien sur le domaine court des
+         * réglages. Les
+         * cinquante restants absorbent deux prénoms longs.
+         */
+        'sms' => ':name, :inviter vous invite à raconter vos souvenirs avec :brand : une question par semaine, et un livre à la fin. Voir le cadeau : :link Ce lien ne demandera jamais de mot de passe ni de paiement.',
     ],
 
     'checkout' => [

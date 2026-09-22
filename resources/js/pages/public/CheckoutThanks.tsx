@@ -8,6 +8,8 @@ import { celebrateOnce } from '@/lib/celebrate';
 type Props = {
     sessionId?: string | null;
     forSelf: boolean;
+    /** « Dès la commande » : l'invitation est déjà partie (T-260). */
+    giftNow: boolean;
     narratorFirstName: string | null;
     giftSendAt: string | null;
     giftSendTime: string;
@@ -35,6 +37,7 @@ const COVER_OPEN_MS = 1500;
 export default function CheckoutThanks({
     sessionId,
     forSelf,
+    giftNow,
     narratorFirstName,
     giftSendAt,
     giftSendTime,
@@ -62,16 +65,20 @@ export default function CheckoutThanks({
     const steps = forSelf
         ? [
               t('public.checkout.thanks.next.email'),
-              giftSendAt !== null
-                  ? t('public.checkout.thanks.next.invite_self', when)
-                  : t('public.checkout.thanks.next.invite_self_soon'),
+              giftNow
+                  ? t('public.checkout.thanks.next.invite_now_self')
+                  : giftSendAt !== null
+                    ? t('public.checkout.thanks.next.invite_self', when)
+                    : t('public.checkout.thanks.next.invite_self_soon'),
               t('public.checkout.thanks.next.first_self'),
           ]
         : [
               t('public.checkout.thanks.next.email'),
-              giftSendAt !== null
-                  ? t('public.checkout.thanks.next.invite', when)
-                  : t('public.checkout.thanks.next.invite_soon'),
+              giftNow
+                  ? t('public.checkout.thanks.next.invite_now')
+                  : giftSendAt !== null
+                    ? t('public.checkout.thanks.next.invite', when)
+                    : t('public.checkout.thanks.next.invite_soon'),
               t('public.checkout.thanks.next.first'),
           ];
 

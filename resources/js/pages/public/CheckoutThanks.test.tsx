@@ -27,6 +27,7 @@ vi.mock('@inertiajs/react', () => ({
 const props = {
     sessionId: 'cs_test_123',
     forSelf: false,
+    giftNow: false,
     narratorFirstName: 'Odette',
     giftSendAt: '2026-10-01',
     giftSendTime: '09:00',

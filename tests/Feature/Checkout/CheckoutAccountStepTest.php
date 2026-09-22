@@ -63,6 +63,7 @@ it('donne à la page de merci le prénom et la date de l’invitation', function
         'payload' => [
             'for' => 'relative',
             'narrator_first_name' => 'Jeanne',
+            'gift_when' => 'date',
             'gift_send_at' => '2026-10-03',
         ],
         'expires_at' => now()->addDays(7),

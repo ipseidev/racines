@@ -298,9 +298,16 @@ final readonly class FulfillOrder
      */
     private static function sendAt(CheckoutDraft $draft, PilotSettings $settings): CarbonImmutable
     {
+        $now = CarbonImmutable::now();
+
+        // « Dès la commande » (T-260) : l'annonce part avec le reste, sans
+        // attendre le planificateur.
+        if ($draft->value('gift_when') === 'now') {
+            return $now;
+        }
+
         [$hour, $minute] = self::sendTime($draft->value('gift_send_time'), $settings->gift_send_hour);
         $chosen = $draft->value('gift_send_at');
-        $now = CarbonImmutable::now();
 
         $at = $chosen === null
             ? $now->addDay()->setTime($hour, $minute)

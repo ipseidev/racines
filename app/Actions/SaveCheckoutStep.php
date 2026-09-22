@@ -57,10 +57,24 @@ final class SaveCheckoutStep
                     : ['required', new Enum(TechComfort::class)],
             ],
             3 => [
+                /*
+                 * Tout de suite, ou à une date (T-260).
+                 *
+                 * Le tunnel n'offrait que la seconde : on achetait un cadeau
+                 * pour sa mère un dimanche soir et il fallait lui donner une
+                 * date, alors qu'on voulait l'appeler dans la foulée pour lui
+                 * dire de regarder ses messages. Le calendrier reste le
+                 * défaut — un cadeau de Noël envoyé le jour de l'achat est
+                 * une erreur qu'on ne rattrape pas — mais il n'est plus obligé.
+                 */
+                'gift_when' => ['required', Rule::in(['now', 'date'])],
                 // Demain par défaut, quatre-vingt-dix jours au plus : au-delà,
-                // l'acheteur aurait oublié ce qu'il a commandé.
-                'gift_send_at' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.now()->addDays(90)->toDateString()],
-                'gift_send_time' => ['required', 'date_format:H:i'],
+                // l'acheteur aurait oublié ce qu'il a commandé. Exigés
+                // seulement quand une date est choisie : les demander dans
+                // l'autre cas ferait refuser un envoi immédiat pour un champ
+                // que l'écran n'affiche pas.
+                'gift_send_at' => ['required_if:gift_when,date', 'nullable', 'date', 'after_or_equal:today', 'before_or_equal:'.now()->addDays(90)->toDateString()],
+                'gift_send_time' => ['required_if:gift_when,date', 'nullable', 'date_format:H:i'],
                 'gift_message' => $self
                     ? ['nullable', 'string', 'max:600']
                     : ['required', 'string', 'max:600'],

@@ -66,6 +66,7 @@ it('exige une heure d’envoi, et pas de mot quand on s’écrit à soi-même', 
 
     $this->withCookie('checkout_draft', $self->id)
         ->post('/acheter/etape/3', [
+            'gift_when' => 'date',
             'gift_send_at' => now()->addDays(3)->toDateString(),
         ])
         ->assertSessionHasErrors('gift_send_time')
@@ -73,6 +74,7 @@ it('exige une heure d’envoi, et pas de mot quand on s’écrit à soi-même', 
 
     $this->withCookie('checkout_draft', $self->id)
         ->post('/acheter/etape/3', [
+            'gift_when' => 'date',
             'gift_send_at' => now()->addDays(3)->toDateString(),
             'gift_send_time' => '18:30',
         ])
@@ -86,6 +88,7 @@ it('exige une heure d’envoi, et pas de mot quand on s’écrit à soi-même', 
 
     $this->withCookie('checkout_draft', $relative->id)
         ->post('/acheter/etape/3', [
+            'gift_when' => 'date',
             'gift_send_at' => now()->addDays(3)->toDateString(),
             'gift_send_time' => '09:00',
         ])
@@ -99,6 +102,7 @@ it('sait ce qui manque selon le chemin choisi', function (): void {
         'narrator_email' => 'camille@exemple.test',
         'preferred_channel' => Channel::Email->value,
         'address_form' => 'tu',
+        'gift_when' => 'date',
         'gift_send_at' => now()->addDays(3)->toDateString(),
         'gift_send_time' => '09:00',
         'accepts_terms' => true,
@@ -129,6 +133,7 @@ it('programme l’invitation à l’heure choisie et retient l’aisance de la n
             'preferred_channel' => Channel::Email->value,
             'address_form' => 'vous',
             'narrator_tech_comfort' => TechComfort::Rarely->value,
+            'gift_when' => 'date',
             'gift_send_at' => now()->addDays(5)->toDateString(),
             'gift_send_time' => '18:30',
             'gift_message' => 'J’aimerais garder tes histoires.',

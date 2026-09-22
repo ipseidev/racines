@@ -1818,10 +1818,18 @@ return [
             'book_note' => 'Couverture :cover, un chapitre par histoire, un QR qui rejoue sa voix.',
 
             'invitation_label' => 'D’abord, l’invitation',
-            'invitation' => ':name, :inviter vous offre un livre de vos souvenirs avec :brand. Pour découvrir : :link. Ce lien ne demandera jamais de mot de passe ni de paiement.',
+            /*
+             * Mot pour mot le SMS de `notifications.gift_invitation.sms`.
+             *
+             * La note en dessous le promet — « c'est le message réel, mot pour
+             * mot » — et une promesse d'exactitude tenue par une recopie tient
+             * jusqu'à la première retouche de l'original. Si vous changez
+             * l'un, changez l'autre : un test compare les deux.
+             */
+            'invitation' => ':name, :inviter vous invite à raconter vos souvenirs avec :brand : une question par semaine, et un livre à la fin. Voir le cadeau : :link Ce lien ne demandera jamais de mot de passe ni de paiement.',
             'inviter_placeholder' => '[votre prénom]',
             'link_placeholder' => '[votre lien]',
-            'invitation_note' => 'C’est le message réel, mot pour mot. Il n’y manque que votre prénom. L’invitation ne demande rien : elle propose de découvrir.',
+            'invitation_note' => 'C’est le message réel, mot pour mot. Il n’y manque que votre prénom. L’invitation ne demande rien : elle propose de regarder.',
 
             'first_label' => 'Puis, dès que :name aura accepté, sa première question',
             'first_note' => 'Ce n’est pas un exemple : c’est la question que le corpus choisit pour :name, d’après les thèmes que vous venez de cocher. Toujours une question facile en premier — une question intime, la première semaine, fait raccrocher.',
@@ -1914,8 +1922,26 @@ return [
         ],
 
         'gift' => [
-            'intro' => 'L’invitation partira à la date et à l’heure que vous choisissez, avec votre mot.',
-            'intro_self' => 'Votre première question partira à la date et à l’heure que vous choisissez.',
+            // Plus de date annoncée ici : le choix la donne juste en dessous,
+            // et promettre « à la date que vous choisissez » à qui vient de
+            // cocher « dès la commande » se contredit à deux lignes d'écart.
+            'intro' => 'C’est vous qui décidez quand elle part, et ce qu’elle dit.',
+            'intro_self' => 'C’est vous qui décidez quand votre première question arrive.',
+            /*
+             * Tout de suite, ou à une date (T-260).
+             *
+             * « Dès la commande » d'abord, parce que c'est le choix qui se
+             * décide sans réfléchir : on sait si l'on veut appeler sa mère ce
+             * soir. La date reste le défaut coché — un cadeau de Noël envoyé
+             * le jour de l'achat est une erreur qu'on ne rattrape pas.
+             */
+            'when' => 'Quand envoyer l’invitation ?',
+            'when_now' => 'Dès la commande',
+            'when_now_hint' => 'L’invitation part dans la minute. Pratique pour prévenir de vive voix dans la foulée.',
+            'when_date' => 'À une date que je choisis',
+            'when_date_hint' => 'Jusqu’à trois mois plus tard, à l’heure que vous voulez.',
+            'when_now_self' => 'Tout de suite',
+            'when_now_hint_self' => 'Votre première question arrive dans la foulée.',
             'send_at' => 'Quel jour ?',
             'send_time' => 'À quelle heure ?',
             'message' => 'Votre message personnel',
@@ -1979,6 +2005,7 @@ return [
             'gift' => 'L’invitation',
             'gift_self' => 'La première question',
             'gift_line' => 'Le :date à :time',
+            'gift_line_now' => 'Dès la commande',
             'options' => 'Les options',
             'none' => 'Aucune option',
             'copies_one' => 'Un exemplaire supplémentaire',
@@ -2039,6 +2066,8 @@ return [
                 'email' => 'Vous recevez un email de confirmation dans quelques minutes.',
                 'invite' => 'L’invitation part le :date à :time, avec votre mot.',
                 'invite_soon' => 'L’invitation part à la date et à l’heure que vous avez choisies, avec votre mot.',
+                'invite_now' => 'L’invitation part dans la minute, avec votre mot.',
+                'invite_now_self' => 'Votre première question arrive dans la foulée.',
                 'invite_self' => 'Votre première question arrive le :date à :time.',
                 'invite_self_soon' => 'Votre première question arrive à la date et à l’heure que vous avez choisies.',
                 'first' => 'La semaine où elle accepte, elle reçoit sa première question et répond en parlant.',

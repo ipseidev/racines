@@ -264,6 +264,10 @@ final readonly class CheckoutController
         return inertia('public/CheckoutThanks', [
             'sessionId' => $request->query('session_id'),
             'forSelf' => ($payload['for'] ?? null) === 'self',
+            // « Dès la commande » (T-260) : la page annonce un envoi en cours,
+            // pas une date. Sans ce drapeau elle aurait dit « à la date que
+            // vous avez choisie » à quelqu'un qui n'en a choisi aucune.
+            'giftNow' => ($payload['gift_when'] ?? null) === 'now',
             'narratorFirstName' => is_string($firstName) && $firstName !== '' ? $firstName : null,
             'giftSendAt' => is_string($sendAt) && $sendAt !== '' ? substr($sendAt, 0, 10) : null,
             'giftSendTime' => is_string($sendTime) && $sendTime !== ''

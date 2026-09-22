@@ -30,6 +30,7 @@ function draftWithOptions(array $overrides = []): CheckoutDraft
             'preferred_channel' => Channel::Email->value,
             'address_form' => 'vous',
             'narrator_tech_comfort' => 'daily',
+            'gift_when' => 'date',
             'gift_send_at' => now()->addDay()->toDateString(),
             'gift_send_time' => '09:00',
             'gift_message' => 'J’aimerais garder tes histoires.',

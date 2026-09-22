@@ -76,6 +76,7 @@ function payableDraft(array $overrides = []): CheckoutDraft
             'narrator_email' => 'jeanne@exemple.test',
             'preferred_channel' => 'email',
             'address_form' => 'vous',
+            'gift_when' => 'date',
             'gift_send_at' => now()->addDay()->toDateString(),
             'gift_message' => 'J’aimerais garder tes histoires.',
             'gift_variant' => 'ecard',
