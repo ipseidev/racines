@@ -11,6 +11,7 @@ use App\Models\Story;
 use App\States\Story\Hidden;
 use App\States\Story\Proposed;
 use App\States\Story\Recorded;
+use App\Support\PhotoPresenter;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Laravel\Pennant\Feature;
@@ -44,6 +45,14 @@ final class RecordPageController
             'firstName' => $narrator->first_name,
             'addressForm' => $project->address_form->value,
             'question' => $story->questionText(),
+            /*
+             * Les photos qui posent la question (et non celles de la
+             * réponse). Une famille qui joint une image demande « raconte-nous
+             * celle-ci » ; jusqu'ici l'image partait en base et personne ne la
+             * voyait avant l'enregistrement — c'est-à-dire jamais au moment où
+             * elle servait.
+             */
+            'questionPhotos' => PhotoPresenter::promptsForStory($story),
             'storyRef' => hash('sha256', $story->id),
             'state' => $story->state->getValue(),
             'limits' => [
@@ -51,6 +60,7 @@ final class RecordPageController
                 'hardStopSeconds' => (int) config('product.recording.hard_stop_seconds'),
                 'maxBytes' => (int) config('product.recording.max_bytes'),
                 'segmentMilliseconds' => (int) config('product.recording.segment_milliseconds'),
+                'firstRunSeconds' => (int) config('product.recording.first_run_seconds'),
                 'partSizeBytes' => (int) config('product.recording.upload_part_bytes'),
                 'acceptedMimes' => array_values((array) config('product.recording.accepted_mimes')),
                 // Les bornes de la vidéo (T-210). Le débit est imposé au
@@ -74,6 +84,35 @@ final class RecordPageController
             // Déclarée par l'acheteur (T-136) : la page dose son aide d'après
             // elle. Nulle pour les projets antérieurs.
             'techComfort' => $narrator->tech_comfort?->value,
+            /*
+             * La déclaration d'avance (D-10) : quand elle existe, l'écran de
+             * fin **annonce** au lieu de demander. La question ne disparaît
+             * pas pour autant — « garder celle-ci pour moi » reste à un
+             * doigt, parce qu'un accord permanent n'est pas un engagement
+             * histoire par histoire.
+             */
+            'declaredSharing' => $project->declared_sharing_at !== null,
+            /*
+             * Le tout premier lien de cette personne (T-247), qui décide du
+             * tour de chauffe.
+             *
+             * Le signal est **ce qu'elle a déjà fait**, pas ce que son
+             * navigateur se rappelle : un témoin local se perd en navigation
+             * privée, sur un second téléphone, ou au premier nettoyage — et
+             * proposer d'essayer à quelqu'un qui a déjà raconté dix histoires
+             * serait la façon la plus sûre de passer pour une machine qui ne
+             * reconnaît personne.
+             *
+             * Deux souvenirs, et non un seul. « Elle a déjà enregistré »
+             * ne suffisait pas : quelqu'un qui joue les quinze secondes puis
+             * referme sans répondre n'a rien enregistré, et retrouvait le
+             * tour de chauffe à chaque ouverture. `first_run_at` retient
+             * qu'il a été **proposé et répondu** — joué ou passé.
+             */
+            'firstTime' => $narrator->first_run_at === null
+                && ! $narrator->stories()
+                    ->whereNotNull('recorded_at')
+                    ->exists(),
         ];
 
         if ($story->state instanceof Recorded || ! $story->state instanceof Proposed) {

@@ -29,38 +29,38 @@ uses(RefreshDatabase::class);
  * conséquence, et la décision est ouverte en R-12.
  *
  * Ce que ces tests protègent surtout : **l'absence de déclaration ne partage
- * rien**. C'est la garde qui doit survivre à toutes les refontes à venir.
+ * rien**. C'est la garde qui doit survivre à toutes les refontes à venir — et
+ * elle a déjà survécu à la plus grosse : depuis T-250, la déclaration est le
+ * sixième accord, donnée par « J'accepte » et donc présente sur tout projet
+ * neuf. Un projet sans déclaration existe encore, et c'est celui d'une
+ * narratrice qui y a **mis fin** depuis son espace. Le code n'a pas le droit
+ * de l'oublier : c'est exactement là que le silence redeviendrait un accord.
  */
 function transcribedStoryFor(Project $project): Story
 {
     return Story::factory()->forProject($project)->transcribed()->create();
 }
 
-function projetAccepte(bool $declare): Project
+function projetAccepte(bool $declare = true): Project
 {
     $project = Project::factory()->draft()->create();
     Narrator::factory()->create(['project_id' => $project->id, 'is_primary' => true]);
     $project->refresh();
 
-    app(AcceptInvitation::class)->handle($project, [
-        'declared_sharing' => $declare,
-    ]);
+    app(AcceptInvitation::class)->handle($project, []);
+
+    // Le cas d'une narratrice qui a arrêté l'envoi depuis son espace : c'est
+    // le seul chemin, depuis T-250, vers un projet actif sans déclaration.
+    if (! $declare) {
+        $project->declared_sharing_at = null;
+        $project->save();
+    }
 
     return $project->refresh();
 }
 
-it('n’enregistre aucun consentement de partage déclaré quand la case n’est pas cochée', function (): void {
-    $project = projetAccepte(false);
-
-    expect(Consent::query()
-        ->where('project_id', $project->id)
-        ->where('kind', ConsentKind::DeclaredSharing)
-        ->exists())->toBeFalse()
-        ->and($project->declared_sharing_at)->toBeNull();
-});
-
-it('trace le consentement et la date quand elle est cochée', function (): void {
-    $project = projetAccepte(true);
+it('trace le consentement et la date dès l’acceptation, sans rien demander', function (): void {
+    $project = projetAccepte();
 
     $consent = Consent::query()
         ->where('project_id', $project->id)
@@ -77,7 +77,7 @@ it('trace le consentement et la date quand elle est cochée', function (): void 
  * relais. C'est ce qui supprime le tap.
  */
 it('partage une histoire sans décision quand le partage est déclaré', function (): void {
-    $project = projetAccepte(true);
+    $project = projetAccepte();
     $story = transcribedStoryFor($project);
 
     app(ApplyShareDecision::class)->handle($story);
@@ -90,8 +90,8 @@ it('partage une histoire sans décision quand le partage est déclaré', functio
  * Et la garde qui ne doit jamais tomber : sans déclaration, le silence ne
  * partage rien. On demande une relecture, comme avant D-10.
  */
-it('ne partage rien sans décision ni déclaration', function (): void {
-    $project = projetAccepte(false);
+it('ne partage rien après un arrêt de l’envoi, décision ou pas', function (): void {
+    $project = projetAccepte(declare: false);
     $story = transcribedStoryFor($project);
 
     app(ApplyShareDecision::class)->handle($story);

@@ -118,6 +118,9 @@ return [
         'camera_granted' => 'Fotocamera autorizzata',
         'video_chosen' => 'Scelto il video',
         'audio_chosen' => 'Scelta la sola voce',
+        'first_run_started' => 'Prova iniziale avviata',
+        'first_run_done' => 'Prova iniziale completata',
+        'first_run_skipped' => 'Prova iniziale saltata',
     ],
 
     'share_decision' => [

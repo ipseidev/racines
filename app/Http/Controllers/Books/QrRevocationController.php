@@ -8,6 +8,7 @@ use App\Books\IssueQrToken;
 use App\Books\RevokeQrToken;
 use App\Models\BookChapter;
 use App\Models\Narrator;
+use App\Models\Project;
 use App\Models\Story;
 use App\Support\InitiatorProject;
 use Illuminate\Http\RedirectResponse;
@@ -48,7 +49,16 @@ final readonly class QrRevocationController
     }
 
     /** La même paire, depuis l'espace de l'Initiateur·rice. */
-    public function initiatorDestroy(Request $request, Story $story): RedirectResponse
+    /*
+     * `Project $project` en tête, et il n'est pas lu ici.
+     *
+     * Depuis que les adresses portent le projet, Laravel passe les
+     * paramètres de route **par position** : sans cette déclaration,
+     * `$member` recevait le projet sérialisé et la requête tombait sur un
+     * « invalid input syntax for type uuid ». Le projet lui-même continue
+     * d'être résolu par `InitiatorProject`, qui lit la route.
+     */
+    public function initiatorDestroy(Request $request, Project $project, Story $story): RedirectResponse
     {
         $this->authorizeInitiator($request, $story);
         $this->revoke->handle($story);
@@ -56,7 +66,16 @@ final readonly class QrRevocationController
         return back()->with('status', __('narrator.space.qr.revoked'));
     }
 
-    public function initiatorRestore(Request $request, Story $story): RedirectResponse
+    /*
+     * `Project $project` en tête, et il n'est pas lu ici.
+     *
+     * Depuis que les adresses portent le projet, Laravel passe les
+     * paramètres de route **par position** : sans cette déclaration,
+     * `$member` recevait le projet sérialisé et la requête tombait sur un
+     * « invalid input syntax for type uuid ». Le projet lui-même continue
+     * d'être résolu par `InitiatorProject`, qui lit la route.
+     */
+    public function initiatorRestore(Request $request, Project $project, Story $story): RedirectResponse
     {
         $this->authorizeInitiator($request, $story);
         $this->reissue($story);

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import LocaleSwitcher from './LocaleSwitcher';
@@ -70,12 +70,50 @@ describe('sélecteur de langue', () => {
         render(<LocaleSwitcher />);
 
         // Un `<span>` et non un lien désactivé : un lecteur d'écran annonce un
-        // lien comme un lien, même s'il ne mène nulle part.
-        expect(screen.queryByRole('link', { name: 'Français' })).toBeNull();
-        expect(screen.getByText('Français')).toHaveAttribute(
+        // lien comme un lien, même s'il ne mène nulle part. La liste est le
+        // périmètre : le nom de la langue courante s'affiche aussi sur le
+        // dépliant, et c'est une étiquette, pas un choix.
+        const list = within(screen.getByRole('list'));
+
+        expect(list.queryByRole('link', { name: 'Français' })).toBeNull();
+        expect(list.getByText('Français')).toHaveAttribute(
             'aria-current',
             'true',
         );
+    });
+
+    it('montre la langue lue sur le dépliant, et cache les autres jusqu’au toucher', () => {
+        props = {
+            i18n: catalogue,
+            locale: { current: 'fr', language: 'fr', locales: locales(true) },
+        };
+
+        const { container } = render(<LocaleSwitcher />);
+
+        // Cinq langues tenaient deux rangs en bas de chaque page ; il n'en
+        // reste qu'une à l'écran, celle qu'on est en train de lire.
+        const box = container.querySelector('details');
+        const summary = container.querySelector('summary');
+
+        expect(box?.open).toBe(false);
+        expect(summary?.textContent).toContain('Français');
+    });
+
+    it('se referme sur Échap', () => {
+        props = {
+            i18n: catalogue,
+            locale: { current: 'fr', language: 'fr', locales: locales(true) },
+        };
+
+        const { container } = render(<LocaleSwitcher />);
+        const box = container.querySelector('details');
+
+        box!.open = true;
+        fireEvent.keyDown(document, { key: 'Escape' });
+
+        // Ce que `<details>` ne sait pas faire seul, et sans quoi le panneau
+        // reste ouvert derrière la page suivante.
+        expect(box!.open).toBe(false);
     });
 
     it('poste le choix sur une page qui n’a qu’une adresse', () => {
@@ -84,7 +122,10 @@ describe('sélecteur de langue', () => {
             locale: { current: 'fr', language: 'fr', locales: locales(false) },
         };
 
-        render(<LocaleSwitcher />);
+        const { container } = render(<LocaleSwitcher />);
+        const box = container.querySelector('details');
+
+        box!.open = true;
         screen.getByRole('button', { name: 'Italiano' }).click();
 
         expect(post).toHaveBeenCalledWith(
@@ -92,6 +133,7 @@ describe('sélecteur de langue', () => {
             { locale: 'it' },
             { preserveScroll: true },
         );
+        expect(box!.open).toBe(false);
     });
 
     it('disparaît quand il n’y a rien à choisir', () => {

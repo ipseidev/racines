@@ -6,8 +6,10 @@ namespace App\Http\Middleware;
 
 use App\Analytics\Measured;
 use App\Enums\Locale;
+use App\Models\Project;
 use App\Settings\PilotSettings;
 use App\Support\Brand;
+use App\Support\InitiatorProject;
 use App\Support\Locales;
 use App\Support\LocalizedRoutes;
 use App\Support\Translations;
@@ -62,6 +64,20 @@ final class HandleInertiaRequests extends Middleware
              * la réponse se construit, quand elle l'est. Sans cela, une
              * narratrice italienne recevait la page en français.
              */
+            /*
+             * L'espace de l'Initiateur·rice : le projet regardé, et les
+             * autres.
+             *
+             * Une fermeture, pour la raison donnée juste au-dessus : la
+             * liaison de route n'est pas encore résolue quand `share()`
+             * s'exécute, et `base` serait construit sur un projet absent.
+             *
+             * `base` est le préfixe des adresses de l'espace. Le front
+             * l'emploie plutôt que d'écrire `/espace/…` en dur : sans lui, il
+             * faudrait recoller l'identifiant du projet dans vingt-trois
+             * chaînes, et la vingt-quatrième écrite demain l'oublierait.
+             */
+            'space' => fn (): ?array => self::space($request),
             'i18n' => fn (): array => Translations::forRequest($request),
             /*
              * La langue de la page, et de quoi en changer.
@@ -218,6 +234,45 @@ final class HandleInertiaRequests extends Middleware
         }
 
         return ['pixelId' => $id];
+    }
+
+    /**
+     * L'espace, tel que son gabarit en a besoin.
+     *
+     * `null` hors de l'espace : aucune page publique n'a à connaître les
+     * projets de qui que ce soit, et une prop partagée qui traîne finit par
+     * être lue quelque part.
+     *
+     * @return array{base: string, current: array{id: string, narrator: string}, projects: list<array{id: string, narrator: string, href: string}>}|null
+     */
+    private static function space(Request $request): ?array
+    {
+        $user = $request->user();
+        $project = $request->route()?->parameter('project');
+
+        if ($user === null || ! $project instanceof Project) {
+            return null;
+        }
+
+        $nom = function (Project $p): string {
+            $narrator = $p->primaryNarrator;
+
+            return $narrator === null
+                ? __('initiator.nav.untitled_project')
+                : $narrator->first_name;
+        };
+
+        return [
+            'base' => '/espace/projets/'.$project->id,
+            'current' => ['id' => $project->id, 'narrator' => $nom($project)],
+            'projects' => array_values(InitiatorProject::allOf($user)
+                ->map(fn (Project $p): array => [
+                    'id' => $p->id,
+                    'narrator' => $nom($p),
+                    'href' => '/espace/projets/'.$p->id,
+                ])
+                ->all()),
+        ];
     }
 
     /**

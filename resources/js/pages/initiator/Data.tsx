@@ -5,6 +5,7 @@ import { useFormat } from '@/hooks/useFormat';
 import { SubmitButton } from '@/components/form/SubmitButton';
 import { Check } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
+import { useSpacePath } from '@/hooks/useSpacePath';
 import { useT } from '@/hooks/useT';
 import { stagger } from '@/lib/motion';
 
@@ -42,6 +43,7 @@ export default function Data({
     printInProgress,
 }: Props) {
     const t = useT();
+    const spacePath = useSpacePath();
     const fmt = useFormat();
     const date = (iso: string | null) => (iso === null ? '—' : fmt.date(iso));
     const [ouvert, setOuvert] = useState(false);
@@ -74,7 +76,7 @@ export default function Data({
                 <form
                     onSubmit={(event) => {
                         event.preventDefault();
-                        demande.post('/espace/donnees/export', {
+                        demande.post(spacePath('/donnees/export'), {
                             preserveScroll: true,
                         });
                     }}
@@ -218,7 +220,7 @@ export default function Data({
                     <form
                         onSubmit={(event) => {
                             event.preventDefault();
-                            effacement.post('/espace/donnees/effacement', {
+                            effacement.post(spacePath('/donnees/effacement'), {
                                 preserveScroll: true,
                             });
                         }}

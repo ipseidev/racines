@@ -15,6 +15,7 @@ use App\Http\Controllers\Narrator\RequestNewLinkController;
 use App\Http\Controllers\Narrator\RestartRecordingController;
 use App\Http\Controllers\Narrator\ReviewController;
 use App\Http\Controllers\Narrator\ShareDecisionController;
+use App\Http\Controllers\Narrator\SharingDeclarationController;
 use App\Http\Controllers\Narrator\SpaceAccessController;
 use App\Http\Controllers\Narrator\SpaceController;
 use App\Http\Controllers\Narrator\SpaceOtpController;
@@ -190,6 +191,11 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
             Route::post('/n/{token}/stories/{story}/unhide', [WithdrawalController::class, 'unhide'])
                 ->name('narrator.space.stories.unhide');
 
+            // Reprendre la déclaration expose ce qui ne l'était pas : même
+            // garde que « ne plus masquer ».
+            Route::post('/n/{token}/partage/reprendre', [SharingDeclarationController::class, 'resume'])
+                ->name('narrator.space.sharing.resume');
+
             Route::post('/n/{token}/stories/{story}/trash', [WithdrawalController::class, 'trash'])
                 ->name('narrator.space.stories.trash');
 
@@ -219,6 +225,17 @@ Route::middleware(['throttle:tokens', 'no-store'])->group(function (): void {
             Route::post('/n/{token}/pause', PauseController::class)
                 ->name('narrator.space.pause');
         });
+
+        /*
+         * Arrêter la déclaration d'avance (D-10) : **hors du groupe
+         * sensible**, et c'est délibéré. Le geste rend les récits suivants
+         * plus privés ; exiger un second facteur pour devenir plus discrète
+         * serait la garde à l'envers, et le « révocable d'un geste » du
+         * dossier cesserait d'être vrai. La reprise, qui expose ce qui ne
+         * l'était pas, reste dans le groupe.
+         */
+        Route::post('/n/{token}/partage/arreter', [SharingDeclarationController::class, 'stop'])
+            ->name('narrator.space.sharing.stop');
 
         /*
          * Les photos depuis l'espace : **pas** un acte sensible.

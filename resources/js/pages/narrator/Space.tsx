@@ -25,6 +25,7 @@ type Props = {
     firstName: string;
     stories: Story[];
     pausedUntil: string | null;
+    declaredSharing: boolean;
     printedCopiesWarning: string;
 };
 
@@ -39,6 +40,7 @@ type Props = {
 export default function Space({
     stories,
     pausedUntil,
+    declaredSharing,
     printedCopiesWarning,
 }: Props) {
     const t = useT();
@@ -307,6 +309,37 @@ export default function Space({
                     ))}
                 </ul>
             )}
+
+            {/* Le partage déclaré d'avance (D-10) ============================== */}
+            {declaredSharing ? (
+                <section className="card mt-10 flex flex-col gap-4 p-5">
+                    <h2 className="font-display text-brand text-2xl leading-tight font-medium">
+                        {t('narrator.space.sharing_title')}
+                    </h2>
+                    <p className="text-brand-muted text-base">
+                        {t('narrator.space.sharing_body')}
+                    </p>
+
+                    {/*
+                     * Un seul geste, sans code : ce bouton rend les récits
+                     * suivants plus privés, et une garde de plus ferait
+                     * mentir le « révocable d'un geste » du dossier. Il ne
+                     * touche pas aux histoires déjà partagées — chacune se
+                     * retire par son propre geste, plus haut.
+                     */}
+                    <button
+                        type="button"
+                        onClick={() =>
+                            router.post(
+                                `${window.location.pathname}/partage/arreter`,
+                            )
+                        }
+                        className="btn-secondary press self-start"
+                    >
+                        {t('narrator.space.sharing_stop')}
+                    </button>
+                </section>
+            ) : null}
 
             {/* La pause ========================================================= */}
             <form

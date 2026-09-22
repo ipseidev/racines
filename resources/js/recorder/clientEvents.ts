@@ -28,7 +28,12 @@ export type ClientEventName =
     | 'camera_denied'
     | 'camera_granted'
     | 'video_chosen'
-    | 'audio_chosen';
+    | 'audio_chosen'
+    // Le tour de chauffe du tout premier lien (T-247) : joué, passé, ou
+    // commencé. Sans ces trois-là, on ne saura pas s'il aide ou s'il retarde.
+    | 'first_run_started'
+    | 'first_run_done'
+    | 'first_run_skipped';
 
 export function reportClientEvent(
     event: ClientEventName,

@@ -8,6 +8,7 @@ use App\Actions\InviteFamilyMember;
 use App\Actions\ReissueFamilyLink;
 use App\Actions\RemoveFamilyMember;
 use App\Models\FamilyMember;
+use App\Models\Project;
 use App\Support\InitiatorProject;
 use App\Support\Links;
 use Illuminate\Http\RedirectResponse;
@@ -81,7 +82,16 @@ final readonly class FamilyController
         return back()->with('status', __('initiator.family.invited'));
     }
 
-    public function reissue(Request $request, string $member): RedirectResponse
+    /*
+     * `Project $project` en tête, et il n'est pas lu ici.
+     *
+     * Depuis que les adresses portent le projet, Laravel passe les
+     * paramètres de route **par position** : sans cette déclaration,
+     * `$member` recevait le projet sérialisé et la requête tombait sur un
+     * « invalid input syntax for type uuid ». Le projet lui-même continue
+     * d'être résolu par `InitiatorProject`, qui lit la route.
+     */
+    public function reissue(Request $request, Project $project, string $member): RedirectResponse
     {
         $found = self::ownMember($request, $member);
 
@@ -93,7 +103,16 @@ final readonly class FamilyController
             ->with('status', __('initiator.family.link_reissued'));
     }
 
-    public function destroy(Request $request, string $member): RedirectResponse
+    /*
+     * `Project $project` en tête, et il n'est pas lu ici.
+     *
+     * Depuis que les adresses portent le projet, Laravel passe les
+     * paramètres de route **par position** : sans cette déclaration,
+     * `$member` recevait le projet sérialisé et la requête tombait sur un
+     * « invalid input syntax for type uuid ». Le projet lui-même continue
+     * d'être résolu par `InitiatorProject`, qui lit la route.
+     */
+    public function destroy(Request $request, Project $project, string $member): RedirectResponse
     {
         $found = self::ownMember($request, $member);
 

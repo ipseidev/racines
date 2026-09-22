@@ -22,6 +22,17 @@ return [
         'hard_stop_seconds' => 1200,
         'max_bytes' => 209_715_200,
         'segment_milliseconds' => 5_000,
+
+        /*
+         * Le tour de chauffe du tout premier lien (T-247) : quinze secondes.
+         *
+         * Assez pour entendre sa propre voix revenir — c'est ce qui lève la
+         * peur — et assez court pour qu'on ne le prenne pas pour la réponse.
+         * Au-delà d'une demi-minute, quelqu'un raconte vraiment quelque
+         * chose, et lui dire ensuite « ça ne part nulle part » devient une
+         * mauvaise nouvelle.
+         */
+        'first_run_seconds' => 15,
         'upload_part_bytes' => 5 * 1024 * 1024,
         'accepted_mimes' => [
             'audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/wav', 'audio/x-m4a',

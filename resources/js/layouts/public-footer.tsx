@@ -204,12 +204,10 @@ export default function PublicFooter({ variant = 'full', discover }: Props) {
                         })}
                     </span>
                     <span>{t('public.footer.hosting')}</span>
-                    {/* Le sélecteur de langue : cinq liens vers la même page,
-                        chacun nommé dans sa propre langue (T-238). */}
-                    <LocaleSwitcher
-                        tone="footer"
-                        className="w-full sm:w-auto"
-                    />
+                    {/* Le sélecteur de langue : un dépliant qui montre la
+                        langue lue et ouvre les quatre autres, chacune nommée
+                        dans sa propre langue (T-238, dépliée par T-246). */}
+                    <LocaleSwitcher className="w-full sm:w-auto" />
                 </div>
             </div>
         </footer>

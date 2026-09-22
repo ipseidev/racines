@@ -64,6 +64,9 @@ final class SpaceController
             'addressForm' => $narrator->project->address_form->value,
             'stories' => $stories,
             'pausedUntil' => $narrator->project->paused_until?->toIso8601String(),
+            // La déclaration d'avance (D-10) : son état, et de quoi l'arrêter.
+            // Sans ce retour, la déclaration serait un aller simple.
+            'declaredSharing' => $narrator->project->declared_sharing_at !== null,
             'printedCopiesWarning' => __('narrator.withdrawals.printed_copies_warning'),
         ]);
     }

@@ -71,7 +71,7 @@ it('montre la jauge, ses quatre mesures et leurs seuils', function (): void {
     [$owner, $project] = projetDeLivre();
     histoireDuLivre($project, 'Le fournil', '2026-02-01');
 
-    $this->actingAs($owner)->get('/espace/livre')
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('initiator/Book')
@@ -91,7 +91,7 @@ it('liste les chapitres dans l’ordre du souvenir', function (): void {
     histoireDuLivre($project, 'Le bal', '2026-03-01');
     histoireDuLivre($project, 'Le fournil', '2026-01-01');
 
-    $this->actingAs($owner)->get('/espace/livre')
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('chapters.0.title', 'Le fournil')
             ->where('chapters.1.title', 'Le bal')
@@ -103,11 +103,11 @@ it('enregistre l’ordre et les exclusions', function (): void {
     histoireDuLivre($project, 'Le fournil', '2026-01-01');
     histoireDuLivre($project, 'Le bal', '2026-03-01');
 
-    $this->actingAs($owner)->get('/espace/livre');
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'));
     $book = Book::query()->firstOrFail();
     $chapitres = $book->chapters()->orderBy('position')->get();
 
-    $this->actingAs($owner)->post('/espace/livre', [
+    $this->actingAs($owner)->post(spaceUrl($project, '/livre'), [
         'chapters' => [
             ['id' => $chapitres[1]->getKey(), 'included' => true],
             ['id' => $chapitres[0]->getKey(), 'included' => false],
@@ -127,20 +127,20 @@ it('lance la fabrication du bon à tirer', function (): void {
     [$owner, $project] = projetDeLivre();
     histoireDuLivre($project, 'Le fournil', '2026-01-01');
 
-    $this->actingAs($owner)->get('/espace/livre');
-    $this->actingAs($owner)->post('/espace/livre/bat')->assertRedirect();
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'));
+    $this->actingAs($owner)->post(spaceUrl($project, '/livre/bat'))->assertRedirect();
 
     Queue::assertPushed(RenderBookPdf::class);
 });
 
 it('refuse un bon à tirer sans aucun chapitre', function (): void {
     Queue::fake();
-    [$owner] = projetDeLivre();
+    [$owner, $project] = projetDeLivre();
 
-    $this->actingAs($owner)->get('/espace/livre');
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'));
 
-    $this->actingAs($owner)->from('/espace/livre')
-        ->post('/espace/livre/bat')
+    $this->actingAs($owner)->from(spaceUrl($project, '/livre'))
+        ->post(spaceUrl($project, '/livre/bat'))
         ->assertSessionHasErrors('chapters');
 
     Queue::assertNothingPushed();
@@ -150,15 +150,15 @@ it('refuse l’accord sans les deux cases', function (): void {
     [$owner, $project] = projetDeLivre();
     histoireDuLivre($project, 'Le fournil', '2026-01-01');
 
-    $this->actingAs($owner)->get('/espace/livre');
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'));
     Book::query()->firstOrFail()->forceFill([
         'status' => BookStatus::Proofing,
         'proof_pdf_path' => 'books/x/proof-v1.pdf',
         'proof_version' => 1,
     ])->save();
 
-    $this->actingAs($owner)->from('/espace/livre')
-        ->post('/espace/livre/accord', ['final_print' => true, 'lexicon_reviewed' => false])
+    $this->actingAs($owner)->from(spaceUrl($project, '/livre'))
+        ->post(spaceUrl($project, '/livre/accord'), ['final_print' => true, 'lexicon_reviewed' => false])
         ->assertSessionHasErrors('lexicon_reviewed');
 
     expect(Book::query()->firstOrFail()->status)->toBe(BookStatus::Proofing);
@@ -169,7 +169,7 @@ it('approuve, commande, et verrouille la page', function (): void {
     $story = histoireDuLivre($project, 'Le fournil', '2026-01-01');
     $story->state->transitionTo(Shared::class);
 
-    $this->actingAs($owner)->get('/espace/livre');
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'));
     Book::query()->firstOrFail()->forceFill([
         'status' => BookStatus::Proofing,
         'proof_pdf_path' => 'books/x/proof-v1.pdf',
@@ -177,7 +177,7 @@ it('approuve, commande, et verrouille la page', function (): void {
     ])->save();
 
     $this->actingAs($owner)
-        ->post('/espace/livre/accord', ['final_print' => true, 'lexicon_reviewed' => true])
+        ->post(spaceUrl($project, '/livre/accord'), ['final_print' => true, 'lexicon_reviewed' => true])
         ->assertRedirect();
 
     $book = Book::query()->firstOrFail();
@@ -186,7 +186,7 @@ it('approuve, commande, et verrouille la page', function (): void {
         ->and($story->refresh()->state)->toBeInstanceOf(InBook::class);
 
     // La sélection ne bouge plus : ce qui a été approuvé est ce qui s'imprime.
-    $this->actingAs($owner)->post('/espace/livre', [
+    $this->actingAs($owner)->post(spaceUrl($project, '/livre'), [
         'chapters' => [],
     ])->assertForbidden();
 });

@@ -12,6 +12,7 @@ use App\Models\Consent;
 use App\Models\Story;
 use App\Services\Antivirus\Scanner;
 use App\Services\Images\Sanitizer;
+use App\States\Story\Proposed;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -118,6 +119,19 @@ final readonly class AttachPhoto
                 // photo déposée il y a deux ans (même règle que la base).
                 'depositor_type' => $depositor->getMorphClass(),
                 'depositor_id' => (string) $depositor->getKey(),
+                /*
+                 * Illustre-t-elle la question, ou la réponse ?
+                 *
+                 * La distinction se fait **au dépôt** et non à l'affichage :
+                 * une photo jointe alors que rien n'a encore été raconté est
+                 * une question posée — « raconte-nous cette photo » —, une
+                 * photo jointe après coup illustre le récit. Déduire plus
+                 * tard de l'état de l'histoire serait faux dès le premier
+                 * `RestartRecording`, qui la ramène en PROPOSÉE : les photos
+                 * de la narratrice deviendraient rétroactivement des
+                 * questions.
+                 */
+                'is_prompt' => $story->state instanceof Proposed,
             ])
             ->toMediaCollection(Story::PHOTOS);
 

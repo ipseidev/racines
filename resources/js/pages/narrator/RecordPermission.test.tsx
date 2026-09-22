@@ -32,9 +32,9 @@ const catalogue = {
             mode_audio: 'Avec votre voix',
             mode_video: 'En vous filmant',
             mode_help: 'La voix suffit.',
-            greeting: ':name, voici votre question de la semaine',
+            greeting: 'Une question pour vous, :name.',
             mic_notice: 'Votre téléphone demandera le micro.',
-            ready: 'Je suis prêt·e',
+            open_camera: 'Ouvrir la caméra',
             requesting: 'Votre téléphone va vous demander l’autorisation.',
             start: 'Commencer',
             tap_hint: 'Appuyez, puis parlez.',
@@ -73,6 +73,7 @@ const props = {
     firstName: 'Odette',
     addressForm: 'vous' as const,
     question: 'Quel est votre premier souvenir d’école ?',
+    questionPhotos: [],
     storyRef: 'c'.repeat(32),
     state: 'proposed',
     limits: {
@@ -81,6 +82,7 @@ const props = {
         maxBytes: 200_000_000,
         segmentMilliseconds: 5000,
         partSizeBytes: 5 * 1024 * 1024,
+        firstRunSeconds: 15,
         acceptedMimes: ['audio/webm'],
         video: {
             maxBytes: 400_000_000,
@@ -95,6 +97,12 @@ const props = {
     shareDecisionAction: '/r/jeton/share-decision',
     shareDecision: null,
     techComfort: null,
+    // Ces suites portent sur la capture : le tour de chauffe du premier lien
+    // a la sienne, et s’interposerait ici entre le test et son sujet.
+    firstTime: false,
+    // Sans déclaration d’avance : ces suites portent sur la capture, et
+    // l’écran de fin y pose encore sa question.
+    declaredSharing: false,
 };
 
 /** Le micro refuse la première fois, accepte ensuite. */
@@ -147,9 +155,7 @@ it('repart quand le micro est autorisé au second essai', async () => {
     await user.click(
         await screen.findByRole('button', { name: /avec votre voix/i }),
     );
-    await user.click(
-        await screen.findByRole('button', { name: /je suis prêt/i }),
-    );
+    await user.click(await screen.findByRole('button', { name: /commencer/i }));
 
     // L'aide s'affiche : c'est le comportement attendu du premier refus.
     expect(
@@ -158,10 +164,13 @@ it('repart quand le micro est autorisé au second essai', async () => {
 
     await user.click(screen.getByRole('button', { name: /réessayer/i }));
 
-    // Et cette fois on passe à la suite : le bouton d'enregistrement apparaît,
-    // l'aide disparaît.
-    expect(
-        await screen.findByRole('button', { name: /commencer/i }),
-    ).toBeVisible();
+    /*
+     * Et cette fois on passe à la suite. Depuis T-248 la voix enchaîne dès
+     * l'autorisation obtenue : il n'y a plus de « Commencer » à presser une
+     * seconde fois — ça tourne, et c'est « Pause » qui le prouve. L'aide,
+     * elle, a disparu, ce qui est le défaut que T-178 avait corrigé et que
+     * ce test garde.
+     */
+    expect(await screen.findByRole('button', { name: /pause/i })).toBeVisible();
     expect(screen.queryByRole('button', { name: /réessayer/i })).toBeNull();
 });

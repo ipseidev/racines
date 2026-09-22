@@ -4,60 +4,71 @@ import { useEffect } from 'react';
 import { useFormat } from '@/hooks/useFormat';
 import { useT } from '@/hooks/useT';
 import { celebrate } from '@/lib/celebrate';
+import { stagger } from '@/lib/motion';
 
 type Props = {
     firstName: string | null;
     nextPromptAt: string | null;
-    vcardUrl: string;
-    directivesRecorded: boolean;
 };
 
 /**
- * Juste après le oui : quand arrive la première question, comment nous
- * reconnaître, et un mot sur plus tard.
+ * Juste après le oui.
  *
- * Les souhaits pour après se choisissent sur la page d'acceptation, repliés
- * sous les accords (T-236). Ici on ne redemande rien à quelqu'un qui vient
- * d'accepter de raconter sa vie : on dit ce qui vaut, et où le changer.
+ * Cet écran ne demande plus rien (20 septembre 2026). Il a porté la fiche
+ * contact et les souhaits pour plus tard ; les deux posaient une tâche de
+ * plus à quelqu'un qui venait d'accepter de raconter sa vie, et la seconde
+ * lui parlait de sa mort à la minute où on la félicitait. Les souhaits
+ * restent choisissables à l'acceptation et depuis son espace.
  *
- * Et une pluie de confettis, légère, aux couleurs de la marque (T-235) : elle
- * vient de dire oui. Le message flash n'existe qu'à l'arrivée depuis
- * l'acceptation, donc la fête ne se rejoue ni au rechargement ni plus tard.
+ * La fiche contact, elle, n'a plus d'autre point d'entrée : c'est le seul
+ * écran qui la proposait. Voir le commentaire de `optin_welcome` dans
+ * `lang/fr/narrator.php` — la garde anti-hameçonnage du doc 04 §9 attend une
+ * nouvelle place, elle n'a pas été déplacée.
+ *
+ * Ce qui reste est une fête et une date : la coche qui apparaît, le prénom,
+ * un filet d'or qui se trace, le jour de la première question en gros, et la
+ * permission de fermer la page. Rien à faire, rien à retenir.
+ *
+ * Le mouvement est tout l'écran, et il est ordonné : la salve de confettis
+ * part des coins du bas pendant que les lignes montent l'une après l'autre.
+ * Tout s'éteint sous « réduire les animations » — la salve par
+ * `disableForReducedMotion`, les entrées par `.enter`, le filet par sa propre
+ * garde. Il reste alors la même page, immobile, qui dit la même chose.
+ *
+ * La fête ne se rejoue ni au rechargement ni plus tard : elle tient au
+ * message flash, qui n'existe qu'à l'arrivée depuis l'acceptation (T-235).
  */
-export default function OptInWelcome({
-    firstName,
-    nextPromptAt,
-    vcardUrl,
-    directivesRecorded,
-}: Props) {
+export default function OptInWelcome({ firstName, nextPromptAt }: Props) {
     const t = useT();
     const fmt = useFormat();
 
-    /*
-     * « lundi 7 septembre à 09:00 », dans la langue de la page. Repli quand
-     * l'heure n'est pas encore connue : la première question part la nuit qui
-     * suit l'acceptation, et le planificateur ne l'a pas encore posée.
-     */
-    const formatWhen = (iso: string | null, fallback: string): string =>
-        iso === null ? fallback : fmt.dateTime(iso);
     const status =
         (usePage().props.flash as { status?: string | null } | undefined)
             ?.status ?? null;
+
     useEffect(() => {
         if (status !== null) {
             void celebrate('soft');
         }
     }, [status]);
 
+    /*
+     * « lundi 21 septembre à 09:00 », dans la langue de la page. Repli quand
+     * l'heure n'est pas encore connue : la première question part la nuit qui
+     * suit l'acceptation, et le planificateur ne l'a pas encore posée.
+     */
+    const when =
+        nextPromptAt === null
+            ? t('narrator.optin_welcome.when_unknown')
+            : fmt.dateTime(nextPromptAt);
+
+    const title = t('narrator.optin_welcome.title', { name: firstName ?? '' });
+
     return (
         <>
-            <Head
-                title={t('narrator.optin_welcome.title', {
-                    name: firstName ?? '',
-                })}
-            />
+            <Head title={title} />
 
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center py-10 text-center">
                 <span
                     aria-hidden="true"
                     className="bg-brand text-brand-foreground animate-pop-in flex size-16 items-center justify-center rounded-full"
@@ -73,51 +84,62 @@ export default function OptInWelcome({
                     </svg>
                 </span>
 
-                <h1 className="font-display mt-6 text-[2rem] leading-tight font-medium">
-                    {t('narrator.optin_welcome.title', {
-                        name: firstName ?? '',
-                    })}
+                <h1
+                    className="font-display enter mt-7 text-[2.125rem] leading-tight font-medium"
+                    style={stagger(1)}
+                >
+                    {title}
                 </h1>
 
                 {status !== null && (
-                    <p role="status" className="text-brand-muted mt-3">
+                    <p
+                        role="status"
+                        className="text-brand-muted enter mt-2 text-base"
+                        style={stagger(2)}
+                    >
                         {status}
                     </p>
                 )}
 
-                <p className="mt-4 text-[1.25rem] leading-snug">
-                    {t('narrator.optin_welcome.body', {
-                        when: formatWhen(
-                            nextPromptAt,
-                            t('narrator.optin_welcome.when_unknown'),
-                        ),
-                    })}
+                <span
+                    aria-hidden="true"
+                    className="rule-gold mt-8"
+                    style={stagger(3)}
+                />
+
+                {/*
+                 * La date en grand, et son étiquette en petit au-dessus :
+                 * c'est la seule chose de cette page qu'on retient, et la
+                 * seule qu'on vient parfois relire.
+                 */}
+                <p
+                    className="text-brand-muted enter mt-8 text-base"
+                    style={stagger(4)}
+                >
+                    {t('narrator.optin_welcome.first_question')}
+                </p>
+
+                <p
+                    className="font-display enter mt-1 text-[1.625rem] leading-snug font-medium"
+                    style={stagger(5)}
+                >
+                    {when}
+                </p>
+
+                <p
+                    className="enter mt-8 text-[1.125rem] leading-snug"
+                    style={stagger(6)}
+                >
+                    {t('narrator.optin_welcome.nothing_to_do')}
+                </p>
+
+                <p
+                    className="text-brand-muted enter mt-3 max-w-[28ch] text-base leading-snug"
+                    style={stagger(7)}
+                >
+                    {t('narrator.optin_welcome.leave')}
                 </p>
             </div>
-
-            <section aria-labelledby="vcard" className="card mt-10 p-5">
-                <h2 id="vcard" className="text-xl font-semibold">
-                    {t('narrator.optin_welcome.vcard.title')}
-                </h2>
-                <p className="text-brand-muted mt-2 text-base">
-                    {t('narrator.optin_welcome.vcard.body')}
-                </p>
-                <a href={vcardUrl} className="btn-secondary press mt-4 w-full">
-                    {t('narrator.optin_welcome.vcard.button')}
-                </a>
-            </section>
-
-            <section aria-labelledby="wishes" className="mt-10">
-                <h2 id="wishes" className="text-xl font-semibold">
-                    {t('narrator.optin_welcome.wishes.title')}
-                </h2>
-
-                <p role="status" className="panel mt-4">
-                    {directivesRecorded
-                        ? t('narrator.optin_welcome.wishes.saved')
-                        : t('narrator.optin_welcome.wishes.default')}
-                </p>
-            </section>
         </>
     );
 }

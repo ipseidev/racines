@@ -70,6 +70,11 @@ final class DemoProjectSeeder extends Seeder
         // sans elle, elles se taisent **sans rien dire** (T-153). Le décor a
         // menti pendant tout un bloc avant qu'on s'en aperçoive.
         $project->accepted_at = now()->subDays(60);
+        // Le partage permanent est le sixième accord du « J'accepte »
+        // (T-250) : un projet accepté le porte, et l'écran de fin annonce au
+        // lieu de demander. Sans cette date, la démonstration montrerait un
+        // état que le produit n'a plus.
+        $project->declared_sharing_at = now()->subDays(60);
         $project->save();
         $project->startCollection();
 

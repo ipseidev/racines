@@ -35,6 +35,40 @@ final class ClientEventController
         $event->story()->associate($story);
         $event->save();
 
+        $this->rememberFirstRun($story, (string) $request->validated('event'));
+
         return response()->json(status: 202);
+    }
+
+    /**
+     * Le seul événement de cette table qui fasse autre chose que se compter.
+     *
+     * Le tour de chauffe (T-247) se décidait sur « cette personne n'a jamais
+     * enregistré d'histoire ». Quelqu'un qui le joue puis referme sans
+     * répondre n'a rien enregistré : il le retrouvait à l'ouverture suivante,
+     * et à chaque fois tant qu'un récit n'était pas allé au bout. Ce qu'il
+     * faut retenir n'est pas un enregistrement, c'est **qu'il a été proposé
+     * et qu'on y a répondu** — joué ou passé, les deux valent réponse.
+     *
+     * La date s'écrit ici plutôt que par une route à elle : le signal part
+     * déjà, au bon moment, en `keepalive`, et ajouter un aller-retour à une
+     * page qui tient dans un budget de 150 Ko se paierait pour rien. Le prix
+     * est cette exception, qui vaut d'être nommée : un envoi perdu fait
+     * revoir le tour de chauffe une fois de plus, jamais deux mois de suite.
+     */
+    private function rememberFirstRun(Story $story, string $event): void
+    {
+        if (! in_array($event, ['first_run_done', 'first_run_skipped'], true)) {
+            return;
+        }
+
+        $narrator = $story->narrator;
+
+        if ($narrator->first_run_at !== null) {
+            return;
+        }
+
+        $narrator->first_run_at = now();
+        $narrator->save();
     }
 }

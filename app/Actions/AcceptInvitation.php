@@ -50,6 +50,28 @@ final readonly class AcceptInvitation
         ConsentKind::AiRendering,
         ConsentKind::FamilySharing,
         ConsentKind::SensitiveCategories,
+        /*
+         * Le partage déclaré d'avance (D-10), **sixième accord** depuis le
+         * 21 septembre 2026.
+         *
+         * Il était un choix de plus à faire à l'acceptation ; c'est un clic
+         * de trop pour la seconde cible du produit, qui a quatre-vingts ans
+         * et n'est pas à l'aise avec un téléphone. Il rejoint donc les cinq
+         * autres : donné par le geste « J'accepte », nommé au-dessus du
+         * bouton avec les autres, journalisé à part, révocable seul.
+         *
+         * Ce n'est pas une validation tacite, et la nuance porte tout : il
+         * n'y a ni silence, ni délai écoulé, ni réglage d'un tiers (R-4).
+         * Il y a un acte positif sur un énoncé explicite — exactement la
+         * construction que T-233 avait retenue pour les cinq premiers, et
+         * pour les mêmes raisons.
+         *
+         * Le prix à payer est la granularité : on ne peut plus accepter le
+         * cadeau en refusant ce seul accord. Deux issues le rachètent, et
+         * elles sont à un doigt — « garder celle-ci pour moi » sur chaque
+         * histoire, et l'arrêt de l'envoi depuis son espace, sans code.
+         */
+        ConsentKind::DeclaredSharing,
     ];
 
     public function __construct(
@@ -75,14 +97,9 @@ final readonly class AcceptInvitation
                 $this->consents->handle($narrator, $project, $kind, ConsentChannel::Web);
             }
 
-            // Le partage déclaré d'avance (D-10) : facultatif, jamais
-            // pré-coché, et tracé comme un consentement à part entière. Sans
-            // lui, chaque histoire posera la question — c'est le
-            // comportement d'origine, et il reste la valeur par défaut.
-            if (($preferences['declared_sharing'] ?? false) === true) {
-                $this->consents->handle($narrator, $project, ConsentKind::DeclaredSharing, ConsentChannel::Web);
-                $project->declared_sharing_at = now();
-            }
+            // Le consentement vient d'être journalisé avec les cinq autres :
+            // la date sur le projet est ce que lit `ApplyShareDecision`.
+            $project->declared_sharing_at = now();
 
             $project->status = ProjectStatus::Active;
             $project->accepted_at = now();
@@ -121,9 +138,16 @@ final readonly class AcceptInvitation
              * histoire qu'un parent qui accepte du premier coup, et le seuil
              * de 60 % masquerait la différence.
              */
+            /*
+             * `declared_sharing` ne part plus avec l'événement : depuis qu'il
+             * est le sixième accord (T-250), il vaut « oui » pour tout le
+             * monde à l'acceptation, et une propriété constante n'apprend
+             * rien. Ce qui reste à mesurer, c'est combien y mettent fin
+             * ensuite — et cela se lit dans `consents`, où la révocation
+             * ajoute sa ligne.
+             */
             Track::project(AnalyticsEvent::InvitationAccepted, $project, [
                 'attempt' => Invitation::attemptsFor($narrator),
-                'declared_sharing' => $project->declared_sharing_at !== null,
             ]);
 
             Log::info('invitation.accepted', [

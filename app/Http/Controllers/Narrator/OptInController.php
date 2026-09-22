@@ -69,6 +69,8 @@ final readonly class OptInController
             'preferredChannel' => $narrator?->preferred_channel->value,
             'addressForm' => $project->address_form->value,
             'cadence' => $project->cadence->value,
+            // Ce qu'elle a déjà déclaré, si elle revient sur la page.
+            'declaredSharing' => $project->declared_sharing_at !== null,
             'promptDay' => $project->prompt_day,
             'promptSlot' => $project->prompt_slot->value,
             'consents' => self::consentTexts(),
@@ -160,12 +162,12 @@ final readonly class OptInController
     }
 
     /**
-     * L'écran de bienvenue : la fiche contact, et un mot sur plus tard.
+     * L'écran de bienvenue : une fête, et une date.
      *
-     * Les souhaits se choisissent sur la page d'acceptation, repliés sous les
-     * accords (T-236) ; ici on dit seulement ce qui vaut — le choix fait, ou
-     * la politique sans directive —, sans rien redemander à quelqu'un qui
-     * vient d'accepter de raconter sa vie.
+     * Il ne porte plus la fiche contact ni les souhaits pour plus tard
+     * (20 septembre 2026). Deux propositions de moins, et deux données de
+     * moins à pousser : l'écran n'a besoin que du prénom et de l'heure de la
+     * première question.
      */
     public function welcome(Request $request): Response
     {
@@ -174,8 +176,6 @@ final readonly class OptInController
         return inertia('narrator/OptInWelcome', [
             'firstName' => $project->primaryNarrator?->first_name,
             'nextPromptAt' => $project->next_prompt_at?->toIso8601String(),
-            'vcardUrl' => route('narrator.vcard'),
-            'directivesRecorded' => $project->primaryNarrator?->postMortemDirective()->exists() ?? false,
         ]);
     }
 

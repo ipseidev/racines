@@ -152,17 +152,57 @@ export function formatDate(iso: string, locale: LocaleTag = 'fr'): string {
     );
 }
 
+/**
+ * « lundi 7 septembre à 9 h » en français, « lunedì 7 settembre, 09:00 » ailleurs.
+ *
+ * Le français n'écrit pas une heure avec deux-points ni un zéro devant, et
+ * c'est déjà la règle que `formatTime` porte partout ailleurs dans le
+ * produit ; `Intl`, lui, ne la connaît pas et rendait « à 09:00 ». Sur
+ * l'écran de bienvenue cette date est le seul grand caractère de la page, et
+ * « lundi 21 septembre à 09:00 » y avait l'air d'un horaire de train.
+ *
+ * L'heure se lit par `formatToParts` plutôt que dans la chaîne rendue : le
+ * séparateur d'`Intl` change d'une langue et d'une version d'ICU à l'autre,
+ * et une expression régulière dessus se casse sans prévenir.
+ */
 export function formatDateTime(iso: string, locale: LocaleTag = 'fr'): string {
-    return firstOrdinal(
+    const date = new Date(iso);
+
+    if (languageOf(locale) !== 'fr') {
+        return firstOrdinal(
+            new Intl.DateTimeFormat(tagOf(locale), {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                hour: '2-digit',
+                minute: '2-digit',
+            }).format(date),
+            locale,
+        );
+    }
+
+    const day = firstOrdinal(
         new Intl.DateTimeFormat(tagOf(locale), {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
-            hour: '2-digit',
-            minute: '2-digit',
-        }).format(new Date(iso)),
+        }).format(date),
         locale,
     );
+
+    const parts = new Intl.DateTimeFormat(tagOf(locale), {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }).formatToParts(date);
+
+    const part = (type: string): string =>
+        (parts.find((item) => item.type === type)?.value ?? '').padStart(
+            2,
+            '0',
+        );
+
+    return `${day} à ${formatTime(`${part('hour')}:${part('minute')}`, locale)}`;
 }
 
 /** « vendredi 5 septembre 2026 », à partir d'une date ISO sans heure. */

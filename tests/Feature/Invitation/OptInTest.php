@@ -101,7 +101,7 @@ it('montre le message personnel et jamais d’invitation à enregistrer', functi
             ->component('narrator/OptIn')
             ->where('personalMessage', 'J’aimerais garder tes histoires, maman.')
             ->has('inviterName')
-            ->has('consents', 5)
+            ->has('consents', 6)
             // Aucun micro, aucune question, aucun aperçu : quelqu'un qui
             // découvre le service par un cadeau doit pouvoir comprendre de
             // quoi il s'agit sans être déjà en train de faire quelque chose.
@@ -220,34 +220,6 @@ it('active le projet et planifie la première question le lendemain', function (
         ->and($narrator->contact_deletion_due_at)->toBeNull();
 });
 
-it('journalise les cinq consentements avec la version du texte lu', function (): void {
-    [$project, $narrator, $plain] = invitedProject();
-
-    $this->post("/i/{$plain}/accepter", acceptancePayload());
-
-    $consents = Consent::query()
-        ->where('project_id', $project->id)
-        ->where('subject_id', $narrator->id)
-        ->get();
-
-    expect($consents)->toHaveCount(5);
-
-    foreach ([
-        ConsentKind::VoiceRecording,
-        ConsentKind::Transcription,
-        ConsentKind::AiRendering,
-        ConsentKind::FamilySharing,
-        ConsentKind::SensitiveCategories,
-    ] as $kind) {
-        $consent = $consents->firstWhere('kind', $kind);
-
-        expect($consent)->not->toBeNull()
-            // Sans version, on ne peut pas dire ce qui a été accepté.
-            ->and($consent->text_version)->not->toBeNull()
-            ->and($consent->granted_at)->not->toBeNull();
-    }
-});
-
 it('note l’acceptation sur l’invitation, avec son numéro d’envoi', function (): void {
     [, $narrator, $plain] = invitedProject();
 
@@ -259,23 +231,77 @@ it('note l’acceptation sur l’invitation, avec son numéro d’envoi', functi
         ->and($invitation->attempt)->toBe(1);
 });
 
-it('propose la fiche contact sur l’écran de bienvenue, sans redemander les souhaits', function (): void {
+it('ne demande plus rien sur l’écran de bienvenue : une fête et une date', function (): void {
     [, , $plain] = invitedProject();
 
     $this->post("/i/{$plain}/accepter", acceptancePayload());
 
+    /*
+     * Décision du 20 septembre 2026. L'écran a porté la fiche contact et les
+     * souhaits pour plus tard ; les deux posaient une tâche de plus à
+     * quelqu'un qui venait d'accepter de raconter sa vie, et la seconde lui
+     * parlait de sa mort à la minute où on la félicitait.
+     *
+     * Le test porte sur les **données poussées** et non sur le rendu : une
+     * section retirée de la page mais dont la propriété reste dans la charge
+     * utile revient au premier coup de ciseaux suivant.
+     */
     $this->get("/i/{$plain}/bienvenue")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('narrator/OptInWelcome')
             ->where('firstName', 'Jeanne')
-            ->has('vcardUrl')
             ->has('nextPromptAt')
-            // Les souhaits ne sont plus demandés ici (T-236) : la page dit
-            // seulement s'ils ont été choisis.
-            ->missing('wishes')
-            ->where('directivesRecorded', false),
+            ->missing('vcardUrl')
+            ->missing('directivesRecorded')
+            ->missing('wishes'),
         );
+});
+
+/*
+|--------------------------------------------------------------------------
+| La déclaration d'avance (D-10)
+|--------------------------------------------------------------------------
+|
+| « Un accord donné une fois n'est pas un silence. » Ce que ces tests tiennent
+| est la frontière : l'accord existe parce qu'elle l'a **touché**, et sans lui
+| la question revient histoire par histoire. Rien entre les deux.
+|
+*/
+
+it('donne le partage permanent avec « J’accepte », sans rien demander de plus', function (): void {
+    [$project, $narrator, $plain] = invitedProject();
+
+    /*
+     * Le sixième accord (T-250). Pas un choix de plus à l'écran : la
+     * narratrice a quatre-vingts ans, chaque clic se paie, et le geste
+     * « J'accepte » donne déjà les cinq autres sur un énoncé explicite.
+     */
+    $this->post("/i/{$plain}/accepter", acceptancePayload())->assertRedirect();
+
+    expect($project->refresh()->declared_sharing_at)->not->toBeNull();
+
+    // Journalisé à part, comme les cinq autres : c'est ce qui le rend
+    // révocable seul, et montrable le jour où il faut le prouver.
+    expect(Consent::query()
+        ->where('project_id', $project->id)
+        ->where('subject_id', $narrator->id)
+        ->where('kind', ConsentKind::DeclaredSharing->value)
+        ->exists())->toBeTrue();
+});
+
+it('journalise six accords, chacun avec la version du texte lu', function (): void {
+    [$project, $narrator, $plain] = invitedProject();
+
+    $this->post("/i/{$plain}/accepter", acceptancePayload())->assertRedirect();
+
+    $consents = Consent::query()
+        ->where('project_id', $project->id)
+        ->where('subject_id', $narrator->id)
+        ->get();
+
+    expect($consents)->toHaveCount(6)
+        ->and($consents->pluck('text_version')->filter()->count())->toBe(6);
 });
 
 it('propose les souhaits sur la page d’acceptation, « transmettre » d’avance', function (): void {
@@ -316,10 +342,6 @@ it('écrit la directive dès que la personne choisit autre chose à l’acceptat
         ->and($directive->narrator_id)->toBe($narrator->id)
         ->and($directive->project_id)->toBe($project->id)
         ->and($directive->consent_id)->not->toBeNull();
-
-    // Et la bienvenue le sait.
-    $this->get("/i/{$plain}/bienvenue")
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('directivesRecorded', true));
 });
 
 it('écrit la directive quand la personne désigne quelqu’un, même sans changer le choix', function (): void {

@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
     lazy,
     Suspense,
@@ -9,9 +9,9 @@ import {
     useState,
 } from 'react';
 
-import AudioPlayer from '@/components/AudioPlayer';
-import PhotoUploader from '@/components/PhotoUploader';
+import { useFormat } from '@/hooks/useFormat';
 import { useT } from '@/hooks/useT';
+import { stagger } from '@/lib/motion';
 import { createUploaderPorts } from '@/recorder/api';
 import { reportClientEvent } from '@/recorder/clientEvents';
 import {
@@ -33,16 +33,12 @@ import {
     type RecorderEvent,
     type RecorderSnapshot,
 } from '@/recorder/recorderMachine';
+import type { QuestionPhoto } from './QuestionPhotos';
 import { uploadDraft } from '@/recorder/uploader';
 import { useMediaRecorder } from '@/recorder/useMediaRecorder';
 import { requestWakeLock } from '@/recorder/wakeLock';
 
 import { formatDuration } from '@/recorder/duration';
-
-import MicHelp from './MicHelp';
-
-import ShareDecision from './ShareDecision';
-import WrittenAnswer from './WrittenAnswer';
 
 export type RecordLimits = {
     softWarningSeconds: number;
@@ -50,6 +46,8 @@ export type RecordLimits = {
     maxBytes: number;
     segmentMilliseconds: number;
     partSizeBytes: number;
+    /** L'arrêt ferme du tour de chauffe du premier lien (T-247). */
+    firstRunSeconds: number;
     acceptedMimes: string[];
     /** Les bornes propres à la vidéo (T-210) : poids, débit, définition. */
     video: {
@@ -65,6 +63,8 @@ type Props = {
     firstName: string;
     addressForm: 'vous' | 'tu';
     question: string | null;
+    /** Les photos qui **posent** la question, jointes par la famille. */
+    questionPhotos: QuestionPhoto[];
     storyRef: string;
     state: string;
     limits: RecordLimits;
@@ -78,6 +78,10 @@ type Props = {
     shareDecision: string | null;
     /** L'aisance avec un téléphone, déclarée à l'achat (TechComfort), ou rien. */
     techComfort: string | null;
+    /** Cette personne n'a jamais rien enregistré : on lui propose un tour de chauffe. */
+    firstTime: boolean;
+    /** Elle a déclaré d'avance que ses histoires partent dès qu'elles sont prêtes (D-10). */
+    declaredSharing: boolean;
 };
 
 /*
@@ -92,6 +96,26 @@ type Props = {
  * ne voit d'attente.
  */
 const VideoStage = lazy(() => import('./VideoStage'));
+// Le tour de chauffe ne pèse que pour celles qui le voient : une seule fois
+// dans une vie de narratrice, et jamais pour les autres.
+const FirstRun = lazy(() => import('./FirstRun'));
+
+/*
+ * Rien de tout cela ne s'affiche à l'ouverture de la page, et tout s'y
+ * chargeait : la réécoute, le dépôt de photo, l'aide du micro, la réponse
+ * écrite et les trois choix de partage pesaient six kilo-octets payés par
+ * quelqu'un qui n'a encore rien fait. Sur une 4G de campagne, six kilo-octets
+ * sont une seconde — et le budget de cette page (conventions §4) n'existe que
+ * parce qu'une page qui n'arrive pas est une histoire qui ne sera pas
+ * racontée. Chacun arrive maintenant à l'écran qui en a besoin.
+ */
+const AudioPlayer = lazy(() => import('@/components/AudioPlayer'));
+const PhotoUploader = lazy(() => import('@/components/PhotoUploader'));
+const MicHelp = lazy(() => import('./MicHelp'));
+// Les photos qui posent la question : chargées seulement quand il y en a,
+// donc jamais pour la majorité des questions (T-251, budget conventions §4).
+const QuestionPhotos = lazy(() => import('./QuestionPhotos'));
+const WrittenAnswer = lazy(() => import('./WrittenAnswer'));
 const VideoPlayer = lazy(() => import('@/components/VideoPlayer'));
 
 /** Les niveaux d'aisance qui appellent plus d'aide à l'écran. */
@@ -177,14 +201,17 @@ function Wave() {
  * détenir l'objet (doc 04 §11).
  *
  * Une seule chose par écran (T-138) : la question, puis un seul grand bouton.
- * Le halo qui respire pendant l'enregistrement est le seul mouvement, et il
- * s'arrête pour qui l'a demandé. Quand l'acheteur a dit que la personne est
- * peu à l'aise, l'aide vient avant la question, et l'écrit est un bouton.
+ * Deux mouvements, pas un de plus, et ils ne se croisent jamais — la carte de
+ * la question respire tant qu'on la lit, le halo respire pendant que ça
+ * tourne. Tous deux s'arrêtent pour qui l'a demandé. Quand l'acheteur a dit
+ * que la personne est peu à l'aise, l'aide vient avant la question, et
+ * l'écrit est un bouton.
  */
 export default function Record({
     firstName,
     addressForm,
     question,
+    questionPhotos,
     storyRef,
     limits,
     writtenAnswerMaxChars,
@@ -192,8 +219,11 @@ export default function Record({
     shareDecisionAction,
     shareDecision,
     techComfort,
+    firstTime,
+    declaredSharing,
 }: Props) {
     const t = useT();
+    const fmt = useFormat();
     const basePath = window.location.pathname;
 
     const [snapshot, setSnapshot] = useState<RecorderSnapshot>(initialSnapshot);
@@ -208,6 +238,9 @@ export default function Record({
     // Se filmer n'est proposé que si le navigateur sait le faire : mieux vaut
     // pas de bouton qu'un bouton qui mène à un écran d'aide.
     const [videoSupported, setVideoSupported] = useState(false);
+    // Le tour de chauffe s'efface dès qu'il est joué ou passé : il ne revient
+    // pas au rechargement, même si rien n'est encore enregistré.
+    const [rehearsing, setRehearsing] = useState(firstTime);
 
     const videoConstraints = useMemo(
         () => ({
@@ -372,6 +405,24 @@ export default function Record({
 
         reportClientEvent(filming ? 'camera_granted' : 'mic_granted');
         send({ type: 'PERMISSION_GRANTED' });
+
+        /*
+         * La voix enchaîne, la caméra non (T-248).
+         *
+         * Pour la voix, l'autorisation était suivie d'un écran qui redemandait
+         * le même geste : le grand bouton venait d'être pressé, et il fallait
+         * presser le grand bouton. On enregistre donc tout de suite — la
+         * pastille du navigateur, le halo qui respire et le compteur disent
+         * que ça tourne, et la pause comme le recommencement restent à une
+         * portée de doigt.
+         *
+         * Se filmer garde son temps : « on se voit avant de commencer » est
+         * la règle de T-210, et l'aperçu de soi est précisément ce que cet
+         * écran-là existe pour montrer.
+         */
+        if (!filming) {
+            await startRecording();
+        }
     };
 
     /**
@@ -554,12 +605,14 @@ export default function Record({
 
     if (writing) {
         return (
-            <WrittenAnswer
-                question={question}
-                maxChars={writtenAnswerMaxChars}
-                action={`${basePath}/written-answer`}
-                onCancel={() => setWriting(false)}
-            />
+            <Suspense fallback={null}>
+                <WrittenAnswer
+                    question={question}
+                    maxChars={writtenAnswerMaxChars}
+                    action={`${basePath}/written-answer`}
+                    onCancel={() => setWriting(false)}
+                />
+            </Suspense>
         );
     }
 
@@ -568,13 +621,15 @@ export default function Record({
         snapshot.state === 'unsupported'
     ) {
         return (
-            <MicHelp
-                platform={detectPlatform()}
-                kind={snapshot.context.kind}
-                canRetry={snapshot.state === 'permission_denied'}
-                onRetry={() => void askPermission()}
-                onWrite={chooseWriting}
-            />
+            <Suspense fallback={null}>
+                <MicHelp
+                    platform={detectPlatform()}
+                    kind={snapshot.context.kind}
+                    canRetry={snapshot.state === 'permission_denied'}
+                    onRetry={() => void askPermission()}
+                    onWrite={chooseWriting}
+                />
+            </Suspense>
         );
     }
 
@@ -614,10 +669,48 @@ export default function Record({
         );
     }
 
+    /*
+     * Le tour de chauffe passe **avant** tout le reste, et remplace la page :
+     * un essai posé sous la question n'aurait été qu'une explication de plus
+     * à côté d'elle. Il ne s'affiche qu'au tout premier lien, et seulement
+     * là où rien n'a commencé — un brouillon retrouvé veut dire qu'elle a
+     * déjà appuyé, et on ne propose pas une répétition à qui est en scène.
+     */
+    if (rehearsing && state === 'choosing_mode') {
+        return (
+            <div className="flex flex-1 flex-col">
+                <Head title={greeting} />
+
+                <Suspense fallback={null}>
+                    <FirstRun
+                        firstName={firstName}
+                        tu={tu}
+                        seconds={limits.firstRunSeconds}
+                        segmentMilliseconds={limits.segmentMilliseconds}
+                        onDone={(played) => {
+                            reportClientEvent(
+                                played ? 'first_run_done' : 'first_run_skipped',
+                            );
+                            setRehearsing(false);
+                        }}
+                        onStart={() => reportClientEvent('first_run_started')}
+                    />
+                </Suspense>
+            </div>
+        );
+    }
+
+    /*
+     * Les libellés reviennent au corps du système (1,0625 rem). À 1,25 rem,
+     * deux dalles pleine largeur pesaient plus lourd que la question : on
+     * lisait le bouton avant elle. La cible du doigt ne bouge pas — pleine
+     * largeur, `py-4`, 2,75 rem de haut au minimum — et sous 740 px de
+     * hauteur d'écran, `record-action` imposait déjà 1,125 rem.
+     */
     const primary =
-        'btn-primary press record-action min-h-[2.75rem] w-full py-4 text-xl';
+        'btn-primary press record-action min-h-[2.75rem] w-full py-4';
     const secondary =
-        'btn-secondary press record-action min-h-[2.75rem] w-full py-4 text-xl';
+        'btn-secondary press record-action min-h-[2.75rem] w-full py-4';
 
     // La question reste sous les yeux tant qu'on répond ; après, elle laisse
     // la place à la réécoute, à l'envoi et au merci.
@@ -634,25 +727,134 @@ export default function Record({
             'interrupted',
         ].includes(state);
 
+    /*
+     * Là où l'écran a de la place, la question la prend (21 septembre 2026).
+     *
+     * Sur l'écran de choix, les gestes sont ancrés en bas et la question
+     * l'était en haut : deux cent quinze pixels de vide restaient entre les
+     * deux, un quart d'un téléphone de 844 px, et ce vide n'appartenait à
+     * personne. La question se lisait comme un bandeau d'en-tête plutôt que
+     * comme le sujet de la page. Elle absorbe maintenant cet espace et s'y
+     * centre : le vide l'encadre au lieu de l'isoler, et les boutons restent
+     * au bas de l'écran, où le pouce les trouve.
+     *
+     * Les écrans suivants — l'explication, le grand bouton, le cadran qui
+     * tourne — ont déjà leur propre bloc souple et tiennent tout juste dans
+     * la hauteur (T-139) : là, rien ne bouge.
+     */
+    const questionTakesTheRoom = ['draft_found', 'choosing_mode'].includes(
+        state,
+    );
+
     return (
         <div className="flex flex-1 flex-col">
             <Head title={greeting} />
 
+            {/*
+             * La salutation oriente, elle ne s'annonce pas. Elle a été le plus
+             * grand caractère de la page jusqu'au 20 septembre 2026, au-dessus
+             * d'une question plus petite qu'elle : on lisait d'abord ce qu'on
+             * savait déjà. Elle passe en ligne discrète, et la question prend
+             * la place.
+             *
+             * Elle voyage avec la question depuis le 21 septembre : centrée
+             * en même temps qu'elle, elle reste la ligne qui l'introduit. Une
+             * salutation restée collée en haut pendant que la question
+             * descend au milieu, ce sont deux objets sans rapport.
+             */}
             {state !== 'confirmed' ? (
-                <h1 className="font-display record-greeting leading-tight font-medium">
-                    {greeting}
-                </h1>
-            ) : null}
+                <div
+                    className={
+                        questionTakesTheRoom
+                            ? 'flex flex-1 flex-col justify-center'
+                            : undefined
+                    }
+                >
+                    <h1 className="record-greeting text-brand-muted leading-snug">
+                        {greeting}
+                    </h1>
 
-            {showQuestion ? (
-                <div className="card record-card mt-4 px-5 py-5">
-                    <span
-                        aria-hidden="true"
-                        className="bg-brand-gold mb-3 block h-px w-10"
-                    />
-                    <p className="font-display text-brand record-question leading-snug font-medium">
-                        {question}
-                    </p>
+                    {/*
+                     * La question dans sa carte, qui est la seule surface
+                     * élevée de l'écran et la seule chose qui bouge.
+                     *
+                     * La carte avait été retirée le matin du 21 septembre :
+                     * posée à même le lin, la question a gagné en taille et
+                     * perdu en présence, faute de séparation figure/fond. Ce
+                     * qui la met en avant n'est donc ni sa taille seule ni le
+                     * vide autour d'elle, c'est d'être le seul objet en
+                     * relief de la page — et de respirer (`question-card`).
+                     */}
+                    {showQuestion ? (
+                        <div
+                            className={[
+                                'question-card mt-4',
+                                questionTakesTheRoom
+                                    ? ''
+                                    : 'question-card-compact',
+                                // Elle cesse de bouger dès que la personne
+                                // parle : le halo est alors le seul mouvement.
+                                capturing ? 'question-card-still' : '',
+                                // …et dès qu'elle porte une vignette à
+                                // toucher : une cible ne dérive pas sous le
+                                // doigt. Le filet d'or, lui, continue.
+                                questionPhotos.length > 0
+                                    ? 'question-card-steady'
+                                    : '',
+                            ].join(' ')}
+                        >
+                            <span
+                                aria-hidden="true"
+                                className="question-rule"
+                            />
+
+                            {/*
+                             * Les photos qui posent la question.
+                             *
+                             * Elles viennent **avant** le texte parce que
+                             * c'est l'ordre dans lequel on parle : on tend la
+                             * photo, puis on demande. Une seule occupe la
+                             * largeur de la carte ; plusieurs se rangent en
+                             * bande qui défile de côté — jamais en grille,
+                             * qui les rendrait toutes minuscules sur un
+                             * téléphone.
+                             *
+                             * La hauteur est bornée en `vh` et non en pixels :
+                             * la page d'enregistrement doit tenir dans
+                             * l'écran sans défilement (T-139), et une photo
+                             * est la seule chose ici dont la taille ne vient
+                             * pas de nous. Les dimensions sont écrites dans
+                             * le style pour que rien ne saute quand l'image
+                             * arrive — sur une 4G, elle arrive après le
+                             * texte.
+                             */}
+                            {/*
+                             * La photo ne vit que sur l'écran qui pose la
+                             * question.
+                             *
+                             * Mesuré sur la fenêtre réelle d'un iPhone : les
+                             * écrans qui suivent — l'explication, le grand
+                             * bouton, le cadran qui tourne — sont déjà à
+                             * **zéro pixel** de marge (726 px de contenu pour
+                             * 726 px de fenêtre). Une vignette de 88 px y
+                             * fait donc déborder de 120 px, c'est-à-dire
+                             * « Terminer » sous le bord pendant qu'on
+                             * raconte. Il n'y a pas d'arbitrage à faire : la
+                             * photo a servi, elle s'efface, et la question
+                             * écrite reste sous les yeux jusqu'au bout.
+                             */}
+                            {questionTakesTheRoom &&
+                            questionPhotos.length > 0 ? (
+                                <Suspense fallback={null}>
+                                    <QuestionPhotos photos={questionPhotos} />
+                                </Suspense>
+                            ) : null}
+
+                            <p className="font-display text-brand record-question question-text leading-tight font-medium text-balance">
+                                {question}
+                            </p>
+                        </div>
+                    ) : null}
                 </div>
             ) : null}
 
@@ -706,8 +908,31 @@ export default function Record({
 
             {/* Écran 0 : la voix, ou le visage (T-210) =========================== */}
             {state === 'choosing_mode' ? (
-                <section className="enter mt-5 flex flex-1 flex-col justify-center gap-4">
-                    <h2 className="font-display text-brand text-2xl leading-tight font-medium">
+                /*
+                 * Les gestes descendent au bas de l'écran (`mt-auto`) et le
+                 * vide passe au-dessus d'eux, entre la question et eux. Ils
+                 * occupaient le centre optique — là où tombe le premier
+                 * regard sur un téléphone — pendant que la question, ancrée
+                 * en haut, se lisait après. Le pouce y gagne aussi.
+                 */
+                <section
+                    className={`enter mt-auto flex flex-col gap-3 ${
+                        // Une question illustrée a déjà sa hauteur : les
+                        // quarante pixels qui séparaient la carte des gestes
+                        // n'ont plus rien à séparer, et la page doit tenir
+                        // dans l'écran (T-139).
+                        questionPhotos.length > 0 ? 'pt-3' : 'pt-10'
+                    }`}
+                >
+                    {/*
+                     * La consigne ne s'affiche plus : elle redisait ce que les
+                     * libellés disent déjà, dans l'encre la plus noire de la
+                     * page et juste au-dessus du bouton — c'est elle qui
+                     * amarrait le regard en bas. Elle reste pour les lecteurs
+                     * d'écran, qui n'ont pas la mise en page pour comprendre
+                     * ce qu'on leur demande.
+                     */}
+                    <h2 className="sr-only">
                         {t(
                             tu
                                 ? 'narrator.record.mode_title_tu'
@@ -716,10 +941,20 @@ export default function Record({
                         )}
                     </h2>
 
+                    {/*
+                     * Deux réponses à la même question, donc deux objets de la
+                     * même famille (`mode-tile`) : même forme, même hauteur,
+                     * même icône à la même place. Se filmer avait été réduit à
+                     * un lien souligné pour alléger l'écran — mais la réponse
+                     * à « deux dalles trop lourdes » n'était pas d'en effacer
+                     * une, c'était d'alléger les deux. Aucune n'est en
+                     * terracotta : cet écran aiguille, il n'agit pas, et la
+                     * couleur d'action attend le grand bouton rond du suivant.
+                     */}
                     <button
                         type="button"
                         onClick={() => chooseMode('audio')}
-                        className={`${primary} flex items-center justify-center gap-3`}
+                        className="mode-tile mode-tile-primary press"
                     >
                         <MicIcon />
                         {t('narrator.record.mode_audio')}
@@ -729,14 +964,31 @@ export default function Record({
                         <button
                             type="button"
                             onClick={() => chooseMode('video')}
-                            className={`${secondary} flex items-center justify-center gap-3`}
+                            className="mode-tile mode-tile-secondary press"
                         >
                             <CameraIcon />
                             {t('narrator.record.mode_video')}
                         </button>
                     ) : null}
 
-                    <p className="text-brand-muted text-base">
+                    {/*
+                     * L'explication est la légende des deux tuiles, pas un
+                     * bloc de plus : elle se serre contre elles (`-mt-1`) au
+                     * lieu de flotter entre elles et le lien de l'écrit.
+                     */}
+                    {/*
+                     * L'explication du choix s'efface quand la question porte
+                     * une photo : trois lignes de gris de plus sur un écran
+                     * qui en a déjà beaucoup, et c'est la place qui manque
+                     * pour montrer l'image en grand (T-139). Elle reste pour
+                     * les lecteurs d'écran, qui n'ont pas l'image pour
+                     * comprendre la différence entre les deux boutons.
+                     */}
+                    <p
+                        className={`text-brand-muted -mt-1 text-base ${
+                            questionPhotos.length > 0 ? 'sr-only' : ''
+                        }`}
+                    >
                         {t(
                             tu
                                 ? 'narrator.record.mode_help_tu'
@@ -748,8 +1000,21 @@ export default function Record({
 
             {/* Écran 1 : on explique, puis on demande ============================ */}
             {state === 'explaining' ? (
-                <section className="enter mt-5 flex flex-1 flex-col justify-center gap-5">
-                    <div className="panel flex flex-col gap-3">
+                <section className="enter mt-4 flex flex-1 flex-col items-center justify-center gap-5 text-center">
+                    {/*
+                     * La consigne du micro n'est plus un panneau sable.
+                     *
+                     * Depuis que la question a retrouvé sa carte, l'écran
+                     * portait deux surfaces pleines au même niveau : la
+                     * question en blanc, la consigne en sable. Deux surfaces
+                     * qui ne hiérarchisent rien ne font qu'un écran encombré.
+                     * L'écran a maintenant trois niveaux et trois
+                     * traitements : la carte en relief pour le sujet, du
+                     * texte nu pour la consigne, la couleur d'action pour le
+                     * geste — et rien d'autre en terracotta de tout le
+                     * parcours.
+                     */}
+                    <div className="flex max-w-sm flex-col gap-3">
                         <p>
                             {t(
                                 filming
@@ -768,13 +1033,36 @@ export default function Record({
                         ) : null}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={() => void askPermission()}
-                        className={primary}
-                    >
-                        {t('narrator.record.ready')}
-                    </button>
+                    {/*
+                     * Le grand bouton rond est **ici**, et non un écran plus
+                     * loin (T-248). Il y avait entre le choix et le geste un
+                     * écran « Je suis prêt·e » qui ne faisait que confirmer
+                     * une intention déjà exprimée : trois gestes délibérés
+                     * pour commencer à parler, là où deux suffisent. Le
+                     * bouton est le même, au même endroit, avec la même
+                     * étiquette que sur l'écran suivant — ce qui s'apprend
+                     * une fois se retrouve à sa place.
+                     *
+                     * L'explication reste **au-dessus** de lui : c'est elle
+                     * qui doit précéder la demande d'autorisation (T-210,
+                     * doc 04 §9), et elle la précède toujours.
+                     */}
+                    <div className="record-halo mx-auto">
+                        <button
+                            type="button"
+                            onClick={() => void askPermission()}
+                            className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep press record-dial flex flex-col items-center justify-center gap-2 rounded-full shadow-[0_18px_40px_rgba(176,67,42,0.35)] transition-colors"
+                        >
+                            {filming ? <CameraIcon /> : <MicIcon />}
+                            <span className="record-label leading-none font-semibold">
+                                {t(
+                                    filming
+                                        ? 'narrator.record.open_camera'
+                                        : 'narrator.record.start',
+                                )}
+                            </span>
+                        </button>
+                    </div>
                 </section>
             ) : null}
 
@@ -868,7 +1156,9 @@ export default function Record({
                                     <VideoPlayer src={pausedUrl} />
                                 </Suspense>
                             ) : (
-                                <AudioPlayer src={pausedUrl} compact />
+                                <Suspense fallback={null}>
+                                    <AudioPlayer src={pausedUrl} compact />
+                                </Suspense>
                             )}
                         </div>
                     ) : null}
@@ -961,7 +1251,9 @@ export default function Record({
                             <VideoPlayer src={reviewUrl} />
                         </Suspense>
                     ) : (
-                        <AudioPlayer src={reviewUrl} />
+                        <Suspense fallback={null}>
+                            <AudioPlayer src={reviewUrl} />
+                        </Suspense>
                     )}
 
                     <button
@@ -1047,49 +1339,135 @@ export default function Record({
             {/* Écran 6 : c'est enregistré ======================================== */}
             {state === 'confirmed' ? (
                 <section className="enter mt-2">
-                    <div className="flex flex-col items-center text-center">
+                    {/*
+                     * Le seul écran du parcours où l'on félicite quelqu'un.
+                     *
+                     * Il tenait en deux lignes suivies d'un formulaire, et
+                     * une personne qui vient de raconter un morceau de sa vie
+                     * recevait un accusé de réception. Il dit maintenant ce
+                     * qu'elle vient de faire — **une durée**, concrète là où
+                     * « c'est enregistré » est administratif — sous le même
+                     * filet d'or que l'écran de bienvenue : ce sont les deux
+                     * moments du produit qui se ressemblent.
+                     */}
+                    <div className="flex flex-col items-center py-4 text-center">
                         <span
                             aria-hidden="true"
-                            className="bg-brand text-brand-foreground animate-pop-in flex size-12 items-center justify-center rounded-full"
+                            className="bg-brand text-brand-foreground animate-pop-in flex size-16 items-center justify-center rounded-full"
                         >
                             <Check />
                         </span>
+
                         <h1
                             role="status"
-                            className="font-display text-brand mt-3 text-[1.5rem] leading-tight font-medium"
+                            className="font-display text-brand enter mt-6 text-[1.875rem] leading-tight font-medium text-balance"
+                            style={stagger(1)}
                         >
                             {t('narrator.record.confirmed_title')}
                         </h1>
-                        <p className="mt-1.5 text-lg">
+
+                        <p
+                            className="text-brand-muted enter mt-2 text-lg"
+                            style={stagger(2)}
+                        >
                             {t('narrator.record.confirmed_body', {
                                 name: firstName,
                             })}
                         </p>
+
+                        <span
+                            aria-hidden="true"
+                            className="rule-gold mt-7"
+                            style={stagger(3)}
+                        />
+
+                        {context.elapsedSeconds > 0 ? (
+                            <>
+                                <p
+                                    className="text-brand-muted enter mt-7 text-base"
+                                    style={stagger(4)}
+                                >
+                                    {t('narrator.record.confirmed_duration')}
+                                </p>
+                                <p
+                                    className="font-display text-brand enter mt-1 text-[1.625rem] leading-snug font-medium"
+                                    style={stagger(5)}
+                                >
+                                    {fmt.duration(context.elapsedSeconds)}
+                                </p>
+                            </>
+                        ) : null}
+
                         {validationVariant === 'immediate' ? null : (
-                            <p className="text-brand-muted mt-2 text-base">
+                            <p
+                                className="enter mt-7 max-w-[30ch] text-[1.0625rem] leading-snug"
+                                style={stagger(6)}
+                            >
                                 {t('narrator.record.confirmed_next')}
                             </p>
                         )}
                     </div>
 
                     {/*
-                     * Variante A : la question se pose maintenant, pendant que
-                     * le narrateur est encore là. C'est tout l'objet du test
-                     * de Phase 0A : la validation comme récompense d'un tap.
+                     * On **annonce** le partage, on ne le demande plus (T-250).
+                     *
+                     * « Que souhaitez-vous faire de cette histoire ? » se
+                     * posait ici en variante A, et c'était l'objet du test de
+                     * Phase 0A. Le partage permanent est devenu le sixième
+                     * accord du « J'accepte » : plus aucun choix à faire, ni
+                     * à l'acceptation ni après chaque récit, parce que chaque
+                     * tap est une occasion d'abandonner et qu'on s'adresse à
+                     * des gens que la technique intimide.
+                     *
+                     * La sortie reste ouverte pour ce récit-là, et c'est elle
+                     * qui rachète la granularité perdue : un accord permanent
+                     * n'est pas un engagement histoire par histoire, et
+                     * « garder celle-ci pour moi » est à un doigt.
+                     *
+                     * Un projet sans déclaration ne voit rien du tout : la
+                     * relecture lui sera demandée par message, `ApplyShare-
+                     * Decision` s'en charge. Il n'en existe plus depuis que
+                     * l'accord est donné à l'acceptation ; seuls d'anciens
+                     * projets peuvent passer par là.
                      */}
-                    {validationVariant === 'immediate' ? (
-                        decided === null ? (
-                            <ShareDecision
-                                action={shareDecisionAction}
-                                onDecided={setDecided}
-                            />
-                        ) : (
-                            <p role="status" className="panel enter mt-8">
-                                {t(
-                                    `narrator.share_decision.recorded.${decided}`,
-                                )}
-                            </p>
-                        )
+                    {declaredSharing ? (
+                        <div className="border-brand-sand mt-8 flex flex-col items-center gap-3 border-t pt-7 text-center">
+                            {decided === null ? (
+                                <>
+                                    <p
+                                        role="status"
+                                        className="text-[1.0625rem]"
+                                    >
+                                        {t('narrator.record.shared_by_default')}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            router.post(
+                                                shareDecisionAction,
+                                                { decision: 'keep_private' },
+                                                {
+                                                    preserveScroll: true,
+                                                    onSuccess: () =>
+                                                        setDecided(
+                                                            'keep_private',
+                                                        ),
+                                                },
+                                            )
+                                        }
+                                        className="text-brand-muted hover:text-brand min-h-[2.75rem] text-base underline underline-offset-4"
+                                    >
+                                        {t('narrator.record.keep_this_one')}
+                                    </button>
+                                </>
+                            ) : (
+                                <p role="status" className="text-[1.0625rem]">
+                                    {t(
+                                        `narrator.share_decision.recorded.${decided}`,
+                                    )}
+                                </p>
+                            )}
+                        </div>
                     ) : null}
 
                     {/*
@@ -1099,10 +1477,12 @@ export default function Record({
                      * récit à mi-chemin. Facultatif de bout en bout.
                      */}
                     {addingPhoto ? (
-                        <PhotoUploader
-                            action={`${basePath}/photos`}
-                            onDone={() => setAddingPhoto(false)}
-                        />
+                        <Suspense fallback={null}>
+                            <PhotoUploader
+                                action={`${basePath}/photos`}
+                                onDone={() => setAddingPhoto(false)}
+                            />
+                        </Suspense>
                     ) : (
                         <button
                             type="button"
@@ -1112,6 +1492,15 @@ export default function Record({
                             {t('common.photos.add')}
                         </button>
                     )}
+
+                    {/*
+                     * Le dernier mot, et il vient après la photo : celle-ci
+                     * reste quelque chose à faire, on ne congédie pas
+                     * quelqu'un avant de lui avoir offert.
+                     */}
+                    <p className="text-brand-muted mt-8 text-center text-base">
+                        {t('narrator.record.confirmed_close')}
+                    </p>
                 </section>
             ) : null}
 

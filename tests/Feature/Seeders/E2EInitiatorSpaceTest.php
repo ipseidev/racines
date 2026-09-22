@@ -11,6 +11,7 @@ use App\Models\Project;
 use App\Models\Question;
 use App\Models\User;
 use App\Settings\PilotSettings;
+use App\Support\InitiatorProject;
 use Database\Seeders\E2ELinksSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -97,8 +98,10 @@ it('garde les questions du décor hors du corpus proposé aux familles', functio
     expect(Question::query()->where('slug', 'like', 'e2e-%')->exists())->toBeTrue()
         ->and(Question::query()->active()->where('slug', 'like', 'e2e-%')->exists())->toBeFalse();
 
-    $this->actingAs(initiatorUser())
-        ->get('/espace/questions')
+    $initiator = initiatorUser();
+
+    $this->actingAs($initiator)
+        ->get(spaceUrl(InitiatorProject::latestOf($initiator), '/questions'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('initiator/Questions')
             ->where('queue', fn (Collection $questions): bool => $questions

@@ -39,6 +39,7 @@ use Illuminate\Notifications\Notification;
  * @property bool $is_primary
  * @property int|null $birth_year
  * @property CarbonImmutable|null $opted_in_at
+ * @property CarbonImmutable|null $first_run_at
  * @property CarbonImmutable|null $opted_out_at
  * @property CarbonImmutable|null $contact_deletion_due_at
  * @property CarbonImmutable|null $contact_deleted_at
@@ -60,6 +61,7 @@ final class Narrator extends Model
     protected $fillable = [
         'first_name', 'last_name', 'display_name', 'email', 'phone_e164',
         'preferred_channel', 'tech_comfort', 'birth_year', 'opted_in_at',
+        'first_run_at',
     ];
 
     /** @return BelongsTo<Project, $this> */
@@ -133,6 +135,7 @@ final class Narrator extends Model
             'is_primary' => 'boolean',
             'birth_year' => 'integer',
             'opted_in_at' => 'immutable_datetime',
+            'first_run_at' => 'immutable_datetime',
             'opted_out_at' => 'immutable_datetime',
             'contact_deletion_due_at' => 'immutable_datetime',
             'contact_deleted_at' => 'immutable_datetime',

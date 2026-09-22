@@ -118,6 +118,9 @@ return [
         'camera_granted' => 'Caméra autorisée',
         'video_chosen' => 'Vidéo choisie',
         'audio_chosen' => 'Voix seule choisie',
+        'first_run_started' => 'Tour de chauffe commencé',
+        'first_run_done' => 'Tour de chauffe joué',
+        'first_run_skipped' => 'Tour de chauffe passé',
     ],
 
     'share_decision' => [

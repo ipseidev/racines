@@ -434,7 +434,8 @@
 
     /*
      * Le grand bouton rond de l'enregistrement, et son halo qui respire.
-     * Le halo est le seul mouvement de la page d'enregistrement : il dit
+     * Le halo est le seul mouvement continu de la page d'enregistrement —
+     * l'arrivée de la question se joue une fois et s'arrête : il dit
      * « ça tourne » à quelqu'un qui ne lit pas un compteur. Il s'arrête pour
      * qui l'a demandé, et le point qui bat fait alors office.
      */
@@ -442,8 +443,11 @@
         position: relative;
         isolation: isolate;
         /* Le halo déborde du bouton d'un tiers : on lui laisse cette place,
-           sinon il passe sur la question au-dessus et sur l'aide en dessous. */
-        margin-block: 2.25rem;
+           sinon il passe sur la question au-dessus et sur l'aide en dessous.
+           Deux rem suffisent, et les quatre pixels rendus de chaque côté vont
+           à la carte de la question, qui reste ainsi la même d'un écran à
+           l'autre. */
+        margin-block: 2rem;
     }
 
     /*
@@ -452,12 +456,25 @@
      * bouton sous le bord. Les tailles sont celles d'un téléphone courant ;
      * sur un écran court (iPhone SE et semblables), tout se resserre d'un cran.
      */
+    /*
+     * La hiérarchie de l'écran de la question, retournée le 20 septembre 2026.
+     *
+     * L'étiquette était plus grosse que le contenu : « Odette, voici votre
+     * question de la semaine » à 1,55 rem au-dessus de la question elle-même
+     * à 1,34 rem sur un téléphone de 390 px. On lisait donc d'abord ce qu'on
+     * savait déjà. La salutation redevient ce qu'elle est — une ligne qui
+     * oriente — et la question devient le plus grand caractère de la page,
+     * ce que la direction artistique demandait depuis T-138 : « la question
+     * de la semaine devient l'objet de la page ».
+     */
     .record-greeting {
-        font-size: 1.55rem;
+        font-size: 1.0625rem;
     }
 
+    /* La carte partie, la question récupère les deux fois 1,25 rem que la
+       carte lui prenait en largeur : elle peut grandir d'autant. */
     .record-question {
-        font-size: clamp(1.2rem, 5.5vw, 1.5rem);
+        font-size: clamp(1.75rem, 8.5vw, 2.5rem);
     }
 
     /*
@@ -700,15 +717,20 @@
 
     @media (max-height: 740px) {
         .record-greeting {
-            font-size: 1.3rem;
+            font-size: 1rem;
         }
 
         .record-question {
-            font-size: clamp(1.05rem, 5vw, 1.25rem);
+            font-size: clamp(1.4rem, 7vw, 1.9rem);
         }
 
-        .record-card {
-            padding-block: 0.875rem;
+        .question-text {
+            margin-top: 0.5rem;
+        }
+
+        .mode-tile {
+            min-height: 2.75rem;
+            padding-block: 0.625rem;
         }
 
         .record-dial {
@@ -845,6 +867,25 @@
         @apply bg-brand-surface border-brand-sand rounded-xl border;
     }
 
+    /*
+     * La largeur de lecture, dans l'espace de l'Initiateur·rice (21 septembre
+     * 2026).
+     *
+     * La colonne s'élargit à 1024 px sur grand écran, et sans cette borne le
+     * texte courant s'élargissait avec elle : 960 px mesurés, soit près de
+     * cent quarante signes par ligne, là où l'œil en suit confortablement
+     * soixante-dix. Ce qui devait aérer la page la rendait plus pénible à
+     * lire.
+     *
+     * La borne porte sur le **texte**, jamais sur les cartes ni les grilles :
+     * une carte doit occuper la largeur qu'on vient de lui donner, un
+     * paragraphe non. En `ch`, donc liée au corps du texte et non à un
+     * nombre de pixels qui vieillirait au premier changement de police.
+     */
+    .space-shell :is(p, li):not(.measure-free) {
+        max-width: 70ch;
+    }
+
     /* L'œillet d'une section : une étiquette en capitales, précédée d'un filet d'or. */
     .eyebrow {
         @apply text-brand inline-flex items-center gap-3 text-[0.8rem] font-semibold tracking-[0.1em] uppercase;
@@ -913,7 +954,410 @@
         @apply h-[90%];
     }
 
+    /*
+     * Le filet d'or : il se trace depuis le centre, une fois, pour séparer
+     * l'annonce de ce qui la suit. Deux écrans le portent — la bienvenue
+     * après le oui, la confirmation après une histoire —, et ce sont les
+     * deux seuls moments du produit où l'on félicite quelqu'un.
+     *
+     * « L'or en filet, jamais en petit texte » (direction artistique). Un
+     * trait qui se dessine dit « c'est fait » mieux qu'une phrase de plus, et
+     * cet écran-là n'a rien à demander : c'est le seul endroit du produit où
+     * le mouvement est une fête et non une information.
+     */
+    .rule-gold {
+        @apply block h-px w-24 origin-center;
+        background: linear-gradient(
+            to right,
+            transparent,
+            var(--color-brand-gold),
+            transparent
+        );
+        animation: draw-rule 0.6s var(--ease-soft) both;
+    }
+
+    /*
+     * La carte de la question (refonte du 21 septembre 2026).
+     *
+     * Elle avait été supprimée le matin même, au motif qu'un rectangle blanc
+     * sur du lin se lit comme un composant d'interface. C'était vrai et
+     * c'était le mauvais remède : la carte ne faisait pas que cadrer la
+     * question, elle lui donnait sa **séparation figure/fond**. Posée à même
+     * le lin, la question a gagné en taille et perdu en présence — 14 % de
+     * son encadrement en encre, sur le même fond que tout le reste de la
+     * page. Mesuré sur un iPhone : le bouton d'action portait sept fois sa
+     * masse colorée. La carte revient donc, et c'est son dessin qui change :
+     * la seule surface élevée de l'écran, et la seule chose qui bouge.
+     *
+     * Elle respire — l'échelle et l'ombre, quatre secondes, indéfiniment.
+     * Le halo du bouton d'enregistrement respire lui aussi, et l'on pourrait
+     * craindre que les deux disent la même chose ; ils ne se croisent jamais
+     * (le halo n'existe qu'une fois le micro accordé) et leur rythme diffère
+     * du simple au double, 2,4 s contre 4 s. Le halo pulse une couleur pour
+     * dire « ça tourne » ; la carte ne bouge que sa géométrie, pour dire
+     * « on vous attend ». Aucune des deux ne bouge pour qui a demandé qu'on
+     * ne bouge pas.
+     */
+    .question-card {
+        @apply bg-brand-surface border-brand-sand relative rounded-xl border px-5 py-7;
+        box-shadow: 0 10px 30px rgba(38, 33, 28, 0.06);
+        /* `ease-in-out` et non la courbe d'entrée du système : celle-ci
+           décélère, ce qui ferait tenir la carte en haut une seconde et
+           demie puis retomber d'un coup. Un flottement est symétrique. */
+        animation: card-float 3.6s ease-in-out infinite;
+        transition:
+            padding 0.45s var(--ease-soft),
+            margin-top 0.45s var(--ease-soft);
+    }
+
+    .question-card .record-question {
+        transition: font-size 0.45s var(--ease-soft);
+    }
+
+    /*
+     * Le filet qui parcourt la carte.
+     *
+     * Un dégradé conique tourne autour d'elle, masqué pour ne laisser voir
+     * que l'anneau de deux pixels qui chevauche la bordure : la bordure
+     * elle-même paraît s'allumer au passage, plutôt qu'un objet de plus qui
+     * tourne autour. Sept secondes le tour — « doucement » veut dire qu'on
+     * ne le suit pas des yeux, on le remarque.
+     *
+     * `@property` est ce qui rend l'angle interpolable : sans lui, une
+     * propriété personnalisée s'anime par sauts. Sur un navigateur qui ne le
+     * connaît pas, l'angle reste à sa valeur initiale et l'anneau devient un
+     * discret reflet fixe dans le coin — jamais une bordure cassée.
+     */
+    .question-card::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: calc(0.75rem + 1px);
+        padding: 2px;
+        background: conic-gradient(
+            from var(--question-angle),
+            transparent 0deg,
+            transparent 240deg,
+            var(--color-brand-accent) 320deg,
+            transparent 360deg
+        );
+        -webkit-mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        mask-composite: exclude;
+        pointer-events: none;
+        animation: border-travel 7s linear infinite;
+    }
+
+    /*
+     * La même carte, une fois le choix fait.
+     *
+     * Le rôle de la question change en cours de route : elle est le sujet
+     * tant qu'on décide comment y répondre, elle n'est plus qu'un rappel
+     * pendant qu'on y répond — et c'est alors le grand bouton rond qui doit
+     * tenir l'écran. La carte se resserre donc, la question descend d'un
+     * cran, et la respiration s'arrête : « on vous attend » n'a plus de sens
+     * quand la personne a commencé.
+     *
+     * Ce n'est pas qu'une question de sens : la page d'enregistrement doit
+     * tenir dans la hauteur de l'écran sans défilement (T-139), et la carte
+     * pleine faisait déborder l'écran d'explication de cinquante-trois
+     * pixels sur un téléphone courant.
+     */
+    /*
+     * La même carte, une fois le choix fait — et c'est bien la **même**.
+     *
+     * Elle avait d'abord été éteinte ici : plus de flottement, plus de
+     * filet, un tiers de rembourrage et deux points de moins. Vu depuis
+     * l'écran précédent, ce n'était plus le même objet — « la carte de la
+     * question n'est pas du tout la même », et c'était vrai. Or ce qui
+     * faisait le décrochage ne coûtait aucune hauteur : le mouvement. Elle
+     * garde donc son flottement et son filet, et ne perd que du rembourrage
+     * et deux points de corps, en transition douce plutôt qu'en saut.
+     *
+     * Elle se resserre quand même, parce que le rôle de la question change :
+     * sujet tant qu'on décide comment y répondre, rappel pendant qu'on y
+     * répond — et c'est alors le grand bouton rond qui doit tenir l'écran,
+     * dans une page qui ne défile pas (T-139).
+     */
+    .question-card-compact {
+        padding-block: 1.25rem;
+        margin-top: 0.75rem;
+    }
+
+    .question-card-compact .record-question {
+        font-size: clamp(1.45rem, 7.5vw, 2rem);
+    }
+
+    .question-card-compact .question-text {
+        margin-top: 0.625rem;
+    }
+
+    /*
+     * La carte s'immobilise dès que ça tourne.
+     *
+     * Deux mouvements continus à la fois, ce serait un de trop — et surtout,
+     * une carte qui bouge pendant qu'on raconte son premier jour d'école
+     * demande une attention qu'on doit à l'histoire. Le halo du bouton prend
+     * le relais : il dit « ça tourne », ce qui est alors la seule chose à
+     * dire. Le passage se voit d'autant moins que tout l'écran change au
+     * même instant, le cadran devenant compteur.
+     */
+    /*
+     * La carte cesse de flotter dès qu'elle porte quelque chose à toucher.
+     *
+     * Le flottement est une décoration ; une vignette de photo est une
+     * fonction, et une cible qui dérive sous le doigt de cinq pixels toutes
+     * les deux secondes se rate — Playwright lui-même refuse de cliquer un
+     * élément qui ne s'immobilise jamais, ce qui est la façon la plus sèche
+     * d'apprendre qu'on vient de faire bouger un bouton. À quatre-vingts
+     * ans, ce n'est pas un détail.
+     *
+     * Le filet d'or, lui, continue : il parcourt la bordure sans rien
+     * déplacer. Et la photo attire déjà l'œil bien mieux que le mouvement
+     * n'y parvenait — le flottement n'a plus rien à faire ici.
+     */
+    .question-card-steady {
+        animation: none;
+        box-shadow: 0 10px 30px rgba(38, 33, 28, 0.06);
+    }
+
+    .question-card-still {
+        animation: none;
+        box-shadow: 0 10px 30px rgba(38, 33, 28, 0.06);
+    }
+
+    .question-card-still::after {
+        display: none;
+    }
+
+    /*
+     * L'écran court, pour la carte resserrée. Le bloc est ici et non dans le
+     * `max-height` plus haut : il doit l'emporter sur la carte compacte
+     * définie juste au-dessus, et la cascade se joue à l'ordre.
+     *
+     * Il porte le **corps du texte** autant que le rembourrage, et c'est ce
+     * qui manquait. `.question-card-compact .record-question` pèse deux
+     * classes ; il l'emportait donc sur le `.record-question` du bloc
+     * `max-height` d'en haut, et la question se retrouvait **plus grosse**
+     * sur l'écran d'explication que sur l'écran de choix, dans une carte au
+     * rembourrage divisé par deux. C'est ce que montrait la capture iPhone
+     * du 21 septembre : 8 px de haut en bas contre 20 px sur les côtés.
+     *
+     * Le piège de fond : ce bloc se déclenche sur **tous** les iPhone, pas
+     * seulement sur les petits. Un 852 pt n'offre que ~726 px de fenêtre une
+     * fois la barre d'état et les barres de Safari retirées — sous le seuil.
+     * Le seuil reste à 740 px, parce que les tailles du cadran et du
+     * compteur y sont réglées depuis T-139 ; mais tout ce qu'on y écrit doit
+     * rester lisible sur un téléphone courant, et non sur un cas limite.
+     */
+    @media (max-height: 740px) {
+        .question-card {
+            padding-block: 1.25rem;
+        }
+
+        /*
+         * Sur un téléphone, la carte ne se resserre plus du tout : elle est
+         * la **même** d'un écran à l'autre, au pixel. C'est là que se jouait
+         * le « elle est encore différente » — 20 px de rembourrage contre 28,
+         * et une question plus grosse après le choix qu'avant.
+         */
+        .question-card-compact {
+            padding-block: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .question-card-compact .record-question {
+            font-size: clamp(1.4rem, 7vw, 1.9rem);
+        }
+
+        .question-card-compact .question-text {
+            margin-top: 1rem;
+        }
+    }
+
+    /*
+     * Le second palier : les fenêtres vraiment courtes.
+     *
+     * Un iPhone SE sous Safari n'offre que ~553 px, là où un 852 pt en offre
+     * ~726 : le même seuil ne peut pas servir les deux, et c'est pour l'avoir
+     * oublié que la carte était traitée en « écran court » sur tous les
+     * iPhone. Ici seulement, elle se resserre pour de bon.
+     */
+    @media (max-height: 620px) {
+        .question-card,
+        .question-card-compact {
+            padding-block: 0.875rem;
+            margin-top: 0.625rem;
+        }
+
+        .question-card-compact .record-question {
+            font-size: clamp(1.25rem, 6.2vw, 1.6rem);
+        }
+
+        .question-card-compact .question-text {
+            margin-top: 0.5rem;
+        }
+    }
+
+    /*
+     * Le filet d'or de la carte : il se trace depuis la gauche, une fois.
+     * Il ne se confond pas avec `rule-gold`, qui se trace depuis le centre et
+     * qui est réservé aux deux écrans où l'on félicite quelqu'un — l'or ne
+     * doit pas dire deux choses différentes.
+     */
+    .question-rule {
+        @apply bg-brand-gold block h-px w-10 origin-left;
+        animation: draw-rule-left 0.5s var(--ease-soft) both;
+    }
+
+    .question-text {
+        margin-top: 1rem;
+    }
+
+    /*
+     * Les photos qui posent la question (T-251).
+     *
+     * Des vignettes, et non l'image en grand. Mesuré sur la fenêtre réelle
+     * d'un iPhone (393 × 726) : une image affichée à 26 vh ajoute 237 px à la
+     * carte et fait défiler la page de 152 px, quand il ne reste que 41 px de
+     * vide à reprendre. La règle de cette page est de tenir dans l'écran
+     * (T-139) — une grand-mère ne doit jamais chercher le bouton sous le
+     * bord —, et 88 px est la vignette employée partout ailleurs dans le
+     * produit. Le grand format est à un doigt, en plein écran.
+     *
+     * Elles se rangent en ligne et débordent de côté plutôt que de passer à
+     * la ligne : trois vignettes en deux rangs feraient grandir la carte,
+     * c'est-à-dire reprendre d'une main ce que la vignette a rendu.
+     */
+    .question-photos {
+        @apply -mx-1 mt-4 flex gap-3 overflow-x-auto px-1 pb-1;
+        list-style: none;
+        scrollbar-width: none;
+    }
+
+    .question-photos::-webkit-scrollbar {
+        display: none;
+    }
+
+    .question-photos > li {
+        flex: 0 0 auto;
+    }
+
+    /*
+     * Une photo seule prend toute la carte.
+     *
+     * À 88 px on ne voit pas ce qu'elle montre, et le blanc à sa droite ne
+     * servait à rien. La hauteur est bornée en `vh`, seule unité qui protège
+     * la règle de la page — tenir dans l'écran (T-139) — quand l'image ne
+     * vient pas de nous : une photo de téléphone est portrait ou paysage, et
+     * aucune borne en pixels ne convient aux deux.
+     */
+    .question-photo-solo {
+        @apply border-brand-sand hover:border-brand mt-4 block w-full overflow-hidden rounded-lg border transition-colors;
+    }
+
+    .question-photo-solo img {
+        @apply w-full object-cover;
+        max-height: 21vh;
+        background-color: var(--color-brand-linen);
+    }
+
+    @media (max-height: 620px) {
+        .question-photo-solo img {
+            max-height: 16vh;
+        }
+    }
+
+    /*
+     * La photo se réduit une fois le choix fait, comme la question.
+     *
+     * Sur l'écran de choix, la photo **est** la question : elle prend la
+     * largeur de la carte. Sur les suivants, le grand bouton rond doit tenir
+     * l'écran, et la page ne défile pas (T-139) — mesuré : la photo pleine
+     * largeur y faisait déborder de 216 px à l'explication et de 240 px
+     * pendant l'enregistrement, c'est-à-dire « Terminer » sous le bord
+     * pendant qu'on raconte. Elle redevient une vignette, et ce qui
+     * l'accompagnait — la provenance, « voir en grand », la légende — a
+     * été lu au moment où il servait.
+     */
+    .question-card-compact .question-photo-solo {
+        margin-top: 0.75rem;
+        width: 88px;
+    }
+
+    .question-card-compact .question-photo-solo img {
+        height: 88px;
+        max-height: 88px;
+    }
+
+    .question-card-compact .question-photo-note,
+    .question-card-compact .question-photo-caption {
+        display: none;
+    }
+
+    .question-card-compact .question-photos img {
+        width: 64px;
+        height: 64px;
+    }
+
+    .question-card-compact .question-photos > li > button {
+        width: 64px;
+        height: 64px;
+    }
+
+    /*
+     * Les deux façons de répondre : une seule famille (21 septembre 2026).
+     *
+     * L'écran portait une dalle terracotta pleine largeur pour la voix et un
+     * lien souligné pour la caméra — deux traitements sans parenté, dont le
+     * premier écrasait la question et le second se laissait oublier. Ce ne
+     * sont pourtant pas deux objets différents : ce sont deux réponses à la
+     * même question, et elles doivent se ressembler.
+     *
+     * Aucun terracotta ici. Cet écran est un **aiguillage**, pas une action :
+     * la couleur d'action reste au grand bouton rond de l'écran suivant, et
+     * elle s'y voit d'autant mieux qu'elle n'apparaît nulle part avant. La
+     * primauté de la voix se dit par la graisse du trait, le fond blanc et
+     * une ombre — pas par la couleur.
+     */
+    .mode-tile {
+        @apply text-brand flex w-full items-center justify-center gap-3 rounded-xl py-4 text-[1.0625rem] no-underline;
+        min-height: 3.5rem;
+    }
+
+    .mode-tile-primary {
+        @apply bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-deep border-2 border-transparent font-semibold transition-colors;
+        box-shadow: 0 6px 16px rgba(176, 67, 42, 0.22);
+    }
+
+    /*
+     * La tuile secondaire garde la couleur de marque pour son trait, et non
+     * le sable : #E0D6C7 sur le lin ne fait que 1,34:1, quand le contour
+     * d'un contrôle doit atteindre 3:1 (WCAG 2.2 AA, 1.4.11). Le vert de
+     * marque en fait 8,99:1. Ce qui distingue les deux tuiles est donc le
+     * poids du trait, le fond et l'ombre — jamais la lisibilité du contour.
+     */
+    .mode-tile-secondary {
+        @apply border-brand hover:bg-brand/5 border bg-transparent font-medium transition-colors;
+    }
+
+    /* L'icône d'une tuile n'est pas celle d'un cadran : elle accompagne un
+       libellé, elle ne le remplace pas. */
+    .mode-tile .record-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
     @media (prefers-reduced-motion: reduce) {
+        .rule-gold,
+        .question-rule,
+        .question-card,
+        .question-card::after,
         .wave-bar,
         .enter,
         .animate-rise-in,
@@ -924,6 +1368,7 @@
             animation: none;
         }
 
+        .question-card::after,
         .record-halo::before,
         .record-halo::after {
             display: none;
@@ -933,7 +1378,9 @@
             transition: none;
         }
 
-        .press {
+        .press,
+        .question-card,
+        .question-card .record-question {
             transition: none;
         }
 
@@ -1363,6 +1810,62 @@
             transparent 72%
         );
         filter: blur(5px);
+    }
+}
+
+@keyframes draw-rule {
+    from {
+        opacity: 0;
+        transform: scaleX(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+}
+
+/* Le même trait, tracé depuis la gauche : il part du bord du texte qu'il
+   annonce, comme la main qui souligne avant d'écrire. */
+@keyframes draw-rule-left {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/*
+ * Le flottement de la carte : cinq pixels de haut en bas, et l'ombre qui
+ * suit — une ombre qui ne bouge pas sous un objet qui monte le dénonce comme
+ * un décalque. `translateY` ne remet rien en page : la carte flotte sans
+ * pousser d'un pixel ni la salutation au-dessus ni les tuiles en dessous.
+ */
+@keyframes card-float {
+    0%,
+    100% {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 36px rgba(38, 33, 28, 0.1);
+    }
+
+    50% {
+        transform: translateY(5px);
+        box-shadow: 0 8px 22px rgba(38, 33, 28, 0.06);
+    }
+}
+
+/* L'angle du dégradé conique, déclaré pour être interpolable. */
+@property --question-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes border-travel {
+    to {
+        --question-angle: 360deg;
     }
 }
 

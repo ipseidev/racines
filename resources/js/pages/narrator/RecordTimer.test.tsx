@@ -21,10 +21,10 @@ const catalogue = {
             mode_audio: 'Avec votre voix',
             mode_video: 'En vous filmant',
             mode_help: 'La voix suffit.',
-            greeting: ':name, voici votre question de la semaine',
+            greeting: 'Une question pour vous, :name.',
             mic_notice:
                 'Quand vous appuierez sur le bouton, votre téléphone demandera le micro.',
-            ready: 'Je suis prêt·e',
+            open_camera: 'Ouvrir la caméra',
             requesting: 'Votre téléphone va vous demander l’autorisation.',
             start: 'Commencer',
             tap_hint: 'Appuyez, puis parlez.',
@@ -65,6 +65,7 @@ const props = {
     firstName: 'Odette',
     addressForm: 'vous' as const,
     question: 'Quel est votre premier souvenir d’école ?',
+    questionPhotos: [],
     storyRef: 'c'.repeat(32),
     state: 'proposed',
     limits: {
@@ -73,6 +74,7 @@ const props = {
         maxBytes: 200_000_000,
         segmentMilliseconds: 5000,
         partSizeBytes: 5 * 1024 * 1024,
+        firstRunSeconds: 15,
         acceptedMimes: ['audio/webm'],
         video: {
             maxBytes: 400_000_000,
@@ -87,6 +89,12 @@ const props = {
     shareDecisionAction: '/r/jeton/share-decision',
     shareDecision: null,
     techComfort: null,
+    // Ces suites portent sur la capture : le tour de chauffe du premier lien
+    // a la sienne, et s’interposerait ici entre le test et son sujet.
+    firstTime: false,
+    // Sans déclaration d’avance : ces suites portent sur la capture, et
+    // l’écran de fin y pose encore sa question.
+    declaredSharing: false,
 };
 
 beforeEach(() => {
@@ -129,9 +137,8 @@ describe('le compteur de l’enregistrement', () => {
         await user.click(
             await screen.findByRole('button', { name: 'Avec votre voix' }),
         );
-        await user.click(
-            await screen.findByRole('button', { name: 'Je suis prêt·e' }),
-        );
+        // Un seul geste depuis T-248 : le grand bouton porte l'explication,
+        // et la voix enchaîne dès l'autorisation obtenue.
         await user.click(
             await screen.findByRole('button', { name: 'Commencer' }),
         );

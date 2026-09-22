@@ -86,13 +86,23 @@ return [
 
         // Écran 1 — explication. Elle précède toujours la demande de micro :
         // une autorisation qui surgit sans prévenir se refuse par réflexe.
-        'greeting' => ':name, esta es su pregunta de la semana',
-        'greeting_tu' => ':name, esta es tu pregunta de la semana',
+        /*
+         * La ligne qui annonce la question (21 septembre 2026).
+         *
+         * Elle disait « voici votre question de la semaine » : un vocabulaire
+         * de rubrique, d'infolettre — et c'était la seule phrase de l'écran
+         * qui s'adressait à la personne. « Une question pour vous » dit la
+         * même chose sans le classeur, et n'attribue la question à personne :
+         * le corpus n'a pas d'auteur, et un lien porteur ne nomme pas de
+         * tiers.
+         */
+        'greeting' => 'Una pregunta para usted, :name.',
+        'greeting_tu' => 'Una pregunta para ti, :name.',
         'mic_notice' => 'Cuando pulse el botón, su teléfono le pedirá permiso para usar el micrófono. Elija «Permitir».',
         'mic_notice_tu' => 'Cuando pulses el botón, tu teléfono te pedirá permiso para usar el micrófono. Elige «Permitir».',
         'camera_notice' => 'Cuando pulse el botón, su teléfono le pedirá permiso para usar el micrófono y la cámara. Elija «Permitir». Se verá en la pantalla antes de empezar.',
         'camera_notice_tu' => 'Cuando pulses el botón, tu teléfono te pedirá permiso para usar el micrófono y la cámara. Elige «Permitir». Te verás en la pantalla antes de empezar.',
-        'ready' => 'Adelante',
+        'open_camera' => 'Encender la cámara',
 
         // Écran 2 — permission.
         'requesting' => 'Su teléfono va a pedirle permiso. Elija «Permitir».',
@@ -134,7 +144,17 @@ return [
         // Écran 6 — confirmation.
         'confirmed_title' => 'Su historia está grabada',
         'confirmed_body' => 'Gracias, :name.',
+        'confirmed_duration' => 'Ha contado durante',
+        'shared_by_default' => 'Sus seres queridos podrán escucharla en cuanto el texto esté listo.',
+        'keep_this_one' => 'Guardar esta solo para mí',
         'confirmed_next' => 'Ahora la pasamos a limpio. Usted la releerá antes de que nadie la escuche.',
+        'confirmed_close' => 'Puede cerrar esta página.',
+        'photo_open' => 'Ampliar: :alt',
+        'photo_from_family' => 'Enviada por su familia.',
+        'photos_from_family' => 'Enviadas por su familia.',
+        'photo_from' => 'Enviada por :name.',
+        'photos_from' => 'Enviadas por :name.',
+        'photo_enlarge' => 'Ver en grande',
 
         // Brouillon retrouvé au chargement.
         'draft_title' => 'Tiene una grabación sin terminar',
@@ -153,6 +173,29 @@ return [
      * réglage du micro alors qu'il a refusé la caméra le ferait tourner en
      * rond. La voix reste offerte comme issue, avant l'écrit.
      */
+    'first_run' => [
+        'title' => '¿Lo probamos una vez, :name?',
+        'why' => 'No se enviará nada, no se guardará nada. Es solo para tomar confianza.',
+        'start' => 'Probar',
+        'skip' => 'Saltar y responder ahora',
+        'recording' => 'Hable, le escucho',
+        'recording_tu' => 'Habla, te escucho',
+        'stop' => 'He terminado',
+        'listen_title' => 'Escúchese',
+        'listen_title_tu' => 'Escúchate',
+        'listen_body' => 'Es exactamente lo que oirá su familia. Esta prueba, en cambio, no se guardará en ninguna parte.',
+        'listen_body_tu' => 'Es exactamente lo que oirá tu familia. Esta prueba, en cambio, no se guardará en ninguna parte.',
+        'again' => 'Empezar de nuevo',
+        'done' => 'Está bien',
+        'over_title' => 'Ya está, eso es todo.',
+        'over_body' => 'Ya sabe hacerlo. Esta prueba no se ha guardado en ninguna parte: su pregunta de verdad le espera.',
+        'over_body_tu' => 'Ya sabes hacerlo. Esta prueba no se ha guardado en ninguna parte: tu pregunta de verdad te espera.',
+        'over_button' => 'Ver mi pregunta',
+        'refused_title' => 'El micrófono no ha respondido',
+        'refused_body' => 'No pasa nada, y no se ha perdido nada: lo veremos de nuevo en la pantalla de su pregunta, con el camino exacto para su teléfono.',
+        'refused_button' => 'Ir a mi pregunta',
+    ],
+
     'camera_help' => [
         'title' => 'La cámara no tiene permiso',
         'body' => 'Sin cámara no podemos grabarle en vídeo. Le explicamos cómo darle permiso; también puede responder solo con su voz.',
@@ -320,6 +363,11 @@ return [
         'empty' => 'Todavía no tiene ninguna historia grabada.',
         'empty_hint' => 'Irán apareciendo aquí semana tras semana, después de cada pregunta.',
         'actions' => 'Lo que puede hacer con esta historia',
+        'sharing_title' => 'Sus historias salen en cuanto están listas',
+        'sharing_body' => 'Es lo que eligió al aceptar. Puede detenerlo cuando quiera: los relatos siguientes ya no saldrán sin su acuerdo, y los ya compartidos se retiran uno a uno, más arriba.',
+        'sharing_stop' => 'Dejar de compartir automáticamente',
+        'sharing_stopped' => 'Hecho. Sus próximas historias ya no saldrán sin su acuerdo.',
+        'sharing_resumed' => 'Hecho. Sus próximas historias saldrán en cuanto estén listas.',
         'pause_title' => '¿Necesita una pausa?',
         'pause_body' => 'Durante ese tiempo no le llegará ninguna pregunta. Retomará cuando quiera.',
         'pause_fewer' => 'Una semana menos',
@@ -456,7 +504,8 @@ return [
         'consents' => [
             'title' => 'Sus acuerdos',
             'summary' => 'Los textos completos de los cinco acuerdos, y su versión.',
-            'before_accept' => 'Al pulsar «Acepto», usted da los cinco acuerdos descritos más abajo: la grabación de su voz, su transcripción, que una inteligencia artificial pase el texto a limpio, el compartirlo con sus familiares y los temas sensibles que sus relatos pueden tratar.',
+            'before_accept' => 'Al pulsar «Acepto», usted da los seis acuerdos descritos más abajo: la grabación de su voz, su transcripción, que una inteligencia artificial pase el texto a limpio, el compartirlo con sus familiares, los temas sensibles que sus relatos pueden tratar y el envío de cada historia a sus familiares en cuanto esté lista.',
+            'sharing_note' => 'No tendrá que hacer nada después de cada relato. Podrá guardar cualquier historia solo para usted y detener este envío cuando quiera desde su espacio.',
             'intro' => 'Toque un acuerdo para leer su texto. Cada uno es independiente, y cada uno se puede retirar cuando quiera, sin afectar a los demás.',
             'version' => 'Versión :version',
         ],
@@ -507,7 +556,7 @@ return [
 
         'accept' => 'Acepto',
         'refuse' => 'No, gracias',
-        'accepted' => 'Anotado. Le damos la bienvenida.',
+        'accepted' => 'Su consentimiento está registrado.',
         'already_answered' => 'Ya ha respondido a esta invitación. Si desea cambiar de opinión, escríbanos a :email.',
         'no_password' => 'Esta página nunca le pedirá una contraseña, un pago ni un código.',
 
@@ -522,20 +571,11 @@ return [
 
     'optin_welcome' => [
         'title' => 'Le damos la bienvenida, :name',
-        'body' => 'Su primera pregunta llega :when. No tiene que instalar nada ni preparar nada.',
+        'first_question' => 'Su primera pregunta llega',
         'when_unknown' => 'muy pronto',
-        'vcard' => [
-            'title' => 'Añádanos a sus contactos',
-            'body' => 'Nuestros mensajes llegarán siempre desde este contacto. Si le llega un mensaje desde otro sitio imitándonos, es falso.',
-            'button' => 'Añadir el contacto',
-        ],
-        /*
-         * Plus de question ici (T-236) : les souhaits se choisissent à
-         * l'acceptation. On dit ce qui vaut, et où le changer.
-         */
+        'nothing_to_do' => 'No tiene que instalar nada ni preparar nada.',
+        'leave' => 'Puede cerrar esta página sin preocuparse. Le escribiremos cuando llegue el momento.',
         'wishes' => [
-            'title' => 'Sus deseos para más adelante',
-            'default' => 'Salvo que usted decida otra cosa, sus historias podrán transmitirse a su familia. Podrá precisarlo cuando quiera, desde su espacio personal.',
             'saved' => 'Sus deseos están guardados. Podrá cambiarlos cuando quiera.',
         ],
     ],

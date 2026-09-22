@@ -55,6 +55,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
@@ -651,6 +652,22 @@ final class AppServiceProvider extends ServiceProvider
 
     protected function configureDefaults(): void
     {
+        /*
+         * `{project}` est toujours un `Project`, et pas une chaîne.
+         *
+         * La liaison implicite de Laravel se déclenche sur la **signature**
+         * de l'action ; or les contrôleurs de l'espace résolvent leur projet
+         * par `InitiatorProject` et n'en type-hintent aucun. Le paramètre
+         * restait donc une chaîne, `can:view,project` autorisait contre un
+         * nom de classe au lieu d'un modèle, et **toutes** les pages
+         * répondaient 403.
+         *
+         * La liaison explicite vaut mieux que vingt signatures modifiées :
+         * elle tient en une ligne, elle vaut pour les routes à venir, et
+         * elle ne dépend pas de ce qu'un contrôleur pense demander.
+         */
+        Route::model('project', Project::class);
+
         // Les relations polymorphes stockent un alias court et stable plutôt
         // qu'un nom de classe : renommer une classe ne réécrit pas la base.
         Relation::morphMap([

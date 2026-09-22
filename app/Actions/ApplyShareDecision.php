@@ -43,6 +43,22 @@ final readonly class ApplyShareDecision
             return;
         }
 
+        /*
+         * La déclaration d'avance passe **avant** la variante.
+         *
+         * L'expérience de la Phase 0A porte sur le *moment* où l'on pose la
+         * question ; elle ne peut pas passer outre quelqu'un qui a demandé
+         * qu'on ne la pose plus. Laisser la variante B relancer une relecture
+         * rendrait fausse la phrase lue à l'acceptation — « vous n'aurez rien
+         * à faire après chaque récit » — pour un projet sur deux, et une
+         * promesse fausse coûte plus cher qu'un bras d'expérience net.
+         */
+        if ($story->share_decision === null && $story->project->declared_sharing_at !== null) {
+            $this->share($story);
+
+            return;
+        }
+
         if (ValidationVariant::isDeferredFor($story->project)) {
             $this->askForReview($story, 'ready');
 
@@ -54,14 +70,10 @@ final readonly class ApplyShareDecision
             // Le narrateur a déjà répondu : on ne le relance pas.
             ShareDecision::KeepPrivate => null,
             ShareDecision::DecideLater => $this->askForReview($story, 'decide_later'),
-            // Pas de décision pour cette histoire : la déclaration d'avance
-            // prend le relais si elle existe (D-10). Ce n'est pas un silence
-            // pris pour un accord — c'est un accord donné une fois, horodaté,
-            // tracé dans `consents` et révocable d'un geste. Sans elle, on
-            // demande, comme avant.
-            null => $story->project->declared_sharing_at !== null
-                ? $this->share($story)
-                : $this->askForReview($story, 'ready'),
+            // Pas de décision, et pas de déclaration — celle-ci a déjà été
+            // traitée plus haut : on demande, comme avant. Le silence n'est
+            // jamais un accord.
+            null => $this->askForReview($story, 'ready'),
         };
     }
 

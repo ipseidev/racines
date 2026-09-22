@@ -28,13 +28,13 @@ const catalogue = {
             resume: 'Reprendre',
             finish: 'Terminer',
             soft_warning: 'Vous parlez depuis dix minutes.',
-            greeting: ':name, voici votre question de la semaine',
-            greeting_tu: ':name, voici ta question de la semaine',
+            greeting: 'Une question pour vous, :name.',
+            greeting_tu: 'Une question pour toi, :name.',
             mic_notice:
                 'Votre téléphone demandera l’autorisation d’utiliser le micro.',
             mic_notice_tu:
                 'Ton téléphone demandera l’autorisation d’utiliser le micro.',
-            ready: 'Je suis prêt·e',
+            open_camera: 'Ouvrir la caméra',
             requesting: 'Choisissez « Autoriser ».',
             start: 'Commencer',
             written_link: 'Répondre par écrit',
@@ -43,6 +43,12 @@ const catalogue = {
             draft_body: 'Nous avons retrouvé votre début.',
             draft_resume: 'Reprendre mon enregistrement',
             draft_discard: 'Recommencer',
+            photo_open: 'Agrandir : :alt',
+            photo_enlarge: 'Voir en grand',
+            photo_from: 'Envoyée par :name.',
+            photos_from: 'Envoyées par :name.',
+            photo_from_family: 'Envoyée par votre famille.',
+            photos_from_family: 'Envoyées par votre famille.',
         },
         camera_help: {
             title: 'La caméra n’est pas autorisée',
@@ -100,6 +106,7 @@ const limits = {
     maxBytes: 200_000_000,
     segmentMilliseconds: 5000,
     partSizeBytes: 5 * 1024 * 1024,
+    firstRunSeconds: 15,
     acceptedMimes: ['audio/webm'],
     video: {
         maxBytes: 400_000_000,
@@ -114,6 +121,7 @@ const props = {
     firstName: 'Odette',
     addressForm: 'vous' as const,
     question: 'Quel est votre premier souvenir d’école ?',
+    questionPhotos: [],
     storyRef: 'b'.repeat(32),
     state: 'proposed',
     limits,
@@ -124,6 +132,12 @@ const props = {
     shareDecisionAction: '/r/jeton/share-decision',
     shareDecision: null,
     techComfort: null,
+    // Ces suites portent sur la capture : le tour de chauffe du premier lien
+    // a la sienne, et s’interposerait ici entre le test et son sujet.
+    firstTime: false,
+    // Sans déclaration d’avance : ces suites portent sur la capture, et
+    // l’écran de fin y pose encore sa question.
+    declaredSharing: false,
 };
 
 const getUserMedia = vi.fn();
@@ -183,7 +197,7 @@ describe('page d’enregistrement', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('heading', {
-                    name: 'Odette, voici votre question de la semaine',
+                    name: 'Une question pour vous, Odette.',
                 }),
             ).toBeTruthy();
         });
@@ -195,19 +209,19 @@ describe('page d’enregistrement', () => {
         await waitFor(() => {
             expect(
                 screen.getByRole('heading', {
-                    name: 'Odette, voici ta question de la semaine',
+                    name: 'Une question pour toi, Odette.',
                 }),
             ).toBeTruthy();
         });
     });
 
-    it('ne demande le micro qu’après le bouton « Je suis prêt·e »', async () => {
+    it('ne demande le micro qu’après le grand bouton, jamais au choix', async () => {
         render(<Record {...props} />);
 
         await choose('Avec votre voix');
 
         const button = await screen.findByRole('button', {
-            name: 'Je suis prêt·e',
+            name: 'Commencer',
         });
 
         expect(getUserMedia).not.toHaveBeenCalled();
@@ -234,7 +248,7 @@ describe('page d’enregistrement', () => {
 
         await choose('Avec votre voix');
         await userEvent.click(
-            await screen.findByRole('button', { name: 'Je suis prêt·e' }),
+            await screen.findByRole('button', { name: 'Commencer' }),
         );
 
         await waitFor(() => {
@@ -273,8 +287,10 @@ describe('page d’enregistrement', () => {
             await screen.findByRole('button', { name: 'Répondre par écrit' }),
         );
 
+        // La réponse écrite arrive en morceau séparé depuis qu'elle ne pèse
+        // plus à l'ouverture : on l'attend, comme le fait un navigateur.
         expect(
-            screen.getByRole('heading', { name: 'Répondre par écrit' }),
+            await screen.findByRole('heading', { name: 'Répondre par écrit' }),
         ).toBeTruthy();
         expect(screen.getByLabelText('Votre réponse')).toBeTruthy();
     });
@@ -293,7 +309,7 @@ describe('page d’enregistrement', () => {
             ),
         ).toBeTruthy();
 
-        await choose('Je suis prêt·e');
+        await choose('Ouvrir la caméra');
 
         await waitFor(() => {
             expect(getUserMedia).toHaveBeenCalledOnce();
@@ -320,7 +336,7 @@ describe('page d’enregistrement', () => {
         render(<Record {...props} />);
 
         await choose('En vous filmant');
-        await choose('Je suis prêt·e');
+        await choose('Ouvrir la caméra');
 
         await waitFor(() => {
             expect(
@@ -368,7 +384,7 @@ describe('page d’enregistrement', () => {
         render(<Record {...props} />);
 
         await choose('En vous filmant');
-        await choose('Je suis prêt·e');
+        await choose('Ouvrir la caméra');
 
         // L'aperçu occupe l'écran, et la question se lit par-dessus.
         await expect
@@ -384,7 +400,7 @@ describe('page d’enregistrement', () => {
         render(<Record {...props} />);
 
         await choose('En vous filmant');
-        await choose('Je suis prêt·e');
+        await choose('Ouvrir la caméra');
         await choose('Commencer');
 
         await waitFor(() => {
@@ -403,7 +419,7 @@ describe('page d’enregistrement', () => {
         render(<Record {...props} />);
 
         await choose('En vous filmant');
-        await choose('Je suis prêt·e');
+        await choose('Ouvrir la caméra');
         await choose('Sortir');
 
         await waitFor(() => {
@@ -419,11 +435,113 @@ describe('page d’enregistrement', () => {
         await choose('Avec votre voix');
 
         const button = await screen.findByRole('button', {
-            name: 'Je suis prêt·e',
+            name: 'Commencer',
         });
 
-        // Les zones tactiles sont exprimées en rem : 2.75rem = 44 px.
-        expect(button.className).toContain('min-h-[2.75rem]');
-        expect(button.className).toContain('py-4');
+        /*
+         * Le bouton principal est le cadran depuis T-248, et sa taille vient
+         * de `.record-dial` — 10,5 rem, 7,5 rem sur un écran bas — et non
+         * d'utilitaires. Jsdom ne lit pas la feuille de style : on vérifie
+         * donc la classe qui porte la garantie, faute de pouvoir mesurer.
+         * Les 44 px de la convention sont largement dépassés dans les deux
+         * cas, et c'est le test bout en bout d'accessibilité qui le mesure
+         * pour de vrai.
+         */
+        expect(button.className).toContain('record-dial');
+    });
+
+    /*
+     * Une question posée **avec** une image (T-251).
+     *
+     * La famille tend la photo et demande. Ce qui se vérifie ici n'est pas la
+     * mise en page mais le lien entre les deux : l'image porte un texte de
+     * remplacement, et la légende se lit — une photo sans alternative est une
+     * question muette pour qui n'y voit pas.
+     */
+    it('montre les photos qui posent la question, avec leur texte de remplacement', async () => {
+        render(
+            <Record
+                {...props}
+                questionPhotos={[
+                    {
+                        id: 1,
+                        url: 'https://exemple.test/web-1.jpg',
+                        thumbUrl: 'https://exemple.test/thumb-1.jpg',
+                        alt: 'Photo jointe par Claire',
+                        caption: 'La maison de Saint-Léon, été 1951',
+                        from: 'Claire',
+                    },
+                    {
+                        id: 2,
+                        url: 'https://exemple.test/web-2.jpg',
+                        thumbUrl: 'https://exemple.test/thumb-2.jpg',
+                        alt: 'Photo jointe par Claire',
+                        caption: null,
+                        from: 'Claire',
+                    },
+                ]}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getAllByRole('img', { name: 'Photo jointe par Claire' }),
+            ).toHaveLength(2);
+        });
+
+        /*
+         * La légende ne s'affiche sous la vignette que lorsqu'il n'y en a
+         * qu'une : trois légendes sous trois vignettes de 88 px ne se lisent
+         * pas, et elles vivent alors dans la vue agrandie, à côté de l'image
+         * qu'elles décrivent.
+         */
+        expect(
+            screen.queryByText('La maison de Saint-Léon, été 1951'),
+        ).toBeNull();
+
+        // Le prénom de qui l'a envoyée, et non un collectif : c'est
+        // quelqu'un qui demande, pas un service.
+        expect(screen.getByText('Envoyées par Claire.')).toBeTruthy();
+
+        // La question reste lisible : l'image l'accompagne, elle ne la remplace pas.
+        expect(
+            screen.getByText('Quel est votre premier souvenir d’école ?'),
+        ).toBeTruthy();
+    });
+
+    it('affiche la légende sous l’image quand la question n’en porte qu’une', async () => {
+        render(
+            <Record
+                {...props}
+                questionPhotos={[
+                    {
+                        id: 1,
+                        url: 'https://exemple.test/web-1.jpg',
+                        thumbUrl: 'https://exemple.test/thumb-1.jpg',
+                        alt: 'Photo jointe par Claire',
+                        caption: 'La maison de Saint-Léon, été 1951',
+                        from: 'Claire',
+                    },
+                ]}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText('La maison de Saint-Léon, été 1951'),
+            ).toBeTruthy();
+        });
+    });
+
+    it('n’affiche aucune image quand la question n’en porte pas', async () => {
+        render(<Record {...props} />);
+
+        await waitFor(() => {
+            expect(
+                screen.getByText('Quel est votre premier souvenir d’école ?'),
+            ).toBeTruthy();
+        });
+
+        expect(screen.queryAllByRole('img')).toHaveLength(0);
     });
 });

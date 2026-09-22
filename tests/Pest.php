@@ -79,6 +79,21 @@ expect()->extend('toBeOne', function () {
  * Déclaré ici et non dans chaque fichier : Pest charge tous les fichiers de
  * test dans l'espace global, et deux déclarations du même nom se percutent.
  */
+/**
+ * L'adresse d'une page de l'espace, pour un projet donné.
+ *
+ * Les pages de l'Initiateur·rice portent l'identifiant du projet depuis le
+ * 21 septembre 2026 (`/espace/projets/{id}/questions`). Les tests l'écrivaient
+ * en dur, une quatre-vingtaine de fois : ce raccourci évite qu'un
+ * quatre-vingt-unième l'oublie, et garde les tests lisibles.
+ */
+function spaceUrl(Project|string $project, string $path = ''): string
+{
+    $id = $project instanceof Project ? $project->id : $project;
+
+    return '/espace/projets/'.$id.$path;
+}
+
 function fakeSms(): FakeSmsSender
 {
     $sender = new FakeSmsSender;

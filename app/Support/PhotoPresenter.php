@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\FamilyMember;
 use App\Models\Story;
+use App\Models\User;
 use App\Services\Storage\MediaStorage;
 use App\States\Story\InBook;
 use App\States\Story\Shared;
@@ -41,12 +42,18 @@ final class PhotoPresenter
                 'id' => $photo->id,
                 'caption' => $photo->getCustomProperty('caption'),
                 'printReady' => $photo->getCustomProperty('print_ready') === true,
+                // Posée au dépôt : elle illustre la question, pas la réponse.
+                'isPrompt' => $photo->getCustomProperty('is_prompt') === true,
                 'thumbUrl' => self::url($photo, 'thumb'),
                 'url' => self::url($photo, 'web'),
                 'alt' => $photo->getCustomProperty('caption')
                     ?? __('family.story.photo_alt', [
                         'first_name' => self::depositorName($story, $photo),
                     ]),
+                // Le prénom du déposant, ou rien quand on ne le connaît pas :
+                // l'écran choisit alors « votre famille » plutôt que de
+                // nommer « quelqu'un », qui sonne comme un inconnu.
+                'from' => self::depositorFirstName($story, $photo),
                 'mine' => $viewer !== null && self::depositedBy($photo, $viewer),
             ])
             ->all());
@@ -74,6 +81,36 @@ final class PhotoPresenter
         return array_values(array_filter(
             self::forStory($story, $owner),
             fn (array $photo): bool => $shared || $photo['mine'] === true,
+        ));
+    }
+
+    /**
+     * Les photos qui **posent** la question, pour la page d'enregistrement.
+     *
+     * Un proche ou l'Initiateur·rice joint une image à une question pas
+     * encore racontée — « raconte-nous cette photo » —, et la narratrice ne
+     * la voyait nulle part : le dépôt fonctionnait, l'affichage n'existait
+     * pas, et l'image attendait en base d'être vue après l'enregistrement,
+     * c'est-à-dire trop tard.
+     *
+     * Rien de ce que la narratrice a elle-même joint à sa réponse n'apparaît
+     * ici : `is_prompt` est posé au dépôt, d'après l'état de l'histoire à ce
+     * moment-là.
+     *
+     * Ce que cette page montre de plus que les autres, et qui mérite d'être
+     * dit : une photo de famille sur une page ouverte par un **lien
+     * porteur**. Le contrôleur pose que cette page ne porte « aucune donnée
+     * d'un tiers » ; une image en est une, et le prénom de qui l'a déposée
+     * aussi. L'arbitrage est assumé — sans l'image, la question n'a plus de
+     * sens — et il se révoque en supprimant cet appel.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function promptsForStory(Story $story): array
+    {
+        return array_values(array_filter(
+            self::forStory($story),
+            fn (array $photo): bool => $photo['isPrompt'] === true,
         ));
     }
 
@@ -135,6 +172,25 @@ final class PhotoPresenter
      */
     private static function depositorName(Story $story, Media $photo): string
     {
+        return self::depositorFirstName($story, $photo)
+            ?? __('family.story.someone');
+    }
+
+    /**
+     * Le même prénom, ou **rien** quand on ne le connaît pas.
+     *
+     * Deux besoins distincts derrière la même donnée : un texte alternatif ne
+     * peut pas être vide et se contente de « quelqu'un », alors qu'une phrase
+     * lue à l'écran — « Envoyée par Claire » — doit pouvoir se replier sur
+     * « votre famille » plutôt que d'annoncer un inconnu à quelqu'un qui
+     * s'apprête à raconter un souvenir.
+     *
+     * Le cas `user` manquait, et c'est le plus fréquent : les photos jointes
+     * à une question viennent du tableau de bord de l'Initiateur·rice, qui
+     * est un `User`. Toutes tombaient donc sur « quelqu'un ».
+     */
+    private static function depositorFirstName(Story $story, Media $photo): ?string
+    {
         $type = $photo->getCustomProperty('depositor_type');
         $id = $photo->getCustomProperty('depositor_id');
 
@@ -143,10 +199,32 @@ final class PhotoPresenter
         }
 
         if ($type === 'family_member' && is_string($id)) {
-            return FamilyMember::query()->whereKey($id)->value('display_name')
-                ?? __('family.story.someone');
+            $nom = FamilyMember::query()->whereKey($id)->value('display_name');
+
+            return is_string($nom) ? self::firstWord($nom) : null;
         }
 
-        return __('family.story.someone');
+        if ($type === 'user' && is_string($id)) {
+            $nom = User::query()->whereKey($id)->value('name');
+
+            return is_string($nom) ? self::firstWord($nom) : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Le prénom d'un nom complet.
+     *
+     * Les comptes portent « Claire Dubois » ; la page d'enregistrement dit
+     * « Envoyée par Claire ». Un nom de famille sur cette page en ferait une
+     * fiche, et l'on s'adresse à quelqu'un qui connaît sa propre famille par
+     * son prénom.
+     */
+    private static function firstWord(string $nom): ?string
+    {
+        $premier = preg_split('/\s+/u', mb_trim($nom))[0] ?? '';
+
+        return $premier === '' ? null : $premier;
     }
 }

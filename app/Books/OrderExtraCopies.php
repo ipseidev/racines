@@ -61,8 +61,10 @@ final readonly class OrderExtraCopies
                 'sku' => Sku::ExtraCopy->value,
                 'quantity' => (string) $quantity,
             ],
-            successUrl: route('initiator.book').'?copies='.$quantity,
-            cancelUrl: route('initiator.book'),
+            // Le projet est nommé dans l'adresse depuis le 21 septembre 2026 :
+            // sans lui, la route lève « Missing required parameter ».
+            successUrl: route('initiator.book', ['project' => $book->project]).'?copies='.$quantity,
+            cancelUrl: route('initiator.book', ['project' => $book->project]),
         );
 
         Log::info('checkout.extra_copies_opened', [

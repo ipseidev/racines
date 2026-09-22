@@ -86,13 +86,26 @@ return [
 
         // Écran 1 — explication. Elle précède toujours la demande de micro :
         // une autorisation qui surgit sans prévenir se refuse par réflexe.
-        'greeting' => ':name, voici votre question de la semaine',
-        'greeting_tu' => ':name, voici ta question de la semaine',
+        /*
+         * La ligne qui annonce la question (21 septembre 2026).
+         *
+         * Elle disait « voici votre question de la semaine » : un vocabulaire
+         * de rubrique, d'infolettre — et c'était la seule phrase de l'écran
+         * qui s'adressait à la personne. « Une question pour vous » dit la
+         * même chose sans le classeur, et n'attribue la question à personne :
+         * le corpus n'a pas d'auteur, et un lien porteur ne nomme pas de
+         * tiers.
+         */
+        'greeting' => 'Une question pour vous, :name.',
+        'greeting_tu' => 'Une question pour toi, :name.',
         'mic_notice' => 'Quand vous appuierez sur le bouton, votre téléphone demandera l’autorisation d’utiliser le micro. Choisissez « Autoriser ».',
         'mic_notice_tu' => 'Quand tu appuieras sur le bouton, ton téléphone demandera l’autorisation d’utiliser le micro. Choisis « Autoriser ».',
         'camera_notice' => 'Quand vous appuierez sur le bouton, votre téléphone demandera l’autorisation d’utiliser le micro et la caméra. Choisissez « Autoriser ». Vous vous verrez à l’écran avant de commencer.',
         'camera_notice_tu' => 'Quand tu appuieras sur le bouton, ton téléphone demandera l’autorisation d’utiliser le micro et la caméra. Choisis « Autoriser ». Tu te verras à l’écran avant de commencer.',
-        'ready' => 'Je suis prêt·e',
+        // Le grand bouton rond porte l'explication depuis T-248 : plus d'écran
+        // « Je suis prêt·e » entre le choix et le geste. La voix démarre
+        // directement, la caméra passe par l'aperçu de soi (T-210).
+        'open_camera' => 'Ouvrir la caméra',
 
         // Écran 2 — permission.
         'requesting' => 'Votre téléphone va vous demander l’autorisation. Choisissez « Autoriser ».',
@@ -133,8 +146,30 @@ return [
 
         // Écran 6 — confirmation.
         'confirmed_title' => 'Votre histoire est enregistrée',
-        'confirmed_body' => 'Merci :name.',
+        'confirmed_body' => 'Merci, :name.',
+        // Ce qu'elle vient de faire, dit en clair : une durée est concrète là
+        // où « c'est enregistré » est administratif.
+        'confirmed_duration' => 'Vous avez raconté pendant',
+        'shared_by_default' => 'Vos proches pourront l’écouter dès que le texte sera prêt.',
+        'keep_this_one' => 'Garder celle-ci pour moi',
         'confirmed_next' => 'Nous la mettons au propre. Vous la relirez avant que quiconque l’entende.',
+        /*
+         * Le dernier mot de l'écran, et il libère.
+         *
+         * Une personne qui vient de raconter un morceau de sa vie ne sait pas
+         * si quelque chose l'attend encore : elle laisse l'onglet ouvert, ou
+         * elle cherche un bouton de sortie qui n'existe pas. On le lui dit,
+         * simplement, parce qu'il n'y a effectivement plus rien à faire —
+         * l'histoire est chez nous, confirmée par le stockage (doc 04 §11),
+         * avant même que cet écran s'affiche.
+         */
+        'confirmed_close' => 'Vous pouvez fermer cette page.',
+        'photo_open' => 'Agrandir : :alt',
+        'photo_from_family' => 'Envoyée par votre famille.',
+        'photos_from_family' => 'Envoyées par votre famille.',
+        'photo_from' => 'Envoyée par :name.',
+        'photos_from' => 'Envoyées par :name.',
+        'photo_enlarge' => 'Voir en grand',
 
         // Brouillon retrouvé au chargement.
         'draft_title' => 'Vous avez un enregistrement en cours',
@@ -153,6 +188,37 @@ return [
      * réglage du micro alors qu'il a refusé la caméra le ferait tourner en
      * rond. La voix reste offerte comme issue, avant l'écrit.
      */
+    /*
+     * Le tour de chauffe du tout premier lien (T-247).
+     *
+     * Quinze secondes qui ne partent nulle part. Ce que ces phrases ont à
+     * faire, et rien d'autre : **autoriser à appuyer** — « rien ne sera
+     * envoyé » vient avant le bouton, pas après — et **empêcher de croire
+     * qu'on a répondu**, ce qui est le seul risque que cet écran ajoute.
+     */
+    'first_run' => [
+        'title' => 'On essaie une fois, :name ?',
+        'why' => 'Rien ne sera envoyé, rien ne sera gardé. C’est juste pour prendre la main.',
+        'start' => 'Essayer',
+        'skip' => 'Passer et répondre tout de suite',
+        'recording' => 'Parlez, je vous écoute',
+        'recording_tu' => 'Parle, je t’écoute',
+        'stop' => 'J’ai fini',
+        'listen_title' => 'Écoutez-vous',
+        'listen_title_tu' => 'Écoute-toi',
+        'listen_body' => 'C’est exactement ce que votre famille entendra. Cet essai, lui, ne sera gardé nulle part.',
+        'listen_body_tu' => 'C’est exactement ce que ta famille entendra. Cet essai, lui, ne sera gardé nulle part.',
+        'again' => 'Recommencer',
+        'done' => 'C’est bon',
+        'over_title' => 'Voilà, c’est tout.',
+        'over_body' => 'Vous savez faire. Cet essai n’a été gardé nulle part — votre vraie question vous attend.',
+        'over_body_tu' => 'Tu sais faire. Cet essai n’a été gardé nulle part — ta vraie question t’attend.',
+        'over_button' => 'Voir ma question',
+        'refused_title' => 'Le micro n’a pas répondu',
+        'refused_body' => 'Ce n’est pas grave, et rien n’est perdu : on le reverra sur l’écran de votre question, avec le chemin exact pour votre téléphone.',
+        'refused_button' => 'Aller à ma question',
+    ],
+
     'camera_help' => [
         'title' => 'La caméra n’est pas autorisée',
         'body' => 'Sans caméra, nous ne pouvons pas vous filmer. Voici comment l’autoriser, et vous pouvez aussi répondre avec votre voix seule.',
@@ -320,6 +386,11 @@ return [
         'empty' => 'Vous n’avez pas encore d’histoire enregistrée.',
         'empty_hint' => 'Elles apparaîtront ici au fil des semaines, après chaque question.',
         'actions' => 'Ce que vous pouvez faire de cette histoire',
+        'sharing_title' => 'Vos histoires partent dès qu’elles sont prêtes',
+        'sharing_body' => 'C’est ce que vous avez choisi en acceptant. Vous pouvez y mettre fin quand vous voulez : les récits suivants ne partiront plus sans votre accord, et ceux déjà partagés restent à retirer un par un, plus haut.',
+        'sharing_stop' => 'Ne plus partager automatiquement',
+        'sharing_stopped' => 'C’est fait. Vos prochaines histoires ne partiront plus sans votre accord.',
+        'sharing_resumed' => 'C’est fait. Vos prochaines histoires partiront dès qu’elles seront prêtes.',
         'pause_title' => 'Besoin d’une pause ?',
         'pause_body' => 'Aucune question ne partira pendant ce temps. Vous reprendrez quand vous voudrez.',
         'pause_fewer' => 'Une semaine de moins',
@@ -456,7 +527,8 @@ return [
         'consents' => [
             'title' => 'Vos accords',
             'summary' => 'Les textes complets des cinq accords, et leur version.',
-            'before_accept' => 'En appuyant sur « J’accepte », vous donnez les cinq accords décrits plus bas : l’enregistrement de votre voix, sa transcription, la mise en forme du texte par une intelligence artificielle, le partage avec vos proches, et les sujets sensibles que vos récits peuvent aborder.',
+            'before_accept' => 'En appuyant sur « J’accepte », vous donnez les six accords décrits plus bas : l’enregistrement de votre voix, sa transcription, la mise en forme du texte par une intelligence artificielle, le partage avec vos proches, les sujets sensibles que vos récits peuvent aborder, et l’envoi de chaque histoire à vos proches dès qu’elle est prête.',
+            'sharing_note' => 'Vous n’aurez rien à faire après chaque récit. Vous pourrez garder n’importe quelle histoire pour vous, et arrêter cet envoi quand vous voulez depuis votre espace.',
             'intro' => 'Touchez un accord pour lire son texte. Chacun est séparé, et chacun se retire quand vous voulez, indépendamment des autres.',
             'version' => 'Version :version',
         ],
@@ -507,7 +579,7 @@ return [
 
         'accept' => 'J’accepte',
         'refuse' => 'Non merci',
-        'accepted' => 'C’est noté. Bienvenue.',
+        'accepted' => 'Votre accord est enregistré.',
         'already_answered' => 'Vous avez déjà répondu à cette invitation. Si vous souhaitez changer d’avis, écrivez-nous à :email.',
         'no_password' => 'Cette page ne vous demandera jamais de mot de passe, de paiement ni de code.',
 
@@ -520,22 +592,31 @@ return [
         ],
     ],
 
+    /*
+     * L'écran d'après le oui. Il ne demande plus rien — ni la fiche contact,
+     * ni les souhaits pour plus tard (20 septembre 2026) : les deux étaient
+     * une tâche de plus posée à quelqu'un qui vient d'accepter de raconter sa
+     * vie, et la seconde lui parlait de sa mort à la minute où on la
+     * félicitait. Les souhaits restent choisissables à l'acceptation et
+     * depuis son espace.
+     *
+     * **La fiche contact, elle, n'est plus proposée nulle part.** La route
+     * `/vcard` existe toujours, sans rien qui y mène. C'était une garde
+     * anti-hameçonnage (doc 04 §9) : enregistrer l'expéditeur pour que ses
+     * messages n'aient pas l'air inconnus. Il lui faut une nouvelle place —
+     * avec la première question est le candidat évident — et tant qu'elle ne
+     * l'a pas, la garde est absente et non déplacée.
+     *
+     * Reste une date, et de quoi partir tranquille.
+     */
     'optin_welcome' => [
         'title' => 'Bienvenue, :name',
-        'body' => 'Votre première question arrive :when. Vous n’avez rien à installer et rien à préparer.',
+        'first_question' => 'Votre première question arrive',
         'when_unknown' => 'très bientôt',
-        'vcard' => [
-            'title' => 'Ajoutez-nous à vos contacts',
-            'body' => 'Nos messages arriveront toujours de ce contact. Si un message vous parvient d’ailleurs en nous imitant, c’est qu’il est faux.',
-            'button' => 'Ajouter le contact',
-        ],
-        /*
-         * Plus de question ici (T-236) : les souhaits se choisissent à
-         * l'acceptation. On dit ce qui vaut, et où le changer.
-         */
+        'nothing_to_do' => 'Vous n’avez rien à installer, rien à préparer.',
+        'leave' => 'Vous pouvez fermer cette page sans crainte. Nous vous écrirons le moment venu.',
         'wishes' => [
-            'title' => 'Vos souhaits pour plus tard',
-            'default' => 'Sauf choix contraire de votre part, vos histoires pourront être transmises à votre famille. Vous pourrez le préciser quand vous voudrez, depuis votre espace.',
+            // Le message de la route des souhaits, qui revient ici.
             'saved' => 'Vos souhaits sont enregistrés. Vous pourrez les changer quand vous voudrez.',
         ],
     ],

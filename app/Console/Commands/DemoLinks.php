@@ -340,7 +340,11 @@ final class DemoLinks extends Command
                         'quoi' => 'Le parcours entier vu par la personne à qui on offre le cadeau : l’annonce, l’acceptation, puis la première question — sans attendre la nuit que l’acceptation vient de poser — et la photo après la confirmation.',
                         'cmd' => 'demo:cadeau  puis, une fois acceptée,  demo:cadeau --question',
                     ],
-                    ['quoi' => 'Son espace : réordonner deux questions, inviter un proche, copier le lien WhatsApp, demander la rétractation.', 'url' => rtrim((string) config('app.url'), '/').'/espace'],
+                    [
+                        'quoi' => 'Le même parcours vu par **celle qui offre**, depuis le paiement : la page de merci, son espace vide, l’annonce qui part, l’attente, la première question, et l’histoire qu’elle ne peut pas écouter. Quatre étapes, parce qu’on regarde l’espace entre chacune.',
+                        'cmd' => 'demo:offrir  puis  --annonce,  --question,  --histoire',
+                    ],
+                    ['quoi' => 'Son espace : réordonner deux questions, inviter un proche, copier le lien WhatsApp, demander la rétractation. Le compte du parcours ci-dessus est `offrir@example.test`.', 'url' => rtrim((string) config('app.url'), '/').'/espace'],
                 ],
             ],
             [

@@ -131,10 +131,25 @@ describe('formatDate', () => {
 });
 
 describe('formatDateTime', () => {
-    it('donne le jour, la date et l’heure', () => {
-        expect(formatDateTime('2026-09-07T09:00:00+02:00')).toMatch(
-            /^lundi 7 septembre à \d{2}:\d{2}$/,
+    /*
+     * Le fuseau de la machine décide de l'heure affichée — UTC dans le
+     * conteneur, Paris sur un Mac. Ces tests portent donc sur la **forme**,
+     * qui est ce que la règle dit ; la valeur exacte de « 9 h » et de
+     * « 18 h 30 » est éprouvée sur `formatTime`, qui n'a pas de fuseau.
+     */
+    it('écrit l’heure à la française, comme partout ailleurs dans le produit', () => {
+        // « à 09:00 » est un horaire de train ; le français dit « à 9 h ».
+        expect(formatDateTime('2026-09-07T09:00:00Z')).toMatch(
+            /^lundi 7 septembre à \d{1,2} h( \d{2})?$/,
         );
+        expect(formatDateTime('2026-09-07T18:30:00Z')).toMatch(
+            /^lundi 7 septembre à \d{1,2} h 30$/,
+        );
+    });
+
+    it('laisse l’horloge à deux-points dans les autres langues', () => {
+        expect(formatDateTime('2026-09-07T18:30:00Z', 'it')).toMatch(/:30$/);
+        expect(formatDateTime('2026-09-07T18:30:00Z', 'es')).toMatch(/:30$/);
     });
 });
 

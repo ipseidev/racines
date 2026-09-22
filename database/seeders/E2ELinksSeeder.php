@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Actions\AcceptInvitation;
 use App\Actions\AddFamilyMember;
 use App\Actions\AddNarrator;
+use App\Actions\AttachPhoto;
 use App\Actions\CreateProject;
 use App\Actions\ProposeStory;
 use App\Actions\RecordConsent;
@@ -52,10 +53,12 @@ use App\Support\ObjectKeys;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Throwable;
 
 /**
  * Liens d'enregistrement à valeur connue, pour la démonstration locale et
@@ -84,6 +87,11 @@ final class E2ELinksSeeder extends Seeder
         'budget' => 'Quel voyage vous a le plus marqué ?',
         // T-210 : le même parcours, caméra ouverte.
         'video' => 'À quoi ressemblait votre maison d’enfance ?',
+        // T-251 : une question posée **avec** une image, puis avec plusieurs.
+        // La famille tend la photo et demande ; c'est le cas qui n'avait
+        // jamais été vu à l'écran, faute d'affichage.
+        'photo-question' => 'Racontez-nous cette photo.',
+        'photos-question' => 'Que se passait-il ce jour-là ?',
         'expired' => 'Quelle est votre plus belle rencontre ?',
         'revoked' => 'Qu’aimeriez-vous que l’on retienne de vous ?',
         // Bloc 07 : un scénario par variante de validation, plus un retrait.
@@ -234,7 +242,11 @@ final class E2ELinksSeeder extends Seeder
         $owner = User::query()->firstOrCreate(
             ['email' => self::OWNER_EMAIL],
             [
-                'name' => 'Banc d’essai',
+                // Un nom de personne, et non « Banc d'essai » : depuis
+                // T-251, le prénom du déposant se lit à l'écran sous la
+                // photo qui pose la question — « Envoyée par Banc » n'aurait
+                // rien montré de ce qu'on veut vérifier.
+                'name' => 'Claire Dubois',
                 'password' => Hash::make((string) config('product.seeding.admin_password')),
                 'email_verified_at' => now(),
             ],
@@ -249,6 +261,11 @@ final class E2ELinksSeeder extends Seeder
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
         $project->status = ProjectStatus::Active;
         $project->accepted_at = now()->subDays(60);
+        // Le partage permanent est le sixième accord du « J'accepte »
+        // (T-250) : un projet accepté le porte, et l'écran de fin annonce au
+        // lieu de demander. Sans cette date, la démonstration montrerait un
+        // état que le produit n'a plus.
+        $project->declared_sharing_at = now()->subDays(60);
         $project->save();
 
         $this->consentingNarrator($project, [
@@ -273,6 +290,7 @@ final class E2ELinksSeeder extends Seeder
             $story = app(ProposeStory::class)->handle($host, $question);
 
             $this->prepareStory($story, $scenario);
+            $this->seedPromptPhotos($story, $owner, $scenario);
             $this->seedLink($story, $scenario);
 
             if (self::BLOCK_07[$scenario]['family'] ?? false) {
@@ -695,6 +713,124 @@ final class E2ELinksSeeder extends Seeder
         return $narrator;
     }
 
+    /**
+     * Les photos qui **posent** la question (T-251).
+     *
+     * Déposées par l'Initiateur·rice sur une histoire encore en PROPOSÉE,
+     * c'est-à-dire exactement le geste que le tableau de bord permet déjà :
+     * `AttachPhoto` y pose `is_prompt`, et la page d'enregistrement les
+     * montre. On passe par l'action réelle plutôt que d'écrire en base — une
+     * démonstration qui court-circuite le chemin de production finit par
+     * montrer un état que le produit ne sait pas produire.
+     */
+    private function seedPromptPhotos(Story $story, User $owner, string $scenario): void
+    {
+        $lots = [
+            'photo-question' => [['La maison de Saint-Léon, été 1951', 0]],
+            'photos-question' => [
+                ['Le repas sous le tilleul', 1],
+                ['Les cousins, au bord de l’eau', 2],
+                [null, 3],
+            ],
+        ];
+
+        foreach ($lots[$scenario] ?? [] as [$caption, $teinte]) {
+            $fichier = $this->fakeJpeg($teinte);
+
+            try {
+                app(AttachPhoto::class)->handle($story, $fichier, $owner, $caption);
+            } catch (Throwable $exception) {
+                // Une démonstration qui n'a pas pu joindre une photo reste
+                // une démonstration : le reste du décor vaut mieux que rien.
+                $this->command->warn(
+                    "Photo de démonstration non jointe ({$scenario}) : ".$exception->getMessage(),
+                );
+            } finally {
+                @unlink($fichier->getPathname());
+            }
+        }
+    }
+
+    /**
+     * Une image plausible, fabriquée sur place.
+     *
+     * Pas de fichier binaire versionné dans le dépôt pour un décor : il
+     * grossit le clone pour tout le monde et se périme sans que personne ne
+     * le remarque. GD suffit — le produit en dépend déjà, `Sanitizer` ne
+     * fonctionne pas sans.
+     *
+     * Ce n'est pas un aplat de couleur mais une petite scène — ciel, horizon,
+     * maison, arbres, teinte ancienne. La raison n'est pas l'esthétique :
+     * une vignette unie ne dit pas si le cadrage tient, si la photo se
+     * reconnaît à 88 px, ni si l'écran reste lisible avec une vraie image
+     * dedans. Un décor qui ne ressemble pas à ce qu'on affichera ne permet
+     * de juger de rien.
+     */
+    private function fakeJpeg(int $graine): UploadedFile
+    {
+        $largeur = 1200;
+        $hauteur = 900;
+        $image = imagecreatetruecolor($largeur, $hauteur);
+
+        // Les canaux sont bornés : l'arithmétique des dégradés ci-dessous
+        // peut sortir de l'intervalle, et `imagecolorallocate` le refuse.
+        $borne = fn (int $c): int => max(0, min(255, $c));
+        $teinte = fn (int $r, int $v, int $b): int => (int) imagecolorallocate(
+            $image,
+            $borne($r),
+            $borne($v),
+            $borne($b),
+        );
+
+        // Un ciel dégradé, du plus clair en haut à l'horizon.
+        $horizon = (int) ($hauteur * 0.62);
+
+        for ($y = 0; $y < $horizon; $y++) {
+            $t = $y / $horizon;
+            imageline($image, 0, $y, $largeur, $y, $teinte(
+                (int) (236 - 18 * $t),
+                (int) (224 - 22 * $t),
+                (int) (201 - 26 * $t),
+            ));
+        }
+
+        // La terre, un peu plus sourde d'une image à l'autre.
+        $sol = [[188, 174, 146], [176, 166, 140], [198, 180, 150], [170, 163, 138]][$graine % 4];
+
+        for ($y = $horizon; $y < $hauteur; $y++) {
+            $t = ($y - $horizon) / max(1, $hauteur - $horizon);
+            imageline($image, 0, $y, $largeur, $y, $teinte(
+                (int) ($sol[0] - 40 * $t),
+                (int) ($sol[1] - 42 * $t),
+                (int) ($sol[2] - 38 * $t),
+            ));
+        }
+
+        // Une maison, décalée selon la graine, et son toit.
+        $x = (int) ($largeur * (0.24 + 0.12 * ($graine % 3)));
+        $mur = $teinte(206, 194, 173);
+        $toit = $teinte(122, 74, 56);
+        imagefilledrectangle($image, $x, $horizon - 200, $x + 300, $horizon + 40, $mur);
+        imagefilledpolygon($image, [$x - 30, $horizon - 200, $x + 150, $horizon - 320, $x + 330, $horizon - 200], $toit);
+        imagefilledrectangle($image, $x + 120, $horizon - 90, $x + 180, $horizon + 40, $teinte(96, 78, 62));
+
+        // Deux arbres, pour que l'horizon ne soit pas une ligne nue.
+        foreach ([[0.72, 130], [0.86, 96]] as [$ratio, $rayon]) {
+            $ax = (int) ($largeur * $ratio);
+            imagefilledrectangle($image, $ax - 12, $horizon - 60, $ax + 12, $horizon + 30, $teinte(102, 84, 64));
+            imagefilledellipse($image, $ax, $horizon - 110, $rayon, (int) ($rayon * 0.9), $teinte(124, 154, 142));
+        }
+
+        // Le grain et le jaunissement d'un tirage ancien.
+        imagefilter($image, IMG_FILTER_COLORIZE, 18, 8, -14);
+
+        $chemin = tempnam(sys_get_temp_dir(), 'demo-photo-').'.jpg';
+        imagejpeg($image, $chemin, 82);
+        imagedestroy($image);
+
+        return new UploadedFile($chemin, 'souvenir.jpg', 'image/jpeg', null, true);
+    }
+
     private function projectForScenario(User $owner, string $scenario): Project
     {
         $project = app(CreateProject::class)->handle($owner, Offer::Pilot, []);
@@ -703,6 +839,20 @@ final class E2ELinksSeeder extends Seeder
         $project->validation_variant = ValidationVariant::from(
             (string) self::BLOCK_07[$scenario]['variant'],
         );
+
+        /*
+         * La déclaration n'est posée que sur les scénarios en variante A.
+         *
+         * Depuis T-250, tout projet accepté la porte — mais la poser aussi
+         * sur la variante B viderait son banc d'essai : la déclaration passe
+         * **avant** la variante dans `ApplyShareDecision`, et plus aucune
+         * relecture ne serait demandée. Les scénarios `variant-b` existent
+         * pour éprouver ce chemin-là ; ils gardent donc un projet d'avant.
+         */
+        if ($project->validation_variant === ValidationVariant::Immediate) {
+            $project->declared_sharing_at = now()->subDays(60);
+        }
+
         $project->save();
 
         $this->consentingNarrator($project, [

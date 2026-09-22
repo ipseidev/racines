@@ -66,14 +66,18 @@ test('ouvre l’écoute directement, dans un nouvel onglet', async ({ page }) =>
 test('réordonne les questions, et l’ordre part tout seul', async ({ page }) => {
     await page.goto('/espace/questions');
 
-    const cards = page
-        .getByRole('list', { name: 'Les prochaines questions' })
-        .getByRole('listitem');
+    /*
+     * Le panneau de droite, et non la page entière : depuis que le corpus
+     * vit à gauche (T-252), « Écarter » et les flèches existent des deux
+     * côtés, et un sélecteur global attraperait le mauvais.
+     */
+    const suite = page.getByRole('region', { name: 'Les prochaines' });
+    const cards = suite.getByRole('list').getByRole('listitem');
     const first = (await cards.nth(0).locator('p').first().textContent()) ?? '';
     const second =
         (await cards.nth(1).locator('p').first().textContent()) ?? '';
 
-    await page.getByRole('button', { name: 'Descendre' }).first().click();
+    await suite.getByRole('button', { name: 'Descendre' }).first().click();
 
     // Aucun bouton « Enregistrer » : l'ordre part après le dernier geste.
     await expect(page.getByText('L’ordre est enregistré.')).toBeVisible();
@@ -84,19 +88,18 @@ test('réordonne les questions, et l’ordre part tout seul', async ({ page }) =
     await expect(cards.nth(1).locator('p').first()).toHaveText(first);
 
     // On remet les choses en place pour la personne qui rejouera le décor.
-    await page.getByRole('button', { name: 'Monter' }).nth(1).click();
+    await suite.getByRole('button', { name: 'Monter' }).nth(1).click();
     await expect(page.getByText('L’ordre est enregistré.')).toBeVisible();
 });
 
 test('écarte une question, puis la remet', async ({ page }) => {
     await page.goto('/espace/questions');
 
-    const cards = page
-        .getByRole('list', { name: 'Les prochaines questions' })
-        .getByRole('listitem');
+    const suite = page.getByRole('region', { name: 'Les prochaines' });
+    const cards = suite.getByRole('list').getByRole('listitem');
     const first = (await cards.nth(0).locator('p').first().textContent()) ?? '';
 
-    await page.getByRole('button', { name: 'Écarter' }).first().click();
+    await suite.getByRole('button', { name: 'Écarter' }).first().click();
     await expect(page.getByText('C’est enregistré.')).toBeVisible();
 
     await expect(cards.nth(0).locator('p').first()).not.toHaveText(first);

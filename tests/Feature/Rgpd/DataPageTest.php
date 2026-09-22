@@ -50,7 +50,7 @@ beforeEach(function (): void {
 it('montre les trois formes d’export et l’historique', function (): void {
     [$owner, $project] = proprietaireAvecProjet();
 
-    $this->actingAs($owner)->get('/espace/donnees')
+    $this->actingAs($owner)->get(spaceUrl($project, '/donnees'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('initiator/Data')
@@ -63,7 +63,7 @@ it('met un export en file sans le fabriquer dans la requête', function (): void
     [$owner, $project] = proprietaireAvecProjet();
 
     $this->actingAs($owner)
-        ->post('/espace/donnees/export', ['kind' => 'offline_pack'])
+        ->post(spaceUrl($project, '/donnees/export'), ['kind' => 'offline_pack'])
         ->assertRedirect();
 
     $export = Export::query()->firstOrFail();
@@ -76,10 +76,10 @@ it('met un export en file sans le fabriquer dans la requête', function (): void
 });
 
 it('exige le mot en entier pour l’effacement', function (): void {
-    [$owner] = proprietaireAvecProjet();
+    [$owner, $project] = proprietaireAvecProjet();
 
-    $this->actingAs($owner)->from('/espace/donnees')
-        ->post('/espace/donnees/effacement', ['confirmation' => 'oui'])
+    $this->actingAs($owner)->from(spaceUrl($project, '/donnees'))
+        ->post(spaceUrl($project, '/donnees/effacement'), ['confirmation' => 'oui'])
         ->assertSessionHasErrors('confirmation');
 
     // Une case à cocher se clique sans lire ; un mot se tape.
@@ -90,7 +90,7 @@ it('ouvre un ticket, et n’efface rien tout de suite', function (): void {
     [$owner, $project] = proprietaireAvecProjet();
 
     $this->actingAs($owner)
-        ->post('/espace/donnees/effacement', ['confirmation' => 'EFFACER'])
+        ->post(spaceUrl($project, '/donnees/effacement'), ['confirmation' => 'EFFACER'])
         ->assertRedirect();
 
     expect(SupportTicket::query()->where('kind', SupportTicketKind::ErasureRequested->value)->count())->toBe(1)
@@ -102,6 +102,6 @@ it('dit que l’effacement attend quand un livre est à l’impression', functio
     [$owner, $project] = proprietaireAvecProjet();
     Book::factory()->create(['project_id' => $project->id, 'status' => BookStatus::Ordered]);
 
-    $this->actingAs($owner)->get('/espace/donnees')
+    $this->actingAs($owner)->get(spaceUrl($project, '/donnees'))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('printInProgress', true));
 });

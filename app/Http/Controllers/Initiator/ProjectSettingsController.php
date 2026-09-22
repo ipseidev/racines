@@ -14,6 +14,7 @@ use App\Enums\Locale;
 use App\Enums\PromptSlot;
 use App\Features\MandateDelegation;
 use App\Models\LexiconEntry;
+use App\Models\Project;
 use App\Support\InitiatorProject;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
@@ -155,7 +156,16 @@ final readonly class ProjectSettingsController
         return back()->with('status', __('initiator.settings.lexicon_added'));
     }
 
-    public function removeLexicon(Request $request, string $entry): RedirectResponse
+    /*
+     * `Project $project` en tête, et il n'est pas lu ici.
+     *
+     * Depuis que les adresses portent le projet, Laravel passe les
+     * paramètres de route **par position** : sans cette déclaration,
+     * `$member` recevait le projet sérialisé et la requête tombait sur un
+     * « invalid input syntax for type uuid ». Le projet lui-même continue
+     * d'être résolu par `InitiatorProject`, qui lit la route.
+     */
+    public function removeLexicon(Request $request, Project $project, string $entry): RedirectResponse
     {
         $user = $request->user();
         abort_if($user === null, 403);

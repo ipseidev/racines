@@ -80,7 +80,7 @@ it('montre l’état de chaque histoire et son titre seulement si partagée', fu
     ]);
 
     $this->actingAs($owner)
-        ->get('/espace')
+        ->get(spaceUrl($project))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('initiator/Dashboard')
@@ -107,7 +107,7 @@ it('ne rend jamais le texte ni l’audio d’une histoire', function (): void {
     ]);
 
     $this->actingAs($owner)
-        ->get('/espace')
+        ->get(spaceUrl($project))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->missing('stories.0.body')
             ->missing('stories.0.transcript')
@@ -123,14 +123,14 @@ it('ne rend pas le lien de la semaine, il le réémet', function (): void {
     // Les jetons sont stockés hachés : un lien en clair n'existe qu'entre son
     // émission et son envoi (bloc 03). Il ne peut donc pas être relu.
     $this->actingAs($owner)
-        ->get('/espace')
+        ->get(spaceUrl($project))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('hasCurrentStory', true)
             ->where('copiedLink', null),
         );
 
     $this->actingAs($owner)
-        ->post('/espace/lien/question')
+        ->post(spaceUrl($project, '/lien/question'))
         ->assertRedirect();
 
     expect(session('copied_link'))->toBeString()
@@ -151,7 +151,7 @@ it('ouvre l’écoute directement, avec un lien à soi', function (): void {
 
     // Pas de lien à copier pour soi-même : la page d'écoute s'ouvre, et le
     // jeton est réémis au passage (T-149).
-    $response = $this->actingAs($owner)->get('/espace/ecoute');
+    $response = $this->actingAs($owner)->get(spaceUrl($project, '/ecoute'));
 
     $response->assertRedirect();
 
@@ -159,10 +159,10 @@ it('ouvre l’écoute directement, avec un lien à soi', function (): void {
 });
 
 it('dit le rythme en clair', function (): void {
-    [$owner] = initiator();
+    [$owner, $project] = initiator();
 
     $this->actingAs($owner)
-        ->get('/espace')
+        ->get(spaceUrl($project))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('project.cadenceLabel', fn (mixed $label): bool => is_string($label) && $label !== ''),
         );
@@ -187,7 +187,7 @@ it('montre les alertes du moteur qui lui sont adressées', function (): void {
     ]);
 
     $this->actingAs($owner)
-        ->get('/espace')
+        ->get(spaceUrl($project))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('alerts', 1)
             ->where('alerts.0.ruleId', EngineRuleId::NarratorSilence21d->value)
@@ -202,7 +202,7 @@ it('réordonne, écarte et ajoute une question', function (): void {
     $questions = Question::factory()->count(3)->create();
 
     $this->actingAs($owner)
-        ->post('/espace/questions/ordre', ['order' => $questions->pluck('id')->all()])
+        ->post(spaceUrl($project, '/questions/ordre'), ['order' => $questions->pluck('id')->all()])
         ->assertRedirect();
 
     expect(ProjectQuestionSetting::query()
@@ -212,7 +212,7 @@ it('réordonne, écarte et ajoute une question', function (): void {
         ->custom_order)->toBe(1);
 
     $this->actingAs($owner)
-        ->post("/espace/questions/{$questions[1]->id}/exclure", ['excluded' => true])
+        ->post(spaceUrl($project, "/questions/{$questions[1]->id}/exclure"), ['excluded' => true])
         ->assertRedirect();
 
     expect(ProjectQuestionSetting::query()
@@ -222,7 +222,7 @@ it('réordonne, écarte et ajoute une question', function (): void {
         ->excluded)->toBeTrue();
 
     $this->actingAs($owner)
-        ->post('/espace/questions/personnalisee', [
+        ->post(spaceUrl($project, '/questions/personnalisee'), [
             'text' => 'Quelle chanson te rappelle ton mariage ?',
         ])
         ->assertRedirect();
@@ -239,7 +239,7 @@ it('invite un proche et lui retire son accès', function (): void {
     [$owner, $project] = initiator();
 
     $this->actingAs($owner)
-        ->post('/espace/proches', [
+        ->post(spaceUrl($project, '/proches'), [
             'display_name' => 'Claire',
             'email' => 'claire@exemple.test',
         ])
@@ -248,7 +248,7 @@ it('invite un proche et lui retire son accès', function (): void {
     $member = FamilyMember::query()->where('display_name', 'Claire')->firstOrFail();
 
     $this->actingAs($owner)
-        ->delete("/espace/proches/{$member->id}")
+        ->delete(spaceUrl($project, "/proches/{$member->id}"))
         ->assertRedirect();
 
     // Retiré, pas supprimé : savoir qu'une personne a eu accès fait partie de
@@ -267,7 +267,7 @@ it('réémet le lien d’un proche et dit pour qui', function (): void {
     ]);
 
     $this->actingAs($owner)
-        ->post("/espace/proches/{$member->id}/renvoyer")
+        ->post(spaceUrl($project, "/proches/{$member->id}/renvoyer"))
         ->assertRedirect();
 
     expect(session('copied_link'))->toContain('/l/')
@@ -287,7 +287,7 @@ it('masque les coordonnées des proches', function (): void {
     // Cette page se laisse ouverte sur un écran : le carnet d'adresses d'une
     // famille n'a pas à s'y afficher.
     $this->actingAs($owner)
-        ->get('/espace/proches')
+        ->get(spaceUrl($project, '/proches'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('members', fn (mixed $members): bool => collect($members)
                 ->every(fn (array $member): bool => $member['contact'] === null
@@ -299,7 +299,7 @@ it('change la cadence et recalcule le prochain envoi', function (): void {
     [$owner, $project] = initiator(['next_prompt_at' => now()->addDays(6)]);
 
     $this->actingAs($owner)
-        ->post('/espace/reglages', [
+        ->post(spaceUrl($project, '/reglages'), [
             'cadence' => 'biweekly',
             'prompt_day' => 4,
             'prompt_slot' => 'evening',
@@ -321,7 +321,7 @@ it('ajoute un terme au lexique', function (): void {
     [$owner, $project] = initiator();
 
     $this->actingAs($owner)
-        ->post('/espace/reglages/lexique', [
+        ->post(spaceUrl($project, '/reglages/lexique'), [
             'term' => 'Saint-Aubin-du-Cormier',
             'replacement' => 'Saint-Aubin-du-Cormier',
         ])
@@ -334,7 +334,7 @@ it('demande une pause qui a toujours un terme', function (): void {
     [$owner, $project] = initiator();
 
     $this->actingAs($owner)
-        ->post('/espace/reglages/pause', ['weeks' => 3])
+        ->post(spaceUrl($project, '/reglages/pause'), ['weeks' => 3])
         ->assertRedirect();
 
     expect($project->refresh()->paused_until)->not->toBeNull();
@@ -349,16 +349,16 @@ it('n’ouvre l’espace de personne d’autre', function (): void {
     $member = FamilyMember::factory()->create(['project_id' => $project->id]);
 
     $this->actingAs($intruder)
-        ->post("/espace/proches/{$member->id}/renvoyer")
+        ->post(spaceUrl($project, "/proches/{$member->id}/renvoyer"))
         ->assertNotFound();
 });
 
 it('n’affiche pas le mandat quand le drapeau est fermé', function (): void {
-    [$owner] = initiator();
+    [$owner, $project] = initiator();
 
     // Une fonctionnalité fermée ne s'annonce pas (T-82).
     $this->actingAs($owner)
-        ->get('/espace/reglages')
+        ->get(spaceUrl($project, '/reglages'))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('mandateOpen', false));
 });
 

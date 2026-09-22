@@ -152,9 +152,9 @@ it('laisse changer la langue du projet depuis les réglages', function (): void 
     $project = app(CreateProject::class)->handle($owner, Offer::Pilot);
 
     $this->actingAs($owner)
-        ->from('/espace/reglages')
-        ->post('/espace/reglages/langue', ['locale' => Locale::Spanish->value])
-        ->assertRedirect('/espace/reglages');
+        ->from(spaceUrl($project, '/reglages'))
+        ->post(spaceUrl($project, '/reglages/langue'), ['locale' => Locale::Spanish->value])
+        ->assertRedirect(spaceUrl($project, '/reglages'));
 
     expect($project->refresh()->locale)->toBe(Locale::Spanish);
 });

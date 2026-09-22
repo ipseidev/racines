@@ -13,6 +13,7 @@ import {
     ToTop,
 } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
+import { useSpacePath } from '@/hooks/useSpacePath';
 import { useT } from '@/hooks/useT';
 import { stagger } from '@/lib/motion';
 import { move, toTop } from '@/lib/queue';
@@ -97,6 +98,7 @@ export default function Book({
     familyCodeSet,
 }: Props) {
     const t = useT();
+    const spacePath = useSpacePath();
     const fmt = useFormat();
     const date = (iso: string | null) => (iso === null ? '—' : fmt.date(iso));
 
@@ -109,7 +111,7 @@ export default function Book({
     const save = (next: Chapter[], text: string) => {
         setRows(next);
         router.post(
-            '/espace/livre',
+            spacePath('/livre'),
             {
                 chapters: next.map((row) => ({
                     id: row.id,
@@ -327,13 +329,17 @@ export default function Book({
                                                     onClick={() =>
                                                         chapter.qrActive
                                                             ? router.delete(
-                                                                  `/espace/livre/histoires/${chapter.storyId}/qr`,
+                                                                  spacePath(
+                                                                      `/livre/histoires/${chapter.storyId}/qr`,
+                                                                  ),
                                                                   {
                                                                       preserveScroll: true,
                                                                   },
                                                               )
                                                             : router.post(
-                                                                  `/espace/livre/histoires/${chapter.storyId}/qr`,
+                                                                  spacePath(
+                                                                      `/livre/histoires/${chapter.storyId}/qr`,
+                                                                  ),
                                                                   {},
                                                                   {
                                                                       preserveScroll: true,
@@ -495,7 +501,7 @@ export default function Book({
                 <form
                     onSubmit={(event) => {
                         event.preventDefault();
-                        codeForm.post('/espace/livre/code', {
+                        codeForm.post(spacePath('/livre/code'), {
                             preserveScroll: true,
                             onSuccess: () => codeForm.reset(),
                         });
@@ -548,7 +554,7 @@ export default function Book({
                     <button
                         type="button"
                         onClick={() =>
-                            router.delete('/espace/livre/code', {
+                            router.delete(spacePath('/livre/code'), {
                                 preserveScroll: true,
                             })
                         }
@@ -604,7 +610,7 @@ export default function Book({
                         type="button"
                         onClick={() =>
                             router.post(
-                                '/espace/livre/bat',
+                                spacePath('/livre/bat'),
                                 {},
                                 { preserveScroll: true },
                             )
@@ -634,7 +640,7 @@ export default function Book({
                     <form
                         onSubmit={(event) => {
                             event.preventDefault();
-                            approval.post('/espace/livre/accord', {
+                            approval.post(spacePath('/livre/accord'), {
                                 preserveScroll: true,
                             });
                         }}
@@ -758,7 +764,7 @@ export default function Book({
                     <form
                         onSubmit={(event) => {
                             event.preventDefault();
-                            copies.post('/espace/livre/exemplaires', {
+                            copies.post(spacePath('/livre/exemplaires'), {
                                 preserveScroll: true,
                             });
                         }}

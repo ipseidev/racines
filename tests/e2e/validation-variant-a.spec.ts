@@ -56,41 +56,49 @@ async function recordAndSend(page: Page, link: string): Promise<void> {
     );
 }
 
-test('les trois choix apparaissent après la confirmation, et le partage se note', async ({
+test('aucune question après la confirmation : on annonce, et la sortie reste ouverte', async ({
     page,
 }) => {
     reportBrowserProblems(page);
 
     await recordAndSend(page, VARIANT_A);
 
-    // La question ne se pose qu'après la confirmation du serveur : la poser
-    // avant reviendrait à demander de valider ce qui n'est pas encore là.
-    const share = page.getByRole('button', {
-        name: /partager avec mes proches/i,
-    });
-    await expect(share).toBeVisible();
-
-    for (const label of [
-        /partager avec mes proches/i,
-        /garder pour moi/i,
-        /décider plus tard/i,
-    ]) {
-        const button = page.getByRole('button', { name: label });
-        const box = await button.boundingBox();
-
-        expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
-        // Rien de présélectionné : l'absence de réaction ne vaut jamais accord.
-        expect(await button.getAttribute('aria-pressed')).toBeNull();
+    /*
+     * Les trois choix — « partager avec mes proches », « garder pour moi »,
+     * « décider plus tard » — se posaient ici, et c'était l'objet du test de
+     * Phase 0A. T-250 les a retirés : le partage permanent est devenu le
+     * sixième accord du « J'accepte », et plus aucune décision n'est
+     * demandée après un récit. Ce test garde la place : il vérifie que la
+     * question ne revient pas.
+     */
+    for (const label of [/partager avec mes proches/i, /décider plus tard/i]) {
+        await expect(page.getByRole('button', { name: label })).toHaveCount(0);
     }
 
     // Aucun minuteur : une hésitation n'est pas un consentement.
     await expect(page.locator('progress')).toHaveCount(0);
 
-    await share.click();
-
+    // On annonce ce qui va se passer…
     await expect(page.getByRole('status')).toContainText(
         /vos proches pourront/i,
     );
+
+    // …et la sortie de ce récit-là est à un doigt : un accord permanent
+    // n'est pas un engagement histoire par histoire.
+    const keep = page.getByRole('button', {
+        name: /garder celle-ci pour moi/i,
+    });
+    await expect(keep).toBeVisible();
+    expect((await keep.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+    // Et la page dit qu'on peut la quitter : rien n'attend plus personne.
+    await expect(
+        page.getByText(/vous pouvez fermer cette page/i),
+    ).toBeVisible();
+
+    await keep.click();
+
+    await expect(page.getByRole('status')).toContainText(/reste pour vous/i);
 });
 
 test('la variante B ne pose aucune question à l’enregistrement', async ({

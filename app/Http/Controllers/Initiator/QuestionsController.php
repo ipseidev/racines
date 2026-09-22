@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Initiator;
 
+use App\Actions\AttachPhoto;
 use App\Actions\PickNextQuestion;
 use App\Actions\ProposeStory;
+use App\Exceptions\Domain\InfectedUpload;
+use App\Exceptions\Domain\UnsupportedImage;
+use App\Models\Project;
 use App\Models\Question;
 use App\Support\InitiatorProject;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Inertia\Response;
 
 /**
@@ -25,9 +30,13 @@ use Inertia\Response;
  */
 final readonly class QuestionsController
 {
+    /** Quatre photos au plus sur une question : au-delà, c'est un diaporama. */
+    public const MAX_PHOTOS = 4;
+
     public function __construct(
         private ProposeStory $stories,
         private PickNextQuestion $picker,
+        private AttachPhoto $photos,
     ) {}
 
     /**
@@ -85,7 +94,16 @@ final readonly class QuestionsController
         return back()->with('status', __('initiator.questions.reordered'));
     }
 
-    public function exclude(Request $request, string $question): RedirectResponse
+    /*
+     * `Project $project` en tête, et il n'est pas lu ici.
+     *
+     * Depuis que les adresses portent le projet, Laravel passe les
+     * paramètres de route **par position** : sans cette déclaration,
+     * `$member` recevait le projet sérialisé et la requête tombait sur un
+     * « invalid input syntax for type uuid ». Le projet lui-même continue
+     * d'être résolu par `InitiatorProject`, qui lit la route.
+     */
+    public function exclude(Request $request, Project $project, string $question): RedirectResponse
     {
         $user = $request->user();
         abort_if($user === null, 403);
@@ -118,9 +136,49 @@ final readonly class QuestionsController
 
         $validated = $request->validate([
             'text' => ['required', 'string', 'min:10', 'max:300'],
+            /*
+             * Les photos de la question (T-251, T-253).
+             *
+             * Le **type** ne se vérifie pas ici : `AttachPhoto` annonce en
+             * tête de sa classe « scanner d'abord », et une règle `image`
+             * renverrait un fichier hostile avec « le fichier doit être une
+             * image », sans l'avoir scanné et sans laisser de trace (T-187).
+             * `Sanitizer` refuse ensuite ce qui n'est pas une image lisible.
+             *
+             * Quatre au plus. Ce n'est pas une borne technique : au-delà, on
+             * ne pose plus une question, on propose un diaporama — et la
+             * carte de la narratrice n'en montre que des vignettes.
+             */
+            'photos' => ['nullable', 'array', 'max:'.self::MAX_PHOTOS],
+            'photos.*' => ['file', 'max:'.AttachPhoto::MAX_KILOBYTES],
         ]);
 
-        $this->stories->handle($project, null, (string) $validated['text']);
+        $story = $this->stories->handle($project, null, (string) $validated['text']);
+
+        /** @var list<UploadedFile> $photos */
+        $photos = array_values((array) $request->file('photos', []));
+
+        foreach ($photos as $photo) {
+            try {
+                /*
+                 * L'histoire vient de naître en PROPOSÉE : `AttachPhoto` y
+                 * pose donc `is_prompt`, et la narratrice verra l'image
+                 * **avec** la question. C'est le même chemin que le dépôt
+                 * depuis le tableau de bord — on ne fabrique rien à côté.
+                 */
+                $this->photos->handle($story, $photo, $user, null);
+            } catch (InfectedUpload|UnsupportedImage $exception) {
+                /*
+                 * La question est déjà posée, et elle vaut sans l'image : on
+                 * ne la défait pas pour une photo refusée. Le message dit
+                 * laquelle, et la personne peut la joindre depuis le tableau
+                 * de bord, où le dépôt vit aussi.
+                 */
+                return back()
+                    ->with('status', __('initiator.questions.added_without_photo'))
+                    ->withErrors(['photos' => $exception->getMessage()]);
+            }
+        }
 
         return back()->with('status', __('initiator.questions.added'));
     }

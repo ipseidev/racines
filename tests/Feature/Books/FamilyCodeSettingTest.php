@@ -47,7 +47,7 @@ function projetAvecLivre(): array
 it('n’en demande aucun par défaut', function (): void {
     [$owner, $project] = projetAvecLivre();
 
-    $this->actingAs($owner)->get('/espace/livre')
+    $this->actingAs($owner)->get(spaceUrl($project, '/livre'))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('familyCodeSet', false));
 
     expect($project->refresh()->family_code_hash)->toBeNull();
@@ -57,7 +57,7 @@ it('pose un code, haché, jamais en clair', function (): void {
     [$owner, $project] = projetAvecLivre();
 
     $this->actingAs($owner)
-        ->post('/espace/livre/code', ['code' => 'KERHOSTIN'])
+        ->post(spaceUrl($project, '/livre/code'), ['code' => 'KERHOSTIN'])
         ->assertRedirect();
 
     $hash = $project->refresh()->family_code_hash;
@@ -84,7 +84,7 @@ it('ferme la page QR une fois le code posé', function (): void {
     $this->get("/q/{$code}")
         ->assertInertia(fn (AssertableInertia $page) => $page->component('family/Story'));
 
-    $this->actingAs($owner)->post('/espace/livre/code', ['code' => 'KERHOSTIN']);
+    $this->actingAs($owner)->post(spaceUrl($project, '/livre/code'), ['code' => 'KERHOSTIN']);
 
     $this->get("/q/{$code}")
         ->assertInertia(fn (AssertableInertia $page) => $page->component('qr/FamilyCode'));
@@ -92,17 +92,17 @@ it('ferme la page QR une fois le code posé', function (): void {
 
 it('retire le code et rouvre le livre', function (): void {
     [$owner, $project] = projetAvecLivre();
-    $this->actingAs($owner)->post('/espace/livre/code', ['code' => 'KERHOSTIN']);
+    $this->actingAs($owner)->post(spaceUrl($project, '/livre/code'), ['code' => 'KERHOSTIN']);
 
-    $this->actingAs($owner)->delete('/espace/livre/code')->assertRedirect();
+    $this->actingAs($owner)->delete(spaceUrl($project, '/livre/code'))->assertRedirect();
 
     expect($project->refresh()->family_code_hash)->toBeNull();
 });
 
 it('refuse un code trop court pour protéger quoi que ce soit', function (): void {
-    [$owner] = projetAvecLivre();
+    [$owner, $project] = projetAvecLivre();
 
-    $this->actingAs($owner)->from('/espace/livre')
-        ->post('/espace/livre/code', ['code' => '12'])
+    $this->actingAs($owner)->from(spaceUrl($project, '/livre'))
+        ->post(spaceUrl($project, '/livre/code'), ['code' => '12'])
         ->assertSessionHasErrors('code');
 });

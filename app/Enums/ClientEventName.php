@@ -51,4 +51,15 @@ enum ClientEventName: string
     case CameraGranted = 'camera_granted';
     case VideoChosen = 'video_chosen';
     case AudioChosen = 'audio_chosen';
+
+    /*
+     * Le tour de chauffe du tout premier lien (T-247). Trois événements,
+     * parce que la seule question qui vaut est « est-ce qu'il aide ? » : la
+     * Gate 0A se mesure sur la réussite du premier enregistrement non
+     * assisté, et on ne saura pas si cet écran l'améliore ou la retarde sans
+     * pouvoir séparer celles qui l'ont joué de celles qui l'ont passé.
+     */
+    case FirstRunStarted = 'first_run_started';
+    case FirstRunDone = 'first_run_done';
+    case FirstRunSkipped = 'first_run_skipped';
 }

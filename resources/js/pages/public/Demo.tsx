@@ -1,19 +1,11 @@
 import { Head } from '@inertiajs/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useUrls } from '@/hooks/useLocale';
 import AudioPlayer from '@/components/AudioPlayer';
+import { LevelBars } from '@/components/LevelBars';
 import { useT } from '@/hooks/useT';
-import {
-    BAR_COUNT,
-    createLevelMeter,
-    type LevelMeter,
-} from '@/recorder/levelMeter';
-import {
-    baseMimeType,
-    isRecordingSupported,
-    pickMimeType,
-} from '@/recorder/mime';
+import { formatDuration } from '@/recorder/duration';
+import { useLocalRecorder } from '@/recorder/useLocalRecorder';
 
 type Props = {
     limits: {
@@ -22,15 +14,6 @@ type Props = {
         acceptedMimes: string[];
     };
 };
-
-type Phase = 'idle' | 'recording' | 'ready' | 'unsupported' | 'refused';
-
-function formatDuration(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const rest = seconds % 60;
-
-    return `${minutes}:${String(rest).padStart(2, '0')}`;
-}
 
 function MicIcon() {
     return (
@@ -46,31 +29,6 @@ function MicIcon() {
             <rect x="9" y="3" width="6" height="11" rx="3" />
             <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" />
         </svg>
-    );
-}
-
-/**
- * Le vu-mètre : douze barres qui suivent la voix pour de vrai.
- *
- * Ce n'est pas une frise décorative. C'est la seule preuve visible qu'un micro
- * fonctionne, et l'acheteur qui essaie ici est précisément en train de se
- * demander si son proche saura s'en servir. Des barres qui bougent quand on
- * parle répondent à la question sans une phrase d'explication.
- */
-function Meter({ levels }: { levels: number[] }) {
-    return (
-        <div
-            className="flex h-12 items-end justify-center gap-1.5"
-            aria-hidden="true"
-        >
-            {levels.map((level, index) => (
-                <i
-                    key={index}
-                    className="bg-brand-sage w-1.5 rounded-full transition-[height] duration-100"
-                    style={{ height: `${Math.max(10, level * 100)}%` }}
-                />
-            ))}
-        </div>
     );
 }
 
@@ -99,144 +57,11 @@ export default function Demo({ limits }: Props) {
     const urls = useUrls();
     const t = useT();
 
-    const [phase, setPhase] = useState<Phase>('idle');
-    const [seconds, setSeconds] = useState(0);
-    const [levels, setLevels] = useState<number[]>(
-        Array<number>(BAR_COUNT).fill(0),
-    );
-    const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
-
-    const recorder = useRef<MediaRecorder | null>(null);
-    const stream = useRef<MediaStream | null>(null);
-    const meter = useRef<LevelMeter | null>(null);
-    const chunks = useRef<Blob[]>([]);
-    const tick = useRef<number | null>(null);
-    const pulse = useRef<number | null>(null);
-
-    const release = useCallback(() => {
-        if (tick.current !== null) {
-            window.clearInterval(tick.current);
-            tick.current = null;
-        }
-
-        if (pulse.current !== null) {
-            window.clearInterval(pulse.current);
-            pulse.current = null;
-        }
-
-        meter.current?.stop();
-        meter.current = null;
-        stream.current?.getTracks().forEach((track) => track.stop());
-        stream.current = null;
-        recorder.current = null;
-        chunks.current = [];
-    }, []);
-
-    // L'effacement à la fermeture, et il compte autant que le reste : un essai
-    // ne laisse rien, même pas une URL d'objet dans l'onglet.
-    useEffect(
-        () => () => {
-            release();
-
-            if (playbackUrl !== null) {
-                URL.revokeObjectURL(playbackUrl);
-            }
-        },
-        [playbackUrl, release],
-    );
-
-    useEffect(() => {
-        if (!isRecordingSupported()) {
-            setPhase('unsupported');
-        }
-    }, []);
-
-    const stop = useCallback(() => {
-        const instance = recorder.current;
-
-        if (instance === null || instance.state === 'inactive') {
-            return;
-        }
-
-        instance.onstop = () => {
-            const blob = new Blob(chunks.current, {
-                type: baseMimeType(instance.mimeType),
-            });
-
-            setPlaybackUrl(URL.createObjectURL(blob));
-            setPhase('ready');
-            release();
-        };
-
-        instance.stop();
-    }, [release]);
-
-    const start = useCallback(async () => {
-        const mime = pickMimeType();
-
-        if (mime === null) {
-            setPhase('unsupported');
-
-            return;
-        }
-
-        try {
-            stream.current = await navigator.mediaDevices.getUserMedia({
-                audio: true,
-            });
-        } catch {
-            setPhase('refused');
-
-            return;
-        }
-
-        const instance = new MediaRecorder(stream.current, {
-            mimeType: mime,
+    const { phase, seconds, levels, playbackUrl, start, stop, again } =
+        useLocalRecorder({
+            maxSeconds: limits.demoSeconds,
+            segmentMilliseconds: limits.segmentMilliseconds,
         });
-
-        chunks.current = [];
-        instance.ondataavailable = (event: BlobEvent) => {
-            if (event.data.size > 0) {
-                chunks.current.push(event.data);
-            }
-        };
-
-        recorder.current = instance;
-        instance.start(limits.segmentMilliseconds);
-
-        setSeconds(0);
-        setPhase('recording');
-
-        meter.current = createLevelMeter(stream.current);
-
-        // Seize images par seconde : l'œil lit le mouvement, et un vieux
-        // téléphone ne passe pas sa minute à recalculer douze barres.
-        pulse.current = window.setInterval(() => {
-            setLevels(meter.current?.levels() ?? []);
-        }, 60);
-
-        tick.current = window.setInterval(() => {
-            setSeconds((previous) => {
-                const next = previous + 1;
-
-                if (next >= limits.demoSeconds) {
-                    stop();
-                }
-
-                return next;
-            });
-        }, 1000);
-    }, [limits.demoSeconds, limits.segmentMilliseconds, stop]);
-
-    const again = () => {
-        if (playbackUrl !== null) {
-            URL.revokeObjectURL(playbackUrl);
-        }
-
-        setPlaybackUrl(null);
-        setSeconds(0);
-        setPhase('idle');
-    };
 
     return (
         <div className="mx-auto w-full max-w-3xl px-6 py-10 lg:py-16">
@@ -324,7 +149,7 @@ export default function Demo({ limits }: Props) {
                         </span>
                     </p>
 
-                    <Meter levels={levels} />
+                    <LevelBars levels={levels} />
 
                     <button
                         type="button"

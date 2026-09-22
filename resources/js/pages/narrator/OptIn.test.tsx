@@ -347,26 +347,42 @@ describe('la page d’opt-in', () => {
         expect(document.querySelector('audio')).toBeNull();
     });
 
-    it('donne aux deux boutons exactement le même poids visuel', () => {
+    it('donne au refus exactement la même place et la même taille qu’au oui', () => {
         render(<OptIn {...props} />);
 
         const accept = screen.getByRole('button', { name: 'J’accepte' });
         const refuse = screen.getByRole('button', { name: 'Non merci' });
 
-        // Rendre le refus discret ne produit pas des oui : ça produit des
-        // gens qui ne répondent pas. Le test le vérifie sur les classes,
-        // parce que c'est là que la tentation se logerait.
-        //
-        // Les variantes `disabled:` sont écartées de la comparaison : elles
-        // n'agissent que pendant l'envoi du formulaire, et seul le bouton qui
-        // envoie en a besoin.
-        const weight = (element: HTMLElement): string =>
+        /*
+         * Ce que ce test protège, et qui n'a pas changé : la **taille**.
+         * Rendre le refus petit ou discret ne produit pas des oui, ça produit
+         * des gens qui ne répondent pas. Même hauteur, même largeur, même
+         * corps de texte, même parent — c'est là que la tentation se logerait.
+         *
+         * Ce qui a changé le 20 septembre 2026 (T-245) : la couleur. Le oui
+         * prend la terracotta, qui est l'action de la page partout ailleurs
+         * dans l'application ; le non garde le contour de marque. Le test
+         * compare donc le gabarit, et vérifie séparément que chacun porte sa
+         * variante — sans quoi « même taille » se relâcherait en silence.
+         */
+        const size = (element: HTMLElement): string[] =>
             element.className
                 .split(' ')
-                .filter((name) => !name.startsWith('disabled:'))
-                .join(' ');
+                .filter(
+                    (name) =>
+                        !name.startsWith('disabled:') &&
+                        name !== 'btn-primary' &&
+                        name !== 'btn-secondary',
+                )
+                .sort();
 
-        expect(weight(refuse)).toBe(weight(accept));
+        expect(size(refuse)).toEqual(size(accept));
+        expect(size(accept)).toContain('min-h-[3.5rem]');
+        expect(size(accept)).toContain('flex-1');
+        expect(size(accept)).toContain('text-lg');
+
+        expect(accept.className).toContain('btn-primary');
+        expect(refuse.className).toContain('btn-secondary');
         expect(accept.parentElement).toBe(refuse.parentElement);
     });
 

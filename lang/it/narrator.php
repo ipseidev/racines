@@ -86,13 +86,23 @@ return [
 
         // Écran 1 — explication. Elle précède toujours la demande de micro :
         // une autorisation qui surgit sans prévenir se refuse par réflexe.
-        'greeting' => ':name, ecco la sua domanda della settimana',
-        'greeting_tu' => ':name, ecco la tua domanda della settimana',
+        /*
+         * La ligne qui annonce la question (21 septembre 2026).
+         *
+         * Elle disait « voici votre question de la semaine » : un vocabulaire
+         * de rubrique, d'infolettre — et c'était la seule phrase de l'écran
+         * qui s'adressait à la personne. « Une question pour vous » dit la
+         * même chose sans le classeur, et n'attribue la question à personne :
+         * le corpus n'a pas d'auteur, et un lien porteur ne nomme pas de
+         * tiers.
+         */
+        'greeting' => 'Una domanda per lei, :name.',
+        'greeting_tu' => 'Una domanda per te, :name.',
         'mic_notice' => 'Quando premerà il pulsante, il telefono le chiederà il permesso di usare il microfono. Scelga “Consenti”.',
         'mic_notice_tu' => 'Quando premerai il pulsante, il telefono ti chiederà il permesso di usare il microfono. Scegli “Consenti”.',
         'camera_notice' => 'Quando premerà il pulsante, il telefono le chiederà il permesso di usare il microfono e la fotocamera. Scelga “Consenti”. Si vedrà sullo schermo prima di cominciare.',
         'camera_notice_tu' => 'Quando premerai il pulsante, il telefono ti chiederà il permesso di usare il microfono e la fotocamera. Scegli “Consenti”. Ti vedrai sullo schermo prima di cominciare.',
-        'ready' => 'Ho capito, avanti',
+        'open_camera' => 'Accendere la fotocamera',
 
         // Écran 2 — permission.
         'requesting' => 'Il telefono le chiederà il permesso. Scelga “Consenti”.',
@@ -134,7 +144,17 @@ return [
         // Écran 6 — confirmation.
         'confirmed_title' => 'La sua storia è stata registrata',
         'confirmed_body' => 'Grazie, :name.',
+        'confirmed_duration' => 'Ha raccontato per',
+        'shared_by_default' => 'I suoi cari potranno ascoltarla appena il testo sarà pronto.',
+        'keep_this_one' => 'Tenere questa per me',
         'confirmed_next' => 'Ora la mettiamo in bella copia. La rileggerà prima che qualcuno la ascolti.',
+        'confirmed_close' => 'Può chiudere questa pagina.',
+        'photo_open' => 'Ingrandire: :alt',
+        'photo_from_family' => 'Inviata dalla sua famiglia.',
+        'photos_from_family' => 'Inviate dalla sua famiglia.',
+        'photo_from' => 'Inviata da :name.',
+        'photos_from' => 'Inviate da :name.',
+        'photo_enlarge' => 'Vedere in grande',
 
         // Brouillon retrouvé au chargement.
         'draft_title' => 'Ha una registrazione in corso',
@@ -153,6 +173,29 @@ return [
      * réglage du micro alors qu'il a refusé la caméra le ferait tourner en
      * rond. La voix reste offerte comme issue, avant l'écrit.
      */
+    'first_run' => [
+        'title' => 'Proviamo una volta, :name?',
+        'why' => 'Non verrà inviato nulla, non verrà conservato nulla. Serve solo a prendere confidenza.',
+        'start' => 'Provare',
+        'skip' => 'Salta e rispondi subito',
+        'recording' => 'Parli pure, la ascolto',
+        'recording_tu' => 'Parla pure, ti ascolto',
+        'stop' => 'Ho finito',
+        'listen_title' => 'Si ascolti',
+        'listen_title_tu' => 'Ascoltati',
+        'listen_body' => 'È esattamente ciò che sentirà la sua famiglia. Questa prova, invece, non verrà conservata da nessuna parte.',
+        'listen_body_tu' => 'È esattamente ciò che sentirà la tua famiglia. Questa prova, invece, non verrà conservata da nessuna parte.',
+        'again' => 'Ricominciare',
+        'done' => 'Va bene',
+        'over_title' => 'Ecco, è tutto qui.',
+        'over_body' => 'Ora sa come si fa. Questa prova non è stata conservata da nessuna parte: la sua vera domanda la aspetta.',
+        'over_body_tu' => 'Ora sai come si fa. Questa prova non è stata conservata da nessuna parte: la tua vera domanda ti aspetta.',
+        'over_button' => 'Vedere la mia domanda',
+        'refused_title' => 'Il microfono non ha risposto',
+        'refused_body' => 'Non è un problema, e non si è perso nulla: lo rivedremo sulla schermata della domanda, con il percorso esatto per il suo telefono.',
+        'refused_button' => 'Andare alla mia domanda',
+    ],
+
     'camera_help' => [
         'title' => 'La fotocamera non è autorizzata',
         'body' => 'Senza fotocamera non possiamo riprenderla. Ecco come autorizzarla; può anche rispondere solo con la voce.',
@@ -320,6 +363,11 @@ return [
         'empty' => 'Non ha ancora nessuna storia registrata.',
         'empty_hint' => 'Compariranno qui settimana dopo settimana, dopo ogni domanda.',
         'actions' => 'Cosa può fare di questa storia',
+        'sharing_title' => 'Le sue storie partono appena sono pronte',
+        'sharing_body' => 'È quello che ha scelto accettando. Può interromperlo quando vuole: i racconti successivi non partiranno più senza il suo accordo, e quelli già condivisi si ritirano uno per uno, qui sopra.',
+        'sharing_stop' => 'Non condividere più automaticamente',
+        'sharing_stopped' => 'Fatto. Le sue prossime storie non partiranno più senza il suo accordo.',
+        'sharing_resumed' => 'Fatto. Le sue prossime storie partiranno appena saranno pronte.',
         'pause_title' => 'Ha bisogno di una pausa?',
         'pause_body' => 'In questo periodo non partirà nessuna domanda. Riprenderà quando vorrà.',
         'pause_fewer' => 'Una settimana in meno',
@@ -456,7 +504,8 @@ return [
         'consents' => [
             'title' => 'I suoi consensi',
             'summary' => 'I testi completi dei cinque consensi, e la loro versione.',
-            'before_accept' => 'Premendo “Accetto”, dà i cinque consensi descritti più sotto: la registrazione della sua voce, la sua trascrizione, la messa in forma del testo da parte di un’intelligenza artificiale, la condivisione con i suoi cari, e gli argomenti delicati che i suoi racconti possono toccare.',
+            'before_accept' => 'Premendo “Accetto”, dà i sei consensi descritti più sotto: la registrazione della sua voce, la sua trascrizione, la messa in forma del testo da parte di un’intelligenza artificiale, la condivisione con i suoi cari, gli argomenti delicati che i suoi racconti possono toccare, e l’invio di ogni storia ai suoi cari appena è pronta.',
+            'sharing_note' => 'Non dovrà fare nulla dopo ogni racconto. Potrà tenere per sé qualunque storia e interrompere questo invio quando vuole, dalla sua area personale.',
             'intro' => 'Tocchi un consenso per leggerne il testo. Ognuno è separato, e ognuno si può ritirare quando vuole, indipendentemente dagli altri.',
             'version' => 'Versione :version',
         ],
@@ -507,7 +556,7 @@ return [
 
         'accept' => 'Accetto',
         'refuse' => 'No, grazie',
-        'accepted' => 'D’accordo. Un caro benvenuto.',
+        'accepted' => 'Il suo consenso è registrato.',
         'already_answered' => 'Ha già risposto a questo invito. Se desidera cambiare idea, ci scriva a :email.',
         'no_password' => 'Questa pagina non le chiederà mai una password, un pagamento né un codice.',
 
@@ -522,20 +571,11 @@ return [
 
     'optin_welcome' => [
         'title' => 'Un caro benvenuto, :name',
-        'body' => 'La sua prima domanda arriva :when. Non deve installare né preparare nulla.',
+        'first_question' => 'La sua prima domanda arriva',
         'when_unknown' => 'molto presto',
-        'vcard' => [
-            'title' => 'Ci aggiunga ai suoi contatti',
-            'body' => 'I nostri messaggi arriveranno sempre da questo contatto. Se le arriva un messaggio da altrove che ci imita, è falso.',
-            'button' => 'Aggiungi il contatto',
-        ],
-        /*
-         * Plus de question ici (T-236) : les souhaits se choisissent à
-         * l'acceptation. On dit ce qui vaut, et où le changer.
-         */
+        'nothing_to_do' => 'Non deve installare né preparare nulla.',
+        'leave' => 'Può chiudere questa pagina senza timore. Le scriveremo al momento giusto.',
         'wishes' => [
-            'title' => 'I suoi desideri per il futuro',
-            'default' => 'Salvo sua diversa scelta, le sue storie potranno essere trasmesse alla sua famiglia. Potrà precisarlo quando vorrà, dalla sua area personale.',
             'saved' => 'I suoi desideri sono salvati. Potrà cambiarli quando vorrà.',
         ],
     ],

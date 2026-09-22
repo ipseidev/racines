@@ -97,7 +97,15 @@ if [[ ${KEEP_ENV} -eq 0 && -f "${STATE_FILE}" ]]; then
     if [[ -n "${BRAND_DOMAIN:-}" ]] && [[ -x "${SAIL}" ]] \
         && "${SAIL}" ps --services --filter status=running 2>/dev/null | grep -q '^laravel.test$'; then
         log "Restauration du domaine court des liens : ${BRAND_DOMAIN}"
-        "${SAIL}" artisan tinker --execute="\$s = app(\App\Settings\BrandSettings::class); \$s->links_domain = '${BRAND_DOMAIN}'; \$s->save();" >/dev/null 2>&1 || true
+
+        # Le seul échec qui se paie plus tard : un domaine resté sur un tunnel
+        # mort ne se voit qu'à la session suivante, quand un lien à jeton ne
+        # s'ouvre pas alors que la page d'accueil répond. On le dit ici, avec
+        # la ligne qui répare — le nettoyage, lui, continue.
+        if ! "${SAIL}" artisan tinker --execute="\$s = app(\App\Settings\BrandSettings::class); \$s->links_domain = '${BRAND_DOMAIN}'; \$s->save();" >/dev/null 2>&1; then
+            warn "Domaine court non restauré — il pointe encore sur un tunnel fermé."
+            warn "À rejouer : ${SAIL} artisan tinker --execute=\"\\\$s = app(\\App\\Settings\\BrandSettings::class); \\\$s->links_domain = '${BRAND_DOMAIN}'; \\\$s->save();\""
+        fi
     fi
 fi
 

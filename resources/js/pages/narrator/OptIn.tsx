@@ -54,8 +54,10 @@ const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
  * L'opt-in : le moment H0.
  *
  * La page qui décide de tout. Elle explique avant de demander, ne propose
- * aucun enregistrement, et ses deux boutons sont de même taille et de même
- * couleur : un non franc vaut mieux qu'un silence. Le mot de la personne qui
+ * aucun enregistrement, et ses deux boutons sont de **même taille** : un non
+ * franc vaut mieux qu'un silence, et c'est la taille du bouton de refus qui
+ * le rend possible. Le oui porte la couleur d'action depuis T-245 ; le non
+ * garde le contour de marque, à la même place et au même format. Le mot de la personne qui
  * offre est mis en avant comme une lettre, parce que c'est lui qui décide.
  *
  * Elle s'ouvre par une ouverture (T-232) : un écran vide, le nom, « Bonjour
@@ -159,9 +161,22 @@ export default function OptIn({
               })
             : undefined;
 
-    // Les deux boutons du oui et du non : les mêmes classes, le même parent.
-    const pair =
-        'btn-secondary press min-h-[3.5rem] flex-1 py-4 text-lg disabled:opacity-60';
+    /*
+     * Le gabarit du oui et du non : **même hauteur, même largeur, même corps
+     * de texte**, et le même parent. C'est la taille qui protège, pas la
+     * couleur — rendre le refus petit ou discret ne produit pas des oui, ça
+     * produit des gens qui ne répondent pas.
+     *
+     * La couleur, elle, les distingue depuis le 20 septembre 2026 (T-245) :
+     * « J'accepte » prend la terracotta, qui est l'action de la page dans
+     * toute l'application, et « Non merci » garde le contour de marque. Les
+     * deux boutons de la confirmation de refus, eux, restent identiques :
+     * là, aucun des deux n'est « le bon ».
+     */
+    const buttonSize =
+        'press min-h-[3.5rem] flex-1 py-4 text-lg disabled:opacity-60';
+    const pair = `btn-secondary ${buttonSize}`;
+    const acceptButton = `btn-primary ${buttonSize}`;
 
     // Le champ de contact suit le canal : un numéro pour les SMS, une adresse
     // pour le courriel, les deux pour « les deux ». Rien d'autre à l'écran.
@@ -495,15 +510,26 @@ export default function OptIn({
                         </p>
 
                         {/*
-                         * Le oui et le non, côte à côte, de même taille et de même
-                         * couleur. Rendre le refus discret ne produit pas des oui,
-                         * ça produit des gens qui ne répondent pas.
+                         * Ce que le sixième accord change pour elle, dit là
+                         * où elle le lit : rien à faire après chaque récit,
+                         * et deux façons de revenir en arrière. Sans cette
+                         * phrase, l'accord serait exact et illisible.
+                         */}
+                        <p className="text-brand-muted mt-3 text-base">
+                            {t('narrator.optin.consents.sharing_note')}
+                        </p>
+
+                        {/*
+                         * Le oui et le non, côte à côte, de même taille : le
+                         * refus se presse aussi facilement que l'accord. Le
+                         * oui porte la terracotta, qui est l'action de la
+                         * page partout ailleurs dans l'application (T-245).
                          */}
                         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                             <button
                                 type="submit"
                                 disabled={form.processing}
-                                className={pair}
+                                className={acceptButton}
                             >
                                 {t('narrator.optin.accept')}
                             </button>
