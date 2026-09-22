@@ -32,8 +32,16 @@ it('computes collection and finalization windows for pilot and core offers', fun
     $core = Project::factory()->core()->create();
     $window = $core->collectionWindow(now());
 
-    expect($window->collectionEndsAt->toDateString())->toBe(now()->addMonths(12)->toDateString())
-        ->and($window->finalizationEndsAt->toDateString())->toBe(now()->addMonths(15)->toDateString());
+    /*
+     * 52 questions au rythme hebdomadaire, soit 52 semaines — et non douze
+     * mois calendaires (R-2, v3.0). Les deux tombent à un jour près, et c'est
+     * le nombre de questions qui fait foi, pas le calendrier.
+     */
+    $semaines = Project::collectionWeeks($core->cadence);
+
+    expect($window->collectionEndsAt->toDateString())->toBe(now()->addWeeks($semaines)->toDateString())
+        ->and($window->finalizationEndsAt->toDateString())
+        ->toBe(now()->addWeeks($semaines)->addMonths(3)->toDateString());
 });
 
 it('fige les trois échéances quand la collecte s’ouvre', function (): void {
@@ -41,9 +49,12 @@ it('fige les trois échéances quand la collecte s’ouvre', function (): void {
 
     $project = Project::factory()->core()->create()->startCollection();
 
+    $semaines = Project::collectionWeeks($project->cadence);
+
     expect($project->collection_started_at?->toDateString())->toBe(now()->toDateString())
-        ->and($project->collection_ends_at?->toDateString())->toBe(now()->addMonths(12)->toDateString())
-        ->and($project->finalization_ends_at?->toDateString())->toBe(now()->addMonths(15)->toDateString());
+        ->and($project->collection_ends_at?->toDateString())->toBe(now()->addWeeks($semaines)->toDateString())
+        ->and($project->finalization_ends_at?->toDateString())
+        ->toBe(now()->addWeeks($semaines)->addMonths(3)->toDateString());
 });
 
 it('reprend la date d’ouverture déjà enregistrée pour calculer la fenêtre', function (): void {

@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Actions\IssueRecordToken;
 use App\Actions\PickNextQuestion;
 use App\Enums\ProjectStatus;
+use App\Enums\TokenType;
+use App\Models\AccessToken;
 use App\Models\Narrator;
 use App\Models\Project;
 use App\Models\Question;
@@ -180,4 +183,220 @@ it('pose la question même sans photo', function (): void {
     $story = $project->stories()->latest('sequence')->firstOrFail();
 
     expect(PhotoPresenter::promptsForStory($story))->toBe([]);
+});
+
+/**
+ * Une question écrite par la famille part **avant** le corpus (T-254).
+ *
+ * Elle devient une histoire PROPOSÉE dès qu'on l'écrit, et l'envoi
+ * hebdomadaire ne la regardait pas : il piochait dans le corpus et proposait
+ * une histoire de plus. Une question posée à la main pouvait donc n'être
+ * jamais envoyée — tout en s'affichant dans l'espace, ce qui donnait toutes
+ * les raisons de croire qu'elle partirait.
+ */
+it('envoie la question de la famille avant celles du corpus', function (): void {
+    Notification::fake();
+
+    [$owner, $project] = questionsProject();
+    corpus();
+
+    $project->forceFill([
+        'status' => ProjectStatus::Active,
+        'next_prompt_at' => now()->subMinute(),
+    ])->save();
+
+    $this->actingAs($owner)->post(spaceUrl($project, '/questions/personnalisee'), [
+        'text' => 'Raconte-nous le jour où tu as rencontré papa.',
+    ])->assertRedirect();
+
+    $this->artisan('prompts:dispatch-due')->assertSuccessful();
+
+    $envoyee = $project->stories()
+        ->whereNotNull('custom_question_text')
+        ->firstOrFail();
+
+    // Le lien est parti pour **elle**, et non pour une question du corpus.
+    expect(
+        AccessToken::query()
+            ->where('subject_type', 'story')
+            ->where('subject_id', $envoyee->id)
+            ->where('type', TokenType::Record->value)
+            ->exists(),
+    )->toBeTrue();
+
+    // Et aucune histoire de corpus n'a été proposée par-dessus.
+    expect($project->stories()->whereNotNull('question_id')->count())->toBe(0);
+});
+
+it('revient au corpus quand aucune question de la famille n’attend', function (): void {
+    Notification::fake();
+
+    [, $project] = questionsProject();
+    corpus();
+
+    $project->forceFill([
+        'status' => ProjectStatus::Active,
+        'next_prompt_at' => now()->subMinute(),
+    ])->save();
+
+    $this->artisan('prompts:dispatch-due')->assertSuccessful();
+
+    expect($project->stories()->whereNotNull('question_id')->count())->toBe(1);
+});
+
+/**
+ * L'ordre des questions écrites par la famille (T-254).
+ *
+ * Elles ne vivent pas dans la file du corpus, et rien ne permettait d'en
+ * décider le rang : écrire trois questions sans pouvoir dire laquelle part en
+ * premier n'est qu'une demi-fonctionnalité. Leur ordre est celui de
+ * `stories.sequence`, que l'envoi lit.
+ */
+it('réordonne les questions de la famille, en permutant leurs rangs', function (): void {
+    [$owner, $project] = questionsProject();
+
+    foreach (['La première que j’ai écrite.', 'La deuxième que j’ai écrite.'] as $texte) {
+        $this->actingAs($owner)
+            ->post(spaceUrl($project, '/questions/personnalisee'), ['text' => $texte])
+            ->assertRedirect();
+    }
+
+    $avant = $project->stories()->whereNotNull('custom_question_text')
+        ->orderBy('queue_order')->orderBy('sequence')->get();
+
+    $sequences = $avant->pluck('sequence')->all();
+
+    $this->actingAs($owner)
+        ->post(spaceUrl($project, '/questions/ordre'), [
+            'order' => [
+                ['kind' => 'story', 'id' => $avant[1]->id],
+                ['kind' => 'story', 'id' => $avant[0]->id],
+            ],
+        ])
+        ->assertRedirect();
+
+    $apres = $project->stories()->whereNotNull('custom_question_text')
+        ->orderBy('queue_order')->orderBy('sequence')->get();
+
+    /*
+     * L'ordre s'inverse — et `sequence` ne bouge pas d'un pouce.
+     *
+     * Le rang dans la file est `queue_order` ; `sequence` est la place de
+     * l'histoire dans la vie du projet, que le livre et la frise lisent.
+     * Réordonner ce qui n'est pas encore parti ne doit rien y changer.
+     */
+    expect($apres->pluck('id')->all())->toBe([$avant[1]->id, $avant[0]->id])
+        ->and($apres->pluck('sequence')->sort()->values()->all())->toBe($sequences)
+        ->and($avant[1]->refresh()->queue_order)->toBe(0)
+        ->and($avant[0]->refresh()->queue_order)->toBe(1);
+});
+
+it('ne réordonne pas une question dont le lien est déjà parti', function (): void {
+    Notification::fake();
+
+    [$owner, $project] = questionsProject();
+
+    $this->actingAs($owner)
+        ->post(spaceUrl($project, '/questions/personnalisee'), ['text' => 'Celle qui est déjà partie.'])
+        ->assertRedirect();
+
+    $story = $project->stories()->whereNotNull('custom_question_text')->firstOrFail();
+    $rang = $story->queue_order;
+
+    // Le lien part : elle n'est plus à réordonner.
+    app(IssueRecordToken::class)->handle($story);
+
+    $this->actingAs($owner)
+        ->post(spaceUrl($project, '/questions/ordre'), [
+            'order' => [['kind' => 'story', 'id' => $story->id]],
+        ])
+        ->assertRedirect();
+
+    expect($story->refresh()->queue_order)->toBe($rang);
+});
+
+/**
+ * Une question du corpus peut passer **devant** une question de la famille
+ * (T-255).
+ *
+ * C'était impossible : les deux natures vivaient dans deux échelles séparées,
+ * et celles de la famille passaient toutes devant, sans recours. Elles
+ * partagent maintenant le rang — `queue_order` d'un côté, `custom_order` de
+ * l'autre — et l'envoi compare deux entiers sans connaître leur nature.
+ */
+it('laisse une question du corpus doubler une question de la famille', function (): void {
+    Notification::fake();
+
+    [$owner, $project] = questionsProject();
+    corpus();
+
+    $this->actingAs($owner)
+        ->post(spaceUrl($project, '/questions/personnalisee'), ['text' => 'La mienne, que je veux finalement en second.'])
+        ->assertRedirect();
+
+    $mienne = $project->stories()->whereNotNull('custom_question_text')->firstOrFail();
+    $duCorpus = Question::query()->active()->orderBy('order_hint')->firstOrFail();
+
+    // Le corpus d'abord, la mienne ensuite.
+    $this->actingAs($owner)
+        ->post(spaceUrl($project, '/questions/ordre'), [
+            'order' => [
+                ['kind' => 'question', 'id' => $duCorpus->id],
+                ['kind' => 'story', 'id' => $mienne->id],
+            ],
+        ])
+        ->assertRedirect();
+
+    $project->forceFill([
+        'status' => ProjectStatus::Active,
+        'next_prompt_at' => now()->subMinute(),
+    ])->save();
+
+    $this->artisan('prompts:dispatch-due')->assertSuccessful();
+
+    // C'est la question du corpus qui est partie, pas la mienne.
+    expect($project->stories()->where('question_id', $duCorpus->id)->exists())->toBeTrue()
+        ->and(
+            AccessToken::query()
+                ->where('subject_type', 'story')
+                ->where('subject_id', $mienne->id)
+                ->exists(),
+        )->toBeFalse();
+});
+
+it('retire une question qu’on a écrite, avec ses photos', function (): void {
+    [$owner, $project] = questionsProject();
+
+    $this->actingAs($owner)
+        ->post(spaceUrl($project, '/questions/personnalisee'), [
+            'text' => 'Celle que je vais finalement retirer.',
+            'photos' => [File::image('regret.jpg', 800, 600)],
+        ])
+        ->assertRedirect();
+
+    $story = $project->stories()->whereNotNull('custom_question_text')->firstOrFail();
+
+    $this->actingAs($owner)
+        ->delete(spaceUrl($project, '/questions/proposees/'.$story->id))
+        ->assertRedirect();
+
+    expect(Story::query()->whereKey($story->id)->exists())->toBeFalse();
+});
+
+it('ne retire jamais une question dont le lien est parti', function (): void {
+    [$owner, $project] = questionsProject();
+
+    $this->actingAs($owner)
+        ->post(spaceUrl($project, '/questions/personnalisee'), ['text' => 'Celle qui appartient déjà à la narratrice.'])
+        ->assertRedirect();
+
+    $story = $project->stories()->whereNotNull('custom_question_text')->firstOrFail();
+
+    app(IssueRecordToken::class)->handle($story);
+
+    $this->actingAs($owner)
+        ->delete(spaceUrl($project, '/questions/proposees/'.$story->id))
+        ->assertNotFound();
+
+    expect(Story::query()->whereKey($story->id)->exists())->toBeTrue();
 });

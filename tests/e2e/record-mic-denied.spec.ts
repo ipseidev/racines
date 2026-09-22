@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { skipFirstRun } from './support/first-run';
 
 /**
  * Le micro est refusé — cas identifié comme risque pour des narrateurs âgés.
@@ -29,8 +30,12 @@ test('un micro refusé mène à l’aide, puis à la réponse écrite', async ({
     await page.goto(RECORD_LINK);
 
     // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await skipFirstRun(page);
     await page.getByRole('button', { name: /avec votre voix/i }).click();
-    await page.getByRole('button', { name: /je suis prêt/i }).click();
+
+    // L'autorisation part du grand bouton, plus d'un écran intermédiaire
+    // (T-248) : l'explication l'a précédée, c'est ce qui compte.
+    await page.getByRole('button', { name: /^commencer$/i }).click();
 
     await expect(
         page.getByRole('heading', { name: /micro n’est pas autoris/i }),

@@ -67,42 +67,75 @@ test('réordonne les questions, et l’ordre part tout seul', async ({ page }) =
     await page.goto('/espace/questions');
 
     /*
-     * Le panneau de droite, et non la page entière : depuis que le corpus
-     * vit à gauche (T-252), « Écarter » et les flèches existent des deux
-     * côtés, et un sélecteur global attraperait le mauvais.
+     * Une seule liste depuis T-256 : « L'ordre des envois ». Les deux
+     * panneaux d'avant montraient la même chose deux fois, et un sélecteur
+     * devait dire lequel il visait — ce n'est plus nécessaire.
      */
-    const suite = page.getByRole('region', { name: 'Les prochaines' });
-    const cards = suite.getByRole('list').getByRole('listitem');
-    const first = (await cards.nth(0).locator('p').first().textContent()) ?? '';
+    const cards = page
+        .getByRole('list', { name: 'L’ordre des envois' })
+        .getByRole('listitem');
+    const first =
+        (await cards
+            .nth(0)
+            .locator('[data-test="question-text"]')
+            .textContent()) ?? '';
     const second =
-        (await cards.nth(1).locator('p').first().textContent()) ?? '';
+        (await cards
+            .nth(1)
+            .locator('[data-test="question-text"]')
+            .textContent()) ?? '';
 
-    await suite.getByRole('button', { name: 'Descendre' }).first().click();
+    /*
+     * La flèche de la **première carte du corpus**, et non la première du
+     * panneau : les questions écrites par la famille ont les leurs, au-dessus,
+     * et elles réordonnent une autre liste (T-254).
+     */
+    await cards.nth(0).getByRole('button', { name: 'Descendre' }).click();
 
     // Aucun bouton « Enregistrer » : l'ordre part après le dernier geste.
     await expect(page.getByText('L’ordre est enregistré.')).toBeVisible();
 
     await page.reload();
 
-    await expect(cards.nth(0).locator('p').first()).toHaveText(second);
-    await expect(cards.nth(1).locator('p').first()).toHaveText(first);
+    await expect(
+        cards.nth(0).locator('[data-test="question-text"]'),
+    ).toHaveText(second);
+    await expect(
+        cards.nth(1).locator('[data-test="question-text"]'),
+    ).toHaveText(first);
 
     // On remet les choses en place pour la personne qui rejouera le décor.
-    await suite.getByRole('button', { name: 'Monter' }).nth(1).click();
+    await cards.nth(1).getByRole('button', { name: 'Monter' }).click();
     await expect(page.getByText('L’ordre est enregistré.')).toBeVisible();
 });
 
 test('écarte une question, puis la remet', async ({ page }) => {
     await page.goto('/espace/questions');
 
-    const suite = page.getByRole('region', { name: 'Les prochaines' });
-    const cards = suite.getByRole('list').getByRole('listitem');
-    const first = (await cards.nth(0).locator('p').first().textContent()) ?? '';
+    /*
+     * Une seule liste depuis T-256 : « L'ordre des envois ». Les deux
+     * panneaux d'avant montraient la même chose deux fois, et un sélecteur
+     * devait dire lequel il visait — ce n'est plus nécessaire.
+     */
+    const cards = page
+        .getByRole('list', { name: 'L’ordre des envois' })
+        .getByRole('listitem');
+    /*
+     * La première carte **du fonds proposé**, et non la première tout court :
+     * une question écrite par la famille porte « Retirer ma question » et non
+     * « Écarter », et elle peut être en tête de liste (T-255).
+     */
+    const fromPool = cards.filter({ hasNotText: 'Votre question' }).first();
+    const first =
+        (await fromPool.locator('[data-test="question-text"]').textContent()) ??
+        '';
 
-    await suite.getByRole('button', { name: 'Écarter' }).first().click();
+    await fromPool.getByRole('button', { name: 'Écarter' }).click();
     await expect(page.getByText('C’est enregistré.')).toBeVisible();
 
-    await expect(cards.nth(0).locator('p').first()).not.toHaveText(first);
+    await expect(
+        cards.nth(0).locator('[data-test="question-text"]'),
+    ).not.toHaveText(first);
 
     await page.getByText(/Questions écartées \(\d+\)/).click();
     await page.getByRole('button', { name: 'Remettre' }).first().click();
@@ -115,7 +148,7 @@ test('invite un proche', async ({ page }) => {
 
     await page.getByLabel('Son prénom').fill('Claire');
     await page
-        .getByLabel('Son courriel')
+        .getByLabel('Son email')
         .fill(`claire+${Date.now()}@example.test`);
     await page.getByRole('button', { name: 'Envoyer l’invitation' }).click();
 

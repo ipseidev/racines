@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { blockingViolations } from './support/a11y';
+import { skipFirstRun } from './support/first-run';
 
 /**
  * Accessibilité de la page d'enregistrement (convention §11) : WCAG 2.2 AA,
@@ -15,8 +16,8 @@ test('aucune violation grave sur les écrans d’enregistrement', async ({
     expect(await blockingViolations(page)).toEqual([]);
 
     // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await skipFirstRun(page);
     await page.getByRole('button', { name: /avec votre voix/i }).click();
-    await page.getByRole('button', { name: /je suis prêt/i }).click();
     await expect(
         page.getByRole('button', { name: /^commencer$/i }),
     ).toBeVisible({
@@ -36,8 +37,9 @@ test('aucune violation grave sur les écrans d’enregistrement', async ({
 test('aucune violation grave sur l’écran caméra', async ({ page }) => {
     await page.goto(RECORD_LINK);
 
+    await skipFirstRun(page);
     await page.getByRole('button', { name: /en vous filmant/i }).click();
-    await page.getByRole('button', { name: /je suis prêt/i }).click();
+    await page.getByRole('button', { name: /ouvrir la caméra/i }).click();
 
     await expect(page.getByLabel(/ce que voit la caméra/i)).toBeVisible({
         timeout: 15_000,

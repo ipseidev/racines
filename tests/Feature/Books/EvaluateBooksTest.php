@@ -72,10 +72,21 @@ it('pose la date de maturité une seule fois', function (): void {
         ->toBe($premiere?->toIso8601String());
 });
 
-it('propose le format et accorde une prolongation à M+12', function (): void {
-    $project = Project::factory()->create([
+/*
+ * Les deux échéances se lisent sur **le projet**, plus sur un compteur de
+ * mois (R-2, v3.0).
+ *
+ * L'offre cœur vend 52 questions : au rythme le plus lent la collecte dure
+ * deux ans, et « dormance à M+15 » endormait le projet alors qu'il restait la
+ * moitié des questions à poser. Les tests posent donc les dates qu'un vrai
+ * projet porte, au lieu de compter des mois depuis le départ.
+ */
+it('propose le format et accorde une prolongation à la fin de la collecte', function (): void {
+    $project = Project::factory()->core()->create([
         'status' => ProjectStatus::Active,
         'collection_started_at' => now()->subMonths(12)->subDay(),
+        'collection_ends_at' => now()->subDay(),
+        'finalization_ends_at' => now()->addMonths(3),
     ]);
     storyWithWords($project, 4_000, 'childhood');
 
@@ -88,9 +99,11 @@ it('propose le format et accorde une prolongation à M+12', function (): void {
 });
 
 it('n’accorde jamais deux prolongations', function (): void {
-    $project = Project::factory()->create([
+    $project = Project::factory()->core()->create([
         'status' => ProjectStatus::Active,
         'collection_started_at' => now()->subMonths(12)->subDay(),
+        'collection_ends_at' => now()->subDay(),
+        'finalization_ends_at' => now()->addMonths(3),
     ]);
     storyWithWords($project, 4_000, 'childhood');
 
@@ -107,10 +120,12 @@ it('n’accorde jamais deux prolongations', function (): void {
         ->toBe($premiere?->toIso8601String());
 });
 
-it('rend le projet dormant à M+15, avec un crédit d’impression', function (): void {
-    $project = Project::factory()->create([
+it('rend le projet dormant à la fin de la finalisation, avec un crédit d’impression', function (): void {
+    $project = Project::factory()->core()->create([
         'status' => ProjectStatus::Active,
         'collection_started_at' => now()->subMonths(15)->subDay(),
+        'collection_ends_at' => now()->subMonths(3)->subDay(),
+        'finalization_ends_at' => now()->subDay(),
     ]);
     storyWithWords($project, 2_000, 'childhood');
 

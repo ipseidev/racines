@@ -159,7 +159,14 @@ it('applies the default ttl per type from config', function (): void {
     $expectations = [
         [TokenType::Record, $story, now()->addDays(30)],
         [TokenType::ListenStory, $story, now()->addDays(90)],
-        [TokenType::ListenProject, $familyMember, now()->addMonths(12)],
+        /*
+         * Vingt-sept mois : la fenêtre la plus longue que l'offre peut ouvrir
+         * — 24 mois de collecte au rythme quinzomadaire, plus trois de
+         * finalisation (R-2, v3.0). Douze suffisaient tant que la collecte en
+         * durait douze ; depuis que la durée suit le rythme, un lien délivré
+         * au premier mois d'un projet lent expirait en pleine collecte.
+         */
+        [TokenType::ListenProject, $familyMember, now()->addMonths((int) config('product.tokens.listen_project_months'))],
         [TokenType::Invitation, $story->narrator, now()->addDays(30)],
         [TokenType::Action, $story->project, now()->addDays(14)],
         [TokenType::NarratorSpace, $story->narrator, now()->addDays(30)],

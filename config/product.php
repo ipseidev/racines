@@ -60,7 +60,19 @@ return [
     // Durées de vie des jetons (glossaire §4, doc 04 §12)
     'tokens' => [
         'record_days' => 30,
-        'listen_project_months' => 12,
+        /*
+         * Vingt-sept mois : la fenêtre la plus longue que l'offre peut
+         * ouvrir (24 mois de collecte au rythme quinzomadaire, plus les trois
+         * de finalisation — R-2, v3.0).
+         *
+         * Douze mois suffisaient tant que la collecte en durait douze. Depuis
+         * que la durée suit le rythme, un lien d'écoute délivré au premier
+         * mois d'un projet lent expirait en pleine collecte : le proche
+         * perdait l'accès aux histoires pendant qu'elles arrivaient encore.
+         * Un lien qui survit au projet ne coûte rien — il reste révocable et
+         * borné à ce projet ; un lien qui meurt avant lui casse la promesse.
+         */
+        'listen_project_months' => 27,
         'listen_story_days' => 90,
         'invitation_days' => 30,
         'action_days' => 14,
@@ -126,9 +138,20 @@ return [
     // Offre et durées (R-2)
     'offer' => [
         'pilot_weeks' => 12,
-        'core_months' => 12,
+
+        /*
+         * Ce que l'offre cœur vend : **52 questions**, pas douze mois (R-2,
+         * v3.0). Le rythme choisi par le narrateur décide du temps qu'elles
+         * prennent — un an à une par semaine, six mois à deux, quatre mois à
+         * trois, deux ans tous les quinze jours.
+         *
+         * « 12 mois de collecte » donnait un contenu différent selon le
+         * rythme, au même prix : 26 histoires pour l'un, 104 pour l'autre.
+         * Le nombre de questions est ce que la famille achète, et c'est lui
+         * qui ne bouge pas.
+         */
+        'core_questions' => 52,
         'finalization_months' => 3,
-        'dormant_after_months' => 15,
     ],
 
     // Histoires : fenêtre de restauration de la corbeille (R-4)

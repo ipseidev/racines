@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { skipFirstRun } from './support/first-run';
 
 /**
  * Le parcours nominal, joué dans un vrai navigateur avec un micro simulé.
@@ -57,12 +58,20 @@ test('un narrateur enregistre, met en pause, reprend et envoie', async ({
     // Écran 1 — l'explication précède la demande de micro.
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await skipFirstRun(page);
     await page.getByRole('button', { name: /avec votre voix/i }).click();
-    const ready = page.getByRole('button', { name: /je suis prêt/i });
-    await expect(ready).toBeVisible();
 
-    // Écran 2 et 3 — permission puis enregistrement.
-    await ready.click();
+    /*
+     * Le choix mène directement au grand bouton (T-248).
+     *
+     * Il y avait ici un écran « Je suis prêt·e » qui ne faisait que confirmer
+     * une intention déjà exprimée. L'explication du micro, elle, précède
+     * toujours la demande d'autorisation — c'est ce que la ligne suivante
+     * vérifie, et c'est l'engagement de doc 04 §9.
+     */
+    await expect(
+        page.getByText(/autorisation d’utiliser le micro/i),
+    ).toBeVisible();
 
     const start = page.getByRole('button', { name: /^commencer$/i });
     await expect(start).toBeVisible({ timeout: 15_000 });
@@ -103,8 +112,8 @@ test('la confirmation ne s’affiche jamais avant l’envoi', async ({ page }) =
     );
 
     // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await skipFirstRun(page);
     await page.getByRole('button', { name: /avec votre voix/i }).click();
-    await page.getByRole('button', { name: /je suis prêt/i }).click();
     await expect(
         page.getByRole('button', { name: /^commencer$/i }),
     ).toBeVisible({

@@ -494,16 +494,16 @@ return [
         ],
 
         /*
-         * Les cinq accords sont donnés par le bouton « J'accepte », sans case
+         * Les six accords sont donnés par le bouton « J'accepte », sans case
          * à cocher (T-233). Rien n'est pré-coché : un accord donné par un
          * geste explicite n'est pas une case remplie d'avance. Ils restent
-         * cinq lignes distinctes dans le journal, chacune révocable seule.
-         * `before_accept` se lit juste au-dessus du bouton et nomme les cinq :
+         * six lignes distinctes dans le journal, chacune révocable seule.
+         * `before_accept` se lit juste au-dessus du bouton et nomme les six :
          * leurs textes complets sont repliés sous les boutons.
          */
         'consents' => [
             'title' => 'I suoi consensi',
-            'summary' => 'I testi completi dei cinque consensi, e la loro versione.',
+            'summary' => 'I testi completi dei sei consensi, e la loro versione.',
             'before_accept' => 'Premendo “Accetto”, dà i sei consensi descritti più sotto: la registrazione della sua voce, la sua trascrizione, la messa in forma del testo da parte di un’intelligenza artificiale, la condivisione con i suoi cari, gli argomenti delicati che i suoi racconti possono toccare, e l’invio di ogni storia ai suoi cari appena è pronta.',
             'sharing_note' => 'Non dovrà fare nulla dopo ogni racconto. Potrà tenere per sé qualunque storia e interrompere questo invio quando vuole, dalla sua area personale.',
             'intro' => 'Tocchi un consenso per leggerne il testo. Ognuno è separato, e ognuno si può ritirare quando vuole, indipendentemente dagli altri.',

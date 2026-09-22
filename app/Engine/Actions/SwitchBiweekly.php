@@ -49,6 +49,16 @@ final readonly class SwitchBiweekly implements OneTapAction
         $project->cadence = Cadence::Biweekly;
         $project->save();
 
+        /*
+         * La fenêtre s'allonge d'autant (R-2, v3.0).
+         *
+         * Le moteur propose ce ralentissement à quelqu'un qui peine : sans
+         * cette ligne, accepter son aide reviendrait à renoncer à la moitié
+         * des questions achetées. L'offre vend un nombre de questions, pas
+         * une durée — ralentir prend plus de temps, pas moins de récits.
+         */
+        $project->rescheduleWindowForCadence();
+
         // Le prochain envoi est recalculé **et posé** tout de suite : sans
         // ça, la question suivante partirait à l'ancien rythme et le geste
         // paraîtrait sans effet.

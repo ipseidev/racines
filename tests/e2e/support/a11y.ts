@@ -35,12 +35,39 @@ export async function settled(page: Page): Promise<void> {
     );
 }
 
+/**
+ * Ramène les animations sans fin à leur première image, et les arrête.
+ *
+ * `settled()` les **ignore**, faute de pouvoir les attendre — et cela a
+ * suffi tant qu'elles ne touchaient rien de lisible : un halo, une onde. La
+ * carte de la question en porte deux depuis le 21 septembre 2026, dont une
+ * bordure qui tourne, et le scan s'est mis à tomber une fois sur six sur un
+ * contraste que personne ne revoyait ensuite.
+ *
+ * Ignorer une animation, c'est la mesurer à une image tirée au sort ; la
+ * figer à son image zéro, c'est mesurer un état défini, celui que la page
+ * occupe au repos. Le second est reproductible, et c'est tout ce qu'on
+ * demande à une garde : échouer pour une raison, jamais pour la charge de la
+ * machine (T-161).
+ */
+async function freezeEndless(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        for (const animation of document.getAnimations()) {
+            if ((animation.effect?.getTiming().iterations ?? 1) === Infinity) {
+                animation.currentTime = 0;
+                animation.pause();
+            }
+        }
+    });
+}
+
 /** Les violations qui bloquent : `serious` et `critical`, page posée. */
 export async function blockingViolations(
     page: Page,
     tags: string[] = DEFAULT_TAGS,
 ) {
     await settled(page);
+    await freezeEndless(page);
 
     const results = await new AxeBuilder({ page }).withTags(tags).analyze();
 

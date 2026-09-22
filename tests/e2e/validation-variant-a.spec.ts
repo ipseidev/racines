@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { skipFirstRun } from './support/first-run';
 
 /**
  * Variante A : les trois choix arrivent juste après la confirmation.
@@ -34,8 +35,8 @@ async function recordAndSend(page: Page, link: string): Promise<void> {
     await page.goto(link);
 
     // L'écran du choix précède tout (T-210) : la voix reste le défaut.
+    await skipFirstRun(page);
     await page.getByRole('button', { name: /avec votre voix/i }).click();
-    await page.getByRole('button', { name: /je suis prêt/i }).click();
 
     const start = page.getByRole('button', { name: /^commencer$/i });
     await expect(start).toBeVisible({ timeout: 15_000 });
@@ -78,10 +79,17 @@ test('aucune question après la confirmation : on annonce, et la sortie reste ou
     // Aucun minuteur : une hésitation n'est pas un consentement.
     await expect(page.locator('progress')).toHaveCount(0);
 
-    // On annonce ce qui va se passer…
-    await expect(page.getByRole('status')).toContainText(
-        /vos proches pourront/i,
-    );
+    /*
+     * On annonce ce qui va se passer…
+     *
+     * Deux régions vivantes sur cet écran, et c'est voulu : la confirmation
+     * de l'enregistrement, puis ce qu'il advient du récit. Ce sont deux
+     * nouvelles distinctes, et un lecteur d'écran doit dire les deux — d'où
+     * le filtre plutôt qu'un `getByRole('status')` qui les confondrait.
+     */
+    await expect(
+        page.getByRole('status').filter({ hasText: /vos proches pourront/i }),
+    ).toBeVisible();
 
     // …et la sortie de ce récit-là est à un doigt : un accord permanent
     // n'est pas un engagement histoire par histoire.
@@ -89,7 +97,15 @@ test('aucune question après la confirmation : on annonce, et la sortie reste ou
         name: /garder celle-ci pour moi/i,
     });
     await expect(keep).toBeVisible();
-    expect((await keep.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    /*
+     * Arrondi au pixel : Chromium rend ce bouton à 43,99997 px pour un
+     * `min-h-[2.75rem]` qui vaut 44 px exactement — une quantification de sa
+     * boîte, pas une cible trop petite. Comparer brut faisait échouer un test
+     * d'accessibilité sur trois cent-millièmes de pixel.
+     */
+    expect(
+        Math.round((await keep.boundingBox())?.height ?? 0),
+    ).toBeGreaterThanOrEqual(44);
 
     // Et la page dit qu'on peut la quitter : rien n'attend plus personne.
     await expect(
@@ -98,7 +114,9 @@ test('aucune question après la confirmation : on annonce, et la sortie reste ou
 
     await keep.click();
 
-    await expect(page.getByRole('status')).toContainText(/reste pour vous/i);
+    await expect(
+        page.getByRole('status').filter({ hasText: /reste pour vous/i }),
+    ).toBeVisible();
 });
 
 test('la variante B ne pose aucune question à l’enregistrement', async ({

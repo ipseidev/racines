@@ -100,11 +100,20 @@ final readonly class ProjectSettingsController
             'address_form' => ['required', new Enum(AddressForm::class)],
         ]);
 
+        $rythmeChange = $project->cadence->value !== $validated['cadence'];
+
         $project->fill($validated);
         // Recalculé tout de suite : sinon le réglage paraîtrait sans effet
         // jusqu'à la semaine suivante.
         $project->next_prompt_at = $this->schedule->handle($project);
         $project->save();
+
+        // L'offre vend 52 questions : ralentir allonge la fenêtre, accélérer
+        // la raccourcit (R-2, v3.0). Seulement si le rythme a bougé — le jour
+        // et le créneau ne changent rien à la durée.
+        if ($rythmeChange) {
+            $project->rescheduleWindowForCadence();
+        }
 
         return back()->with('status', __('initiator.settings.saved'));
     }

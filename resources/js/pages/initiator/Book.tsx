@@ -12,6 +12,7 @@ import {
     External,
     ToTop,
 } from '@/components/space/Icons';
+import { Gauge } from '@/components/space/Gauge';
 import { PageHeader } from '@/components/space/PageHeader';
 import { useSpacePath } from '@/hooks/useSpacePath';
 import { useT } from '@/hooks/useT';
@@ -33,7 +34,7 @@ type Chapter = {
     qrActive: boolean;
 };
 
-type Gauge = {
+type BookGauge = {
     words: number;
     minWords: number;
     audioMinutes: number;
@@ -47,7 +48,7 @@ type Gauge = {
 
 type Props = {
     narratorFirstName: string;
-    gauge: Gauge;
+    gauge: BookGauge;
     book: {
         status: string;
         statusLabel: string;
@@ -123,33 +124,6 @@ export default function Book({
         );
     };
 
-    const measures = [
-        {
-            key: 'words',
-            label: t('initiator.book.gauge.words'),
-            value: gauge.words,
-            min: gauge.minWords,
-        },
-        {
-            key: 'audio',
-            label: t('initiator.book.gauge.audio'),
-            value: gauge.audioMinutes,
-            min: gauge.minAudioMinutes,
-        },
-        {
-            key: 'pages',
-            label: t('initiator.book.gauge.pages'),
-            value: gauge.pages,
-            min: gauge.minPages,
-        },
-        {
-            key: 'themes',
-            label: t('initiator.book.gauge.themes'),
-            value: gauge.themes,
-            min: gauge.minThemes,
-        },
-    ];
-
     return (
         <>
             <Head title={t('initiator.book.eyebrow')} />
@@ -171,44 +145,18 @@ export default function Book({
                     {t('initiator.book.gauge.title')}
                 </h2>
 
-                <ul className="mt-5 grid gap-4 sm:grid-cols-2">
-                    {measures.map((measure) => {
-                        const done = measure.value >= measure.min;
-                        const ratio = Math.min(
-                            100,
-                            Math.round((measure.value / measure.min) * 100),
-                        );
-
-                        return (
-                            <li key={measure.key}>
-                                <div className="flex items-baseline justify-between gap-3">
-                                    <span className="text-[0.9375rem] font-medium">
-                                        {measure.label}
-                                    </span>
-                                    <span className="text-brand-muted text-[0.9375rem] tabular-nums">
-                                        {measure.value} / {measure.min}
-                                    </span>
-                                </div>
-
-                                {/*
-                                 * `role="img"` avec un texte de remplacement :
-                                 * une barre colorée ne dit rien à un lecteur
-                                 * d'écran, et le chiffre est déjà au-dessus.
-                                 */}
-                                <div
-                                    role="img"
-                                    aria-label={`${measure.label} : ${measure.value} sur ${measure.min}`}
-                                    className="bg-brand-line mt-2 h-2 w-full overflow-hidden rounded-full"
-                                >
-                                    <div
-                                        className={`h-full rounded-full transition-[width] duration-700 ${done ? 'bg-brand' : 'bg-brand-muted'}`}
-                                        style={{ width: `${ratio}%` }}
-                                    />
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
+                <div className="mt-5">
+                    <Gauge
+                        words={gauge.words}
+                        audioMinutes={gauge.audioMinutes}
+                        pages={gauge.pages}
+                        themes={gauge.themes}
+                        minWords={gauge.minWords}
+                        minAudioMinutes={gauge.minAudioMinutes}
+                        minPages={gauge.minPages}
+                        minThemes={gauge.minThemes}
+                    />
+                </div>
 
                 <p className="text-brand-muted mt-5 text-base">
                     {gauge.ready

@@ -35,7 +35,7 @@ export function brandColors(read: (token: string) => string): string[] {
 
 const SHAPES: Record<Celebration, Options> = {
     // Une pluie légère : la personne a quatre-vingts ans et vient de donner
-    // cinq accords. On la félicite, on ne l'assourdit pas.
+    // six accords. On la félicite, on ne l'assourdit pas.
     soft: {
         particleCount: 30,
         spread: 55,

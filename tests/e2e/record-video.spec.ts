@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { skipFirstRun } from './support/first-run';
 
 /**
  * Se filmer plutôt que s'enregistrer (T-210).
@@ -36,6 +37,8 @@ test('une narratrice se filme, se revoit et envoie', async ({ page }) => {
 
     await page.goto(VIDEO_LINK);
 
+    await skipFirstRun(page);
+
     // Écran 0 — le choix, avant toute autorisation. La voix est le premier
     // bouton : c'est le défaut, et se filmer intimide.
     const voix = page.getByRole('button', { name: /avec votre voix/i });
@@ -46,10 +49,11 @@ test('une narratrice se filme, se revoit et envoie', async ({ page }) => {
 
     await video.click();
 
-    // L'explication parle de la caméra, pas seulement du micro.
+    // L'explication parle de la caméra, pas seulement du micro — et elle
+    // précède la demande d'autorisation, qui part au clic suivant.
     await expect(page.getByText(/micro et la caméra/i)).toBeVisible();
 
-    await page.getByRole('button', { name: /je suis prêt/i }).click();
+    await page.getByRole('button', { name: /ouvrir la caméra/i }).click();
 
     // L'écran caméra prend tout l'écran (T-212) : l'aperçu occupe la page,
     // la question se lit par-dessus, et on peut encore sortir.

@@ -40,6 +40,7 @@ use Spatie\ModelStates\HasStates;
  * @property string|null $question_id
  * @property string|null $custom_question_text
  * @property int $sequence
+ * @property int|null $queue_order
  * @property StoryState $state
  * @property string|null $previous_state
  * @property CarbonImmutable|null $proposed_at
@@ -82,7 +83,7 @@ final class Story extends Model implements HasMedia
 
     /** @var list<string> */
     protected $fillable = [
-        'question_id', 'custom_question_text', 'sequence', 'proposed_at',
+        'question_id', 'custom_question_text', 'sequence', 'queue_order', 'proposed_at',
         'share_decision', 'share_decided_at', 'visibility', 'answer_type',
         'written_answer', 'title',
     ];

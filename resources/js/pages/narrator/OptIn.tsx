@@ -65,7 +65,7 @@ const DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
  * ne monte. La page est rendue dessous dès le départ — le rideau est un décor,
  * pas une étape — et elle redit tout ce que l'ouverture a dit.
  *
- * Les cinq accords sont énoncés en clair, sans case à cocher, et c'est le
+ * Les six accords sont énoncés en clair, sans case à cocher, et c'est le
  * bouton « J'accepte » qui les donne (T-233) : une personne de quatre-vingts
  * ans n'a pas cinq cases à trouver, et rien n'est pré-coché — un accord donné
  * par un geste explicite n'est pas une case remplie d'avance. Le serveur les
@@ -108,7 +108,7 @@ export default function OptIn({
     const [overtureDone, setOvertureDone] = useState(false);
 
     const form = useForm<Record<string, string | number | boolean>>({
-        // Les cinq accords partent avec « J'accepte » : le bouton est l'acte,
+        // Les six accords partent avec « J'accepte » : le bouton est l'acte,
         // la liste au-dessus de lui dit ce qu'il donne. Le serveur exige
         // toujours les cinq, et les journalise un par un.
         consent_voice_recording: true,
@@ -174,9 +174,22 @@ export default function OptIn({
      * là, aucun des deux n'est « le bon ».
      */
     const buttonSize =
-        'press min-h-[3.5rem] flex-1 py-4 text-lg disabled:opacity-60';
+        'press min-h-[3.5rem] min-w-0 flex-1 py-4 text-lg disabled:opacity-60';
     const pair = `btn-secondary ${buttonSize}`;
-    const acceptButton = `btn-primary ${buttonSize}`;
+
+    /*
+     * Un contour transparent de 2 px sur le oui, et ce n'est pas cosmétique.
+     *
+     * Avec `flex: 1 1 0%`, l'espace libre se répartit **après** les bordures :
+     * « Non merci » porte le contour de marque, « J'accepte » n'en a pas, et
+     * le refus sortait 4 px plus large. Quatre pixels ne se voient pas — mais
+     * la règle de cet écran est que le refus pèse exactement autant que
+     * l'accord, et une règle qui tient à l'épaisseur d'un trait ne tient pas.
+     *
+     * Le fond déborde jusqu'au bord de la bordure (`background-clip` vaut
+     * `border-box` par défaut) : rien ne change à l'œil.
+     */
+    const acceptButton = `btn-primary border-2 border-transparent ${buttonSize}`;
 
     // Le champ de contact suit le canal : un numéro pour les SMS, une adresse
     // pour le courriel, les deux pour « les deux ». Rien d'autre à l'écran.
@@ -501,7 +514,7 @@ export default function OptIn({
 
                         {/*
                          * Ce que le geste donne, dit juste au-dessus du geste : les
-                         * cinq accords, nommés. Leurs textes sont repliés dessous,
+                         * six accords, nommés. Leurs textes sont repliés dessous,
                          * mais un consentement éclairé se lit avant le bouton, pas
                          * après.
                          */}

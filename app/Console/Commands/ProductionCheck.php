@@ -148,7 +148,7 @@ final class ProductionCheck extends Command
      * de désactiver l'endpoint — soit la punition exacte de T-169, pour un
      * acheteur qui a simplement coché une case.
      *
-     * Les cinq accords du narrateur comptent autant : sans eux, la page
+     * Les six accords du narrateur comptent autant : sans eux, la page
      * d'opt-in ne peut pas s'afficher, et le cadeau n'a nulle part où aller.
      *
      * Cette ligne existe parce que `prod:demo` a trouvé le trou que

@@ -13,22 +13,40 @@ import {
     Trash,
 } from '@/components/space/Icons';
 import { PageHeader } from '@/components/space/PageHeader';
+import { useFormat } from '@/hooks/useFormat';
 import { useSpacePath } from '@/hooks/useSpacePath';
 import { useT } from '@/hooks/useT';
 import { stagger } from '@/lib/motion';
-import { move, toTop } from '@/lib/queue';
+import { move, shownCount, toTop } from '@/lib/queue';
 
-type Question = {
+/**
+ * Une entrée de la file d'envoi.
+ *
+ * `question` vient du fonds proposé et s'écarte ; `story` est une question
+ * écrite par la famille, déjà proposée, qui se retire. Les deux partagent un
+ * rang, et c'est ce qui leur permet de se doubler.
+ */
+type Entry = {
+    kind: 'story' | 'question';
     id: string;
     text: string;
-    theme: string;
+    theme: string | null;
+    themeLabel: string | null;
+    photos: number;
+    /** La date d'envoi, sur les huit premières seulement. */
+    sendAt: string | null;
+};
+
+type Archived = {
+    id: string;
+    text: string;
     themeLabel: string;
 };
 
 type Props = {
-    queue: Question[];
-    excluded: Question[];
-    asked: Question[];
+    next: Entry[];
+    excluded: Archived[];
+    asked: Archived[];
     narratorFirstName: string | null;
 };
 
@@ -40,52 +58,52 @@ const MAX_PHOTOS = 4;
 /** L'ordre part de lui-même, sept dixièmes de seconde après le dernier geste. */
 const SAVE_DELAY = 700;
 
-/**
- * Combien de questions comptent vraiment « bientôt ».
- *
- * Une par envoi, une par semaine : huit, c'est deux mois. Au-delà, l'ordre est
- * une intention, pas une décision — et le montrer sous forme de liste à
- * réordonner donnait une file de soixante-cinq rangs à trier à la main.
- */
-const IMMINENT = 8;
+/** Dix questions d'abord, vingt de plus à chaque « Voir plus ». */
+const PAGE = 10;
+const STEP = 20;
 
 /**
- * Le corpus et la file, côte à côte.
+ * Les questions posées à la narratrice : **une seule liste, datée**.
  *
- * **Ce que la page cachait.** La file *est* le corpus : soixante-cinq
- * questions actives, soixante-cinq dans la file. L'écran les présentait donc
- * toutes comme « les prochaines questions », cinq à la fois, avec « Voir dix
- * de plus » — et aucun moyen d'en **chercher** une. Le thème était affiché sur
- * chaque carte sans servir à rien : ni filtre, ni regroupement. Réordonner se
- * faisait un cran à la fois. Les écartées disparaissaient sans retour visible.
- * Et la question personnelle, l'acte le plus intime de la page, était repliée
- * dans un accordéon.
+ * L'écran en a montré deux — « le corpus » à gauche, « les prochaines » à
+ * droite — et c'était une erreur de conception, la mienne. La file **est** le
+ * fonds de questions : soixante-cinq actives, soixante-cinq dans la file. Les
+ * deux panneaux affichaient donc la même chose deux fois ; mesuré sur l'écran
+ * livré, **sept des huit** questions de droite étaient aussi listées à gauche,
+ * au même instant, avec des boutons différents. Un panneau qui promet
+ * « piochez ici » alors qu'il n'y a rien à piocher ne peut pas être clair.
  *
- * **Deux panneaux, deux rôles.** À gauche le corpus : tout, cherchable,
- * filtrable par thème, avec « Poser bientôt » qui remonte en tête. À droite ce
- * qui part vraiment dans les deux prochains mois, dans l'ordre, qu'on réordonne
- * en glissant. Sur téléphone, deux onglets — deux panneaux côte à côte sur
- * 390 px ne sont pas deux panneaux, ce sont deux colonnes illisibles.
+ * Le mot « corpus » disparaît avec lui : c'est le vocabulaire du dossier, et
+ * personne n'a à l'apprendre pour ranger des questions.
  *
- * **Le glisser-déposer ne remplace pas les flèches, il s'y ajoute.** Un
- * glisser n'existe ni au clavier ni pour une main qui tremble (WCAG 2.1.1 et
- * 2.5.7 : tout geste de pointage doit avoir son équivalent simple). Les flèches
- * et « Poser en premier » restent donc, et ce sont elles que les tests
- * exercent. Le commentaire qui disait « l'ordre se change par des boutons et
- * non par glisser-déposer, ça coûte plus que ça ne rend » tombe : il valait
- * pour une liste de cinq sur un téléphone, pas pour soixante-cinq sur un
- * écran large.
+ * **Ce qui rend la liste lisible, c'est la date.** L'écran répond à « quelle
+ * question, quand », et ne disait le quand nulle part — seul le tableau de
+ * bord portait une date. Les premières cartes portent la leur, et la suite de
+ * la liste cesse d'être un réservoir mystérieux : ce sont les questions des
+ * semaines d'après. Au-delà de huit, plus de date : une pause ou un changement
+ * de rythme décalerait tout, et une date qu'on ne tient pas vaut moins que pas
+ * de date.
+ *
+ * La recherche et les thèmes **filtrent cette liste**, ils n'en ouvrent pas
+ * une seconde. Chercher « guerre » montre les questions concernées, et quand
+ * elles tomberaient.
+ *
+ * Le glisser-déposer s'ajoute aux flèches, il ne les remplace pas : un glisser
+ * n'existe ni au clavier ni pour une main qui tremble (WCAG 2.1.1 et 2.5.7).
+ * Il se retire pendant un filtrage, où « déposer ici » ne voudrait rien dire —
+ * les rangs affichés ne sont plus contigus.
  *
  * Le narrateur, lui, garde le droit de ne pas répondre : sa souveraineté vit
- * là, pas dans le corpus.
+ * là, pas dans la liste.
  */
 export default function Questions({
-    queue,
+    next: serverNext,
     excluded,
     asked,
     narratorFirstName,
 }: Props) {
     const t = useT();
+    const fmt = useFormat();
     const spacePath = useSpacePath();
     const name = narratorFirstName;
 
@@ -94,26 +112,20 @@ export default function Questions({
             ? t('initiator.questions.title_generic')
             : t('initiator.questions.title', { name });
 
-    const [order, setOrder] = useState<string[]>(() =>
-        queue.map((question) => question.id),
-    );
+    const [next, setNext] = useState<Entry[]>(serverNext);
+    const [shown, setShown] = useState(PAGE);
 
     const timer = useRef<number | null>(null);
     const inflight = useRef(false);
-
-    const byId = useMemo(
-        () => new Map(queue.map((question) => [question.id, question])),
-        [queue],
-    );
 
     // Le serveur a répondu : on reprend son ordre, sauf si un geste attend
     // encore de partir ou qu'un envoi est en cours — ce que la personne vient
     // de faire prime sur ce que le serveur savait avant.
     useEffect(() => {
         if (timer.current === null && !inflight.current) {
-            setOrder(queue.map((question) => question.id));
+            setNext(serverNext);
         }
-    }, [queue]);
+    }, [serverNext]);
 
     useEffect(
         () => () => {
@@ -124,8 +136,8 @@ export default function Questions({
         [],
     );
 
-    const reorder = (next: string[]) => {
-        setOrder(next);
+    const reorder = (entries: Entry[]) => {
+        setNext(entries);
 
         if (timer.current !== null) {
             window.clearTimeout(timer.current);
@@ -137,7 +149,12 @@ export default function Questions({
 
             router.post(
                 spacePath('/questions/ordre'),
-                { order: next },
+                {
+                    order: entries.map((entry) => ({
+                        kind: entry.kind,
+                        id: entry.id,
+                    })),
+                },
                 {
                     preserveScroll: true,
                     preserveState: true,
@@ -155,6 +172,14 @@ export default function Questions({
             { excluded: value },
             { preserveScroll: true, preserveState: true },
         );
+
+    /** Retirer une question qu'on a écrite : elle n'existe que pour ce projet. */
+    const removeOwn = (id: string) =>
+        router.delete(spacePath(`/questions/proposees/${id}`), {
+            preserveScroll: true,
+        });
+
+    /* --- La question que la famille écrit ------------------------------ */
 
     /*
      * Le formulaire porte des fichiers : `forceFormData` pour qu'Inertia les
@@ -222,20 +247,23 @@ export default function Questions({
         setPreviews((current) => current.filter((_, i) => i !== index));
     };
 
-    /* --- Le corpus : recherche et thèmes ------------------------------- */
+    /* --- Chercher et filtrer, dans cette liste-ci ----------------------- */
 
     const [search, setSearch] = useState('');
     const [theme, setTheme] = useState<string | null>(null);
-    const [tab, setTab] = useState<'next' | 'corpus'>('next');
 
-    /** Les thèmes du corpus, comptés, dans l'ordre où ils y apparaissent. */
+    /** Les thèmes présents, comptés, dans l'ordre où ils apparaissent. */
     const themes = useMemo(() => {
         const counts = new Map<string, { label: string; n: number }>();
 
-        for (const question of queue) {
-            const seen = counts.get(question.theme);
-            counts.set(question.theme, {
-                label: question.themeLabel,
+        for (const entry of next) {
+            if (entry.theme === null || entry.themeLabel === null) {
+                continue;
+            }
+
+            const seen = counts.get(entry.theme);
+            counts.set(entry.theme, {
+                label: entry.themeLabel,
                 n: (seen?.n ?? 0) + 1,
             });
         }
@@ -245,12 +273,12 @@ export default function Questions({
             label,
             n,
         }));
-    }, [queue]);
+    }, [next]);
 
     /*
      * La recherche est **sans accents et sans casse** : personne ne tape
      * « épreuve » avec son accent dans un champ de recherche, et ne rien
-     * trouver pour cette raison-là donne l'impression d'un corpus vide.
+     * trouver pour cette raison-là donne l'impression d'une liste vide.
      */
     const fold = (value: string) =>
         value
@@ -259,39 +287,44 @@ export default function Questions({
             .toLowerCase();
 
     const needle = fold(search.trim());
+    const filtering = needle !== '' || theme !== null;
 
-    const corpus = order
-        .map((id) => byId.get(id))
-        .filter((question): question is Question => question !== undefined)
-        .filter((question) => theme === null || question.theme === theme)
-        .filter(
-            (question) => needle === '' || fold(question.text).includes(needle),
-        );
+    const matching = next
+        .filter((entry) => theme === null || entry.theme === theme)
+        .filter((entry) => needle === '' || fold(entry.text).includes(needle));
 
-    /* --- La file : glisser pour réordonner ----------------------------- */
+    // Ce qui est filtré s'affiche en entier ; sinon on déroule par paquets.
+    const rows = filtering
+        ? matching
+        : matching.slice(0, shownCount(matching.length, shown));
+    const remaining = matching.length - rows.length;
+
+    /* --- Glisser pour réordonner ---------------------------------------- */
 
     const [dragged, setDragged] = useState<string | null>(null);
 
-    /** Déplace `id` à l'indice `to`, et enregistre comme les flèches. */
     const dropAt = (id: string, to: number) => {
-        const from = order.indexOf(id);
+        const from = next.findIndex((entry) => entry.id === id);
 
         if (from === -1 || from === to) {
             return;
         }
 
-        const next = [...order];
-        const [picked] = next.splice(from, 1);
-        next.splice(to, 0, picked);
+        const entries = [...next];
+        const [picked] = entries.splice(from, 1);
+        entries.splice(to, 0, picked);
 
-        reorder(next);
+        reorder(entries);
     };
 
-    const next = order.slice(0, IMMINENT);
-    const rest = order.length - next.length;
+    /** Remonter une entrée en tête de file, quelle que soit sa nature. */
+    const promote = (id: string) => {
+        const index = next.findIndex((entry) => entry.id === id);
 
-    const panels =
-        'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10 lg:items-start';
+        if (index > 0) {
+            reorder(toTop(next, index));
+        }
+    };
 
     return (
         <>
@@ -305,69 +338,353 @@ export default function Questions({
                 />
             </div>
 
-            {/*
-             * Les deux onglets du téléphone. Ils ne s'affichent qu'en dessous
-             * de `lg`, où les deux panneaux ne tiennent pas côte à côte ; sur
-             * grand écran les deux sont là et les onglets n'auraient rien à
-             * commuter.
-             */}
-            <div
-                role="tablist"
-                aria-label={t('initiator.nav.questions')}
-                className="enter border-brand-sand mt-8 flex gap-1 border-b lg:hidden"
-                style={stagger(1)}
-            >
-                {(
-                    [
-                        ['next', 'initiator.questions.tab_next'],
-                        ['corpus', 'initiator.questions.tab_corpus'],
-                    ] as const
-                ).map(([key, label]) => (
-                    <button
-                        key={key}
-                        type="button"
-                        role="tab"
-                        aria-selected={tab === key}
-                        onClick={() => setTab(key)}
-                        className={`tab ${tab === key ? 'tab-current' : ''}`}
-                    >
-                        {t(label)}
-                    </button>
-                ))}
-            </div>
-
-            <div className={`mt-8 ${panels}`}>
-                {/* ---- Le corpus ------------------------------------- */}
+            <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
+                {/* ---- La liste, dans l'ordre des envois -------------- */}
                 <section
-                    aria-labelledby="corpus"
-                    className={`enter min-w-0 ${tab === 'corpus' ? '' : 'max-lg:hidden'}`}
-                    style={stagger(2)}
+                    aria-labelledby="list"
+                    className="enter min-w-0"
+                    style={stagger(1)}
                 >
-                    <h2 id="corpus" className="eyebrow">
-                        {t('initiator.questions.corpus_title')}
+                    <h2 id="list" className="eyebrow">
+                        {t('initiator.questions.list_title')}
                     </h2>
 
-                    <p className="text-brand-muted mt-3 text-base">
-                        {t('initiator.questions.corpus_intro', {
-                            count: order.length,
-                        })}
-                    </p>
+                    <label className="mt-4 block">
+                        <span className="sr-only">
+                            {t('initiator.questions.search_all', {
+                                count: next.length,
+                            })}
+                        </span>
+                        <input
+                            type="search"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder={t(
+                                'initiator.questions.search_placeholder',
+                            )}
+                            className="border-brand-sand bg-brand-surface focus:border-brand min-h-[2.75rem] w-full rounded-md border px-4 py-2 outline-none"
+                        />
+                    </label>
 
                     {/*
-                     * La question personnelle sort de l'accordéon.
+                     * Une bande qui défile sur téléphone, et qui se répand
+                     * sur grand écran : dix thèmes sur cinq rangs prenaient
+                     * 212 px avant la première question.
+                     */}
+                    <ul className="-mx-6 mt-3 flex [scrollbar-width:none] gap-2 overflow-x-auto px-6 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+                        {[
+                            {
+                                value: null,
+                                label: t('initiator.questions.theme_all'),
+                                n: next.length,
+                            },
+                            ...themes,
+                        ].map((entry) => (
+                            <li
+                                key={entry.value ?? 'all'}
+                                className="flex-none"
+                            >
+                                <button
+                                    type="button"
+                                    aria-pressed={theme === entry.value}
+                                    onClick={() => setTheme(entry.value)}
+                                    className={`press min-h-[2.25rem] rounded-full border px-3 py-1 text-[0.9rem] transition-colors ${
+                                        theme === entry.value
+                                            ? 'border-brand bg-brand text-brand-foreground'
+                                            : 'border-brand-sand text-brand-muted hover:border-brand hover:text-brand'
+                                    }`}
+                                >
+                                    {entry.label}{' '}
+                                    <span className="tabular-nums opacity-70">
+                                        {entry.n}
+                                    </span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+
+                    {rows.length === 0 ? (
+                        <p className="card mt-5 p-5">
+                            {t(
+                                filtering
+                                    ? 'initiator.questions.no_match'
+                                    : 'initiator.questions.queue_empty',
+                            )}
+                        </p>
+                    ) : (
+                        <ol
+                            aria-labelledby="list"
+                            className="mt-5 flex flex-col gap-3"
+                        >
+                            {rows.map((entry) => {
+                                const index = next.indexOf(entry);
+                                const mine = entry.kind === 'story';
+
+                                return (
+                                    <li
+                                        key={entry.id}
+                                        draggable={!filtering}
+                                        onDragStart={() => setDragged(entry.id)}
+                                        onDragEnd={() => setDragged(null)}
+                                        onDragOver={(event) =>
+                                            event.preventDefault()
+                                        }
+                                        onDrop={(event) => {
+                                            event.preventDefault();
+
+                                            if (dragged !== null) {
+                                                dropAt(dragged, index);
+                                            }
+
+                                            setDragged(null);
+                                        }}
+                                        className={`card p-4 transition-opacity ${
+                                            mine
+                                                ? 'border-l-brand border-l-4'
+                                                : index === 0
+                                                  ? 'border-l-brand-gold border-l-4'
+                                                  : ''
+                                        } ${dragged === entry.id ? 'opacity-40' : ''}`}
+                                    >
+                                        {/*
+                                         * La date d'abord : c'est la réponse à
+                                         * « quand », et c'est elle qui fait
+                                         * comprendre que la suite de la liste
+                                         * n'est pas un réservoir à part.
+                                         */}
+                                        <p className="text-brand-muted flex flex-wrap items-baseline gap-x-3 text-base">
+                                            <span className="tabular-nums">
+                                                {index + 1}
+                                            </span>
+                                            <span>
+                                                {entry.sendAt === null
+                                                    ? t(
+                                                          'initiator.questions.later',
+                                                      )
+                                                    : t(
+                                                          'initiator.questions.sends_on',
+                                                          {
+                                                              date: fmt.dateTime(
+                                                                  entry.sendAt,
+                                                              ),
+                                                          },
+                                                      )}
+                                            </span>
+                                            {mine && (
+                                                <span className="text-brand font-medium">
+                                                    {t(
+                                                        'initiator.questions.pending_badge',
+                                                    )}
+                                                </span>
+                                            )}
+                                        </p>
+
+                                        {/*
+                                         * Les commandes passent **sous** le
+                                         * texte sur téléphone.
+                                         *
+                                         * À 393 px, quatre cibles de 44 px
+                                         * mangeaient la moitié de la largeur
+                                         * et la question tombait sur cinq
+                                         * lignes : la carte mesurait 366 px.
+                                         * Une question doit se lire d'un
+                                         * coup d'œil ; les boutons peuvent
+                                         * attendre la ligne d'en dessous.
+                                         */}
+                                        <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                                            <div className="flex min-w-0 flex-1 items-start gap-3">
+                                                {!filtering && (
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className="text-brand-muted/60 mt-1 flex-none cursor-grab select-none"
+                                                    >
+                                                        <Grip />
+                                                    </span>
+                                                )}
+
+                                                <div className="min-w-0 flex-1">
+                                                    {/*
+                                                     * La question en Fraunces, et
+                                                     * non en Inter.
+                                                     *
+                                                     * C'est ainsi que la
+                                                     * narratrice la lit sur son
+                                                     * téléphone ; la voir dans la
+                                                     * même voix des deux côtés
+                                                     * rappelle qu'on range des
+                                                     * questions à poser, pas des
+                                                     * lignes d'un tableau.
+                                                     *
+                                                     * `data-test` comme ailleurs
+                                                     * dans le dépôt : la carte
+                                                     * porte plusieurs
+                                                     * paragraphes, et une spéc qui
+                                                     * vise « le premier » lirait
+                                                     * la date.
+                                                     */}
+                                                    <p
+                                                        data-test="question-text"
+                                                        className="font-display text-brand text-[1.15rem] leading-snug"
+                                                    >
+                                                        {entry.text}
+                                                    </p>
+                                                    {(entry.themeLabel !==
+                                                        null ||
+                                                        entry.photos > 0) && (
+                                                        <p className="text-brand-muted mt-1 text-[0.8rem] font-semibold tracking-[0.08em] uppercase">
+                                                            {entry.themeLabel ??
+                                                                t(
+                                                                    'initiator.questions.pending_photos',
+                                                                    {
+                                                                        count: entry.photos,
+                                                                    },
+                                                                )}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/*
+                                             * Les quatre commandes sur **une
+                                             * rangée**, en icônes.
+                                             *
+                                             * Empilées avec deux liens en
+                                             * toutes lettres dessous, la carte
+                                             * mesurait 218 px pour une ligne
+                                             * de texte — dix cartes faisaient
+                                             * les deux tiers d'une page de
+                                             * trois mille pixels. Répétés
+                                             * soixante-cinq fois, « Poser en
+                                             * premier » et « Écarter » en
+                                             * clair sont du bruit ; leurs
+                                             * libellés restent pour le clavier
+                                             * et les lecteurs d'écran, et la
+                                             * cible garde ses 44 px.
+                                             */}
+                                            <div className="flex flex-none gap-1.5 max-sm:self-end">
+                                                <IconButton
+                                                    label={t(
+                                                        'initiator.questions.move_up',
+                                                    )}
+                                                    disabled={index === 0}
+                                                    onClick={() =>
+                                                        reorder(
+                                                            move(
+                                                                next,
+                                                                index,
+                                                                -1,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    <ArrowUp />
+                                                </IconButton>
+
+                                                <IconButton
+                                                    label={t(
+                                                        'initiator.questions.move_down',
+                                                    )}
+                                                    disabled={
+                                                        index ===
+                                                        next.length - 1
+                                                    }
+                                                    onClick={() =>
+                                                        reorder(
+                                                            move(
+                                                                next,
+                                                                index,
+                                                                1,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    <ArrowDown />
+                                                </IconButton>
+
+                                                <IconButton
+                                                    label={t(
+                                                        'initiator.questions.first',
+                                                    )}
+                                                    disabled={index === 0}
+                                                    onClick={() =>
+                                                        promote(entry.id)
+                                                    }
+                                                >
+                                                    <ToTop />
+                                                </IconButton>
+
+                                                <IconButton
+                                                    label={t(
+                                                        mine
+                                                            ? 'initiator.questions.remove'
+                                                            : 'initiator.questions.exclude',
+                                                    )}
+                                                    onClick={() =>
+                                                        mine
+                                                            ? removeOwn(
+                                                                  entry.id,
+                                                              )
+                                                            : exclude(
+                                                                  entry.id,
+                                                                  true,
+                                                              )
+                                                    }
+                                                >
+                                                    <Trash />
+                                                </IconButton>
+                                            </div>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    )}
+
+                    {remaining > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => setShown(shown + STEP)}
+                            className="btn-secondary press mt-5"
+                        >
+                            {t('initiator.questions.see_more', {
+                                count: Math.min(remaining, STEP),
+                            })}
+                        </button>
+                    )}
+                </section>
+
+                {/* ---- Ce qui s'écrit, et ce qui est rangé ------------ */}
+                <aside
+                    className="enter min-w-0 max-lg:mt-10"
+                    style={stagger(2)}
+                >
+                    {/*
+                     * La question personnelle, à part et visible.
                      *
                      * C'est l'acte le plus intime de la page — « raconte-nous
                      * ce dont je n'ai jamais osé te parler » —, et il était
                      * replié derrière un chevron, au même rang qu'un réglage.
                      */}
-                    <details className="card group mt-5">
-                        <summary className="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
-                            <span className="bg-brand-linen text-brand inline-flex size-9 flex-none items-center justify-center rounded-full transition-transform duration-300 group-open:rotate-45">
+                    {/*
+                     * Un vrai bouton, et non un titre de carte.
+                     *
+                     * C'était un `<summary>` orné d'un rond : ça ressemblait à
+                     * un en-tête qu'on déplie, pas à l'action la plus
+                     * personnelle de la page. Il porte maintenant la couleur
+                     * d'action de l'espace, comme « Envoyer le lien » sur le
+                     * tableau de bord — c'est le même registre : un geste
+                     * qu'on pose, pas un réglage qu'on ouvre.
+                     *
+                     * `<details>` reste dessous : le clavier l'ouvre sans
+                     * script, et le formulaire ne pèse rien tant qu'il est
+                     * replié.
+                     */}
+                    <details className="group">
+                        <summary className="btn-primary press w-full cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                            <span className="transition-transform duration-300 group-open:rotate-45">
                                 <Plus />
                             </span>
-                            <span className="font-display text-brand text-lg leading-snug font-medium">
-                                {t('initiator.questions.add.title')}
-                            </span>
+                            {t('initiator.questions.add.title')}
                         </summary>
 
                         <form
@@ -392,7 +709,7 @@ export default function Questions({
                                     },
                                 );
                             }}
-                            className="border-brand-sand flex flex-col gap-4 border-t p-4"
+                            className="card mt-3 flex flex-col gap-4 p-4"
                         >
                             <TextAreaField
                                 label={t('initiator.questions.add.label')}
@@ -413,16 +730,6 @@ export default function Questions({
                                 })}
                             />
 
-                            {/*
-                             * Les photos de la question (T-253).
-                             *
-                             * Une famille qui écrit sa propre question a
-                             * souvent l'image sous la main — « raconte-nous
-                             * cette photo » est la question la plus naturelle
-                             * qui soit, et elle ne se pose pas sans l'image.
-                             * Le dépôt existait depuis le bloc 12, mais
-                             * seulement après coup, depuis le tableau de bord.
-                             */}
                             <fieldset className="flex flex-col gap-3">
                                 <legend className="font-medium">
                                     {t('initiator.questions.add.photos')}
@@ -505,110 +812,8 @@ export default function Questions({
                         </form>
                     </details>
 
-                    <label className="mt-5 block">
-                        <span className="sr-only">
-                            {t('initiator.questions.search')}
-                        </span>
-                        <input
-                            type="search"
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            placeholder={t(
-                                'initiator.questions.search_placeholder',
-                            )}
-                            className="border-brand-sand bg-brand-surface focus:border-brand min-h-[2.75rem] w-full rounded-md border px-4 py-2 outline-none"
-                        />
-                    </label>
-
-                    <ul className="mt-3 flex flex-wrap gap-2">
-                        {[
-                            {
-                                value: null,
-                                label: t('initiator.questions.theme_all'),
-                                n: order.length,
-                            },
-                            ...themes,
-                        ].map((entry) => (
-                            <li key={entry.value ?? 'all'}>
-                                <button
-                                    type="button"
-                                    aria-pressed={theme === entry.value}
-                                    onClick={() => setTheme(entry.value)}
-                                    className={`press min-h-[2.25rem] rounded-full border px-3 py-1 text-[0.9rem] transition-colors ${
-                                        theme === entry.value
-                                            ? 'border-brand bg-brand text-brand-foreground'
-                                            : 'border-brand-sand text-brand-muted hover:border-brand hover:text-brand'
-                                    }`}
-                                >
-                                    {entry.label}{' '}
-                                    <span className="tabular-nums opacity-70">
-                                        {entry.n}
-                                    </span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-
-                    {corpus.length === 0 ? (
-                        <p className="card mt-5 p-5">
-                            {t('initiator.questions.no_match')}
-                        </p>
-                    ) : (
-                        <ul className="mt-5 flex flex-col gap-2">
-                            {corpus.map((question) => {
-                                const rank = order.indexOf(question.id);
-
-                                return (
-                                    <li
-                                        key={question.id}
-                                        className="card flex flex-wrap items-baseline gap-x-4 gap-y-2 p-4"
-                                    >
-                                        <p className="min-w-0 flex-1 leading-snug">
-                                            {question.text}
-                                            <span className="text-brand-muted ml-2 text-[0.8rem] font-semibold tracking-[0.08em] uppercase">
-                                                {question.themeLabel}
-                                            </span>
-                                        </p>
-
-                                        <div className="flex flex-none gap-x-4 text-base">
-                                            {rank >= IMMINENT && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        reorder(
-                                                            toTop(order, rank),
-                                                        )
-                                                    }
-                                                    className="text-brand press inline-flex min-h-[2.75rem] items-center gap-1.5 font-medium underline-offset-4 hover:underline"
-                                                >
-                                                    <ToTop />
-                                                    {t(
-                                                        'initiator.questions.soon',
-                                                    )}
-                                                </button>
-                                            )}
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    exclude(question.id, true)
-                                                }
-                                                className="text-brand-muted hover:text-brand press inline-flex min-h-[2.75rem] items-center gap-1.5 underline-offset-4 hover:underline"
-                                            >
-                                                <Trash />
-                                                {t(
-                                                    'initiator.questions.exclude',
-                                                )}
-                                            </button>
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    )}
-
                     {excluded.length > 0 && (
-                        <details className="mt-8">
+                        <details className="mt-6">
                             <summary className="eyebrow cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                                 {t('initiator.questions.excluded_count', {
                                     count: excluded.length,
@@ -661,186 +866,7 @@ export default function Questions({
                             </ul>
                         </details>
                     )}
-                </section>
-
-                {/* ---- Les prochaines -------------------------------- */}
-                <section
-                    aria-labelledby="next"
-                    className={`enter min-w-0 max-lg:mt-8 ${tab === 'next' ? '' : 'max-lg:hidden'}`}
-                    style={stagger(3)}
-                >
-                    <h2 id="next" className="eyebrow">
-                        {t('initiator.questions.next_title')}
-                    </h2>
-
-                    <p className="text-brand-muted mt-3 text-base">
-                        {t('initiator.questions.next_intro')}
-                    </p>
-
-                    {next.length === 0 ? (
-                        <p className="card mt-5 p-5">
-                            {t('initiator.questions.queue_empty')}
-                        </p>
-                    ) : (
-                        <ol
-                            aria-labelledby="next"
-                            className="mt-5 flex flex-col gap-3"
-                        >
-                            {next.map((id, index) => {
-                                const question = byId.get(id);
-
-                                if (question === undefined) {
-                                    return null;
-                                }
-
-                                return (
-                                    <li
-                                        key={id}
-                                        draggable
-                                        onDragStart={() => setDragged(id)}
-                                        onDragEnd={() => setDragged(null)}
-                                        onDragOver={(event) =>
-                                            event.preventDefault()
-                                        }
-                                        onDrop={(event) => {
-                                            event.preventDefault();
-
-                                            if (dragged !== null) {
-                                                dropAt(dragged, index);
-                                            }
-
-                                            setDragged(null);
-                                        }}
-                                        className={`card p-4 transition-opacity ${
-                                            index === 0
-                                                ? 'border-l-brand-gold border-l-4'
-                                                : ''
-                                        } ${dragged === id ? 'opacity-40' : ''}`}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            {/*
-                                             * La poignée est décorative : ce
-                                             * qui se glisse est la carte
-                                             * entière, et ce qui se fait au
-                                             * clavier passe par les flèches
-                                             * ci-contre.
-                                             */}
-                                            <span
-                                                aria-hidden="true"
-                                                className="text-brand-muted/60 mt-1 flex-none cursor-grab select-none"
-                                            >
-                                                <Grip />
-                                            </span>
-
-                                            <span
-                                                aria-hidden="true"
-                                                className="bg-brand-linen text-brand font-display inline-flex size-8 flex-none items-center justify-center rounded-full text-base font-semibold tabular-nums"
-                                            >
-                                                {index + 1}
-                                            </span>
-
-                                            <div className="min-w-0 flex-1">
-                                                <span className="sr-only">
-                                                    {t(
-                                                        'initiator.questions.position',
-                                                        { n: index + 1 },
-                                                    )}
-                                                </span>
-                                                <p className="leading-snug">
-                                                    {question.text}
-                                                </p>
-                                                <p className="text-brand-muted mt-1.5 text-[0.8rem] font-semibold tracking-[0.08em] uppercase">
-                                                    {question.themeLabel}
-                                                </p>
-                                            </div>
-
-                                            <div className="flex flex-none flex-col gap-2">
-                                                <IconButton
-                                                    label={t(
-                                                        'initiator.questions.move_up',
-                                                    )}
-                                                    disabled={index === 0}
-                                                    onClick={() =>
-                                                        reorder(
-                                                            move(
-                                                                order,
-                                                                index,
-                                                                -1,
-                                                            ),
-                                                        )
-                                                    }
-                                                >
-                                                    <ArrowUp />
-                                                </IconButton>
-
-                                                <IconButton
-                                                    label={t(
-                                                        'initiator.questions.move_down',
-                                                    )}
-                                                    disabled={
-                                                        index ===
-                                                        order.length - 1
-                                                    }
-                                                    onClick={() =>
-                                                        reorder(
-                                                            move(
-                                                                order,
-                                                                index,
-                                                                1,
-                                                            ),
-                                                        )
-                                                    }
-                                                >
-                                                    <ArrowDown />
-                                                </IconButton>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 pl-14 text-base">
-                                            {index > 0 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        reorder(
-                                                            toTop(order, index),
-                                                        )
-                                                    }
-                                                    className="text-brand press inline-flex min-h-[2.75rem] items-center gap-1.5 font-medium underline-offset-4 hover:underline"
-                                                >
-                                                    <ToTop />
-                                                    {t(
-                                                        'initiator.questions.first',
-                                                    )}
-                                                </button>
-                                            )}
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    exclude(id, true)
-                                                }
-                                                className="text-brand-muted hover:text-brand press inline-flex min-h-[2.75rem] items-center gap-1.5 underline-offset-4 hover:underline"
-                                            >
-                                                <Trash />
-                                                {t(
-                                                    'initiator.questions.exclude',
-                                                )}
-                                            </button>
-                                        </div>
-                                    </li>
-                                );
-                            })}
-                        </ol>
-                    )}
-
-                    {rest > 0 && (
-                        <p className="text-brand-muted mt-4 text-base">
-                            {t('initiator.questions.next_rest', {
-                                count: rest,
-                            })}
-                        </p>
-                    )}
-                </section>
+                </aside>
             </div>
         </>
     );

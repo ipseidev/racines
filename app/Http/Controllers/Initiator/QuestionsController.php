@@ -7,15 +7,19 @@ namespace App\Http\Controllers\Initiator;
 use App\Actions\AttachPhoto;
 use App\Actions\PickNextQuestion;
 use App\Actions\ProposeStory;
+use App\Audit\AuditLog;
 use App\Exceptions\Domain\InfectedUpload;
 use App\Exceptions\Domain\UnsupportedImage;
 use App\Models\Project;
 use App\Models\Question;
+use App\Models\Story;
 use App\Support\InitiatorProject;
 use App\Support\Options;
+use App\Support\QuestionQueue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Inertia\Response;
 
 /**
@@ -37,6 +41,7 @@ final readonly class QuestionsController
         private ProposeStory $stories,
         private PickNextQuestion $picker,
         private AttachPhoto $photos,
+        private QuestionQueue $queue,
     ) {}
 
     /**
@@ -62,36 +67,37 @@ final readonly class QuestionsController
             'themeLabel' => Options::label($question->theme),
         ];
 
+        /*
+         * Les questions écrites par la famille et pas encore parties.
+         *
+         * Elles ne sont pas dans le corpus : une question personnalisée
+         * devient tout de suite une histoire PROPOSÉE. Sans cette liste, la
+         * page promettait un ordre où elles n'apparaissaient nulle part — on
+         * écrivait sa question et elle disparaissait de l'écran où on venait
+         * de l'écrire. Elles passent devant le corpus à l'envoi, donc elles
+         * s'affichent devant lui ici.
+         */
+
+        /*
+         * **Une seule file**, où les deux natures se mêlent (T-255).
+         *
+         * Les questions de la famille formaient un bloc en tête, et rien ne
+         * pouvait passer devant : deux listes, deux échelles, aucun ordre
+         * commun. Elles partagent maintenant le rang — `queue_order` pour
+         * une histoire proposée, `custom_order` pour une question du corpus —
+         * et l'écran n'en montre plus qu'une, dans l'ordre où ça partira.
+         */
+        $file = $this->queue->forProject($project);
+
         return inertia('initiator/Questions', [
             'queue' => $this->picker->queue($project)->map($present)->values()->all(),
             'excluded' => Question::query()->active()->whereIn('id', $excludedIds)
                 ->orderBy('order_hint')->orderBy('slug')->get()->map($present)->values()->all(),
             'asked' => Question::query()->whereIn('id', $askedIds)
                 ->orderBy('order_hint')->orderBy('slug')->get()->map($present)->values()->all(),
+            'next' => $file,
             'narratorFirstName' => $project->primaryNarrator?->first_name,
         ]);
-    }
-
-    public function reorder(Request $request): RedirectResponse
-    {
-        $user = $request->user();
-        abort_if($user === null, 403);
-
-        $project = InitiatorProject::forOrFail($user);
-
-        $validated = $request->validate([
-            'order' => ['required', 'array'],
-            'order.*' => ['string'],
-        ]);
-
-        foreach (array_values((array) $validated['order']) as $position => $questionId) {
-            $project->questionSettings()->updateOrCreate(
-                ['question_id' => (string) $questionId],
-                ['custom_order' => $position + 1],
-            );
-        }
-
-        return back()->with('status', __('initiator.questions.reordered'));
     }
 
     /*
@@ -118,6 +124,95 @@ final readonly class QuestionsController
         );
 
         return back()->with('status', __('initiator.questions.updated'));
+    }
+
+    /**
+     * L'ordre de la file, les deux natures mêlées (T-255).
+     *
+     * On reçoit la file entière — `{kind, id}` dans l'ordre voulu — et on
+     * écrit le rang de chacun dans **sa** table : `custom_order` pour une
+     * question du corpus, `queue_order` pour une histoire déjà proposée.
+     * Les deux vivent dans la même échelle, et c'est ce qui permet à l'une de
+     * passer devant l'autre.
+     *
+     * Les rangs commencent à 0 : une question de la famille placée en tête y
+     * retrouve le rang que lui donne `store`, et rien ne dépend d'un décalage
+     * implicite.
+     *
+     * Ce qui n'attend pas ne bouge pas : une histoire dont le lien est déjà
+     * chez la narratrice est ignorée, quoi qu'en dise la requête.
+     */
+    public function reorder(Request $request, Project $project): RedirectResponse
+    {
+        $user = $request->user();
+        abort_if($user === null, 403);
+
+        $project = InitiatorProject::forOrFail($user);
+
+        $validated = $request->validate([
+            'order' => ['required', 'array'],
+            'order.*.kind' => ['required', 'string', 'in:story,question'],
+            'order.*.id' => ['required', 'string'],
+        ]);
+
+        $pending = $this->queue->pendingStories($project)->keyBy('id');
+
+        /** @var list<array{kind: string, id: string}> $entrees */
+        $entrees = array_values((array) $validated['order']);
+
+        DB::transaction(function () use ($entrees, $pending, $project): void {
+            foreach ($entrees as $position => $entree) {
+                if ($entree['kind'] === 'question') {
+                    $project->questionSettings()->updateOrCreate(
+                        ['question_id' => $entree['id']],
+                        ['custom_order' => $position],
+                    );
+
+                    continue;
+                }
+
+                $story = $pending->get($entree['id']);
+
+                if ($story instanceof Story) {
+                    $story->forceFill(['queue_order' => $position])->save();
+                }
+            }
+        });
+
+        return back()->with('status', __('initiator.questions.reordered'));
+    }
+
+    /**
+     * Retirer une question qu'on a écrite soi-même.
+     *
+     * Les questions du corpus s'écartent ; les siennes n'avaient rien — et
+     * une question qu'on ne peut pas reprendre est un piège, surtout avec des
+     * photos jointes. On la **supprime** plutôt que de l'écarter : elle
+     * n'existe que pour ce projet, il n'y a rien à réintégrer nulle part, et
+     * la laisser en base sous un drapeau ferait un cimetière d'histoires
+     * jamais racontées.
+     *
+     * Jamais une histoire dont le lien est parti : celle-là appartient déjà à
+     * la narratrice, qui seule décide de ce qu'elle en fait (bloc 07).
+     */
+    public function destroyPending(Request $request, Project $project, string $story): RedirectResponse
+    {
+        $user = $request->user();
+        abort_if($user === null, 403);
+
+        $project = InitiatorProject::forOrFail($user);
+
+        $found = $this->queue->pendingStories($project)->firstWhere('id', $story);
+
+        abort_unless($found instanceof Story, 404);
+
+        AuditLog::record('deleted Story', $found, [
+            'reason' => 'initiator_withdrew_custom_question',
+        ], $project);
+
+        $found->delete();
+
+        return back()->with('status', __('initiator.questions.removed'));
     }
 
     /**
@@ -154,6 +249,16 @@ final readonly class QuestionsController
         ]);
 
         $story = $this->stories->handle($project, null, (string) $validated['text']);
+
+        /*
+         * Rang 0 : devant tout le corpus, qui commence à 1.
+         *
+         * C'est le défaut demandé — « quand j'ajoute une question, je veux
+         * qu'elle soit première » — et ce n'est qu'un **défaut** : elle vit
+         * dans la même échelle que les questions du corpus, donc l'une comme
+         * l'autre peut ensuite passer devant.
+         */
+        $story->forceFill(['queue_order' => 0])->save();
 
         /** @var list<UploadedFile> $photos */
         $photos = array_values((array) $request->file('photos', []));

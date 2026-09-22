@@ -89,6 +89,21 @@ function groupThousands(whole: number, market: string): string {
     return digits.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 }
 
+/**
+ * Un nombre entier ou décimal, séparateurs de la langue : « 12 000 » en
+ * français, « 12.000 » en italien et en espagnol.
+ *
+ * Écrit ici et pas appelé à la main comme `Intl.NumberFormat` : la jauge du
+ * livre affichait « 10 / 12000 », qui se lit mal et n'est le format d'aucune
+ * des cinq langues. La règle vaut pour les nombres comme pour les dates et
+ * les montants — un seul endroit sait produire les bons octets.
+ */
+export function formatNumber(value: number, locale: LocaleTag = 'fr'): string {
+    return new Intl.NumberFormat(tagOf(locale), {
+        maximumFractionDigits: 1,
+    }).format(value);
+}
+
 export function formatPercent(
     percent: number,
     locale: LocaleTag = 'fr',

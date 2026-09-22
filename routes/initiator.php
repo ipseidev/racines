@@ -101,6 +101,10 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
                 Route::post('/questions/ordre', [QuestionsController::class, 'reorder'])->name('questions.reorder');
                 Route::post('/questions/{question}/exclure', [QuestionsController::class, 'exclude'])->name('questions.exclude');
                 Route::post('/questions/personnalisee', [QuestionsController::class, 'store'])->name('questions.store');
+                // Retirer une question qu'on a écrite soi-même : les
+                // questions du corpus s'écartent, les siennes se suppriment —
+                // elles n'existent que pour ce projet.
+                Route::delete('/questions/proposees/{story}', [QuestionsController::class, 'destroyPending'])->name('questions.pending_destroy');
 
                 Route::get('/proches', [FamilyController::class, 'index'])->name('family');
                 Route::post('/proches', [FamilyController::class, 'store'])->name('family.store');

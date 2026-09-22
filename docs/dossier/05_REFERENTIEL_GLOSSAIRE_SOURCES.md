@@ -1,5 +1,5 @@
 # NARRAE — Référentiel canonique, Glossaire & Registre des sources
-**v2.9 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
+**v3.0 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
 
 ## R-1. Rôles (terminologie produit/juridique)
 - **Initiateur·rice** : achète, organise, prépare le BAT ; ne peut jamais outrepasser le veto du narrateur. *(« Claire », persona féminine = hypothèse marketing, pas le nom du rôle.)*
@@ -8,7 +8,9 @@
 - **Éditeur désigné** : rôle optionnel délégué par l'Initiateur·rice pour la préparation du livre.
 
 ## R-2. Offre & durées
-- **Offre cœur** : 12 mois de collecte + 3 mois de finalisation inclus (BAT jusqu'à M+15). Relances de finalisation M+12/M+13/M+14 ; à M+15, projet « dormant » (lecture + export intacts).
+- **Offre cœur** : **52 questions**, quel que soit le rythme. C'est le nombre qui est vendu et il ne change jamais ; le rythme choisi par le narrateur décide seulement du **temps** qu'elles prennent. Une question par semaine : 12 mois. Deux par semaine : 6 mois. Trois par semaine : 4 mois. Une tous les quinze jours : 24 mois. **+ 3 mois de finalisation** après la dernière question. Relances de finalisation sur les trois derniers mois de collecte ; à la fin de la finalisation, projet « dormant » (lecture + export intacts).
+  - *Au rythme par défaut — une question par semaine — cela donne 12 mois de collecte, relances M+12/M+13/M+14 et dormance à M+15 : ce sont les repères que citent les docs 03 et 04, et ils restent exacts pour ce rythme.*
+  - *Le rythme le plus lent porte la fenêtre à 24 mois : la durée des liens d'écoute famille et la dormance sont calées sur la fenêtre du projet, jamais sur un nombre de mois fixe.*
 - **Pilote Fondateurs (Phase 0B)** : 12 semaines, payant, livrable réduit contractualisé (10-15 histoires visées, export complet, mini-livre « premier chapitre » imprimé), statut expérimental explicite, remboursable. **On ne vend pas l'offre annuelle pendant le pilote.** Option « Enregistrement par téléphone » 25 € proposée dans le tunnel, plafonnée à 10 familles, livraison humaine (D-9).
 
 ## R-3. Prix [HYPOTHÈSES À TESTER — aucun prix figé]
@@ -43,7 +45,7 @@ PROPOSÉE → ENREGISTRÉE → TRANSCRITE → À RELIRE → **VALIDÉE (acte exp
 
 ## R-7. North Star & KPI
 - **North Star : projets vivants** — ≥ 1 histoire validée ET écoutée par ≥ 1 proche distinct sur 30 jours glissants.
-- **KPI business : % des projets achetés atteignant book-ready sous 15 mois** — cible = **ambition à calibrer après la Phase 0B** (aucun engagement v1 tant que la conversion 8 → book-ready n'est pas observée).
+- **KPI business : % des projets achetés atteignant book-ready dans la fenêtre de leur offre** (collecte + finalisation ; 15 mois au rythme par défaut, R-2) — cible = **ambition à calibrer après la Phase 0B** (aucun engagement v1 tant que la conversion 8 → book-ready n'est pas observée).
 - **Contre-métrique de charge : ≤ 4 actions et ≤ 15 min demandées à l'Initiateur·rice par mois** [HYPOTHÈSE cible].
 
 ## R-8. Calendrier canonique

@@ -211,8 +211,18 @@ final class Project extends Model
     /**
      * Durées de collecte et de finalisation de l'offre souscrite (R-2).
      *
-     * Le pilote dure douze semaines, finalisation comprise ; l'offre cœur
-     * ouvre douze mois de collecte puis trois mois pour boucler le livre.
+     * Le pilote dure douze semaines, finalisation comprise. L'offre cœur, elle,
+     * ne se vend plus en mois depuis la v3.0 du dossier : elle vend **52
+     * questions**, et c'est le rythme du narrateur qui décide du temps
+     * qu'elles prennent — un an à une par semaine, six mois à deux, quatre
+     * mois à trois, deux ans tous les quinze jours.
+     *
+     * Une durée fixe donnait un contenu différent selon le rythme, au même
+     * prix : vingt-six histoires pour qui reçoit une question tous les quinze
+     * jours, cent quatre pour qui en reçoit deux par semaine. Le nombre est ce
+     * que la famille achète ; la durée en découle.
+     *
+     * Puis trois mois pour boucler le livre, après la dernière question.
      */
     public function collectionWindow(?DateTimeInterface $from = null): ServiceWindow
     {
@@ -224,13 +234,77 @@ final class Project extends Model
             return new ServiceWindow($start, $end, $end);
         }
 
-        $end = $start->addMonths((int) config('product.offer.core_months'));
+        $end = $start->addWeeks(self::collectionWeeks($this->cadence));
 
         return new ServiceWindow(
             $start,
             $end,
             $end->addMonths((int) config('product.offer.finalization_months')),
         );
+    }
+
+    /**
+     * Le nombre de semaines qu'il faut pour poser les 52 questions, au rythme
+     * donné.
+     *
+     * Deux grandeurs distinctes chez `Cadence`, et les confondre donnerait
+     * cent quatre questions à un rythme quinzomadaire : `weeks()` est la
+     * longueur d'un cycle — une semaine, ou deux — et `timesPerWeek()` le
+     * nombre de questions posées dans ce cycle.
+     *
+     * Arrondi au-dessus : trois questions par semaine font 17,33 semaines
+     * pour cinquante-deux, et fermer la fenêtre à 17 laisserait la dernière
+     * dehors.
+     */
+    public static function collectionWeeks(Cadence $cadence): int
+    {
+        $questions = (int) config('product.offer.core_questions');
+
+        return (int) ceil($questions * $cadence->weeks() / $cadence->timesPerWeek());
+    }
+
+    /**
+     * Le rythme a changé : la fenêtre suit, pour les questions qui restent.
+     *
+     * Ce que l'offre vend est un **nombre de questions** (R-2, v3.0), pas une
+     * durée. Un narrateur qui passe à une question tous les quinze jours au
+     * sixième mois — ce que le moteur lui propose quand il peine (bloc 09) —
+     * doit donc voir sa fenêtre s'allonger d'autant : sinon ralentir revient
+     * à renoncer à la moitié de ce qu'on a payé, et la proposition du moteur
+     * devient un piège.
+     *
+     * Elle se raccourcit aussi, et c'est voulu : accélérer, c'est recevoir
+     * ses questions plus tôt, pas en recevoir davantage.
+     *
+     * Le décompte part des questions **déjà posées**, pas du temps écoulé :
+     * c'est la grandeur que le contrat porte, et la seule qu'une pause ne
+     * fausse pas.
+     *
+     * Sans effet sur le pilote, qui se vend en semaines, ni avant
+     * l'acceptation, où la fenêtre n'est pas encore ouverte.
+     */
+    public function rescheduleWindowForCadence(): self
+    {
+        if ($this->offer === Offer::Pilot || $this->collection_started_at === null) {
+            return $this;
+        }
+
+        $remaining = max(
+            0,
+            (int) config('product.offer.core_questions') - $this->stories()->count(),
+        );
+
+        $end = CarbonImmutable::instance(now())->addWeeks(
+            (int) ceil($remaining * $this->cadence->weeks() / $this->cadence->timesPerWeek()),
+        );
+
+        $this->collection_ends_at = $end;
+        $this->finalization_ends_at = $end->addMonths(
+            (int) config('product.offer.finalization_months'),
+        );
+        $this->save();
+
+        return $this;
     }
 
     /**

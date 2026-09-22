@@ -461,10 +461,32 @@ final class E2ELinksSeeder extends Seeder
      */
     private function initiatorProject(User $initiator): Project
     {
-        $project = app(CreateProject::class)->handle($initiator, Offer::Pilot, []);
+        /*
+         * L'offre **vendue**, pas `Offer::Pilot` en dur.
+         *
+         * Le décor montrait douze semaines de collecte quel que soit le mode
+         * du tunnel : on regardait « semaine 9 sur 12 » sur un produit qui en
+         * vend cinquante-deux. Un décor qui ment sur la durée du contrat
+         * n'est pas un décor, c'est un piège.
+         */
+        $project = app(CreateProject::class)->handle(
+            $initiator,
+            app(PilotSettings::class)->offer(),
+            [],
+        );
         $project->status = ProjectStatus::Active;
         $project->accepted_at = now()->subDays(60);
         $project->save();
+
+        /*
+         * La fenêtre de collecte, comme l'acceptation la poserait.
+         *
+         * Le décor sautait cette étape : un projet « en cours » sans
+         * `collection_started_at`, ce qu'aucun vrai projet n'est. Le tableau
+         * de bord ne pouvait donc pas dire « semaine 9 sur 12 » — il n'avait
+         * pas de quoi, et c'est précisément ce qu'on vient vérifier à l'œil.
+         */
+        $project->startCollection(now()->subDays(60));
 
         // Le prochain envoi est celui que le produit calculerait : le jour et
         // le créneau du projet, pas « dans trois jours à l'heure qu'il est ».

@@ -8,9 +8,18 @@ import { useT } from '@/hooks/useT';
 type Props = {
     action: string;
     onDone?: () => void;
+    /**
+     * Une ligne discrète au lieu de la grande zone à toucher.
+     *
+     * Sur la frise du tableau de bord, chaque histoire portait une zone en
+     * pointillés de quatre lignes : la page devenait un mur de dépôts de
+     * photos, plus visible que les récits qu'elle est censée montrer. Le geste
+     * reste au même endroit, il ne crie plus.
+     */
+    compact?: boolean;
 };
 
-function CameraIcon() {
+function CameraIcon({ className = 'size-7' }: { className?: string }) {
     return (
         <svg
             viewBox="0 0 24 24"
@@ -18,7 +27,7 @@ function CameraIcon() {
             stroke="currentColor"
             strokeWidth="1.8"
             aria-hidden="true"
-            className="size-7"
+            className={className}
         >
             <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.2-1.8A1 1 0 0 1 10 3.8h4a1 1 0 0 1 .8.4L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-8Z" />
             <circle cx="12" cy="12.5" r="3.5" />
@@ -34,7 +43,11 @@ function CameraIcon() {
  * local, rien n'est envoyé avant que la personne ait vu ce qu'elle envoie.
  * Le champ de fichier reste là, pour le clavier et les tests, mais hors de vue.
  */
-export default function PhotoUploader({ action, onDone }: Props) {
+export default function PhotoUploader({
+    action,
+    onDone,
+    compact = false,
+}: Props) {
     const t = useT();
     const id = useId();
     const input = useRef<HTMLInputElement | null>(null);
@@ -69,24 +82,43 @@ export default function PhotoUploader({ action, onDone }: Props) {
     };
 
     return (
-        <form onSubmit={send} className="mt-6 flex flex-col gap-4">
+        <form
+            onSubmit={send}
+            className={`flex flex-col gap-4 ${compact ? 'mt-3' : 'mt-6'}`}
+        >
             <label
                 htmlFor={id}
-                className={`press border-brand-sand hover:border-brand flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed px-5 py-4 transition-colors ${
-                    preview === null ? 'bg-brand-surface' : 'bg-brand-linen'
-                }`}
+                className={
+                    compact
+                        ? 'press text-brand-muted hover:text-brand inline-flex min-h-[2.75rem] cursor-pointer items-center gap-2 self-start text-base underline-offset-4 transition-colors hover:underline'
+                        : `press border-brand-sand hover:border-brand flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed px-5 py-4 transition-colors ${
+                              preview === null
+                                  ? 'bg-brand-surface'
+                                  : 'bg-brand-linen'
+                          }`
+                }
             >
-                <span className="bg-brand-linen text-brand flex size-12 flex-none items-center justify-center rounded-full">
-                    <CameraIcon />
-                </span>
-                <span className="flex flex-col">
-                    <span className="font-semibold">
-                        {t('common.photos.add')}
+                {compact ? (
+                    <CameraIcon className="size-5" />
+                ) : (
+                    <span className="bg-brand-linen text-brand flex size-12 flex-none items-center justify-center rounded-full">
+                        <CameraIcon />
                     </span>
-                    <span className="text-brand-muted text-base">
-                        {t('common.photos.add_help')}
+                )}
+
+                {compact ? (
+                    <span>{t('common.photos.add')}</span>
+                ) : (
+                    <span className="flex flex-col">
+                        <span className="font-semibold">
+                            {t('common.photos.add')}
+                        </span>
+                        <span className="text-brand-muted text-base">
+                            {t('common.photos.add_help')}
+                        </span>
                     </span>
-                </span>
+                )}
+
                 <input
                     id={id}
                     ref={input}

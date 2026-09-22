@@ -228,7 +228,11 @@ final readonly class FulfillOrder
     private function createProject(CheckoutDraft $draft, User $buyer, PilotSettings $settings): Project
     {
         $project = new Project([
-            'offer' => $settings->isPrevente() ? Offer::Prevente : Offer::Pilot,
+            // L'offre décide de la durée de collecte (R-2) : douze semaines
+            // au pilote, douze mois plus trois de finalisation sur l'offre
+            // courante. `PilotSettings::offer()` est le seul endroit qui
+            // traduit le mode en offre.
+            'offer' => $settings->offer(),
             'address_form' => AddressForm::from((string) $draft->value('address_form', AddressForm::Vous->value)),
             // La couverture choisie au tunnel de découverte. Elle attend ici
             // des mois : le livre n'existe qu'à la fin de la collecte, et

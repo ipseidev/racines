@@ -45,11 +45,12 @@ test('accepte le cadeau et voit sa première question annoncée', async ({
         page.getByRole('button', { name: /enregistrer/i }),
     ).toHaveCount(0);
 
-    // Les cinq accords sont donnés par le bouton, sans case à cocher (T-233),
+    // Les six accords sont donnés par le bouton, sans case à cocher (T-233,
+    // T-250 pour le partage permanent),
     // et la phrase juste au-dessus dit ce qu'il donne.
     await expect(page.getByRole('checkbox')).toHaveCount(0);
     await expect(
-        page.getByText(/vous donnez les cinq accords décrits plus bas/),
+        page.getByText(/vous donnez les six accords décrits plus bas/),
     ).toBeVisible();
 
     await page.getByRole('button', { name: 'J’accepte' }).click();
@@ -58,16 +59,25 @@ test('accepte le cadeau et voit sa première question annoncée', async ({
         'Bienvenue',
     );
 
-    // La fiche contact d'abord : un message qui n'arrive pas de ce contact
-    // est un faux.
+    /*
+     * Cet écran ne demande **rien** (20 septembre 2026).
+     *
+     * Il a porté la fiche contact et les souhaits pour plus tard : deux
+     * tâches de plus posées à quelqu'un qui venait d'accepter de raconter sa
+     * vie, la seconde lui parlant de sa mort à la minute où on la félicite.
+     * La fiche contact attend une nouvelle place — la garde anti-hameçonnage
+     * du doc 04 §9 n'a pas été abandonnée, elle a été déplacée hors d'ici.
+     *
+     * Ce qui reste : une date, et la permission de fermer la page.
+     */
     await expect(
-        page.getByRole('link', { name: 'Ajouter le contact' }),
+        page.getByText(/votre première question arrive/i),
     ).toBeVisible();
-
-    // Et rien à décider de plus (T-236) : les souhaits ont été proposés sur
-    // la page d'acceptation, on dit seulement ce qui vaut.
-    await expect(page.getByText(/transmises à votre famille/)).toBeVisible();
+    await expect(
+        page.getByText(/vous pouvez fermer cette page/i),
+    ).toBeVisible();
     await expect(page.getByRole('button')).toHaveCount(0);
+    await expect(page.getByRole('link')).toHaveCount(0);
 });
 
 test('montre les réglages avant les boutons, et replie les accords dessous', async ({
@@ -95,10 +105,10 @@ test('montre les réglages avant les boutons, et replie les accords dessous', as
     expect(consentsBox?.y ?? 0).toBeGreaterThan(acceptBox?.y ?? 0);
 
     // Le champ de contact suit le canal, déjà rempli avec ce qu'on sait : ici
-    // le courriel de l'invitation. Passer au SMS montre le numéro à la place.
+    // l'email de l'invitation. Passer au SMS montre le numéro à la place.
     // Et le téléphone opéré (D-9) n'est pas proposé.
     const channel = page.getByLabel('Par quel moyen ?');
-    const email = page.getByLabel('Votre adresse de courriel');
+    const email = page.getByLabel('Votre adresse email');
     const phone = page.getByLabel('Votre numéro de téléphone');
 
     await expect(channel).toHaveValue('email');

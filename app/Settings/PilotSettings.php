@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings;
 
+use App\Enums\Offer;
 use Spatie\LaravelSettings\Settings;
 
 /**
@@ -94,6 +95,36 @@ final class PilotSettings extends Settings
     public function isPrevente(): bool
     {
         return $this->mode === 'prevente';
+    }
+
+    public function isCore(): bool
+    {
+        return $this->mode === 'core';
+    }
+
+    /**
+     * L'offre que le tunnel vend **aujourd'hui**, et donc la durée qu'un
+     * projet reçoit en naissant.
+     *
+     * Le mode `core` existait dans les réglages et dans le menu déroulant de
+     * l'administration depuis le bloc 10, mais aucune ligne de code ne le
+     * lisait : `FulfillOrder` ne testait que la prévente, et tout le reste
+     * retombait sur le pilote. Choisir « Offre courante » dans le panneau
+     * changeait donc l'étiquette et rien d'autre — la famille achetait douze
+     * mois de collecte (R-2) et recevait les douze semaines du pilote.
+     *
+     * C'est ici, et seulement ici, que le mode se traduit en offre. Les prix
+     * et le SKU continuent de venir de `pilot_price_cents` et de
+     * `Sku::Pilot` : ces deux noms datent du pilote, leur valeur est celle du
+     * produit courant, et les renommer est un autre chantier.
+     */
+    public function offer(): Offer
+    {
+        return match ($this->mode) {
+            'prevente' => Offer::Prevente,
+            'core' => Offer::Core,
+            default => Offer::Pilot,
+        };
     }
 
     public function legalValidated(): bool

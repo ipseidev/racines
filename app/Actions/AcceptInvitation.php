@@ -103,12 +103,24 @@ final readonly class AcceptInvitation
 
             $project->status = ProjectStatus::Active;
             $project->accepted_at = now();
-            $project->collection_started_at = now();
-            // Douze semaines de collecte au pilote, puis la finalisation : les
-            // fenêtres sont posées maintenant pour que les écrans puissent
-            // dire où l'on en est, et le moteur savoir quand se taire.
-            $project->collection_ends_at = now()->addWeeks(12);
-            $project->finalization_ends_at = now()->addWeeks(16);
+            /*
+             * Les trois échéances, **selon l'offre souscrite** (R-2).
+             *
+             * Elles étaient écrites ici en dur — douze semaines, puis seize —
+             * ce qui était la durée du pilote appliquée à tout le monde. Un
+             * projet de l'offre cœur, qui achète douze mois de collecte et
+             * trois de finalisation, voyait donc sa fenêtre se fermer au bout
+             * de trois mois : le moteur se serait tu, et l'espace aurait
+             * annoncé une fin qui n'est pas celle du contrat.
+             *
+             * `collectionWindow()` lit l'offre et `config('product.offer')`,
+             * qui exécutent R-2. Les durées ne se recopient pas.
+             */
+            $window = $project->collectionWindow(now());
+
+            $project->collection_started_at = $window->collectionStartsAt;
+            $project->collection_ends_at = $window->collectionEndsAt;
+            $project->finalization_ends_at = $window->finalizationEndsAt;
 
             /*
              * Le lendemain, au créneau choisi : une question dans la minute

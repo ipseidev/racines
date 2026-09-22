@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Cadence;
 use App\Enums\Channel;
 use App\Enums\ConsentKind;
+use App\Enums\Offer;
 use App\Enums\PostMortemWish;
 use App\Enums\ProjectStatus;
 use App\Enums\PromptSlot;
@@ -199,10 +200,12 @@ it('active le projet et planifie la première question le lendemain', function (
     expect($project->status)->toBe(ProjectStatus::Active)
         ->and($project->accepted_at)->not->toBeNull()
         ->and($project->collection_started_at)->not->toBeNull()
+        // Les durées de **l'offre souscrite** (R-2), et pas des nombres
+        // recopiés : le pilote dure douze semaines, finalisation comprise.
         ->and($project->collection_ends_at?->toDateString())
-        ->toBe(now()->addWeeks(12)->toDateString())
+        ->toBe(now()->addWeeks((int) config('product.offer.pilot_weeks'))->toDateString())
         ->and($project->finalization_ends_at?->toDateString())
-        ->toBe(now()->addWeeks(16)->toDateString())
+        ->toBe(now()->addWeeks((int) config('product.offer.pilot_weeks'))->toDateString())
         // Le lendemain, pas dans l'heure ni le surlendemain : une question
         // qui arrive dans la minute donne l'impression d'une machine qui
         // attendait, et une qui met deux jours perd les 72 heures (T-241).
@@ -490,4 +493,28 @@ it('refuse un jeton d’un autre périmètre', function (): void {
     $this->get("/i/{$issued->plain}")->assertNotFound();
 
     expect($project->refresh()->accepted_at)->toBeNull();
+});
+
+/*
+ * L'offre cœur n'est pas le pilote.
+ *
+ * L'acceptation posait douze semaines pour tout le monde — la durée du pilote
+ * appliquée à une famille qui a acheté douze mois de collecte. Sa fenêtre se
+ * fermait donc à M+3 : le moteur se serait tu, et l'espace aurait annoncé une
+ * fin qui n'est pas celle du contrat (R-2).
+ */
+it('ouvre les 52 questions et trois mois de finalisation sur l’offre cœur', function (): void {
+    [$project, , $plain] = invitedProject(['offer' => Offer::Core]);
+
+    $this->post("/i/{$plain}/accepter", acceptancePayload())->assertRedirect();
+
+    $project->refresh();
+
+    expect($project->collection_ends_at?->toDateString())
+        ->toBe(now()->addWeeks(Project::collectionWeeks($project->cadence))->toDateString())
+        ->and($project->finalization_ends_at?->toDateString())
+        ->toBe(now()
+            ->addWeeks(Project::collectionWeeks($project->cadence))
+            ->addMonths((int) config('product.offer.finalization_months'))
+            ->toDateString());
 });

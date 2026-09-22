@@ -25,9 +25,9 @@ const catalogue = {
             },
             consents: {
                 title: 'Vos accords',
-                summary: 'Les textes complets des cinq accords.',
+                summary: 'Les textes complets des six accords.',
                 before_accept:
-                    'En appuyant sur « J’accepte », vous donnez les cinq accords décrits plus bas.',
+                    'En appuyant sur « J’accepte », vous donnez les six accords décrits plus bas.',
                 intro: 'Touchez un accord pour lire son texte.',
                 version: 'Version :version',
             },
@@ -92,7 +92,7 @@ const server = vi.hoisted(() => ({
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
     useForm: (initial: Record<string, unknown>) => {
-        // Les cinq accords sont les seuls champs `consent_*` : c'est ainsi
+        // Les six accords sont les seuls champs `consent_*` : c'est ainsi
         // qu'on reconnaît le formulaire d'acceptation de celui du refus.
         if ('consent_voice_recording' in initial) {
             server.initial = initial;
@@ -203,7 +203,7 @@ beforeEach(() => {
 });
 
 describe('la page d’opt-in', () => {
-    it('énonce les cinq accords, sans case à cocher, et les donne avec J’accepte', () => {
+    it('énonce les six accords, sans case à cocher, et les donne avec J’accepte', () => {
         render(<OptIn {...props} />);
 
         // Cinq lignes lisibles, aucune case : c'est le bouton qui est l'acte
@@ -212,7 +212,7 @@ describe('la page d’opt-in', () => {
         // repliés dessous.
         expect(screen.queryByRole('checkbox')).toBeNull();
         expect(
-            screen.getByText(/vous donnez les cinq accords décrits plus bas/),
+            screen.getByText(/vous donnez les six accords décrits plus bas/),
         ).toBeTruthy();
 
         for (const consent of props.consents) {
@@ -364,7 +364,16 @@ describe('la page d’opt-in', () => {
          * dans l'application ; le non garde le contour de marque. Le test
          * compare donc le gabarit, et vérifie séparément que chacun porte sa
          * variante — sans quoi « même taille » se relâcherait en silence.
+         *
+         * Et depuis le 22 septembre, le oui porte un contour **transparent**
+         * de la même épaisseur que celui du non : avec `flex: 1 1 0%`,
+         * l'espace libre se répartit après les bordures, et le refus sortait
+         * quatre pixels plus large. Ces deux classes-là ne sont pas du décor,
+         * elles servent l'égalité que ce test protège — elles sortent donc de
+         * la comparaison et sont vérifiées pour elles-mêmes.
          */
+        const geometry = ['border-2', 'border-transparent'];
+
         const size = (element: HTMLElement): string[] =>
             element.className
                 .split(' ')
@@ -372,7 +381,8 @@ describe('la page d’opt-in', () => {
                     (name) =>
                         !name.startsWith('disabled:') &&
                         name !== 'btn-primary' &&
-                        name !== 'btn-secondary',
+                        name !== 'btn-secondary' &&
+                        !geometry.includes(name),
                 )
                 .sort();
 
@@ -380,6 +390,10 @@ describe('la page d’opt-in', () => {
         expect(size(accept)).toContain('min-h-[3.5rem]');
         expect(size(accept)).toContain('flex-1');
         expect(size(accept)).toContain('text-lg');
+
+        // Le contour compensatoire, sans lequel les deux boîtes diffèrent.
+        expect(accept.className).toContain('border-2');
+        expect(accept.className).toContain('border-transparent');
 
         expect(accept.className).toContain('btn-primary');
         expect(refuse.className).toContain('btn-secondary');

@@ -27,7 +27,7 @@ test('remplit le tunnel jusqu’au récapitulatif', async ({ page }) => {
     );
     await page.getByLabel('Son prénom').fill('Odette');
     await page.getByLabel('Votre lien avec elle').fill('ma mère');
-    await page.getByLabel('Son courriel').fill(`odette+${UNIQUE}@example.test`);
+    await page.getByLabel('Son email').fill(`odette+${UNIQUE}@example.test`);
     // À quel point elle est à l'aise avec un téléphone : la réponse change
     // ce qu'on propose ensuite (T-136).
     await page.getByRole('radio', { name: /Peu à l’aise/ }).check();
@@ -51,9 +51,7 @@ test('remplit le tunnel jusqu’au récapitulatif', async ({ page }) => {
         page.getByRole('button', { name: 'Continuer', exact: true }),
     ).toHaveCount(0);
     await page.getByLabel('Votre nom').fill('Camille');
-    await page
-        .getByLabel('Votre courriel')
-        .fill(`camille+${UNIQUE}@example.test`);
+    await page.getByLabel('Votre email').fill(`camille+${UNIQUE}@example.test`);
     await page.getByLabel('Un mot de passe').fill('un-mot-de-passe-solide-12');
     await page
         .getByRole('button', { name: 'Créer mon compte et continuer' })
@@ -118,9 +116,7 @@ test('garde la saisie quand on revient corriger un champ', async ({ page }) => {
     await page.getByRole('button', { name: 'Continuer' }).click();
 
     await page.getByLabel('Son prénom').fill('Odette');
-    await page
-        .getByLabel('Son courriel')
-        .fill(`odette+r${UNIQUE}@example.test`);
+    await page.getByLabel('Son email').fill(`odette+r${UNIQUE}@example.test`);
     await page.getByRole('button', { name: 'Continuer' }).click();
 
     await page.getByRole('link', { name: 'Revenir' }).click();
@@ -143,9 +139,7 @@ test('sur téléphone, chaque étape s’ouvre en haut de page', async ({
     );
 
     await page.getByLabel('Son prénom').fill('Odette');
-    await page
-        .getByLabel('Son courriel')
-        .fill(`odette+m${UNIQUE}@example.test`);
+    await page.getByLabel('Son email').fill(`odette+m${UNIQUE}@example.test`);
 
     // On avance depuis le bas du formulaire, là où est « Continuer ».
     const next = page.getByRole('button', { name: 'Continuer' });

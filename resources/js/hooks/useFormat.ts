@@ -7,6 +7,7 @@ import {
     formatDuration,
     formatList,
     formatLongDate,
+    formatNumber,
     formatPercent,
     formatPrice,
     formatTime,
@@ -32,6 +33,8 @@ export function useFormat() {
             /** Un prix en centimes, en euros, quel que soit le marché. */
             euros: (cents: number) => formatPrice(cents, current, 'EUR'),
             percent: (value: number) => formatPercent(value, current),
+            /** « 12 000 » en français, « 12.000 » en italien. */
+            number: (value: number) => formatNumber(value, current),
             duration: (seconds: number) => formatDuration(seconds, current),
             /** « 1er septembre 2026 » */
             date: (iso: string) => formatDate(iso, current),

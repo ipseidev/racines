@@ -150,10 +150,22 @@ final class EvaluateBooks extends Command
             return;
         }
 
-        $months = (int) config('product.offer.core_months');
-        $dormantAfter = (int) config('product.offer.dormant_after_months');
+        /*
+         * Les deux échéances viennent de **la fenêtre du projet**, plus d'un
+         * nombre de mois compté depuis le départ (R-2, v3.0).
+         *
+         * L'offre cœur vend 52 questions et non douze mois : au rythme le
+         * plus lent la collecte dure deux ans, et « dormance à M+15 »
+         * endormait le projet alors qu'il restait la moitié des questions à
+         * poser. Les dates sont figées sur le projet à l'acceptation, ce qui
+         * protège aussi les projets déjà vendus d'un changement de réglage.
+         */
+        $window = $project->collectionWindow($started);
 
-        if ($started->addMonths($dormantAfter)->isPast()) {
+        $collectionEnds = $project->collection_ends_at ?? $window->collectionEndsAt;
+        $dormantAt = $project->finalization_ends_at ?? $window->finalizationEndsAt;
+
+        if ($dormantAt->isPast()) {
             // Le crédit d'impression : vingt-quatre mois pour revenir.
             $book->print_credit_expires_at ??= now()->addMonths(24);
 
@@ -172,7 +184,7 @@ final class EvaluateBooks extends Command
             return;
         }
 
-        if ($started->addMonths($months)->isPast() && $book->extension_granted_at === null) {
+        if ($collectionEnds->isPast() && $book->extension_granted_at === null) {
             $book->extension_granted_at = now();
 
             Log::info('book.extension_granted', [

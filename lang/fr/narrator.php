@@ -517,16 +517,16 @@ return [
         ],
 
         /*
-         * Les cinq accords sont donnés par le bouton « J'accepte », sans case
+         * Les six accords sont donnés par le bouton « J'accepte », sans case
          * à cocher (T-233). Rien n'est pré-coché : un accord donné par un
          * geste explicite n'est pas une case remplie d'avance. Ils restent
-         * cinq lignes distinctes dans le journal, chacune révocable seule.
-         * `before_accept` se lit juste au-dessus du bouton et nomme les cinq :
+         * six lignes distinctes dans le journal, chacune révocable seule.
+         * `before_accept` se lit juste au-dessus du bouton et nomme les six :
          * leurs textes complets sont repliés sous les boutons.
          */
         'consents' => [
             'title' => 'Vos accords',
-            'summary' => 'Les textes complets des cinq accords, et leur version.',
+            'summary' => 'Les textes complets des six accords, et leur version.',
             'before_accept' => 'En appuyant sur « J’accepte », vous donnez les six accords décrits plus bas : l’enregistrement de votre voix, sa transcription, la mise en forme du texte par une intelligence artificielle, le partage avec vos proches, les sujets sensibles que vos récits peuvent aborder, et l’envoi de chaque histoire à vos proches dès qu’elle est prête.',
             'sharing_note' => 'Vous n’aurez rien à faire après chaque récit. Vous pourrez garder n’importe quelle histoire pour vous, et arrêter cet envoi quand vous voulez depuis votre espace.',
             'intro' => 'Touchez un accord pour lire son texte. Chacun est séparé, et chacun se retire quand vous voulez, indépendamment des autres.',

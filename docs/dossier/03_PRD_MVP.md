@@ -1,5 +1,5 @@
 # NARRAE — PRD du MVP
-**v2.9 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
+**v3.0 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
 
 ## 1. Objectif du MVP
 Industrialiser ce que la Phase 0 aura prouvé : un narrateur senior clique, autorise le micro, s'enregistre, **valide explicitement** et recommence (H1) ; les proches écoutent et cette attention est associée à la production (H2) ; l'économie tient après acquisition (H3). Le MVP industrialise **le moteur de complétion** — pas un catalogue de fonctionnalités.
@@ -40,7 +40,7 @@ PROPOSÉE → ENREGISTRÉE → TRANSCRITE → À RELIRE → **VALIDÉE (explicit
 Achat → invitation avec message personnel → opt-in (canal, cadence, consentements) → premier lien sous 72 h, question facile → **première histoire validée à J+3** → boucle hebdo (lien → enregistrement → choix de partage → transcription → correction facultative → écoute famille → réaction → notification) → book-ready (R-6) → BAT → impression → livraison → export proactif + pack hors-ligne.
 
 ### 5.2 Parcours d'échec (extraits — matrice complète en annexe de build)
-Refus du cadeau (H0) → notification avec tact, remboursement ≤ 30 j · lien jamais cliqué / micro refusé / enregistrement abandonné / histoire non validée / famille silencieuse → **traités par le moteur §5.3** · pas de smartphone → détection honnête à l'opt-in, réponse écrite proposée, sinon remboursement · regret d'une confidence → MASQUÉE/CORBEILLE (imprimés : information explicite au BAT) · nom déformé → édition + lexique · corrections contradictoires → arbitrage narrateur/éditeur désigné, historique · décès en cours de projet → gel immédiat, directives post-mortem (doc 04 §6) · défaut print → réimpression gratuite · BAT jamais finalisé → relances M+12/13/14, dormant à M+15 (R-2).
+Refus du cadeau (H0) → notification avec tact, remboursement ≤ 30 j · lien jamais cliqué / micro refusé / enregistrement abandonné / histoire non validée / famille silencieuse → **traités par le moteur §5.3** · pas de smartphone → détection honnête à l'opt-in, réponse écrite proposée, sinon remboursement · regret d'une confidence → MASQUÉE/CORBEILLE (imprimés : information explicite au BAT) · nom déformé → édition + lexique · corrections contradictoires → arbitrage narrateur/éditeur désigné, historique · décès en cours de projet → gel immédiat, directives post-mortem (doc 04 §6) · défaut print → réimpression gratuite · BAT jamais finalisé → relances sur les trois derniers mois de collecte, dormant à la fin de la finalisation — M+12/13/14 et M+15 au rythme par défaut (R-2).
 
 ### 5.3 Moteur de complétion — spécification v1 (le cœur du produit)
 | État détecté | Déclencheur | Message → destinataire | Action proposée | Limite anti-culpabilisation | Métrique de reprise |
@@ -67,7 +67,7 @@ Chaque ligne est instrumentée (déclenchements, reprises) : **ces données de c
 **US-06 Accessibilité.** WCAG 2.2 AA ; zones tactiles ≥ 44 px ; respect de l'agrandissement système ; lecteurs d'écran sur les parcours narrateur ; contrastes ; erreurs récupérables ; langage simple ; **aucun compte à rebours anxiogène**.
 
 ## 7. Instrumentation & KPIs (canonique R-5/R-7)
-North Star : **projets vivants** (30 j). KPI business : % projets → book-ready (R-6) sous 15 mois — **ambition calibrée post-0B, pas un engagement v1** (le raccord 8 histoires → book-ready n'est pas encore observé). Funnel : achat → invitation délivrée → **acceptée (H0)** → consentement → clic 1er lien → micro OK → 1re histoire → 1re validation → 3e histoire → 1re écoute (≥ 30 s) → réaction → 10e histoire → book-ready → BAT → livré sans défaut → suite. Mesures H1 en **ITT** (dénominateur : accepteurs) + secondaire (activés). H2 : chaîne ouverte/écoute 30 s/réaction/notification/production ≤ 7 j + micro-expérience. Contre-métriques : remboursements, refus H0, échec micro, défauts print, coût support/projet, masquages/suppressions, NPS narrateur, **charge de l'Initiateur·rice (≤ 4 actions et ≤ 15 min/mois)**.
+North Star : **projets vivants** (30 j). KPI business : % projets → book-ready (R-6) dans la fenêtre de leur offre (15 mois au rythme par défaut, R-2) — **ambition calibrée post-0B, pas un engagement v1** (le raccord 8 histoires → book-ready n'est pas encore observé). Funnel : achat → invitation délivrée → **acceptée (H0)** → consentement → clic 1er lien → micro OK → 1re histoire → 1re validation → 3e histoire → 1re écoute (≥ 30 s) → réaction → 10e histoire → book-ready → BAT → livré sans défaut → suite. Mesures H1 en **ITT** (dénominateur : accepteurs) + secondaire (activés). H2 : chaîne ouverte/écoute 30 s/réaction/notification/production ≤ 7 j + micro-expérience. Contre-métriques : remboursements, refus H0, échec micro, défauts print, coût support/projet, masquages/suppressions, NPS narrateur, **charge de l'Initiateur·rice (≤ 4 actions et ≤ 15 min/mois)**.
 
 ## 8. Spikes & travaux Phase 0 (préalables au build)
 1. **Ergonomie lien+micro+validation** (0A) : 15-20 seniors, appareils réels, 2 variantes de validation.
@@ -98,7 +98,7 @@ Même en réussite, une part des projets n'atteindra pas book-ready. La promesse
 - Matière riche (R-6 atteint) → livre standard.
 - Matière intermédiaire → **livret 24-60 pages**, même qualité de fabrication.
 - Matière faible → **« Chapitre fondateur »** relié court + export complet + pack audio.
-- À M+12 sans BAT : proposition automatique du format adapté + **1 prolongation de 3 mois incluse** (puis payante) ; à défaut, **crédit d'impression valable 24 mois**.
+- À la fin de la collecte sans BAT (M+12 au rythme par défaut) : proposition automatique du format adapté + **1 prolongation de 3 mois incluse** (puis payante) ; à défaut, **crédit d'impression valable 24 mois**.
 - Export seul si volume vraiment insuffisant, avec geste commercial encadré.
 
 ## 11. Roadmap (calendrier canonique R-8)

@@ -82,10 +82,17 @@ test('la marque se change depuis l’administration et s’applique sans redépl
     await expect(page.getByText(/marque enregistrée/i)).toBeVisible();
 
     await page.goto('/');
-    await expect(page).toHaveTitle(/· Essai Playwright$/);
+    // Le nom de marque est dans le titre, sans épingler la forme : l'accueil
+    // le porte en tête (« Essai Playwright — ... »), les autres pages en
+    // suffixe. Ce qui se vérifie ici, c'est qu'il vient du réglage.
+    await expect(page).toHaveTitle(/Essai Playwright/);
     expect(await page.content()).toContain('--brand-primary: #8B0000');
+    // Le nom est porté deux fois — l'en-tête et le pied de page en ont chacun
+    // un depuis la refonte de l'accueil. On vérifie celui de l'en-tête.
     await expect(
-        page.getByText('Essai Playwright', { exact: true }),
+        page
+            .getByRole('banner')
+            .getByRole('link', { name: 'Essai Playwright' }),
     ).toBeVisible();
 
     // 2. Une combinaison illisible est refusée.
@@ -105,5 +112,5 @@ test('la marque se change depuis l’administration et s’applique sans redépl
     await expect(page.getByText(/marque enregistrée/i)).toBeVisible();
 
     await page.goto('/');
-    await expect(page).toHaveTitle(new RegExp(`· ${NOM_INITIAL}$`));
+    await expect(page).toHaveTitle(new RegExp(NOM_INITIAL));
 });
