@@ -20,7 +20,7 @@ type Member = {
     name: string;
     relationship: string | null;
     contact: string | null;
-    canContribute: boolean;
+    canAsk: boolean;
     invitedAt: string | null;
     firstSeenAt: string | null;
     isYou: boolean;
@@ -54,7 +54,7 @@ export default function Family({ members, copiedLink, copiedFor }: Props) {
         relationship: '',
         email: '',
         phone_e164: '',
-        can_contribute: false,
+        can_ask: false,
     });
 
     return (
@@ -149,10 +149,10 @@ export default function Family({ members, copiedLink, copiedFor }: Props) {
                                                           )}
                                                 </Pill>
 
-                                                {member.canContribute && (
+                                                {member.canAsk && (
                                                     <Pill tone="muted">
                                                         {t(
-                                                            'initiator.family.can_contribute',
+                                                            'initiator.family.can_ask',
                                                         )}
                                                     </Pill>
                                                 )}
@@ -330,11 +330,12 @@ export default function Family({ members, copiedLink, copiedFor }: Props) {
                         </div>
 
                         <CheckField
-                            checked={form.data.can_contribute}
+                            checked={form.data.can_ask}
                             onChange={(checked) =>
-                                form.setData('can_contribute', checked)
+                                form.setData('can_ask', checked)
                             }
-                            label={t('initiator.family.invite.can_contribute')}
+                            label={t('initiator.family.invite.can_ask')}
+                            hint={t('initiator.family.invite.can_ask_help')}
                         />
 
                         <SubmitButton

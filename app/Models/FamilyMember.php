@@ -28,7 +28,7 @@ use Illuminate\Notifications\Notification;
  * @property string|null $relationship
  * @property string|null $email
  * @property string|null $phone_e164
- * @property bool $can_contribute
+ * @property bool $can_ask
  * @property CarbonImmutable|null $invited_at
  * @property CarbonImmutable|null $first_seen_at
  * @property CarbonImmutable|null $removed_at
@@ -42,13 +42,13 @@ final class FamilyMember extends Model
 
     /** @var array<string, mixed> */
     protected $attributes = [
-        'can_contribute' => false,
+        'can_ask' => false,
     ];
 
     /** @var list<string> */
     protected $fillable = [
         'display_name', 'relationship', 'email', 'phone_e164',
-        'can_contribute', 'invited_at',
+        'can_ask', 'invited_at',
     ];
 
     /** @return BelongsTo<Project, $this> */
@@ -98,7 +98,7 @@ final class FamilyMember extends Model
     protected function casts(): array
     {
         return [
-            'can_contribute' => 'boolean',
+            'can_ask' => 'boolean',
             'invited_at' => 'immutable_datetime',
             'first_seen_at' => 'immutable_datetime',
             'removed_at' => 'immutable_datetime',

@@ -35,7 +35,10 @@ final readonly class ReissueFamilyLink
                 TokenType::ListenProject,
                 $member,
                 ['listen', 'react'],
-                now()->addMonths(12),
+                // La durée du réglage, jamais un nombre recopié : un lien
+                // d'écoute vit le temps du projet, et l'offre ne dure plus
+                // douze mois pour tout le monde (R-2, v3.0).
+                now()->addMonths((int) config('product.tokens.listen_project_months')),
                 reason: $reason,
             );
 

@@ -76,7 +76,7 @@ it('retient qui a déposé la photo', function (): void {
     $member = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
         'display_name' => 'Claire',
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
 
     $media = app(AttachPhoto::class)->handle($story, photoFile(), $member, null);

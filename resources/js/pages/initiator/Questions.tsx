@@ -32,6 +32,7 @@ type Entry = {
     text: string;
     theme: string | null;
     themeLabel: string | null;
+    askedBy: string | null;
     photos: number;
     /** La date d'envoi, sur les huit premières seulement. */
     sendAt: string | null;
@@ -472,9 +473,24 @@ export default function Questions({
                                             </span>
                                             {mine && (
                                                 <span className="text-brand font-medium">
-                                                    {t(
-                                                        'initiator.questions.pending_badge',
-                                                    )}
+                                                    {/*
+                                                     * Qui l'a posée : elle, ou
+                                                     * un proche nommé (R-1,
+                                                     * v3.1). La frise et cette
+                                                     * page disent la même
+                                                     * chose, parce qu'elles
+                                                     * lisent la même file.
+                                                     */}
+                                                    {entry.askedBy === null
+                                                        ? t(
+                                                              'initiator.questions.pending_badge',
+                                                          )
+                                                        : t(
+                                                              'initiator.dashboard.asked_by',
+                                                              {
+                                                                  name: entry.askedBy,
+                                                              },
+                                                          )}
                                                 </span>
                                             )}
                                         </p>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Exports\DownloadExportController;
 use App\Http\Controllers\Family\HomePageController;
 use App\Http\Controllers\Family\ListenProgressController;
+use App\Http\Controllers\Family\QuestionController;
 use App\Http\Controllers\Family\ReactionController;
 use App\Http\Controllers\Family\StoryPageController;
 use App\Http\Controllers\Initiator\OneTapController;
@@ -93,6 +94,14 @@ Route::middleware([
     'throttle:tokens',
     'no-store',
     'resolve.token:listen_project|listen_story',
+    /*
+     * La première ouverture se note ici, pour tout le groupe.
+     *
+     * Un proche n'arrive pas toujours par l'accueil : un lien d'histoire, une
+     * histoire épinglée qui redirige, un signet posé sur une page profonde.
+     * Dans un contrôleur, la marque aurait manqué deux portes sur trois.
+     */
+    'family.visit',
 ])->group(function (): void {
     Route::get('/l/{token}', HomePageController::class)
         ->name('family.home');
@@ -128,4 +137,15 @@ Route::middleware([
 
     Route::post('/l/{token}/stories/{story}/reactions', [ReactionController::class, 'store'])
         ->name('family.stories.react');
+
+    /*
+     * Une question posée par un proche (R-1, dossier v3.1).
+     *
+     * Le droit est explicite et donné personne par personne : un jeton
+     * d'écoute valide ne suffit pas, `QuestionController` vérifie `can_ask`.
+     * C'est le maillon H2 que l'écoute seule ne produit pas — demander à son
+     * aïeule ce qu'on a toujours voulu savoir n'est pas passif.
+     */
+    Route::post('/l/{token}/questions', [QuestionController::class, 'store'])
+        ->name('family.questions.store');
 });

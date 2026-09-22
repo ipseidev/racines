@@ -25,15 +25,15 @@ return [
         ],
         'expired' => [
             'title' => 'Ce lien a expiré',
-            'body' => 'Demandez un nouveau lien à la personne qui vous a invité·e.',
+            'body' => 'Demandez un nouveau lien à la personne qui vous l’a envoyé.',
         ],
         'revoked' => [
             'title' => 'Ce lien n’est plus valable',
-            'body' => 'La famille a retiré cet accès. Demandez un nouveau lien à la personne qui vous a invité·e.',
+            'body' => 'La famille a retiré cet accès. Demandez un nouveau lien à la personne qui vous l’a envoyé.',
         ],
         'used' => [
             'title' => 'Ce lien a déjà servi',
-            'body' => 'Demandez un nouveau lien à la personne qui vous a invité·e.',
+            'body' => 'Demandez un nouveau lien à la personne qui vous l’a envoyé.',
         ],
         'type_mismatch' => [
             'title' => 'Ce lien ne mène pas ici',
@@ -56,7 +56,7 @@ return [
         // Dit pourquoi cette personne a ce lien, et ce qu'on attend d'elle.
         // C'est la seule protection contre sa circulation dans un groupe de
         // messagerie, et elle vaut mieux qu'une mention en petits caractères.
-        'footer' => 'Vous recevez ce lien parce que :inviter vous a invité·e. Ne le transmettez qu’à des proches.',
+        'footer' => 'Vous recevez ce lien de la part de :inviter. Ne le transmettez qu’à des proches.',
         'footer_generic' => 'Ce lien vous est personnel. Ne le transmettez qu’à des proches.',
     ],
 
@@ -126,5 +126,30 @@ return [
         'unavailable_help' => 'Le texte imprimé reste le vôtre. L’écoute en ligne a été retirée à la demande du narrateur ou de sa famille.',
         'all_stories' => 'Voir toutes les histoires',
         'all_stories_help' => 'Il vous faut pour cela un lien personnel : demandez-le à la personne qui vous a offert ce livre.',
+    ],
+
+    /*
+     * Une question posée par un proche (R-1, dossier v3.1).
+     *
+     * Le mot « question » et pas « suggestion » : on demande vraiment quelque
+     * chose à quelqu'un, et l'édulcorer ferait croire que ça n'arrivera
+     * peut-être pas. Ça arrive, et la personne est libre de ne pas répondre —
+     * c'est dit.
+     */
+    'ask' => [
+        'title' => 'Posez-lui votre question',
+        'intro' => 'Ce que vous aimeriez savoir, et que personne d’autre ne pensera à demander. Elle partira à son tour, après celles qui attendent déjà.',
+        'label' => 'Votre question',
+        'placeholder' => 'Comment vous êtes-vous rencontrés, mamie ?',
+        'photos' => 'Joindre des photos',
+        'photos_help' => 'Elles seront montrées en même temps que votre question : une photo appelle souvent un récit que les mots ne trouvent pas. Quatre au plus.',
+        'submit' => 'Envoyer ma question',
+        'sending' => 'Envoi…',
+        'added' => 'Votre question est dans la file. :name la recevra à son tour.',
+        'added_without_photo' => 'Votre question est posée, mais une photo n’a pas pu être jointe.',
+        'free' => 'Rien ne l’oblige à y répondre, et personne ne le lui demandera deux fois.',
+        'mine' => 'Vos questions',
+        'waiting' => 'En attente',
+        'sent' => 'Posée le :date',
     ],
 ];

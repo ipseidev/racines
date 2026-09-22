@@ -8,6 +8,15 @@ export type Photo = {
     thumbUrl: string;
     url: string;
     alt: string;
+    /**
+     * Cette photo est-elle celle du lecteur ?
+     *
+     * Absente là où la question ne se pose pas — le tableau de bord de
+     * l'Initiateur·rice, qui retire tout ce qu'elle voit. Fausse, elle cache
+     * le bouton de retrait : un proche ne retire que ses propres photos, et
+     * autoriser le reste ferait du cercle d'écoute un lieu de conflit.
+     */
+    mine?: boolean;
 };
 
 type Props = {
@@ -97,7 +106,7 @@ export default function PhotoGallery({ photos, onRemove }: Props) {
                         >
                             {t('common.actions.close')}
                         </button>
-                        {onRemove !== undefined && (
+                        {onRemove !== undefined && opened.mine !== false && (
                             <button
                                 type="button"
                                 onClick={() => {

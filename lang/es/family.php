@@ -127,4 +127,21 @@ return [
         'all_stories' => 'Ver todas las historias',
         'all_stories_help' => 'Para eso necesitas un enlace personal: pídeselo a la persona que te ha regalado este libro.',
     ],
+
+    'ask' => [
+        'title' => 'Hágale su pregunta',
+        'intro' => 'Lo que le gustaría saber, y que nadie más pensará en preguntar. Saldrá a su vez, después de las que ya esperan.',
+        'label' => 'Su pregunta',
+        'placeholder' => '¿Cómo os conocisteis, abuela?',
+        'photos' => 'Adjuntar fotos',
+        'photos_help' => 'Se mostrarán junto a su pregunta: una foto suele despertar un relato que las palabras no encuentran. Cuatro como máximo.',
+        'submit' => 'Enviar mi pregunta',
+        'sending' => 'Enviando…',
+        'added' => 'Su pregunta está en la cola. :name la recibirá a su vez.',
+        'added_without_photo' => 'Su pregunta está hecha, pero una foto no ha podido adjuntarse.',
+        'free' => 'Nada le obliga a responder, y nadie se lo pedirá dos veces.',
+        'mine' => 'Sus preguntas',
+        'waiting' => 'Esperando',
+        'sent' => 'Hecha el :date',
+    ],
 ];

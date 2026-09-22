@@ -605,7 +605,7 @@ final class E2ELinksSeeder extends Seeder
             // Un seul scénario porte le droit de contribuer : le bloc 12
             // vérifie aussi l'**absence** du bouton pour les autres, et un
             // décor où tout le monde contribue ne prouverait que la moitié.
-            'can_contribute' => $scenario === 'listen-photo',
+            'can_ask' => $scenario === 'listen-photo',
         ]);
 
         $token = new AccessToken([
@@ -685,7 +685,7 @@ final class E2ELinksSeeder extends Seeder
         $member = app(AddFamilyMember::class)->handle($project, $owner, [
             'display_name' => 'Marie',
             'email' => "marie-{$scenario}-famille@example.test",
-            'can_contribute' => false,
+            'can_ask' => false,
         ]);
 
         $token = new AccessToken([

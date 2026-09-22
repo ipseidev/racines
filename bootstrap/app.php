@@ -8,6 +8,7 @@ use App\Exceptions\Domain\StoryUnavailable;
 use App\Exceptions\Domain\TokenUnavailable;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\NoStore;
+use App\Http\Middleware\RecordFamilyVisit;
 use App\Http\Middleware\NotAPage;
 use App\Http\Middleware\RequireSensitiveGrant;
 use App\Http\Middleware\ResolveAccessToken;
@@ -87,6 +88,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'not-a-page' => NotAPage::class,
             'resolve.token' => ResolveAccessToken::class,
             'no-store' => NoStore::class,
+            // La première ouverture d'un lien d'écoute : premier maillon de
+            // H2, et la seule chose qui remplisse `first_seen_at`.
+            'family.visit' => RecordFamilyVisit::class,
             'sensitive' => RequireSensitiveGrant::class,
         ]);
     })

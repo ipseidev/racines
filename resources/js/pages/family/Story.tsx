@@ -4,7 +4,6 @@ import { useState } from 'react';
 import AudioPlayer from '@/components/AudioPlayer';
 import VideoPlayer from '@/components/VideoPlayer';
 import PhotoGallery, { type Photo } from '@/components/PhotoGallery';
-import PhotoUploader from '@/components/PhotoUploader';
 import { Avatar } from '@/components/space/Avatar';
 import { Check, Chevron, Heart, Send } from '@/components/space/Icons';
 import { useT } from '@/hooks/useT';
@@ -33,7 +32,6 @@ type Props = {
     yourReactions: string[];
     photos: Photo[];
     /** Vrai seulement si ce proche a le droit d'ajouter des photos. */
-    canContribute: boolean;
     siblings: { previous: string | null; next: string | null };
     /**
      * `family` : un proche identifié, sur son lien d'écoute.
@@ -79,7 +77,6 @@ export default function Story({
     reactions,
     yourReactions,
     photos,
-    canContribute,
     siblings,
     mode = 'family',
 }: Props) {
@@ -397,23 +394,19 @@ export default function Story({
              * compte, et une grille d'images en tête de page ferait passer
              * l'histoire pour une galerie.
              *
-             * Le retrait n'est offert qu'à qui peut contribuer — et le
-             * serveur revérifie que la photo est bien la sienne : un bouton
-             * n'est pas une autorisation.
+             * Le retrait n'est offert que sur **ses propres** photos —
+             * `mine`, posé par le serveur, qui revérifie ensuite : un bouton
+             * n'est pas une autorisation. Autoriser le retrait des photos
+             * d'autrui ferait du cercle d'écoute un lieu de conflit.
              */}
             <PhotoGallery
                 photos={photos}
-                onRemove={
-                    canContribute
-                        ? (id) =>
-                              router.delete(`${base}/photos/${id}`, {
-                                  preserveScroll: true,
-                              })
-                        : undefined
+                onRemove={(id) =>
+                    router.delete(`${base}/photos/${id}`, {
+                        preserveScroll: true,
+                    })
                 }
             />
-
-            {canContribute && <PhotoUploader action={`${base}/photos`} />}
 
             {/*
              * Depuis un QR, on n'offre pas la liste : il faudrait un lien

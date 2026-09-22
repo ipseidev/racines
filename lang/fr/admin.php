@@ -302,7 +302,7 @@ return [
         'name' => 'Prénom',
         'family' => 'La famille',
         'relationship' => 'Lien de parenté',
-        'can_contribute' => 'Peut contribuer',
+        'can_ask' => 'Peut poser des questions',
         'first_seen_at' => 'A ouvert son lien le',
         'never_opened' => 'Jamais ouvert',
         'removed' => 'Retiré',

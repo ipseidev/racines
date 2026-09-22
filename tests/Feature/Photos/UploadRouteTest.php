@@ -139,7 +139,7 @@ function proche(Story $story, bool $contribue): array
 {
     $member = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
-        'can_contribute' => $contribue,
+        'can_ask' => $contribue,
     ]);
 
     $issued = app(TokenService::class)->issue(TokenType::ListenProject, $member, ['listen', 'react']);
@@ -147,14 +147,23 @@ function proche(Story $story, bool $contribue): array
     return [$issued->plain, $member];
 }
 
-it('laisse un proche autorisé déposer depuis son lien d’écoute', function (): void {
+/*
+ * Aucun proche ne dépose sur une histoire (dossier v3.1), pas même celui qui
+ * a le droit de poser des questions.
+ *
+ * Une photo collée sur un récit déjà clos est une décoration ; jointe à la
+ * question, elle appelle le récit — et c'est le chemin qu'on lui a donné
+ * (`family.questions.store`). Illustrer une histoire close reste à
+ * l'Initiateur·rice, qui prépare le livre.
+ */
+it('refuse le dépôt sur une histoire même au proche qui peut poser des questions', function (): void {
     $story = Story::factory()->shared()->create();
     [$token] = proche($story, contribue: true);
 
     $this->post("/l/{$token}/stories/{$story->getKey()}/photos", ['photo' => photoDeDepot()])
-        ->assertSessionHasNoErrors();
+        ->assertForbidden();
 
-    expect($story->refresh()->getMedia(Story::PHOTOS))->toHaveCount(1);
+    expect($story->refresh()->getMedia(Story::PHOTOS))->toHaveCount(0);
 });
 
 it('refuse le dépôt à un proche sans droit de contribuer', function (): void {

@@ -70,7 +70,7 @@ it('nomme le déposant dans le texte alternatif', function (): void {
     $claire = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
         'display_name' => 'Claire',
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
 
     app(AttachPhoto::class)->handle($story, photoFile(), $claire, null);
@@ -84,16 +84,32 @@ it('nomme le déposant dans le texte alternatif', function (): void {
             ->where('photos.0.alt', 'Photo jointe par Claire'));
 });
 
-it('n’offre le bouton d’ajout qu’à qui peut contribuer', function (): void {
+/*
+ * Le bouton qui offre de poser une question n'existe que pour qui en a le
+ * droit (R-1, dossier v3.1).
+ *
+ * Un bouton grisé invite à demander pourquoi ; un bouton absent non. Et il vit
+ * sur l'accueil du cercle plutôt que sur une histoire : on pose une question
+ * au narrateur, pas à un récit.
+ */
+it('n’offre de poser une question qu’à qui en a le droit', function (): void {
     $story = Story::factory()->shared()->create();
 
     $spectateur = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
-        'can_contribute' => false,
+        'can_ask' => false,
     ]);
-    $issued = app(TokenService::class)->issue(TokenType::ListenProject, $spectateur, ['listen', 'react']);
+    $curieuse = FamilyMember::factory()->create([
+        'project_id' => $story->project_id,
+        'can_ask' => true,
+    ]);
 
-    // Un bouton grisé invite à demander pourquoi ; un bouton absent non.
-    $this->get("/l/{$issued->plain}/stories/{$story->id}")
-        ->assertInertia(fn ($page) => $page->where('canContribute', false));
+    $lien = fn (FamilyMember $membre): string => app(TokenService::class)
+        ->issue(TokenType::ListenProject, $membre, ['listen', 'react'])->plain;
+
+    $this->get('/l/'.$lien($spectateur))
+        ->assertInertia(fn ($page) => $page->where('canAsk', false)->etc());
+
+    $this->get('/l/'.$lien($curieuse))
+        ->assertInertia(fn ($page) => $page->where('canAsk', true)->etc());
 });

@@ -40,6 +40,13 @@ final class HomePageController
             'narratorFirstName' => $member->project->primaryNarrator()->first()?->first_name,
             'inviterName' => $member->invitedBy?->name,
             'stories' => FamilyPresenter::cards($member),
+            /*
+             * Le droit de poser une question, donné personne par personne
+             * (R-1, dossier v3.1) : un bouton absent vaut mieux qu'un bouton
+             * grisé, qui invite à demander pourquoi.
+             */
+            'canAsk' => (bool) $member->can_ask,
+            'maxPhotos' => QuestionController::MAX_PHOTOS,
         ]);
     }
 }

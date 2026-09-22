@@ -21,15 +21,19 @@ use InvalidArgumentException;
  * ne se révoque pas sans punir tout le monde, et on ne saurait plus qui a
  * écouté quoi — donc plus rien du maillon H2 que le bloc doit mesurer.
  *
- * Douze mois : un lien d'écoute vit le temps du projet, pas le temps d'une
- * session. Le renouvellement est une action explicite (`ReissueFamilyLink`).
+ * Un lien d'écoute vit le temps du **projet**, pas celui d'une session, et sa
+ * durée vient donc du réglage (`product.tokens.listen_project_months`). Elle
+ * était écrite ici en dur, à douze mois : depuis que l'offre se vend en
+ * questions et non en mois (R-2, v3.0), une collecte au rythme quinzomadaire
+ * dure deux ans, et le lien du proche mourait en plein milieu — il perdait
+ * l'accès pendant que les histoires arrivaient encore.
+ *
+ * Le renouvellement reste une action explicite (`ReissueFamilyLink`).
  */
 final readonly class InviteFamilyMember
 {
     /** @var list<string> */
     private const SCOPE = ['listen', 'react'];
-
-    private const MONTHS = 12;
 
     public function __construct(
         private AddFamilyMember $members,
@@ -60,7 +64,7 @@ final readonly class InviteFamilyMember
                 TokenType::ListenProject,
                 $member,
                 self::SCOPE,
-                now()->addMonths(self::MONTHS),
+                now()->addMonths((int) config('product.tokens.listen_project_months')),
                 $invitedBy,
             );
 

@@ -11,6 +11,7 @@ use App\Notifications\Channels\SmsChannel;
 use App\Notifications\Channels\TrackedMailChannel;
 use App\Support\Brand;
 use App\Support\Links;
+use App\Support\Names;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -54,25 +55,52 @@ final class FamilyInvitationNotification extends Notification implements TracksD
     {
         return __('notifications.family_invitation.sms', [
             'inviter' => $this->invitedBy->name,
-            'narrator' => $this->narratorName(),
+            'narrator_of' => Names::of($this->narratorName()),
             'brand' => Brand::shortName(),
             'link' => $this->listenUrl(),
         ]);
     }
 
+    /**
+     * L'invitation, dans l'ordre où l'on se pose les questions.
+     *
+     * D'où ça vient, ce que ça me coûte, ce que je verrai, ce que je peux
+     * rendre — puis le bouton. Le message tenait en une ligne et arrivait chez
+     * quelqu'un qui n'a jamais entendu parler de nous : il donnait un lien
+     * sans donner une raison de cliquer.
+     *
+     * La ligne des photos ne s'ajoute que pour qui en a le droit. Le dire à
+     * tout le monde ferait une promesse que la page dément trois secondes plus
+     * tard — et le droit de contribuer s'accorde personne par personne
+     * (bloc 12).
+     */
     public function toMail(mixed $notifiable): MailMessage
     {
-        return (new MailMessage)
+        $narrator = $this->narratorName();
+
+        $message = (new MailMessage)
             ->subject(__('notifications.family_invitation.subject', [
-                'narrator' => $this->narratorName(),
+                'inviter' => $this->invitedBy->name,
+                'narrator_of' => Names::of($narrator),
             ]))
             ->greeting(__('notifications.family_invitation.greeting', [
                 'name' => $notifiable->display_name,
             ]))
-            ->line(__('notifications.family_invitation.line', [
+            ->line(__('notifications.family_invitation.gift', [
                 'inviter' => $this->invitedBy->name,
-                'narrator' => $this->narratorName(),
+                'narrator' => $narrator,
             ]))
+            ->line(__('notifications.family_invitation.free'))
+            ->line(__('notifications.family_invitation.sovereign', [
+                'narrator' => $narrator,
+            ]))
+            ->line(__('notifications.family_invitation.react'));
+
+        if ($notifiable->can_ask === true) {
+            $message->line(__('notifications.family_invitation.contribute'));
+        }
+
+        return $message
             ->action(__('notifications.family_invitation.button'), $this->listenUrl())
             ->line(__('notifications.family_invitation.personal'))
             ->line(__('notifications.prompt.no_password'))

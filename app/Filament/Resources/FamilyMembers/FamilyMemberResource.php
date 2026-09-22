@@ -80,8 +80,8 @@ final class FamilyMemberResource extends Resource
                 TextColumn::make('relationship')
                     ->label(__('admin.family.relationship'))
                     ->placeholder('—'),
-                IconColumn::make('can_contribute')
-                    ->label(__('admin.family.can_contribute'))
+                IconColumn::make('can_ask')
+                    ->label(__('admin.family.can_ask'))
                     ->boolean(),
                 TextColumn::make('first_seen_at')
                     ->label(__('admin.family.first_seen_at'))

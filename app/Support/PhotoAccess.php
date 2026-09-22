@@ -25,9 +25,12 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *    texte.
  *  - **L'Initiateur·rice dépose et retire.** Elle organise le projet, et
  *    c'est souvent elle qui a les photos de famille numérisées.
- *  - **Un proche ne dépose que si `can_contribute`**, et ne retire que
- *    **ses** photos. Autoriser le retrait des photos d'autrui ferait du
- *    cercle d'écoute un lieu de conflit.
+ *  - **Un proche ne dépose plus sur une histoire** (dossier v3.1). Il joint
+ *    ses photos à **la question qu'il pose**, où elles appellent le récit, au
+ *    lieu de les coller sur un récit déjà clos où elles n'étaient qu'une
+ *    décoration. Il retire toujours **ses** photos, y compris celles déposées
+ *    du temps où il le pouvait : autoriser le retrait des photos d'autrui
+ *    ferait du cercle d'écoute un lieu de conflit.
  *  - **Personne ne dépose sur une histoire qui n'est pas la sienne.** La
  *    vérification du projet précède tout le reste.
  */
@@ -38,11 +41,16 @@ final class PhotoAccess
         return match (true) {
             $actor instanceof Narrator => self::ownsStory($story, $actor),
             $actor instanceof User => self::isInitiator($story, $actor),
-            // Le droit de contribuer est explicite, et par personne : c'est
-            // l'Initiateur·rice qui l'accorde, proche par proche.
-            $actor instanceof FamilyMember => $actor->project_id === $story->project_id
-                && $actor->removed_at === null
-                && (bool) $actor->can_contribute,
+            /*
+             * Jamais un proche (dossier v3.1).
+             *
+             * Le droit qu'il reçoit est celui de **poser une question**, avec
+             * ses photos jointes à elle — `can_ask`, et le chemin est celui de
+             * `Family\QuestionController`. Illustrer une histoire déjà close
+             * reste à l'Initiateur·rice, qui prépare le livre et a souvent
+             * seule les photos de famille numérisées.
+             */
+            $actor instanceof FamilyMember => false,
             default => false,
         };
     }
@@ -69,8 +77,10 @@ final class PhotoAccess
     public static function canEditCaption(Story $story, Media $photo, Model $actor): bool
     {
         if ($actor instanceof FamilyMember) {
-            return self::deposited($photo, $actor)
-                || (bool) $actor->can_contribute && $actor->project_id === $story->project_id;
+            // Sa propre photo, et rien d'autre : il ne dépose plus sur les
+            // histoires, mais celles qu'il a jointes à ses questions restent
+            // les siennes.
+            return self::deposited($photo, $actor);
         }
 
         return self::canRemove($story, $photo, $actor);

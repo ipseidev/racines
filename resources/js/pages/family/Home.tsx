@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 
 import { useFormat } from '@/hooks/useFormat';
 import { Chevron, Headphones } from '@/components/space/Icons';
+import { AskQuestion } from '@/components/family/AskQuestion';
 import { PageHeader } from '@/components/space/PageHeader';
 import { Pill } from '@/components/space/Pill';
 import { useT } from '@/hooks/useT';
@@ -21,6 +22,9 @@ type Props = {
     narratorFirstName: string | null;
     inviterName: string | null;
     stories: Card[];
+    /** Le droit de poser une question, donné personne par personne (R-1). */
+    canAsk: boolean;
+    maxPhotos: number;
 };
 
 /**
@@ -40,6 +44,8 @@ export default function Home({
     narratorFirstName,
     inviterName,
     stories,
+    canAsk,
+    maxPhotos,
 }: Props) {
     const fmt = useFormat();
     const formatDate = fmt.date;
@@ -141,6 +147,21 @@ export default function Home({
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {/*
+             * Poser sa question, sous les histoires et non au-dessus.
+             *
+             * La page est faite pour écouter : c'est ce qu'on vient y faire,
+             * et c'est après avoir entendu quelque chose qu'on a envie de
+             * demander la suite. Le formulaire vit replié derrière un bouton,
+             * pour que la page reste une page de réception.
+             */}
+            {canAsk && (
+                <AskQuestion
+                    action={`${window.location.pathname}/questions`}
+                    maxPhotos={maxPhotos}
+                />
             )}
 
             <p

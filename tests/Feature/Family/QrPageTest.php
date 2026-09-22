@@ -54,7 +54,6 @@ it('ne montre ni réactions ni voisines ni dépôt de photo', function (): void 
         ->assertInertia(fn ($page) => $page
             // Ces gestes ont un auteur, et on ne sait pas qui tient le livre.
             ->where('yourReactions', [])
-            ->where('canContribute', false)
             ->where('siblings', []));
 });
 

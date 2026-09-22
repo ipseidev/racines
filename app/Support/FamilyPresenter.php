@@ -98,7 +98,6 @@ final class FamilyPresenter
         return [
             ...$props,
             'yourReactions' => [],
-            'canContribute' => false,
             'mode' => 'qr',
         ];
     }
@@ -142,11 +141,11 @@ final class FamilyPresenter
             // quatre espaces la partagent, et une seconde version
             // oublierait le texte alternatif ou servirait une URL
             // permanente là où elle doit être temporaire.
-            'photos' => PhotoPresenter::forStory($story),
+            // Le lecteur est passé : `mine` décide quelles photos portent un
+            // bouton de retrait. Un proche ne retire que les siennes — celles
+            // qu'il a jointes à ses questions — et le serveur revérifie.
+            'photos' => PhotoPresenter::forStory($story, $member),
             'mode' => 'family',
-            // Le bouton d'ajout n'existe que pour qui peut contribuer : un
-            // bouton grisé invite à demander pourquoi, un bouton absent non.
-            'canContribute' => $member !== null && PhotoAccess::canAttach($story, $member),
         ];
     }
 

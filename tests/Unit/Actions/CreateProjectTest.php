@@ -72,5 +72,5 @@ it('inscrit un proche avec la trace de qui l’a invité', function (): void {
     expect($member->invited_by_user_id)->toBe($owner->id)
         ->and($member->project_id)->toBe($project->id)
         ->and($member->invited_at)->not->toBeNull()
-        ->and($member->can_contribute)->toBeFalse();
+        ->and($member->can_ask)->toBeFalse();
 });

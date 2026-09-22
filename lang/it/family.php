@@ -127,4 +127,21 @@ return [
         'all_stories' => 'Vedi tutte le storie',
         'all_stories_help' => 'Per farlo serve un link personale: chiedilo alla persona che ti ha regalato questo libro.',
     ],
+
+    'ask' => [
+        'title' => 'Le faccia la sua domanda',
+        'intro' => 'Quello che le piacerebbe sapere, e che nessun altro penserà a chiedere. Partirà a sua volta, dopo quelle già in attesa.',
+        'label' => 'La sua domanda',
+        'placeholder' => 'Come vi siete conosciuti, nonna?',
+        'photos' => 'Allegare delle foto',
+        'photos_help' => 'Saranno mostrate insieme alla sua domanda: una foto richiama spesso un racconto che le parole non trovano. Quattro al massimo.',
+        'submit' => 'Inviare la mia domanda',
+        'sending' => 'Invio…',
+        'added' => 'La sua domanda è in coda. :name la riceverà a sua volta.',
+        'added_without_photo' => 'La domanda è posta, ma una foto non ha potuto essere allegata.',
+        'free' => 'Nulla la obbliga a rispondere, e nessuno glielo chiederà due volte.',
+        'mine' => 'Le sue domande',
+        'waiting' => 'In attesa',
+        'sent' => 'Posta il :date',
+    ],
 ];

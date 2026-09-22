@@ -8,6 +8,7 @@ use App\Enums\OutboundMessageStatus;
 use App\Enums\TokenType;
 use App\Models\AccessToken;
 use App\Models\FamilyMember;
+use App\Models\Narrator;
 use App\Models\OutboundMessage;
 use App\Models\Project;
 use App\Notifications\Channels\SmsChannel;
@@ -16,7 +17,7 @@ use App\Services\Tokens\TokenService;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
-it('crée le proche, son lien de douze mois et son invitation', function (): void {
+it('crée le proche, son lien de la durée réglée et son invitation', function (): void {
     Notification::fake();
     $project = Project::factory()->create();
 
@@ -33,9 +34,16 @@ it('crée le proche, son lien de douze mois et son invitation', function (): voi
     expect($member->project_id)->toBe($project->id)
         ->and($member->display_name)->toBe('Marie')
         ->and($token->type)->toBe(TokenType::ListenProject)
-        // Douze mois : un lien d'écoute vit le temps du projet, pas le temps
-        // d'une session. On le renouvelle, on ne le laisse pas mourir seul.
-        ->and(now()->diffInDays($token->expires_at))->toBeGreaterThan(360)
+        /*
+         * La durée **du réglage**, à la date près.
+         *
+         * Elle était écrite en dur dans l'action, et ce test l'acceptait :
+         * « plus de 360 jours » passait aussi bien pour douze mois que pour
+         * vingt-sept. Le réglage a été porté à vingt-sept sans effet, et
+         * personne ne l'a vu — un seuil large ne garde rien.
+         */
+        ->and($token->expires_at?->toDateString())
+        ->toBe(now()->addMonths((int) config('product.tokens.listen_project_months'))->toDateString())
         ->and($token->scope)->toContain('listen');
 
     Notification::assertSentTo($member, FamilyInvitationNotification::class);
@@ -130,4 +138,111 @@ it('invite depuis la ligne de commande', function (): void {
     ])->assertSuccessful();
 
     expect(FamilyMember::query()->where('display_name', 'Marie')->exists())->toBeTrue();
+});
+
+/*
+ * Le lien d'écoute vit le temps du **projet**, et l'offre ne dure plus douze
+ * mois pour tout le monde (R-2, v3.0) : au rythme quinzomadaire, la collecte
+ * s'étale sur deux ans. Un lien de douze mois mourait alors en pleine
+ * collecte, et le proche perdait l'accès pendant que les histoires arrivaient
+ * encore.
+ *
+ * Ce test change le réglage plutôt que d'en recopier la valeur : c'est la
+ * seule forme qui échoue si la durée revient en dur dans l'action.
+ */
+it('suit le réglage quand la durée des liens d’écoute change', function (): void {
+    Notification::fake();
+    config()->set('product.tokens.listen_project_months', 27);
+
+    $project = Project::factory()->create();
+
+    $member = app(InviteFamilyMember::class)->handle($project, $project->owner, [
+        'display_name' => 'Marie',
+        'email' => 'marie@example.test',
+    ]);
+
+    $invitation = AccessToken::query()
+        ->where('subject_type', $member->getMorphClass())
+        ->where('subject_id', $member->id)
+        ->sole();
+
+    expect($invitation->expires_at?->toDateString())->toBe(now()->addMonths(27)->toDateString());
+
+    // Le renouvellement suit la même règle : c'est le second endroit où la
+    // durée était recopiée.
+    $renouvele = app(ReissueFamilyLink::class)->handle($member->refresh());
+
+    expect($renouvele->token->expires_at?->toDateString())
+        ->toBe(now()->addMonths(27)->toDateString());
+});
+
+/*
+|--------------------------------------------------------------------------
+| Ce que l'invitation dit, et à qui
+|--------------------------------------------------------------------------
+|
+| Le message tenait en une ligne — « X vous invite à écouter les histoires que
+| Y enregistre » — et arrivait chez quelqu'un qui n'a jamais entendu parler de
+| nous : un lien sans raison de cliquer. Il explique maintenant d'où ça vient,
+| ce que ça coûte, ce qu'on verra et ce qu'on peut rendre.
+|
+*/
+
+it('explique le cadeau, la gratuité et la souveraineté du narrateur', function (): void {
+    $project = Project::factory()->create();
+
+    Narrator::factory()->create([
+        'project_id' => $project->id,
+        'is_primary' => true,
+        'first_name' => 'Odette',
+    ]);
+
+    $member = FamilyMember::factory()->make([
+        'display_name' => 'Paul',
+        'email' => 'paul@example.test',
+        'can_ask' => false,
+    ]);
+
+    $mail = (new FamilyInvitationNotification($project->refresh(), str_repeat('a', 43), $project->owner))
+        ->toMail($member);
+
+    // Les lignes d'avant le bouton **et** celles d'après : la garde
+    // anti-hameçonnage vit sous l'action, là où on la lit en dernier.
+    $rendu = implode(' ', array_map('strval', [...$mail->introLines, ...$mail->outroLines]));
+
+    expect($mail->subject)
+        // L'élision, par `Names::of()` : « de Odette » se lit sur chaque
+        // invitation, et le jumeau de `ofName()` existait déjà côté serveur.
+        ->toContain('d’Odette')
+        ->and($rendu)->toContain('a offert à Odette de raconter sa vie')
+        ->and($rendu)->toContain('C’est gratuit')
+        // Le point du produit : un proche qui l'ignore croit avoir accès à
+        // tout ce que la narratrice enregistre.
+        ->and($rendu)->toContain('relit chaque histoire avant que quiconque l’entende')
+        // Et la garde anti-hameçonnage du doc 04 §9, qui ne bouge pas.
+        ->and($rendu)->toContain('Ce lien est personnel');
+});
+
+it('ne promet de poser des questions qu’à ceux qui en ont le droit', function (): void {
+    $project = Project::factory()->create();
+
+    $lignes = fn (bool $contribue): string => implode(' ', array_map(
+        'strval',
+        (new FamilyInvitationNotification($project, str_repeat('a', 43), $project->owner))
+            ->toMail(FamilyMember::factory()->make([
+                'display_name' => 'Marie',
+                'email' => 'marie@example.test',
+                'can_ask' => $contribue,
+            ]))
+            ->introLines,
+    ));
+
+    /*
+     * Le droit de poser une question s'accorde personne par personne (R-1).
+     * L'annoncer à tout le monde ferait une promesse que la page dément trois
+     * secondes plus tard — et c'est précisément le genre de promesse qu'on ne
+     * tient pas qui décide si une famille nous croit.
+     */
+    expect($lignes(true))->toContain('lui poser vos propres questions')
+        ->and($lignes(false))->not->toContain('lui poser vos propres questions');
 });

@@ -1,10 +1,12 @@
 # NARRAE — Référentiel canonique, Glossaire & Registre des sources
-**v3.0 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
+**v3.1 — Septembre 2026 — Document de référence : en cas de divergence entre documents, ce référentiel fait foi.**
 
 ## R-1. Rôles (terminologie produit/juridique)
 - **Initiateur·rice** : achète, organise, prépare le BAT ; ne peut jamais outrepasser le veto du narrateur. *(« Claire », persona féminine = hypothèse marketing, pas le nom du rôle.)*
 - **Narrateur·rice** : souverain·e sur ses histoires (consentement préalable, validation explicite, veto, retrait).
-- **Proches** : écoutent, réagissent, contribuent photos.
+- **Proches** : écoutent, réagissent, et — si l'Initiateur·rice leur en donne le droit, personne par personne — **proposent des questions**, avec leurs photos. Une question proposée rejoint la file d'envoi derrière ce qui attend déjà ; l'Initiateur·rice peut la réordonner ou la retirer (T-63), et le veto du narrateur prévaut sur tout le monde.
+  - *Le droit se donne à chacun séparément : on peut inviter un cousin en lecture seule et une fille qui pose des questions.*
+  - *La photo d'un proche est jointe à **sa question**, jamais collée sur un récit déjà fait : c'est la photo qui appelle l'histoire. Seule l'Initiateur·rice, qui prépare le livre, peut encore illustrer une histoire close.*
 - **Éditeur désigné** : rôle optionnel délégué par l'Initiateur·rice pour la préparation du livre.
 
 ## R-2. Offre & durées

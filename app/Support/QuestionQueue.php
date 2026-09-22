@@ -69,6 +69,9 @@ final readonly class QuestionQueue
                 'text' => (string) $story->custom_question_text,
                 'theme' => null,
                 'themeLabel' => null,
+                // Qui l'a posée : un proche nommé, ou l'Initiateur·rice quand
+                // la colonne est nulle (R-1, dossier v3.1).
+                'askedBy' => $story->proposedBy?->display_name,
                 'photos' => count(PhotoPresenter::promptsForStory($story)),
                 'rank' => (int) ($story->queue_order ?? 0),
                 'tie' => 0,
@@ -97,6 +100,7 @@ final readonly class QuestionQueue
                 'text' => $question->text,
                 'theme' => $question->theme->value,
                 'themeLabel' => Options::label($question->theme),
+                'askedBy' => null,
                 'photos' => 0,
                 'rank' => (int) ($ranks[$question->id] ?? self::UNRANKED + $position),
                 'tie' => 1,
@@ -146,6 +150,7 @@ final readonly class QuestionQueue
     public function pendingStories(Project $project): Collection
     {
         return $project->stories()
+            ->with('proposedBy')
             ->where('state', Proposed::$name)
             ->whereNotNull('custom_question_text')
             ->whereNotExists(fn (Builder $query) => $query

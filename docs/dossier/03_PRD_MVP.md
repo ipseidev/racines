@@ -1,5 +1,5 @@
 # NARRAE — PRD du MVP
-**v3.0 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
+**v3.1 — Septembre 2026 — Build autorisé uniquement après la Gate Phase 1 (mars 2027). Valeurs canoniques : doc 05 (Référentiel).**
 
 ## 1. Objectif du MVP
 Industrialiser ce que la Phase 0 aura prouvé : un narrateur senior clique, autorise le micro, s'enregistre, **valide explicitement** et recommence (H1) ; les proches écoutent et cette attention est associée à la production (H2) ; l'économie tient après acquisition (H3). Le MVP industrialise **le moteur de complétion** — pas un catalogue de fonctionnalités.
@@ -17,13 +17,13 @@ Téléphonie automatisée (build conditionné aux seuils D-9 mesurés en 0B ; l'
 | P0-3 | Lien d'enregistrement navigateur | 1 lien/question ; validité 30 j ; réutilisable jusqu'à VALIDÉE ; révocable/ré-émissible ; page à un bouton ; **choix de la forme avant toute autorisation — sa voix, ou se filmer face caméra [v2.7, D-11]** ; pré-explication avant le popup micro (et avant celui de la caméra) ; pause/reprise ; upload résumable |
 | P0-4 | Envoi des prompts | SMS + email ; cadence par défaut hebdo, créneau choisi ; WhatsApp = lien copiable en 1 tap pour transfert manuel |
 | P0-5 | Réponse écrite simple | Zone de texte, pas d'éditeur avancé |
-| P0-6 | Photos rattachées aux histoires | Upload simple ; contrôle de **format** (doc 04 §12) ; **contrôle antivirus débranché [v2.8, D-12]**, journalisation de chaque fichier admis sans contrôle |
+| P0-6 | Photos rattachées aux **questions**, et aux histoires pour l'Initiateur·rice | Une photo jointe à une question est montrée au narrateur **avec** elle : c'est elle qui appelle le récit. L'illustration d'une histoire déjà close reste à l'Initiateur·rice, qui prépare le livre. Upload simple ; contrôle de **format** (doc 04 §12) ; **contrôle antivirus débranché [v2.8, D-12]**, journalisation de chaque fichier admis sans contrôle |
 | P0-7 | Transcription FR | Audio smartphone ; audio source conservé, jamais remplacé |
 | P0-8 | **Double rendu Verbatim/Fluide** | À la demande, côte à côte, réversible ; Verbatim jamais supprimé ; le texte conserve mots et tournures, **seul l'audio conserve accent, rythme, silences** |
 | P0-9 | 60-100 questions éditorialisées FR | Corpus original, séquencé du facile vers l'intime |
 | P0-10 | Écoute familiale privée + réaction simple | Page d'écoute par histoire, ❤️/merci, notification au narrateur |
 | P0-11 | **Moteur de complétion v1** | Spécifié état par état en §5.3 — « adaptatif par règles » : les règles sont fixes et documentées, leurs **paramètres** (cadence, créneau, canal, type de question) s'adaptent au comportement observé |
-| P0-12 | 1 narrateur principal | Contributeurs photos/réactions autorisés |
+| P0-12 | 1 narrateur principal | Proches autorisés à réagir, et — droit donné personne par personne — à **proposer des questions** avec leurs photos (R-1) |
 | P0-13 | Livre : 2-3 templates fixes | BAT interactif obligatoire ; critères book-ready **R-6** (mots/durée/pages/thèmes), pas un compte d'histoires |
 | P0-14 | 1 imprimeur FR + secours manuel | SLA/réimpression contractualisés ; délais de livraison = objectif confirmé par devis 0A |
 | P0-15 | QR audio + pack hors-ligne | QR → page d'écoute (durée d'engagement D-8, accès doc 04 §7) ; pack hors-ligne : modalité décidée après test 0B (téléchargement confirmé vs clé USB, +6-9 € COGS) |

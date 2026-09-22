@@ -44,6 +44,7 @@ use Spatie\ModelStates\HasStates;
  * @property StoryState $state
  * @property string|null $previous_state
  * @property CarbonImmutable|null $proposed_at
+ * @property string|null $proposed_by_family_member_id
  * @property CarbonImmutable|null $recorded_at
  * @property CarbonImmutable|null $transcribed_at
  * @property CarbonImmutable|null $validated_at
@@ -136,6 +137,20 @@ final class Story extends Model implements HasMedia
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * Le proche qui a posé cette question, s'il y en a un (R-1, v3.1).
+     *
+     * Nulle, la relation signifie l'Initiateur·rice : c'est elle qui écrivait
+     * seule les questions de famille jusqu'ici, et une colonne par rôle
+     * aurait fait deux vérités pour une seule information.
+     *
+     * @return BelongsTo<FamilyMember, $this>
+     */
+    public function proposedBy(): BelongsTo
+    {
+        return $this->belongsTo(FamilyMember::class, 'proposed_by_family_member_id');
     }
 
     /** @return BelongsTo<Narrator, $this> */

@@ -27,13 +27,13 @@ final class FamilyMemberFactory extends Factory
             'relationship' => fake()->randomElement(['Fils', 'Fille', 'Petit-fils', 'Petite-fille', 'Nièce']),
             'email' => fake()->unique()->safeEmail(),
             'phone_e164' => null,
-            'can_contribute' => false,
+            'can_ask' => false,
             'invited_at' => now(),
         ];
     }
 
     public function contributor(): static
     {
-        return $this->state(fn (): array => ['can_contribute' => true]);
+        return $this->state(fn (): array => ['can_ask' => true]);
     }
 }

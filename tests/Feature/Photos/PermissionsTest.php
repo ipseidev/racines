@@ -31,7 +31,7 @@ it('laisse le narrateur retirer n’importe quelle photo de son histoire', funct
 
     $contributeur = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
 
     $photo = app(AttachPhoto::class)->handle($story, photoFile(), $contributeur, null);
@@ -46,12 +46,12 @@ it('laisse un contributeur retirer les siennes, et seulement les siennes', funct
     $claire = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
         'display_name' => 'Claire',
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
     $paul = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
         'display_name' => 'Paul',
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
 
     $deClaire = app(AttachPhoto::class)->handle($story, photoFile(), $claire, null);
@@ -66,7 +66,7 @@ it('refuse le dépôt à un proche sans droit de contribuer', function (): void 
 
     $spectateur = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
-        'can_contribute' => false,
+        'can_ask' => false,
     ]);
 
     // Le droit de contribuer est explicite et accordé personne par personne.
@@ -78,7 +78,7 @@ it('refuse le dépôt à un proche retiré du cercle', function (): void {
 
     $ancien = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
-        'can_contribute' => true,
+        'can_ask' => true,
         'removed_at' => now(),
     ]);
 
@@ -93,7 +93,7 @@ it('refuse le dépôt à un proche d’une autre famille', function (): void {
 
     $intrus = FamilyMember::factory()->create([
         'project_id' => $autre->project_id,
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
 
     expect(PhotoAccess::canAttach($story, $intrus))->toBeFalse();
@@ -121,23 +121,32 @@ it('refuse tout à un autre compte', function (): void {
         ->and(PhotoAccess::canRemove($story, $photo, $etranger))->toBeFalse();
 });
 
-it('laisse corriger une légende plus largement qu’on ne retire', function (): void {
+/*
+ * Un proche ne touche qu'à **ses** photos (dossier v3.1).
+ *
+ * La légende d'un cousin s'ouvrait autrefois à tout contributeur : corriger
+ * l'orthographe d'un nom de village était un service, pas une intrusion. La
+ * règle tombe avec le dépôt lui-même — un proche ne dépose plus sur une
+ * histoire, il joint ses photos à la question qu'il pose, et celles-là sont
+ * les siennes. Rien n'autorise plus à écrire sous l'image d'un autre.
+ */
+it('ne laisse un proche toucher qu’à ses propres photos', function (): void {
     $story = Story::factory()->create();
 
     $claire = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
     $paul = FamilyMember::factory()->create([
         'project_id' => $story->project_id,
-        'can_contribute' => true,
+        'can_ask' => true,
     ]);
 
     $deClaire = app(AttachPhoto::class)->handle($story, photoFile(), $claire, null);
 
-    // Corriger l'orthographe d'un nom de village sur la photo d'un cousin est
-    // un service, pas une intrusion — retirer sa photo en serait une.
-    expect(PhotoAccess::canEditCaption($story, $deClaire, $paul))->toBeTrue()
+    expect(PhotoAccess::canEditCaption($story, $deClaire, $claire))->toBeTrue()
+        ->and(PhotoAccess::canRemove($story, $deClaire, $claire))->toBeTrue()
+        ->and(PhotoAccess::canEditCaption($story, $deClaire, $paul))->toBeFalse()
         ->and(PhotoAccess::canRemove($story, $deClaire, $paul))->toBeFalse();
 });
 

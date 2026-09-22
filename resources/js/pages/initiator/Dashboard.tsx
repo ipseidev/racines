@@ -41,6 +41,8 @@ type Upcoming = {
     text: string;
     theme: string | null;
     themeLabel: string | null;
+    /** Le proche qui l'a posée ; nul quand c'est l'Initiateur·rice (R-1). */
+    askedBy: string | null;
     photos: number;
     sendAt: string | null;
 };

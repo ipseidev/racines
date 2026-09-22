@@ -130,14 +130,39 @@ return [
      * page ne demandera de mot de passe ni de paiement.
      */
     'family_invitation' => [
-        'subject' => 'Écoutez les histoires de :narrator',
+        'subject' => ':inviter vous invite à écouter les histoires :narrator_of',
         'greeting' => 'Bonjour :name,',
-        'line' => ':inviter vous invite à écouter les histoires que :narrator enregistre.',
+
+        /*
+         * Ce que c'est, avant ce qu'il faut faire.
+         *
+         * Le message tenait en une ligne — « :inviter vous invite à écouter
+         * les histoires que :narrator enregistre » — et arrivait chez
+         * quelqu'un qui n'a jamais entendu parler de nous. Il donnait un lien
+         * sans donner une raison de cliquer : on y lisait une notification, pas
+         * une invitation.
+         *
+         * Quatre phrases, dans l'ordre où l'on se pose les questions : d'où ça
+         * vient, ce que ça me coûte, ce que je verrai, ce que je peux rendre.
+         */
+        'gift' => ':inviter a offert à :narrator de raconter sa vie, à sa façon et à son rythme. Chaque semaine, une question arrive ; on y répond en parlant, quand on en a envie.',
+        // « Vous êtes invité·e » a été essayé et remis : le point médian se
+        // lit mal à quatre-vingts ans, et un lecteur d'écran l'épelle. La
+        // tournure sans accord dit la même chose et n'a pas à choisir.
+        'free' => 'Cette invitation est pour vous. C’est gratuit, il n’y a pas de compte à créer et rien à installer.',
+        // Le point du produit, et il se dit ici parce qu'un proche qui
+        // l'ignore croit avoir accès à tout.
+        'sovereign' => ':narrator relit chaque histoire avant que quiconque l’entende. Vous ne verrez que ce qui a été partagé.',
+        'react' => 'Un cœur ou un merci suffit à faire savoir que vous avez écouté — c’est souvent ce qui donne envie de continuer.',
+        // Réservée à qui en a le droit : le dire à tout le monde ferait une
+        // promesse que la page dément trois secondes plus tard.
+        'contribute' => 'Vous pouvez aussi lui poser vos propres questions, avec vos photos : ce que vous aimeriez savoir, et que personne d’autre ne pensera à demander.',
+
         'button' => 'Écouter les histoires',
         // La seule protection contre la circulation du lien dans un groupe de
         // messagerie, et elle vaut mieux qu'une mention en petits caractères.
         'personal' => 'Ce lien est personnel : il vous identifie. Ne le transmettez qu’à des proches, et jamais dans un groupe public.',
-        'sms' => ':inviter vous invite à écouter les histoires de :narrator sur :brand : :link',
+        'sms' => ':inviter vous invite à écouter les histoires :narrator_of sur :brand. C’est gratuit et sans compte : :link',
         'your_relative' => 'votre proche',
     ],
 

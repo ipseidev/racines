@@ -49,7 +49,7 @@ final readonly class FamilyController
                     // La coordonnée masquée : cette page se laisse ouverte sur
                     // un écran, et un carnet d'adresses n'a pas à s'y afficher.
                     'contact' => self::mask($member),
-                    'canContribute' => (bool) $member->can_contribute,
+                    'canAsk' => (bool) $member->can_ask,
                     'invitedAt' => $member->invited_at?->toIso8601String(),
                     'firstSeenAt' => $member->first_seen_at?->toIso8601String(),
                     'isYou' => $member->email === $user->email,
@@ -74,7 +74,7 @@ final readonly class FamilyController
             'relationship' => ['nullable', 'string', 'max:40'],
             'email' => ['nullable', 'email:rfc', 'required_without:phone_e164'],
             'phone_e164' => ['nullable', 'string', 'regex:/^\+[1-9]\d{7,14}$/', 'required_without:email'],
-            'can_contribute' => ['sometimes', 'boolean'],
+            'can_ask' => ['sometimes', 'boolean'],
         ]);
 
         $this->invites->handle($project, $user, $validated);
