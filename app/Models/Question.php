@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\StoresDatesWithOffset;
+use App\Enums\QuestionCondition;
 use App\Enums\QuestionTheme;
 use App\Enums\QuestionTone;
 use Database\Factories\QuestionFactory;
@@ -72,6 +73,23 @@ final class Question extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Les questions actives qu'on peut envoyer sans rien savoir du projet.
+     *
+     * Aujourd'hui aucun projet n'a de profil : on ne sait ni le prénom de
+     * l'acheteur, ni son lien, ni s'il a demandé qu'on parle de lui. Une
+     * question sur l'acheteur partirait avec « {{prénom}} » en clair, ou chez
+     * quelqu'un qui a acheté pour lui-même. Le choix des questions selon le
+     * profil remplacera ce filtre ; d'ici là, il est le seul chemin d'envoi.
+     *
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
+     */
+    public function scopeSendableWithoutProfile(Builder $query): Builder
+    {
+        return $query->active()->whereJsonDoesntContain('conditions', QuestionCondition::AboutBuyer->value);
     }
 
     /** @return array<string, string> */

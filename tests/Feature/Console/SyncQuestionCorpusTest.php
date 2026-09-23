@@ -143,6 +143,6 @@ it('refuse d’appliquer un fichier invalide, et n’écrit rien', function (): 
 it('lit par défaut le corpus du dépôt', function (): void {
     $this->artisan('corpus:sync', ['--apply' => true])->assertSuccessful();
 
-    expect(Question::query()->count())->toBe(150)
+    expect(Question::query()->count())->toBe(164)
         ->and(Question::query()->whereNull('tone')->count())->toBe(0);
 });

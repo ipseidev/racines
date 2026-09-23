@@ -164,6 +164,22 @@ it('ignore les questions désactivées du corpus', function (): void {
     expect(pick($project)?->slug)->toBe('premier-souvenir');
 });
 
+it('n’envoie jamais une question sur l’acheteur tant que le projet n’a pas de profil', function (): void {
+    // Sans prénom ni lien connus, « Raconte le jour où {{prénom}} est né »
+    // partirait tel quel, ou chez quelqu'un qui a acheté pour lui-même.
+    $project = projectReady();
+
+    Question::query()->update(['is_active' => false]);
+    $buyer = Question::factory()->create(['slug' => 'sur-l-acheteur', 'order_hint' => 1, 'conditions' => ['about_buyer']]);
+    $everyone = Question::factory()->create(['slug' => 'pour-tous', 'order_hint' => 2]);
+
+    $picker = app(PickNextQuestion::class);
+
+    expect($picker->handle($project)?->id)->toBe($everyone->id)
+        ->and($picker->queue($project)->pluck('id')->all())->toBe([$everyone->id])
+        ->and($buyer->refresh()->is_active)->toBeTrue();
+});
+
 it('sème bien le corpus attendu', function (): void {
-    expect(QuestionSeeder::count())->toBe(150);
+    expect(QuestionSeeder::count())->toBe(164);
 });

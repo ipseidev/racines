@@ -46,7 +46,7 @@ final class PickNextQuestion
         $excluded = $project->questionSettings()->where('excluded', true)->pluck('question_id');
 
         $available = fn (): Builder => Question::query()
-            ->active()
+            ->sendableWithoutProfile()
             ->whereNotIn('id', $asked)
             ->whereNotIn('id', $excluded);
 
@@ -128,7 +128,7 @@ final class PickNextQuestion
         $excluded = $project->questionSettings()->where('excluded', true)->pluck('question_id');
 
         $available = Question::query()
-            ->active()
+            ->sendableWithoutProfile()
             ->whereNotIn('id', $asked)
             ->whereNotIn('id', $excluded)
             ->orderBy('order_hint')

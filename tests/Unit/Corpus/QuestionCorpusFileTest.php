@@ -94,6 +94,14 @@ it('garde les soixante slugs du corpus v1, sans doublon', function (): void {
         ->and(array_diff(QuestionCorpusV1::SLUGS, $slugs))->toBe([]);
 });
 
+it('réserve le prénom de l’acheteur aux questions qui le demandent', function (): void {
+    foreach (QuestionCorpus::default()->entries() as $entry) {
+        $named = QuestionWording::needsBuyerName($entry['vous']) || QuestionWording::needsBuyerName($entry['tu']);
+
+        expect($named)->toBe(in_array('about_buyer', $entry['conditions'], true), "{$entry['slug']} : prénom et condition `about_buyer` vont ensemble");
+    }
+});
+
 it('tient trente mots au plus par question', function (): void {
     foreach (QuestionCorpus::default()->entries() as $entry) {
         foreach (['vous', 'tu'] as $form) {
@@ -125,6 +133,7 @@ it('ne laisse aucune forme du vouvoiement dans un texte au tutoiement', function
         'premier-chez-soi-a-deux',     // « votre premier logement à deux »
         'epreuve-a-deux',              // « avez-vous traversée à deux »
         'vacances-avec-les-enfants',   // « où partiez-vous avec les enfants »
+        'prenom-moment-ensemble',      // « où étiez-vous », elle et l'acheteur
     ];
 
     foreach (QuestionCorpus::default()->entries() as $entry) {
@@ -141,7 +150,10 @@ it('résout chaque texte dans les deux genres sans laisser de marqueur', functio
     foreach (QuestionCorpus::default()->entries() as $entry) {
         foreach ([$entry['vous'], $entry['tu']] as $template) {
             foreach ([GrammaticalGender::Feminine, GrammaticalGender::Masculine] as $gender) {
-                $text = QuestionWording::resolve($template, $gender);
+                // L'acheteur dans l'autre genre : un marqueur accordé du
+                // mauvais côté se verrait.
+                $buyer = $gender === GrammaticalGender::Feminine ? GrammaticalGender::Masculine : GrammaticalGender::Feminine;
+                $text = QuestionWording::resolve($template, $gender, 'Claire', $buyer);
 
                 expect($text)->not->toContain('{')
                     ->and($text)->not->toContain('}')

@@ -21,14 +21,20 @@ declare(strict_types=1);
  *   `rural`. Fausse, la question ne part pas.
  * - `sensitive` : les sujets qu'elle touche — `bereavement`, `child_loss`,
  *   `separation`, `war`, `illness`, `religion`, `end_of_life`.
+ * - Les conditions de l'acheteur : `about_buyer` (il a demandé qu'on parle
+ *   de lui), `buyer_is_child`, `buyer_is_grandchild`.
  * - `vous` et `tu` : les deux textes, écrits à la main. Le genre s'accorde par
  *   marqueur : `né{|e}` (le féminin prolonge le masculin), ou
  *   `{fier|fière|fier·ère}` (masculin, féminin, forme neutre pour un genre
- *   inconnu). Jamais de point médian en dur.
+ *   inconnu). Jamais de point médian en dur. Les accolades doubles parlent
+ *   de l'acheteur : `{{prénom}}`, et `{{|e}}` ou `{{il|elle|il ou elle}}`
+ *   pour s'accorder à son genre.
  *
  * Corpus v2 : les soixante questions v1 réécrites, cinquante-deux nouvelles
  * pour tout le monde (lot 1) et trente-huit selon la vie — couple, enfants,
- * petits-enfants, métier, exil, campagne (lot 2). Chaque énoncé suit le même mouvement — une entrée douce qui fait
+ * petits-enfants, métier, exil, campagne (lot 2), et quatorze sur la personne
+ * qui offre le livre (lot 3), qui la nomment par `{{prénom}}` et ne partent
+ * qu'avec son accord et son prénom. Chaque énoncé suit le même mouvement — une entrée douce qui fait
  * revenir le souvenir, puis une relance qui ouvre le récit (« Raconte… »),
  * trente mots au plus. Relecture : docs/corpus/03_relecture_questions.md.
  *
@@ -523,4 +529,52 @@ return [
     ['slug' => 'de-la-campagne-a-la-ville', 'theme' => 'places', 'difficulty' => 3, 'order' => 1500, 'tone' => 'tender', 'conditions' => ['rural'], 'sensitive' => [],
         'vous' => 'Si vous avez quitté la campagne pour la ville, racontez ce départ : ce que vous avez laissé, et ce que vous avez découvert.',
         'tu' => 'Si tu as quitté la campagne pour la ville, raconte ce départ : ce que tu as laissé, et ce que tu as découvert.'],
+
+    // Lot 3 — L'acheteur est son enfant
+    ['slug' => 'prenom-naissance', 'theme' => 'love', 'difficulty' => 2, 'order' => 465, 'tone' => 'tender', 'conditions' => ['about_buyer', 'buyer_is_child'], 'sensitive' => ['child_loss'],
+        'vous' => 'Racontez le jour où {{prénom}} est né{{|e}} : l’attente, l’arrivée, et la première fois que vous l’avez vu{{|e}}.',
+        'tu' => 'Raconte le jour où {{prénom}} est né{{|e}} : l’attente, l’arrivée, et la première fois que tu l’as vu{{|e}}.'],
+    ['slug' => 'prenom-le-choix-du-prenom', 'theme' => 'love', 'difficulty' => 1, 'order' => 305, 'tone' => 'light', 'conditions' => ['about_buyer', 'buyer_is_child'], 'sensitive' => [],
+        'vous' => 'Pourquoi avoir choisi le prénom {{prénom}} ? Racontez les idées écartées, et ce que ce prénom voulait dire pour vous.',
+        'tu' => 'Pourquoi avoir choisi le prénom {{prénom}} ? Raconte les idées écartées, et ce que ce prénom voulait dire pour toi.'],
+    ['slug' => 'prenom-enfant', 'theme' => 'love', 'difficulty' => 1, 'order' => 145, 'tone' => 'light', 'conditions' => ['about_buyer', 'buyer_is_child'], 'sensitive' => [],
+        'vous' => 'À quoi ressemblait {{prénom}} quand {{il|elle|il ou elle}} était petit{{|e}} ? Racontez une manie, un mot d’enfant ou une bêtise qui vous fait encore sourire.',
+        'tu' => 'À quoi ressemblait {{prénom}} quand {{il|elle|il ou elle}} était petit{{|e}} ? Raconte une manie, un mot d’enfant ou une bêtise qui te fait encore sourire.'],
+    ['slug' => 'prenom-ce-qu-il-ignore', 'theme' => 'legacy', 'difficulty' => 2, 'order' => 705, 'tone' => 'tender', 'conditions' => ['about_buyer', 'buyer_is_child'], 'sensitive' => [],
+        'vous' => 'Qu’est-ce que {{prénom}} ne sait pas de sa petite enfance, et que vous pourriez lui raconter aujourd’hui ?',
+        'tu' => 'Qu’est-ce que {{prénom}} ne sait pas de sa petite enfance, et que tu pourrais lui raconter aujourd’hui ?'],
+    ['slug' => 'prenom-fierte', 'theme' => 'love', 'difficulty' => 3, 'order' => 865, 'tone' => 'tender', 'conditions' => ['about_buyer', 'buyer_is_child'], 'sensitive' => [],
+        'vous' => 'Racontez un moment où vous avez été particulièrement {fier|fière|fier·ère} de {{prénom}}. Qu’est-ce que vous ne lui avez peut-être jamais dit ?',
+        'tu' => 'Raconte un moment où tu as été particulièrement {fier|fière|fier·ère} de {{prénom}}. Qu’est-ce que tu ne lui as peut-être jamais dit ?'],
+    ['slug' => 'prenom-souhait-d-un-parent', 'theme' => 'legacy', 'difficulty' => 5, 'order' => 945, 'tone' => 'tender', 'conditions' => ['about_buyer', 'buyer_is_child'], 'sensitive' => [],
+        'vous' => 'Que souhaitez-vous à {{prénom}} pour la suite de sa vie ? Parlez-lui comme si {{il|elle|il ou elle}} était devant vous.',
+        'tu' => 'Que souhaites-tu à {{prénom}} pour la suite de sa vie ? Parle-lui comme si {{il|elle|il ou elle}} était devant toi.'],
+
+    // Lot 3 — L'acheteur est son petit-enfant
+    ['slug' => 'prenom-naissance-petit-enfant', 'theme' => 'love', 'difficulty' => 2, 'order' => 545, 'tone' => 'tender', 'conditions' => ['about_buyer', 'buyer_is_grandchild'], 'sensitive' => [],
+        'vous' => 'Vous souvenez-vous du jour où {{prénom}} est né{{|e}} ? Racontez comment vous l’avez appris, et la première fois que vous l’avez tenu{{|e}} dans vos bras.',
+        'tu' => 'Te souviens-tu du jour où {{prénom}} est né{{|e}} ? Raconte comment tu l’as appris, et la première fois que tu l’as tenu{{|e}} dans tes bras.'],
+    ['slug' => 'prenom-petit-avec-moi', 'theme' => 'love', 'difficulty' => 1, 'order' => 225, 'tone' => 'light', 'conditions' => ['about_buyer', 'buyer_is_grandchild'], 'sensitive' => [],
+        'vous' => 'Qu’aimiez-vous faire avec {{prénom}} quand {{il|elle|il ou elle}} était petit{{|e}} ? Racontez un moment que vous gardez précieusement.',
+        'tu' => 'Qu’aimais-tu faire avec {{prénom}} quand {{il|elle|il ou elle}} était petit{{|e}} ? Raconte un moment que tu gardes précieusement.'],
+    ['slug' => 'prenom-ses-parents-enfants', 'theme' => 'family_origins', 'difficulty' => 1, 'order' => 385, 'tone' => 'light', 'conditions' => ['about_buyer', 'buyer_is_grandchild'], 'sensitive' => [],
+        'vous' => 'Racontez à {{prénom}} l’enfant qu’était son père ou sa mère : ses bêtises, ses manies, ce qui vous faisait rire.',
+        'tu' => 'Raconte à {{prénom}} l’enfant qu’était son père ou sa mère : ses bêtises, ses manies, ce qui te faisait rire.'],
+    ['slug' => 'prenom-souhait-d-un-grand-parent', 'theme' => 'legacy', 'difficulty' => 5, 'order' => 1025, 'tone' => 'tender', 'conditions' => ['about_buyer', 'buyer_is_grandchild'], 'sensitive' => [],
+        'vous' => 'Que souhaitez-vous à {{prénom}} pour sa vie ? Parlez-lui comme si {{il|elle|il ou elle}} était devant vous.',
+        'tu' => 'Que souhaites-tu à {{prénom}} pour sa vie ? Parle-lui comme si {{il|elle|il ou elle}} était devant toi.'],
+
+    // Lot 3 — Quel que soit le lien
+    ['slug' => 'prenom-premier-souvenir', 'theme' => 'joys', 'difficulty' => 1, 'order' => 65, 'tone' => 'light', 'conditions' => ['about_buyer'], 'sensitive' => [],
+        'vous' => 'Quel est votre tout premier souvenir de {{prénom}} ? Racontez où c’était, et ce qui vous a frappé{|e} chez {{lui|elle|lui ou elle}}.',
+        'tu' => 'Quel est ton tout premier souvenir de {{prénom}} ? Raconte où c’était, et ce qui t’a frappé{|e} chez {{lui|elle|lui ou elle}}.'],
+    ['slug' => 'prenom-moment-ensemble', 'theme' => 'joys', 'difficulty' => 2, 'order' => 625, 'tone' => 'tender', 'conditions' => ['about_buyer'], 'sensitive' => [],
+        'vous' => 'Racontez un moment passé avec {{prénom}} que vous n’oublierez jamais. Où étiez-vous, et qu’est-ce qui le rend si précieux ?',
+        'tu' => 'Raconte un moment passé avec {{prénom}} que tu n’oublieras jamais. Où étiez-vous, et qu’est-ce qui le rend si précieux ?'],
+    ['slug' => 'prenom-ce-qu-il-m-a-apporte', 'theme' => 'joys', 'difficulty' => 3, 'order' => 785, 'tone' => 'tender', 'conditions' => ['about_buyer'], 'sensitive' => [],
+        'vous' => 'Qu’est-ce que {{prénom}} vous a apporté, sans peut-être le savoir ? Racontez un moment où vous l’avez senti.',
+        'tu' => 'Qu’est-ce que {{prénom}} t’a apporté, sans peut-être le savoir ? Raconte un moment où tu l’as senti.'],
+    ['slug' => 'prenom-ce-que-je-veux-qu-il-sache', 'theme' => 'legacy', 'difficulty' => 5, 'order' => 1105, 'tone' => 'tender', 'conditions' => ['about_buyer'], 'sensitive' => [],
+        'vous' => 'Qu’aimeriez-vous que {{prénom}} sache de vous, et que vous ne lui avez jamais dit ?',
+        'tu' => 'Qu’aimerais-tu que {{prénom}} sache de toi, et que tu ne lui as jamais dit ?'],
 ];

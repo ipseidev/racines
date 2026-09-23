@@ -64,3 +64,52 @@ it('signale les gabarits mal formés', function (string $template, string $probl
 it('accepte un gabarit correct', function (): void {
     expect(QuestionWording::problems('Où êtes-vous né{|e} ? Le plus {fier|fière|fier·ère}.'))->toBe([]);
 });
+
+/*
+ * Les accolades doubles parlent de l'acheteur : son prénom, son genre. Les
+ * simples restent celles de la narratrice. Une même phrase peut mêler les deux.
+ */
+it('nomme l’acheteur et l’accorde à son genre', function (): void {
+    $template = 'Raconte le jour où {{prénom}} est né{{|e}}, et la première fois que tu l’as vu{{|e}}.';
+
+    expect(QuestionWording::resolve($template, null, 'Claire', GrammaticalGender::Feminine))
+        ->toBe('Raconte le jour où Claire est née, et la première fois que tu l’as vue.')
+        ->and(QuestionWording::resolve($template, null, 'Paul', GrammaticalGender::Masculine))
+        ->toBe('Raconte le jour où Paul est né, et la première fois que tu l’as vu.');
+});
+
+it('accorde la narratrice et l’acheteur chacun de son côté', function (): void {
+    $template = 'Ce qui t’a frappé{|e} chez {{lui|elle|lui ou elle}}.';
+
+    expect(QuestionWording::resolve($template, GrammaticalGender::Feminine, 'Paul', GrammaticalGender::Masculine))
+        ->toBe('Ce qui t’a frappée chez lui.')
+        ->and(QuestionWording::resolve($template, GrammaticalGender::Masculine, 'Claire', GrammaticalGender::Feminine))
+        ->toBe('Ce qui t’a frappé chez elle.');
+});
+
+it('retombe sur la forme neutre quand le genre de l’acheteur est inconnu', function (): void {
+    expect(QuestionWording::resolve('{{prénom}} est né{{|e}} quand {{il|elle|il ou elle}} était petit{{|e}}.', null, 'Camille', null))
+        ->toBe('Camille est né·e quand il ou elle était petit·e.');
+});
+
+it('laisse le prénom en marqueur quand on ne le connaît pas', function (): void {
+    // Une telle question ne part jamais (voir `Question::scopeSendableWithoutProfile`) ;
+    // l'admin, lui, doit pouvoir la lire.
+    expect(QuestionWording::resolve('Ton premier souvenir de {{prénom}} ?', null))
+        ->toBe('Ton premier souvenir de {{prénom}} ?')
+        ->and(QuestionWording::needsBuyerName('Ton premier souvenir de {{prénom}} ?'))->toBeTrue()
+        ->and(QuestionWording::needsBuyerName('Ton premier souvenir ?'))->toBeFalse();
+});
+
+it('signale les marqueurs d’acheteur mal formés', function (string $template, string $problem): void {
+    expect(implode(' ', QuestionWording::problems($template)))->toContain($problem);
+})->with([
+    'variable inconnue' => ['Le jour où {{nom}} est né ?', 'variable'],
+    'une seule forme' => ['{{prénom}} est né{{e}} ?', 'formes'],
+    'neutre impossible à déduire' => ['chez {{lui|elle}}', 'neutre'],
+    'accolades doubles non fermées' => ['chez {{lui|elle|lui ou elle}', 'accolade'],
+]);
+
+it('accepte un gabarit qui mêle les deux marqueurs', function (): void {
+    expect(QuestionWording::problems('Ce qui t’a frappé{|e} chez {{lui|elle|lui ou elle}}, {{prénom}}.'))->toBe([]);
+});

@@ -31,4 +31,14 @@ enum QuestionCondition: string
     case Migration = 'migration';
     /** A grandi à la campagne, à la ferme ou dans un village. */
     case Rural = 'rural';
+    /**
+     * La question parle de l'acheteur, qui l'a demandé : le tunnel a dit « sur
+     * moi », et ce n'est pas un achat pour soi. Elle nomme l'acheteur
+     * (`{{prénom}}`) et ne part pas sans son prénom.
+     */
+    case AboutBuyer = 'about_buyer';
+    /** L'acheteur est l'enfant de la narratrice. */
+    case BuyerIsChild = 'buyer_is_child';
+    /** L'acheteur est son petit-enfant. */
+    case BuyerIsGrandchild = 'buyer_is_grandchild';
 }

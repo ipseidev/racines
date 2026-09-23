@@ -288,6 +288,9 @@ return [
         'siblings' => 'Tiene hermanos',
         'migration' => 'Creció en otro lugar',
         'rural' => 'Creció en el campo',
+        'about_buyer' => 'Habla de quien regala',
+        'buyer_is_child' => 'Quien regala es su hijo o hija',
+        'buyer_is_grandchild' => 'Quien regala es su nieto o nieta',
     ],
 
     'sensitive_topic' => [

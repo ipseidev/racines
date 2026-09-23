@@ -39,7 +39,7 @@ final class BuildQuizPreview
     public function handle(array $themes): array
     {
         $corpus = Question::query()
-            ->active()
+            ->sendableWithoutProfile()
             ->orderBy('order_hint')
             ->get(['id', 'text', 'theme', 'difficulty', 'order_hint']);
 
