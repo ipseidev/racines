@@ -102,19 +102,6 @@ return [
         ],
     ],
 
-    /*
-     * Le bandeau de consentement (T-227). Deux boutons de même poids, une
-     * phrase qui dit ce qu'on pose et pourquoi, et rien qui minimise le refus.
-     */
-    'consent' => [
-        'title' => 'Tus opciones sobre las cookies',
-        'body' => 'Usamos cookies para medir la audiencia del sitio y la eficacia de nuestra publicidad. Solo se instalan con tu acuerdo, y puedes cambiar de opinión en cualquier momento desde el pie de página.',
-        'accept' => 'Acepto',
-        'refuse' => 'Rechazo',
-        'more' => 'Más información',
-        'manage' => 'Gestionar las cookies',
-    ],
-
     'vcard' => [
         'note' => 'Sus preguntas de la semana llegan desde este contacto. Nunca le pediremos una contraseña ni un pago por SMS.',
     ],

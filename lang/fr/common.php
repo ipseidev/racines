@@ -3,6 +3,28 @@
 declare(strict_types=1);
 
 return [
+    /*
+     * Le bandeau de consentement (T-227). Deux boutons de même poids, une
+     * phrase qui dit ce qu'on pose et pourquoi, et rien qui minimise le refus.
+     *
+     * Dans `common`, et non dans `public` : il est monté dans **cinq** mises
+     * en page — l'accueil, le tunnel, le quiz, la page témoignage et
+     * l'espace. Or le front ne reçoit que `common` plus le fichier de
+     * l'espace courant (pages narrateur et famille ouvertes en 4G, PRD
+     * US-01). Rangé dans `public`, le bandeau s'affichait donc en clés brutes
+     * — « public.consent.title », « public.consent.accept » — dès qu'on
+     * était connecté à son espace. Même raison que le sélecteur de langue
+     * ci-dessous.
+     */
+    'consent' => [
+        'title' => 'Vos choix sur les cookies',
+        'body' => 'Nous utilisons des cookies pour mesurer l’audience du site et l’efficacité de nos publicités. Ils ne sont posés qu’avec votre accord, et vous pouvez changer d’avis à tout moment depuis le pied de page.',
+        'accept' => 'J’accepte',
+        'refuse' => 'Je refuse',
+        'more' => 'En savoir plus',
+        'manage' => 'Gérer les cookies',
+    ],
+
     'ratio' => ':value sur :total',
 
     /*

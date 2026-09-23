@@ -161,7 +161,7 @@ export default function PublicFooter({ variant = 'full', discover }: Props) {
                                     onClick={openConsent}
                                     className={`${LINK} text-left`}
                                 >
-                                    {t('public.consent.manage')}
+                                    {t('common.consent.manage')}
                                 </button>
                             </li>
                         </ul>

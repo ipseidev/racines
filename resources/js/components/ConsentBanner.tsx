@@ -93,15 +93,15 @@ export default function ConsentBanner() {
                         tabIndex={-1}
                         className="text-brand text-[1.05rem] font-semibold outline-none"
                     >
-                        {t('public.consent.title')}
+                        {t('common.consent.title')}
                     </h2>
                     <p className="text-brand-muted text-[0.95rem] leading-relaxed">
-                        {t('public.consent.body')}{' '}
+                        {t('common.consent.body')}{' '}
                         <Link
                             href={urls.legal_privacy}
                             className="text-brand font-semibold underline decoration-2 underline-offset-4"
                         >
-                            {t('public.consent.more')}
+                            {t('common.consent.more')}
                         </Link>
                     </p>
                 </div>
@@ -112,14 +112,14 @@ export default function ConsentBanner() {
                         onClick={() => choose('denied')}
                         className={button}
                     >
-                        {t('public.consent.refuse')}
+                        {t('common.consent.refuse')}
                     </button>
                     <button
                         type="button"
                         onClick={() => choose('granted')}
                         className={button}
                     >
-                        {t('public.consent.accept')}
+                        {t('common.consent.accept')}
                     </button>
                 </div>
             </div>
