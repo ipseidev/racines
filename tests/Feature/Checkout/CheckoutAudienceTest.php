@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\FulfillOrder;
 use App\Actions\SaveCheckoutStep;
+use App\Enums\BuyerRelation;
 use App\Enums\Channel;
 use App\Enums\TechComfort;
 use App\Models\CheckoutDraft;
@@ -166,4 +167,38 @@ it('donne au tunnel les choix d’aisance et l’heure par défaut', function ()
             ->where('techComforts.0.value', 'daily')
             ->has('giftSendHour'),
         );
+});
+
+it('retient, pour le choix des questions, qu’on raconte sa propre histoire', function (): void {
+    // Le tunnel de personnalisation vient après l'achat, quand le brouillon a
+    // disparu : sans cette trace, il ne saurait plus qu'aucune question ne
+    // doit parler de « la personne qui offre ».
+    Queue::fake();
+    Notification::fake();
+
+    $buyer = User::factory()->create();
+
+    $draft = new CheckoutDraft([
+        'step' => 6,
+        'payload' => [
+            'for' => 'self',
+            'narrator_first_name' => 'Jeanne',
+            'narrator_email' => 'jeanne@exemple.test',
+            'preferred_channel' => Channel::Email->value,
+            'address_form' => 'tu',
+            'gift_when' => 'now',
+            'accepts_terms' => true,
+        ],
+        'expires_at' => now()->addDays(7),
+    ]);
+    $draft->save();
+
+    app(FulfillOrder::class)->handle([
+        'id' => 'cs_test_self',
+        'payment_intent' => 'pi_test_self',
+        'amount_total' => 8_900,
+        'metadata' => ['draft_id' => $draft->id, 'user_id' => (string) $buyer->id],
+    ]);
+
+    expect(Project::query()->firstOrFail()->profile?->buyer_relation)->toBe(BuyerRelation::Myself);
 });

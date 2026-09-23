@@ -268,6 +268,19 @@ return [
         'admin' => 'Registrado por el equipo de soporte',
     ],
 
+    'buyer_relation' => [
+        'child' => 'Su hijo o hija',
+        'grandchild' => 'Su nieto o nieta',
+        'partner' => 'Su pareja',
+        'other' => 'Otro vínculo',
+        'self' => 'Uno mismo',
+    ],
+
+    'buyer_focus' => [
+        'buyer' => 'Sobre quien regala',
+        'everyone' => 'Sobre todos sus hijos',
+    ],
+
     'grammatical_gender' => [
         'feminine' => 'Femenino',
         'masculine' => 'Masculino',

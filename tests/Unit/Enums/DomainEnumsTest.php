@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\AddressForm;
 use App\Enums\AnswerType;
+use App\Enums\BuyerFocus;
+use App\Enums\BuyerRelation;
 use App\Enums\Cadence;
 use App\Enums\Channel;
 use App\Enums\ClientEventName;
@@ -45,6 +47,8 @@ function domainEnums(): array
     return [
         AddressForm::class,
         AnswerType::class,
+        BuyerFocus::class,
+        BuyerRelation::class,
         Cadence::class,
         Channel::class,
         ClientEventName::class,

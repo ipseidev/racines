@@ -65,6 +65,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable|null $updated_at
  * @property-read User $owner
  * @property-read Narrator|null $primaryNarrator Un projet tout juste créé n'en a pas encore.
+ * @property-read ProjectProfile|null $profile
  */
 final class Project extends Model
 {
@@ -133,6 +134,17 @@ final class Project extends Model
     public function primaryNarrator(): HasOne
     {
         return $this->hasOne(Narrator::class)->where('is_primary', true);
+    }
+
+    /**
+     * Ce que la famille a dit de la narratrice après l'achat. Absent tant que
+     * personne n'a ouvert le tunnel de personnalisation.
+     *
+     * @return HasOne<ProjectProfile, $this>
+     */
+    public function profile(): HasOne
+    {
+        return $this->hasOne(ProjectProfile::class);
     }
 
     /**

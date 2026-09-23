@@ -301,7 +301,7 @@ final class Story extends Model implements HasMedia
             return null;
         }
 
-        return QuestionWording::for($question, $this->project->address_form, $this->narrator->grammatical_gender);
+        return QuestionWording::forProject($question, $this->project, $this->narrator->grammatical_gender);
     }
 
     /** @return array<string, string> */

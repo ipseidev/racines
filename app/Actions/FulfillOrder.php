@@ -9,6 +9,7 @@ use App\Enums\AddressForm;
 use App\Enums\AnalyticsEvent;
 use App\Enums\BookCover;
 use App\Enums\BookTitle;
+use App\Enums\BuyerRelation;
 use App\Enums\Cadence;
 use App\Enums\Channel;
 use App\Enums\ConsentChannel;
@@ -258,6 +259,13 @@ final readonly class FulfillOrder
         }
 
         $project->save();
+
+        // Qui raconte sa propre histoire ne reçoit aucune question sur « la
+        // personne qui offre ». Le tunnel de personnalisation vient après,
+        // quand ce brouillon aura disparu : c'est ici qu'on le retient.
+        if ($draft->value('for') === 'self') {
+            $project->profile()->create(['buyer_relation' => BuyerRelation::Myself]);
+        }
 
         $this->narrators->handle($project, [
             'first_name' => (string) $draft->value('narrator_first_name'),

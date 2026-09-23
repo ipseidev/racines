@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Enums\AddressForm;
 use App\Enums\GrammaticalGender;
+use App\Models\Project;
 use App\Models\Question;
 
 /**
@@ -54,6 +55,18 @@ final class QuestionWording
             : $question->text;
 
         return self::resolve($template, $gender, $buyerName, $buyerGender);
+    }
+
+    /**
+     * La question telle qu'elle partira dans ce projet : son tutoiement, le
+     * genre de la narratrice, et l'acheteur quand la famille a demandé qu'on
+     * parle de lui.
+     */
+    public static function forProject(Question $question, Project $project, ?GrammaticalGender $gender): string
+    {
+        $profile = QuestionProfile::of($project);
+
+        return self::for($question, $project->address_form, $gender, $profile->buyerName(), $profile->buyerGender());
     }
 
     public static function resolve(

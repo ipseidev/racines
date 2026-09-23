@@ -101,7 +101,7 @@ final readonly class QuestionQueue
                 'id' => $question->id,
                 // Telle que la narratrice la recevra : l'Initiateur·rice relit
                 // ce qui va partir, pas un gabarit.
-                'text' => QuestionWording::for($question, $project->address_form, $gender),
+                'text' => QuestionWording::forProject($question, $project, $gender),
                 'theme' => $question->theme->value,
                 'themeLabel' => Options::label($question->theme),
                 'askedBy' => null,

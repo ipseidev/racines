@@ -65,7 +65,7 @@ final readonly class QuestionsController
 
         $present = fn (Question $question): array => [
             'id' => $question->id,
-            'text' => QuestionWording::for($question, $project->address_form, $gender),
+            'text' => QuestionWording::forProject($question, $project, $gender),
             'theme' => $question->theme->value,
             'themeLabel' => Options::label($question->theme),
         ];

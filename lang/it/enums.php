@@ -268,6 +268,19 @@ return [
         'admin' => 'Inserito dall’assistenza',
     ],
 
+    'buyer_relation' => [
+        'child' => 'Suo figlio o sua figlia',
+        'grandchild' => 'Suo nipote',
+        'partner' => 'Il suo compagno o la sua compagna',
+        'other' => 'Un altro legame',
+        'self' => 'Se stesso',
+    ],
+
+    'buyer_focus' => [
+        'buyer' => 'Su chi regala',
+        'everyone' => 'Su tutti i suoi figli',
+    ],
+
     'grammatical_gender' => [
         'feminine' => 'Femminile',
         'masculine' => 'Maschile',

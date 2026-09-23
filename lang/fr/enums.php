@@ -268,6 +268,19 @@ return [
         'admin' => 'Saisi par le support',
     ],
 
+    'buyer_relation' => [
+        'child' => 'Son enfant',
+        'grandchild' => 'Son petit-enfant',
+        'partner' => 'Son conjoint',
+        'other' => 'Un autre lien',
+        'self' => 'Soi-même',
+    ],
+
+    'buyer_focus' => [
+        'buyer' => 'Sur la personne qui offre',
+        'everyone' => 'Sur tous ses enfants',
+    ],
+
     'grammatical_gender' => [
         'feminine' => 'Féminin',
         'masculine' => 'Masculin',
