@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Actions\IssueRecordToken;
 use App\Actions\PickNextQuestion;
+use App\Enums\AddressForm;
+use App\Enums\GrammaticalGender;
 use App\Enums\ProjectStatus;
 use App\Enums\TokenType;
 use App\Models\AccessToken;
@@ -118,6 +120,20 @@ it('ne montre jamais une question inactive', function (): void {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('queue', 4)
             ->where('queue.0.text', 'Question 1 ?'),
+        );
+});
+
+it('montre les questions du corpus comme la narratrice les recevra', function (): void {
+    [$owner, $project] = questionsProject();
+    $project->update(['address_form' => AddressForm::Tu]);
+    $project->primaryNarrator()->firstOrFail()->update(['grammatical_gender' => GrammaticalGender::Feminine]);
+    [$first] = corpus();
+    $first->update(['text' => 'Où êtes-vous né{|e} ?', 'text_tu' => 'Où es-tu né{|e} ?']);
+
+    $this->actingAs($owner)
+        ->get(spaceUrl($project, '/questions'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('queue.0.text', 'Où es-tu née ?'),
         );
 });
 

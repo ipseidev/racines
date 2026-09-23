@@ -268,6 +268,35 @@ return [
         'admin' => 'Saisi par le support',
     ],
 
+    'grammatical_gender' => [
+        'feminine' => 'Féminin',
+        'masculine' => 'Masculin',
+    ],
+
+    'question_tone' => [
+        'light' => 'Léger',
+        'tender' => 'Tendre',
+        'grave' => 'Grave',
+    ],
+
+    'question_condition' => [
+        'partner' => 'A vécu en couple',
+        'children' => 'A des enfants',
+        'grandchildren' => 'A des petits-enfants',
+        'career' => 'A exercé un métier',
+        'knew_parents' => 'A connu ses parents',
+    ],
+
+    'sensitive_topic' => [
+        'bereavement' => 'Le deuil',
+        'child_loss' => 'La perte d’un enfant',
+        'separation' => 'Une séparation',
+        'war' => 'La guerre',
+        'illness' => 'La maladie',
+        'religion' => 'La religion',
+        'end_of_life' => 'La fin de vie',
+    ],
+
     'question_theme' => [
         'childhood' => 'Enfance',
         'family_origins' => 'Origines familiales',

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Questions;
 use App\Filament\Resources\Questions\Pages\ListQuestions;
 use App\Models\Question;
 use App\Models\User;
+use App\Support\QuestionWording;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -73,6 +74,7 @@ final class QuestionResource extends Resource
                     ->sortable(),
                 TextColumn::make('text')
                     ->label(__('admin.questions.text'))
+                    ->formatStateUsing(fn (string $state): string => QuestionWording::resolve($state, null))
                     ->wrap()
                     ->searchable(),
                 TextColumn::make('theme')

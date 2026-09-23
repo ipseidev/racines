@@ -13,6 +13,7 @@ use App\Enums\ValidatedVia;
 use App\States\Story\InBook;
 use App\States\Story\Shared;
 use App\States\Story\StoryState;
+use App\Support\QuestionWording;
 use Carbon\CarbonImmutable;
 use Database\Factories\StoryFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -39,6 +40,7 @@ use Spatie\ModelStates\HasStates;
  * @property string $narrator_id
  * @property string|null $question_id
  * @property string|null $custom_question_text
+ * @property string|null $question_text
  * @property int $sequence
  * @property int|null $queue_order
  * @property StoryState $state
@@ -274,9 +276,32 @@ final class Story extends Model implements HasMedia
         return $resolved !== null && is_subclass_of($resolved, StoryState::class) ? $resolved : null;
     }
 
+    /**
+     * L'intitulé tel que la narratrice l'a lu, ou le lira.
+     *
+     * Une question de la famille est écrite une fois pour toutes. Une question
+     * du corpus est photographiée à l'enregistrement (`RecordStory`) ; avant,
+     * elle se calcule : le tutoiement du projet, le genre de la narratrice et
+     * le texte courant du corpus, pour qu'un réglage changé avant l'envoi soit
+     * suivi et qu'une reformulation après la réponse ne le soit jamais.
+     */
     public function questionText(): ?string
     {
-        return $this->custom_question_text ?? $this->question?->text;
+        if ($this->custom_question_text !== null) {
+            return $this->custom_question_text;
+        }
+
+        if ($this->question_text !== null) {
+            return $this->question_text;
+        }
+
+        $question = $this->question;
+
+        if ($question === null) {
+            return null;
+        }
+
+        return QuestionWording::for($question, $this->project->address_form, $this->narrator->grammatical_gender);
     }
 
     /** @return array<string, string> */

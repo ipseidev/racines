@@ -16,6 +16,7 @@ use App\Models\Story;
 use App\Support\InitiatorProject;
 use App\Support\Options;
 use App\Support\QuestionQueue;
+use App\Support\QuestionWording;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -60,9 +61,11 @@ final readonly class QuestionsController
         $askedIds = $project->stories()->whereNotNull('question_id')->pluck('question_id')->all();
         $excludedIds = $project->questionSettings()->where('excluded', true)->pluck('question_id')->all();
 
+        $gender = $project->primaryNarrator()->first()?->grammatical_gender;
+
         $present = fn (Question $question): array => [
             'id' => $question->id,
-            'text' => $question->text,
+            'text' => QuestionWording::for($question, $project->address_form, $gender),
             'theme' => $question->theme->value,
             'themeLabel' => Options::label($question->theme),
         ];

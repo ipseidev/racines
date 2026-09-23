@@ -92,12 +92,16 @@ final readonly class QuestionQueue
             ->whereNotNull('custom_order')
             ->pluck('custom_order', 'question_id');
 
+        $gender = $project->primaryNarrator()->first()?->grammatical_gender;
+
         foreach ($this->picker->queue($project)->values() as $position => $question) {
             /** @var Question $question */
             $entries[] = [
                 'kind' => 'question',
                 'id' => $question->id,
-                'text' => $question->text,
+                // Telle que la narratrice la recevra : l'Initiateur·rice relit
+                // ce qui va partir, pas un gabarit.
+                'text' => QuestionWording::for($question, $project->address_form, $gender),
                 'theme' => $question->theme->value,
                 'themeLabel' => Options::label($question->theme),
                 'askedBy' => null,

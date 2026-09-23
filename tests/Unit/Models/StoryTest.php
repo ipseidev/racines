@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Enums\AddressForm;
+use App\Enums\GrammaticalGender;
 use App\Enums\StoryVisibility;
+use App\Models\Narrator;
+use App\Models\Project;
 use App\Models\Question;
 use App\Models\Story;
+use App\States\Story\Recorded;
 use App\States\Story\Shared;
 
 it('is never visible to family unless shared or in_book', function (): void {
@@ -47,4 +52,57 @@ it('numérote les histoires par projet', function (): void {
 
     expect($first->sequence)->toBe(1)
         ->and($second->sequence)->toBe(2);
+});
+
+/*
+ * L'intitulé d'une question du corpus, tel que la narratrice l'a lu.
+ *
+ * Tant que l'histoire attend, il se calcule : tutoiement du projet, genre de
+ * la narratrice, texte courant du corpus. Dès qu'elle est enregistrée, il est
+ * photographié — une reformulation du corpus ne doit jamais changer, dans le
+ * livre ou l'export, la question à laquelle elle a répondu.
+ */
+it('tutoie et accorde la question quand le projet tutoie', function (): void {
+    $project = Project::factory()->create(['address_form' => AddressForm::Tu]);
+    Narrator::factory()->primary()->create([
+        'project_id' => $project->id,
+        'grammatical_gender' => GrammaticalGender::Feminine,
+    ]);
+    $question = Question::factory()->create([
+        'text' => 'Où êtes-vous né{|e} ?',
+        'text_tu' => 'Où es-tu né{|e} ?',
+    ]);
+
+    $story = Story::factory()->forProject($project->refresh())->proposed()->create(['question_id' => $question->id]);
+
+    expect($story->questionText())->toBe('Où es-tu née ?');
+});
+
+it('photographie l’intitulé à l’enregistrement, et n’en change plus', function (): void {
+    $project = Project::factory()->create(['address_form' => AddressForm::Tu]);
+    Narrator::factory()->primary()->create(['project_id' => $project->id, 'grammatical_gender' => null]);
+    $question = Question::factory()->create([
+        'text' => 'Où êtes-vous né{|e} ?',
+        'text_tu' => 'Où es-tu né{|e} ?',
+    ]);
+    $story = Story::factory()->forProject($project->refresh())->proposed()->create(['question_id' => $question->id]);
+
+    $story->state->transitionTo(Recorded::class);
+
+    $question->update(['text_tu' => 'Raconte le jour de ta naissance.']);
+
+    expect($story->refresh()->question_text)->toBe('Où es-tu né·e ?')
+        ->and($story->questionText())->toBe('Où es-tu né·e ?');
+});
+
+it('ne photographie pas une question personnalisée', function (): void {
+    $story = Story::factory()->proposed()->create([
+        'question_id' => null,
+        'custom_question_text' => 'Raconte-nous la maison de Marseille.',
+    ]);
+
+    $story->state->transitionTo(Recorded::class);
+
+    expect($story->refresh()->question_text)->toBeNull()
+        ->and($story->questionText())->toBe('Raconte-nous la maison de Marseille.');
 });

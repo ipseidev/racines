@@ -268,6 +268,35 @@ return [
         'admin' => 'Inserito dall’assistenza',
     ],
 
+    'grammatical_gender' => [
+        'feminine' => 'Femminile',
+        'masculine' => 'Maschile',
+    ],
+
+    'question_tone' => [
+        'light' => 'Leggero',
+        'tender' => 'Tenero',
+        'grave' => 'Serio',
+    ],
+
+    'question_condition' => [
+        'partner' => 'Ha vissuto in coppia',
+        'children' => 'Ha dei figli',
+        'grandchildren' => 'Ha dei nipoti',
+        'career' => 'Ha svolto un lavoro',
+        'knew_parents' => 'Ha conosciuto i genitori',
+    ],
+
+    'sensitive_topic' => [
+        'bereavement' => 'Il lutto',
+        'child_loss' => 'La perdita di un figlio',
+        'separation' => 'Una separazione',
+        'war' => 'La guerra',
+        'illness' => 'La malattia',
+        'religion' => 'La religione',
+        'end_of_life' => 'La fine della vita',
+    ],
+
     'question_theme' => [
         'childhood' => 'Infanzia',
         'family_origins' => 'Origini familiari',

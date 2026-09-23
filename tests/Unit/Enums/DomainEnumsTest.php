@@ -13,6 +13,7 @@ use App\Enums\ConsentKind;
 use App\Enums\ConsentStatus;
 use App\Enums\Currency;
 use App\Enums\DeletionRequestedBy;
+use App\Enums\GrammaticalGender;
 use App\Enums\Locale;
 use App\Enums\Market;
 use App\Enums\Offer;
@@ -21,9 +22,12 @@ use App\Enums\OutboundMessageStatus;
 use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Enums\PromptSlot;
+use App\Enums\QuestionCondition;
 use App\Enums\QuestionTheme;
+use App\Enums\QuestionTone;
 use App\Enums\RecordingKind;
 use App\Enums\RecordingSource;
+use App\Enums\SensitiveTopic;
 use App\Enums\ShareDecision;
 use App\Enums\StoryVisibility;
 use App\Enums\TokenIssuedReason;
@@ -50,6 +54,7 @@ function domainEnums(): array
         ConsentStatus::class,
         Currency::class,
         DeletionRequestedBy::class,
+        GrammaticalGender::class,
         Locale::class,
         Market::class,
         Offer::class,
@@ -58,9 +63,12 @@ function domainEnums(): array
         ProjectMemberRole::class,
         ProjectStatus::class,
         PromptSlot::class,
+        QuestionCondition::class,
         QuestionTheme::class,
+        QuestionTone::class,
         RecordingKind::class,
         RecordingSource::class,
+        SensitiveTopic::class,
         ShareDecision::class,
         StoryVisibility::class,
         TokenIssuedReason::class,

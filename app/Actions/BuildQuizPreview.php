@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\AddressForm;
 use App\Enums\QuestionTheme;
 use App\Models\Question;
+use App\Support\QuestionWording;
 use Illuminate\Support\Collection;
 
 /**
@@ -50,7 +52,7 @@ final class BuildQuizPreview
         $remaining = $corpus->reject(fn (Question $question): bool => $question->is($first));
 
         return [
-            'first' => $first->text,
+            'first' => QuestionWording::for($first, AddressForm::Vous, null),
             'next' => $this->next($remaining, $themes),
         ];
     }
@@ -99,6 +101,11 @@ final class BuildQuizPreview
         }
 
         /** @var list<string> */
-        return $picked->map(fn (Question $question): string => $question->text)->values()->all();
+        // Vouvoiement et genre inconnu : le quiz ne sait encore rien de la
+        // personne à qui l'on offre.
+        return $picked
+            ->map(fn (Question $question): string => QuestionWording::for($question, AddressForm::Vous, null))
+            ->values()
+            ->all();
     }
 }

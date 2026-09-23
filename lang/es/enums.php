@@ -268,6 +268,35 @@ return [
         'admin' => 'Registrado por el equipo de soporte',
     ],
 
+    'grammatical_gender' => [
+        'feminine' => 'Femenino',
+        'masculine' => 'Masculino',
+    ],
+
+    'question_tone' => [
+        'light' => 'Ligero',
+        'tender' => 'Tierno',
+        'grave' => 'Serio',
+    ],
+
+    'question_condition' => [
+        'partner' => 'Ha vivido en pareja',
+        'children' => 'Tiene hijos',
+        'grandchildren' => 'Tiene nietos',
+        'career' => 'Ha ejercido un oficio',
+        'knew_parents' => 'Conoció a sus padres',
+    ],
+
+    'sensitive_topic' => [
+        'bereavement' => 'El duelo',
+        'child_loss' => 'La pérdida de un hijo',
+        'separation' => 'Una separación',
+        'war' => 'La guerra',
+        'illness' => 'La enfermedad',
+        'religion' => 'La religión',
+        'end_of_life' => 'El final de la vida',
+    ],
+
     'question_theme' => [
         'childhood' => 'Infancia',
         'family_origins' => 'Orígenes familiares',
