@@ -121,6 +121,10 @@ it('ne laisse aucune forme du vouvoiement dans un texte au tutoiement', function
         'fratrie-portrait',            // « quand vous étiez petits »
         'fratrie-disputes',            // « pour quoi vous disputiez-vous »
         'mariage-ou-vie-commune',      // « le jour où vous avez décidé »
+        'premier-rendez-vous',         // « votre premier rendez-vous »
+        'premier-chez-soi-a-deux',     // « votre premier logement à deux »
+        'epreuve-a-deux',              // « avez-vous traversée à deux »
+        'vacances-avec-les-enfants',   // « où partiez-vous avec les enfants »
     ];
 
     foreach (QuestionCorpus::default()->entries() as $entry) {

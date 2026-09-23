@@ -165,5 +165,5 @@ it('ignore les questions désactivées du corpus', function (): void {
 });
 
 it('sème bien le corpus attendu', function (): void {
-    expect(QuestionSeeder::count())->toBe(112);
+    expect(QuestionSeeder::count())->toBe(150);
 });

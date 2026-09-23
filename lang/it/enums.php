@@ -286,6 +286,8 @@ return [
         'career' => 'Ha svolto un lavoro',
         'knew_parents' => 'Ha conosciuto i genitori',
         'siblings' => 'Ha fratelli o sorelle',
+        'migration' => 'È cresciuto altrove',
+        'rural' => 'È cresciuto in campagna',
     ],
 
     'sensitive_topic' => [

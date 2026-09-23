@@ -142,7 +142,7 @@ it('montre en aperçu une vraie question du corpus, de difficulté 1', function 
             // l'ordre du corpus à l'intérieur de chacun.
             ->where('preview.next', [
                 'Quel est le tout premier souvenir qui vous revient ? Où étiez-vous, qui était là, et qu’est-ce que vous ressentiez ?',
-                'Vous souvenez-vous de votre premier jour de travail ? Racontez où c’était, les gens que vous avez rencontrés, et ce que vous ressentiez.',
+                'Qu’est-ce qui a rempli vos journées d’adulte : un métier, la maison, les enfants, les autres ? Racontez une journée de cette époque.',
                 'Y a-t-il une recette, un geste ou un savoir-faire que vous seul·e savez faire ? Expliquez-le-nous pas à pas, comme si on était à côté de vous.',
             ])
         );

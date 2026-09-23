@@ -27,4 +27,8 @@ enum QuestionCondition: string
     case KnewParents = 'knew_parents';
     /** A des frères ou des sœurs. */
     case Siblings = 'siblings';
+    /** A grandi dans un autre pays, ou une région lointaine, que celle où il vit. */
+    case Migration = 'migration';
+    /** A grandi à la campagne, à la ferme ou dans un village. */
+    case Rural = 'rural';
 }
