@@ -285,6 +285,7 @@ return [
         'grandchildren' => 'Ha dei nipoti',
         'career' => 'Ha svolto un lavoro',
         'knew_parents' => 'Ha conosciuto i genitori',
+        'siblings' => 'Ha fratelli o sorelle',
     ],
 
     'sensitive_topic' => [

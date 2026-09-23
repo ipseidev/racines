@@ -6,9 +6,9 @@ use App\Enums\QuestionTheme;
 use App\Models\Question;
 use Database\Seeders\QuestionSeeder;
 
-it('sème les soixante questions du corpus, sans doublon de slug', function (): void {
-    expect(Question::query()->count())->toBe(60)
-        ->and(Question::query()->distinct()->count('slug'))->toBe(60);
+it('sème tout le corpus, sans doublon de slug', function (): void {
+    expect(Question::query()->count())->toBe(QuestionSeeder::count())
+        ->and(Question::query()->distinct()->count('slug'))->toBe(QuestionSeeder::count());
 });
 
 it('commence par une question très facile', function (): void {
@@ -45,7 +45,7 @@ it('gradue la difficulté du facile vers l’intime', function (): void {
 it('reste rejouable sans dupliquer', function (): void {
     $this->seed(QuestionSeeder::class);
 
-    expect(Question::query()->count())->toBe(60);
+    expect(Question::query()->count())->toBe(QuestionSeeder::count());
 });
 
 it('n’emploie aucune expression proscrite par R-11', function (): void {

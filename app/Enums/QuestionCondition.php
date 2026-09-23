@@ -25,4 +25,6 @@ enum QuestionCondition: string
     case Career = 'career';
     /** A grandi avec ses parents, ou les a connus. */
     case KnewParents = 'knew_parents';
+    /** A des frères ou des sœurs. */
+    case Siblings = 'siblings';
 }

@@ -69,7 +69,7 @@ function quizAnswers(array $overrides = []): array
  * `ReferenceDataSeeder` : l'aperçu n'a d'intérêt que s'il montre ce qui
  * partira vraiment, et un corpus de test le prouverait moins bien.
  */
-const OUVERTURE = 'Où êtes-vous né·e, et que vous a-t-on raconté sur le jour de votre naissance ?';
+const OUVERTURE = 'Savez-vous où et comment vous êtes né·e ? Racontez ce qu’on vous a dit de ce jour-là, et de la famille qui vous attendait.';
 
 it('ouvre le premier écran sans compte ni brouillon', function (): void {
     $this->get(LocalizedRoutes::route('quiz'))
@@ -141,9 +141,9 @@ it('montre en aperçu une vraie question du corpus, de difficulté 1', function 
             // Les suivantes viennent des thèmes cochés, une par thème, dans
             // l'ordre du corpus à l'intérieur de chacun.
             ->where('preview.next', [
-                'Quel est votre tout premier souvenir ?',
-                'Racontez votre premier jour de travail.',
-                'Quel conseil donneriez-vous à votre petit-fils ou votre petite-fille pour ses dix-huit ans ?',
+                'Quel est le tout premier souvenir qui vous revient ? Où étiez-vous, qui était là, et qu’est-ce que vous ressentiez ?',
+                'Vous souvenez-vous de votre premier jour de travail ? Racontez où c’était, les gens que vous avez rencontrés, et ce que vous ressentiez.',
+                'Y a-t-il une recette, un geste ou un savoir-faire que vous seul·e savez faire ? Expliquez-le-nous pas à pas, comme si on était à côté de vous.',
             ])
         );
 });

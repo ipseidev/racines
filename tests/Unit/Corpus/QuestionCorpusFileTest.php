@@ -14,15 +14,94 @@ use App\Support\QuestionWording;
  * marqueur s'accorde dans les deux genres, et aucune étiquette n'est inventée.
  */
 
+/** Les slugs du corpus v1, tels qu'ils sont en production depuis le bloc 05. */
+final class QuestionCorpusV1
+{
+    public const SLUGS = [
+        'adulte-qui-a-compte',
+        'ami-perdu-de-vue',
+        'apprendre-velo-nager-lire',
+        'avec-les-enfants',
+        'betise-enfant',
+        'cachette',
+        'cadeau-touchant',
+        'ce-quon-retienne',
+        'choix-professionnel',
+        'conseil-couple',
+        'conseil-dix-huit-ans',
+        'conteur-famille',
+        'croyance-changee',
+        'decision-difficile',
+        'dimanche-dix-ans',
+        'dispute-fou-rire',
+        'epreuve-la-plus-dure',
+        'evenement-du-monde',
+        'expression-famille',
+        'fou-rire',
+        'geste-recette-secret',
+        'grande-peur',
+        'grands-parents',
+        'histoire-jamais-racontee',
+        'journee-de-travail',
+        'lecon-echec',
+        'lieu-qui-manque',
+        'maison-enfance',
+        'maison-quittee',
+        'mariage-ou-vie-commune',
+        'message-dans-cinquante-ans',
+        'metier-fierte',
+        'mode-jeunesse',
+        'monde-des-petits-enfants',
+        'musique-quinze-ans',
+        'naissance-recit',
+        'nom-de-famille',
+        'objet-transmis',
+        'odeur-enfance',
+        'petite-habitude-heureuse',
+        'plat-enfance',
+        'plus-beau-jour',
+        'plus-grande-fierte',
+        'premier-enfant',
+        'premier-jour-travail',
+        'premier-souvenir',
+        'premiere-liberte',
+        'priere-poeme-chanson',
+        'qualite-pere-mere',
+        'qui-a-donne-sa-chance',
+        'rencontre-conjoint',
+        'reve-metier',
+        'revoir-une-derniere-fois',
+        'surnoms-famille',
+        'tradition-gardee',
+        'travail-et-les-gens',
+        'valeur-transmise',
+        'vie-reussie',
+        'ville-village-avant',
+        'voyage-qui-change',
+    ];
+}
+
 it('lit un corpus valide', function (): void {
     expect(QuestionCorpus::default()->problems())->toBe([]);
 });
 
-it('porte les soixante questions historiques, sans doublon de slug', function (): void {
+it('garde les soixante slugs du corpus v1, sans doublon', function (): void {
+    // Un slug ne disparaît jamais : des histoires de production le citent.
+    // Pour retirer une question, on la désactive (`'active' => false`).
     $slugs = array_column(QuestionCorpus::default()->entries(), 'slug');
 
-    expect($slugs)->toHaveCount(60)
-        ->and(array_unique($slugs))->toHaveCount(60);
+    expect(array_unique($slugs))->toHaveCount(count($slugs))
+        ->and(array_diff(QuestionCorpusV1::SLUGS, $slugs))->toBe([]);
+});
+
+it('tient trente mots au plus par question', function (): void {
+    foreach (QuestionCorpus::default()->entries() as $entry) {
+        foreach (['vous', 'tu'] as $form) {
+            $words = count(preg_split('/\s+/u', trim(QuestionWording::resolve($entry[$form], null))) ?: []);
+
+            expect($words)->toBeLessThanOrEqual(30, "{$entry['slug']} ({$form}) : {$words} mots");
+        }
+    }
 });
 
 it('écrit chaque question au vouvoiement et au tutoiement', function (): void {
@@ -32,9 +111,24 @@ it('écrit chaque question au vouvoiement et au tutoiement', function (): void {
     }
 });
 
-it('ne laisse aucun « votre » ni « vos » dans un texte au tutoiement', function (): void {
+it('ne laisse aucune forme du vouvoiement dans un texte au tutoiement', function (): void {
+    // Ce qui trahit un vouvoiement oublié : « votre », « êtes », un verbe en
+    // « -ez ». Le « vous » pluriel, lui, est juste — elle et son frère, elle
+    // et son conjoint — et ces questions-là sont nommées une par une, relues
+    // à la main, plutôt que devinées par une expression.
+    $plural = [
+        'ami-perdu-de-vue',            // « ce que vous faisiez ensemble »
+        'fratrie-portrait',            // « quand vous étiez petits »
+        'fratrie-disputes',            // « pour quoi vous disputiez-vous »
+        'mariage-ou-vie-commune',      // « le jour où vous avez décidé »
+    ];
+
     foreach (QuestionCorpus::default()->entries() as $entry) {
-        expect(preg_match('/\b(votre|vos|êtes)\b/iu', $entry['tu']))
+        if (in_array($entry['slug'], $plural, true)) {
+            continue;
+        }
+
+        expect(preg_match('/\b(votre|êtes|(?!chez\b|assez\b|nez\b)\w+ez)\b/iu', $entry['tu']))
             ->toBe(0, "{$entry['slug']} tutoie mal : {$entry['tu']}");
     }
 });

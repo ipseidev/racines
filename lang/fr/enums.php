@@ -285,6 +285,7 @@ return [
         'grandchildren' => 'A des petits-enfants',
         'career' => 'A exercé un métier',
         'knew_parents' => 'A connu ses parents',
+        'siblings' => 'A des frères et sœurs',
     ],
 
     'sensitive_topic' => [
