@@ -90,3 +90,25 @@ describe('la page de merci', () => {
         expect(liens.some((href) => href?.includes('/projets/'))).toBe(false);
     });
 });
+
+describe('la porte vers la personnalisation', () => {
+    it('propose de personnaliser les questions à qui offre', () => {
+        const { getByRole } = render(<CheckoutThanks {...props} />);
+
+        expect(
+            getByRole('link', {
+                name: 'public.checkout.thanks.personalize_cta',
+            }),
+        ).toHaveAttribute('href', '/espace/personnaliser');
+    });
+
+    it('ne la propose pas à qui raconte sa propre histoire', () => {
+        const { queryByRole } = render(<CheckoutThanks {...props} forSelf />);
+
+        expect(
+            queryByRole('link', {
+                name: 'public.checkout.thanks.personalize_cta',
+            }),
+        ).toBeNull();
+    });
+});

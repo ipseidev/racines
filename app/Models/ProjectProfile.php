@@ -8,6 +8,7 @@ use App\Concerns\StoresDatesWithOffset;
 use App\Enums\BuyerFocus;
 use App\Enums\BuyerRelation;
 use App\Enums\GrammaticalGender;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,8 +30,8 @@ use Illuminate\Support\Carbon;
  * @property BuyerFocus|null $buyer_focus
  * @property string|null $buyer_first_name
  * @property GrammaticalGender|null $buyer_gender
- * @property Carbon|null $completed_at
- * @property Carbon|null $skipped_at
+ * @property CarbonImmutable|null $completed_at
+ * @property CarbonImmutable|null $skipped_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -68,8 +69,8 @@ final class ProjectProfile extends Model
             'buyer_relation' => BuyerRelation::class,
             'buyer_focus' => BuyerFocus::class,
             'buyer_gender' => GrammaticalGender::class,
-            'completed_at' => 'datetime',
-            'skipped_at' => 'datetime',
+            'completed_at' => 'immutable_datetime',
+            'skipped_at' => 'immutable_datetime',
         ];
     }
 }

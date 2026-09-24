@@ -11,6 +11,7 @@ export type LayoutKey =
     | 'initiator'
     | 'lp'
     | 'narrator'
+    | 'personalize'
     | 'public'
     | 'quiz'
     | 'settings';
@@ -67,6 +68,10 @@ export function layoutKeysFor(name: string): LayoutKey[] {
         // saisie.
         case name.startsWith('public/'):
             return ['public'];
+        // Le tunnel d'après-achat : ni la navigation de l'espace ni pied de
+        // page au-dessus de deux minutes de questions.
+        case name === 'initiator/Personalize':
+            return ['personalize'];
         case name.startsWith('initiator/'):
             return ['initiator'];
         case name.startsWith('settings/'):

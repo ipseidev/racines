@@ -28,3 +28,12 @@ Le genre de la narratrice vit sur `narrators.grammatical_gender`. Un achat pour 
 6. Les règles d'avant restent : une question avancée par l'Initiateur·rice passe devant, l'intime attend la sixième histoire validée, le moteur peut demander plus doux.
 
 **La file affichée rejoue l'envoi.** `queue()` ne trie plus à part : elle choisit question après question avec les mêmes règles que `handle()`. Les questions sur l'acheteur tombent à des rangs, pas à des places du corpus ; un tri les aurait montrées ailleurs que là où elles partiront. Un test compare la file aux quarante premiers envois.
+
+## Le tunnel qui remplit le profil (24 septembre 2026)
+
+`/espace/projets/{projet}/personnaliser` (`PersonalizeController`, page `initiator/Personalize`, mise en page `personalize` sans navigation). Prototype validé : https://claude.ai/artifact/8KUsUyXNbD7oPuwcZZGuou.
+
+- **Les écrans** : accueil (un paquet de trois questions du corpus qui se mélange), le lien, « Et vous ? » (sauf pour un conjoint), sa vie (oui / non / rien), les sujets à laisser de côté, les thèmes (trois au plus), puis le choix de la toute première question, puis la fin. Chaque écran se passe, et le tout aussi.
+- **Une seule écriture** à la fin des thèmes remplit le profil et le genre de la narratrice. Les trois premières questions montrées ensuite sont calculées par le vrai choix des questions, sans les questions sur l'acheteur ; celle qu'on choisit devient une question avancée.
+- **Trois portes** : la page de merci (`/espace/personnaliser`, qui mène au projet), un bandeau sur le tableau de bord tant que le tunnel n'a été ni fait ni passé, un lien sur la page des questions pour le refaire. Aucune pour qui raconte sa propre histoire.
+- « A connu ses parents » n'est pas demandé : trop intrusif pour deux minutes, trop rare pour le poser à tous. La condition reste dans le corpus.

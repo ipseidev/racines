@@ -2002,6 +2002,8 @@ return [
         ],
 
         'thanks' => [
+            'personalize_cta' => 'Personalizar sus preguntas',
+            'personalize_hint' => 'Dos minutos para que sus preguntas se le parezcan: su vida, lo que conviene evitar, lo que te gustaría oírle contar.',
             'title' => 'Gracias',
             'headline' => 'Gracias. El libro :of empieza aquí.',
             'headline_anonymous' => 'Gracias. El libro empieza aquí.',

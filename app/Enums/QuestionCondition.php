@@ -41,4 +41,18 @@ enum QuestionCondition: string
     case BuyerIsChild = 'buyer_is_child';
     /** L'acheteur est son petit-enfant. */
     case BuyerIsGrandchild = 'buyer_is_grandchild';
+
+    /**
+     * Les conditions de vie : ce qu'on demande à la famille, à vrai ou faux.
+     * Les trois autres parlent de l'acheteur et se déduisent de son lien.
+     *
+     * @return list<self>
+     */
+    public static function lifeFacts(): array
+    {
+        return [
+            self::Partner, self::Children, self::Grandchildren, self::Career,
+            self::KnewParents, self::Siblings, self::Migration, self::Rural,
+        ];
+    }
 }

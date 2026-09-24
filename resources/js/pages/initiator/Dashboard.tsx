@@ -62,6 +62,8 @@ type Readiness = {
 };
 
 type Props = {
+    /** Le tunnel de personnalisation, tant qu'il n'a été ni fait ni passé. */
+    personalize?: string | null;
     project: {
         id: string;
         status: string;
@@ -155,6 +157,7 @@ function toneFor(state: string): PillTone {
  * et le précédent cesse alors de fonctionner.
  */
 export default function Dashboard({
+    personalize = null,
     project,
     stories,
     upcoming,
@@ -212,6 +215,34 @@ export default function Dashboard({
                     }
                 />
             </div>
+
+            {personalize !== null && (
+                <section
+                    aria-labelledby="personalize"
+                    className="enter pz-banner mt-8"
+                    style={stagger(1)}
+                >
+                    <div className="min-w-0 flex-1">
+                        <h2
+                            id="personalize"
+                            className="font-display text-[1.35rem] leading-tight font-medium"
+                        >
+                            {t('initiator.personalize.banner.title')}
+                        </h2>
+                        <p className="text-brand-muted mt-1.5 leading-snug">
+                            {t('initiator.personalize.banner.body', {
+                                name: name ?? '',
+                            })}
+                        </p>
+                    </div>
+                    <Link
+                        href={personalize}
+                        className="bg-brand text-brand-foreground hover:bg-brand-deep inline-flex min-h-12 flex-none items-center justify-center rounded-full px-5 font-semibold"
+                    >
+                        {t('initiator.personalize.banner.cta')}
+                    </Link>
+                </section>
+            )}
 
             {alerts.length > 0 && (
                 <section

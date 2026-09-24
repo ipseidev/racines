@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { SubmitButton } from '@/components/form/SubmitButton';
@@ -45,6 +45,8 @@ type Archived = {
 };
 
 type Props = {
+    /** Refaire le tunnel de personnalisation ; absent pour qui raconte sa vie. */
+    personalizeUrl?: string | null;
     next: Entry[];
     excluded: Archived[];
     asked: Archived[];
@@ -98,6 +100,7 @@ const STEP = 20;
  * là, pas dans la liste.
  */
 export default function Questions({
+    personalizeUrl = null,
     next: serverNext,
     excluded,
     asked,
@@ -337,6 +340,14 @@ export default function Questions({
                     title={title}
                     intro={t('initiator.questions.intro', { name: name ?? '' })}
                 />
+                {personalizeUrl !== null && (
+                    <Link
+                        href={personalizeUrl}
+                        className="text-brand-accent-deep mt-3 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline"
+                    >
+                        {t('initiator.personalize.questions_link')}
+                    </Link>
+                )}
             </div>
 
             <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start lg:gap-10">

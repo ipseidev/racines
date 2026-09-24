@@ -8,6 +8,7 @@ use App\Http\Controllers\Initiator\CopyLinkController;
 use App\Http\Controllers\Initiator\DataController;
 use App\Http\Controllers\Initiator\FamilyController;
 use App\Http\Controllers\Initiator\OrdersController;
+use App\Http\Controllers\Initiator\PersonalizeController;
 use App\Http\Controllers\Initiator\ProjectSettingsController;
 use App\Http\Controllers\Initiator\QuestionsController;
 use App\Http\Controllers\Initiator\SpaceController;
@@ -76,7 +77,7 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
          * (`POST /espace/questions/ordre`) ne se redirige pas, elle n'a
          * jamais été tapée à la main.
          */
-        foreach (['questions', 'proches', 'livre', 'donnees', 'reglages', 'ecoute'] as $ancienne) {
+        foreach (['questions', 'proches', 'livre', 'donnees', 'reglages', 'ecoute', 'personnaliser'] as $ancienne) {
             Route::get('/'.$ancienne, [SpaceEntryController::class, 'legacy'])
                 ->defaults('page', $ancienne)
                 ->name('legacy.'.$ancienne);
@@ -96,6 +97,16 @@ Route::middleware('auth')->prefix('espace')->name('initiator.')->group(function 
                 // sens, et le bouton passait pour cassé (T-149). Un GET qui réémet un
                 // jeton, mais le sien, et le précédent n'avait pas d'autre lecteur.
                 Route::get('/ecoute', [CopyLinkController::class, 'listen'])->name('listen');
+
+                /*
+                 * Le tunnel de personnalisation d'après-achat. `/espace/personnaliser`
+                 * (plus haut) y mène depuis la page de merci, qui ne connaît pas
+                 * encore l'identifiant du projet.
+                 */
+                Route::get('/personnaliser', [PersonalizeController::class, 'show'])->name('personalize');
+                Route::post('/personnaliser', [PersonalizeController::class, 'store'])->name('personalize.store');
+                Route::post('/personnaliser/premiere', [PersonalizeController::class, 'first'])->name('personalize.first');
+                Route::post('/personnaliser/passer', [PersonalizeController::class, 'skip'])->name('personalize.skip');
 
                 Route::get('/questions', [QuestionsController::class, 'index'])->name('questions');
                 Route::post('/questions/ordre', [QuestionsController::class, 'reorder'])->name('questions.reorder');

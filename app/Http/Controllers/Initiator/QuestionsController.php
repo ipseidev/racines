@@ -8,6 +8,7 @@ use App\Actions\AttachPhoto;
 use App\Actions\PickNextQuestion;
 use App\Actions\ProposeStory;
 use App\Audit\AuditLog;
+use App\Enums\BuyerRelation;
 use App\Exceptions\Domain\InfectedUpload;
 use App\Exceptions\Domain\UnsupportedImage;
 use App\Models\Project;
@@ -93,6 +94,11 @@ final readonly class QuestionsController
         $file = $this->queue->forProject($project);
 
         return inertia('initiator/Questions', [
+            // Refaire le tunnel de personnalisation : sauf pour qui raconte
+            // sa propre histoire, qui n'a personne à décrire.
+            'personalizeUrl' => $project->profile?->buyer_relation === BuyerRelation::Myself
+                ? null
+                : route('initiator.personalize', ['project' => $project], false),
             'queue' => $this->picker->queue($project)->map($present)->values()->all(),
             'excluded' => Question::query()->active()->whereIn('id', $excludedIds)
                 ->orderBy('order_hint')->orderBy('slug')->get()->map($present)->values()->all(),

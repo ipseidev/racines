@@ -11,6 +11,7 @@ import { layoutKeysFor, type Layout, type LayoutKey } from '@/layouts/for-page';
 import InitiatorLayout from '@/layouts/initiator-layout';
 import LpLayout from '@/layouts/lp-layout';
 import NarratorLayout from '@/layouts/narrator-layout';
+import PersonalizeLayout from '@/layouts/personalize-layout';
 import PublicLayout from '@/layouts/public-layout';
 import QuizLayout from '@/layouts/quiz-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -71,6 +72,7 @@ const LAYOUTS: Record<LayoutKey, Layout> = {
     initiator: InitiatorLayout,
     lp: LpLayout,
     narrator: NarratorLayout,
+    personalize: PersonalizeLayout,
     public: PublicLayout,
     quiz: QuizLayout,
     settings: SettingsLayout,

@@ -124,6 +124,27 @@ export default function CheckoutThanks({
                             </li>
                         ))}
                     </ol>
+
+                    {/* Le tunnel de personnalisation, tout de suite : c'est
+                        le moment où l'on pense le plus à la personne à qui
+                        l'on offre. `/espace/personnaliser` mène au projet,
+                        que cette page ne connaît pas encore. */}
+                    {!forSelf && (
+                        <div
+                            className="enter pz-banner mt-10"
+                            style={{ animationDelay: '0.7s' }}
+                        >
+                            <p className="min-w-0 flex-1 leading-snug">
+                                {t('public.checkout.thanks.personalize_hint')}
+                            </p>
+                            <Link
+                                href="/espace/personnaliser"
+                                className="bg-brand text-brand-foreground hover:bg-brand-deep inline-flex min-h-12 flex-none items-center justify-center rounded-full px-5 font-semibold"
+                            >
+                                {t('public.checkout.thanks.personalize_cta')}
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 <Book

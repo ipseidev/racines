@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Initiator;
 
 use App\Books\ComputeBookReadiness;
+use App\Enums\BuyerRelation;
 use App\Enums\EngineAudience;
 use App\Enums\Offer;
 use App\Models\EngineEvent;
@@ -53,6 +54,9 @@ final class SpaceController
         $narrator = $project->primaryNarrator;
 
         return inertia('initiator/Dashboard', [
+            // Le tunnel de personnalisation, tant qu'il n'a été ni fait ni
+            // passé. Qui raconte sa propre histoire n'en a pas.
+            'personalize' => $this->personalizeUrl($project),
             'project' => [
                 'id' => $project->id,
                 'status' => $project->status->value,
@@ -235,5 +239,18 @@ final class SpaceController
     private static function listensAsFamilyMember(Project $project, string $email): bool
     {
         return $project->familyMembers()->where('email', $email)->exists();
+    }
+
+    private function personalizeUrl(Project $project): ?string
+    {
+        $profile = $project->profile;
+
+        if ($profile?->buyer_relation === BuyerRelation::Myself
+            || $profile?->completed_at !== null
+            || $profile?->skipped_at !== null) {
+            return null;
+        }
+
+        return route('initiator.personalize', ['project' => $project], false);
     }
 }

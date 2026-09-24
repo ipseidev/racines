@@ -1894,3 +1894,404 @@
         animation: none;
     }
 }
+
+/*
+ * Le tunnel de personnalisation d'après-achat (`initiator/Personalize`).
+ *
+ * Un écran à la fois, à la hauteur du téléphone : le titre et le paragraphe
+ * en haut, une liste qui défile au milieu, le bouton au pouce. La chaleur
+ * vient des teintes de la marque et du papier, jamais d'icônes : quatre
+ * teintes tirées de la palette (or, sauge, terre, lin), une par thème.
+ */
+@layer components {
+    /* Le bandeau du tableau de bord qui mène au tunnel. */
+    .pz-banner {
+        @apply flex flex-wrap items-center gap-4 rounded-[1.25rem] px-5 py-5 sm:flex-nowrap;
+        background: #f6ecd3;
+    }
+
+    .pz-screen {
+        @apply flex min-h-0 flex-1 flex-col px-6 pt-2 pb-6;
+        animation: pz-enter 0.5s var(--ease-soft) both;
+    }
+
+    .pz-eyebrow {
+        @apply text-brand-accent-deep mb-2.5 text-[0.8rem] font-semibold tracking-[0.08em] uppercase;
+    }
+
+    .pz-title {
+        @apply font-display mb-3 text-[1.9rem] leading-[1.15] font-medium tracking-[-0.01em];
+    }
+
+    .pz-lead {
+        @apply text-brand-muted mb-4 text-[1.0625rem] leading-normal;
+    }
+
+    .pz-label {
+        @apply mb-2 block text-[0.95rem] font-semibold;
+    }
+
+    .pz-body,
+    .pz-list {
+        @apply -mx-6 min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-4;
+        mask-image: linear-gradient(
+            transparent,
+            #000 12px,
+            #000 calc(100% - 18px),
+            transparent
+        );
+    }
+
+    .pz-list {
+        @apply flex flex-col gap-2;
+    }
+
+    .pz-primary {
+        @apply bg-brand text-brand-foreground hover:bg-brand-deep mt-3 flex min-h-14 w-full flex-none items-center justify-center rounded-full text-[1.0625rem] font-semibold transition-[transform,background-color,opacity] duration-200 active:scale-[0.98] disabled:cursor-default disabled:opacity-35;
+    }
+
+    .pz-link {
+        @apply mt-6 max-w-[19rem];
+    }
+
+    .pz-secondary {
+        @apply text-brand-muted hover:text-brand-text hover:bg-brand-linen mt-1.5 min-h-12 w-full flex-none rounded-full text-base font-medium;
+    }
+
+    .pz-icon-button {
+        @apply hover:bg-brand-linen flex size-11 flex-none items-center justify-center rounded-full;
+    }
+
+    .pz-bar {
+        @apply bg-brand-sand h-1.5 flex-1 overflow-hidden rounded-full;
+    }
+
+    .pz-bar-fill {
+        @apply bg-brand h-1.5 rounded-full;
+        transition: width 0.5s var(--ease-soft);
+    }
+
+    .pz-skip {
+        @apply text-brand-muted hover:text-brand-text hover:bg-brand-linen min-h-11 rounded-md px-2 text-[0.95rem] font-medium;
+    }
+
+    /* Surfaces : du papier, une ombre douce, pas de filet. */
+    .pz-choice {
+        @apply flex min-h-16 items-center justify-between gap-2 rounded-2xl border-[1.5px] border-transparent p-3.5 text-left text-base font-medium transition-[transform,border-color,background-color] duration-200 active:scale-[0.97];
+        background: #fffcf7;
+        box-shadow:
+            0 1px 0 rgb(38 33 28 / 0.04),
+            0 6px 18px -8px rgb(38 33 28 / 0.16);
+        overflow-wrap: break-word;
+    }
+
+    .pz-choice:hover {
+        @apply border-brand-sand;
+    }
+
+    .pz-choice.is-on,
+    .pz-theme.is-on,
+    .pz-question.is-on {
+        box-shadow: 0 0 0 2px var(--color-brand) inset;
+    }
+
+    .pz-choice.is-on {
+        background: #eef3f0;
+    }
+
+    .pz-tick {
+        @apply bg-brand flex size-[1.375rem] flex-none items-center justify-center rounded-full text-white;
+        animation: pz-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    }
+
+    .pz-ring {
+        @apply size-[1.375rem] flex-none rounded-full border-[1.5px];
+        border-color: rgb(38 33 28 / 0.28);
+    }
+
+    .pz-pill {
+        @apply border-brand-sand min-h-11 rounded-full border-[1.5px] px-[1.1rem] text-[0.95rem] font-medium transition-[transform,background-color,border-color,color] duration-200 active:scale-95;
+        background: #fffcf7;
+    }
+
+    .pz-pill.is-small {
+        @apply min-h-10 px-3.5;
+    }
+
+    .pz-pill.is-on {
+        @apply bg-brand border-brand text-brand-foreground;
+    }
+
+    .pz-pill.is-no.is-on {
+        @apply bg-brand-accent-deep border-brand-accent-deep;
+    }
+
+    .pz-field {
+        @apply border-brand-sand focus:border-brand min-h-13 w-full rounded-[0.875rem] border-[1.5px] px-4 text-[1.0625rem] outline-none;
+        background: #fffcf7;
+    }
+
+    .pz-field:focus {
+        box-shadow: 0 0 0 3px rgb(47 74 63 / 0.18);
+    }
+
+    .pz-reveal {
+        @apply mt-5;
+        animation: pz-enter 0.4s var(--ease-soft) both;
+    }
+
+    .pz-preview {
+        @apply bg-brand-linen mt-4 rounded-[1.125rem] px-[1.125rem] py-4;
+    }
+
+    .pz-preview-tag {
+        @apply text-brand-muted mb-2 text-[0.75rem] font-semibold tracking-[0.06em] uppercase;
+    }
+
+    .pz-preview-text {
+        @apply font-display text-[1.125rem] leading-snug;
+    }
+
+    .pz-row {
+        @apply flex min-h-[3.75rem] flex-none items-center gap-3 rounded-2xl py-2.5 pr-3 pl-4;
+        background: #fffcf7;
+        box-shadow:
+            0 1px 0 rgb(38 33 28 / 0.04),
+            0 6px 18px -10px rgb(38 33 28 / 0.16);
+    }
+
+    .pz-row-label {
+        @apply min-w-0 flex-1 text-[0.97rem] leading-snug;
+        overflow-wrap: break-word;
+    }
+
+    .pz-chip {
+        @apply border-brand-sand flex min-h-12 items-center rounded-full border-[1.5px] px-[1.1rem] text-[0.95rem] font-medium transition-[transform,background-color,border-color] duration-200 active:scale-[0.96];
+        background: #fffcf7;
+    }
+
+    .pz-chip.is-on {
+        @apply border-brand-accent-deep text-brand-accent-deep;
+        background: #fbeae4;
+    }
+
+    /* Les thèmes : une ligne teintée, le nom, une phrase qui évoque. */
+    .pz-theme {
+        @apply flex w-full items-center gap-3.5 rounded-2xl px-4 py-3.5 text-left transition-[transform,box-shadow,opacity] duration-200 active:scale-[0.98];
+    }
+
+    .pz-theme.is-off {
+        @apply opacity-50;
+    }
+
+    .pz-theme-name {
+        @apply font-display block text-[1.0625rem] leading-tight font-medium;
+    }
+
+    .pz-theme-line {
+        @apply font-display text-brand-muted block text-[0.875rem] leading-snug italic;
+        overflow-wrap: break-word;
+    }
+
+    .pz-gold {
+        background: #f6ecd3;
+        color: #3d2f0a;
+    }
+
+    .pz-sage {
+        background: #e4ede7;
+        color: #1f3129;
+    }
+
+    .pz-clay {
+        background: #f7e3da;
+        color: #5c2414;
+    }
+
+    .pz-linen {
+        background: #f1e8da;
+        color: #3a322b;
+    }
+
+    .pz-question {
+        @apply flex w-full flex-col gap-2 rounded-[1.125rem] border-[1.5px] border-transparent py-4 pr-4 pl-[1.125rem] text-left transition-[transform,box-shadow] duration-200;
+        background: #fffcf7;
+        box-shadow:
+            0 1px 0 rgb(38 33 28 / 0.04),
+            0 8px 22px -12px rgb(38 33 28 / 0.2);
+    }
+
+    .pz-question.is-on {
+        transform: translateY(-2px);
+    }
+
+    .pz-question-meta {
+        @apply text-brand-muted flex items-center justify-between gap-2.5 text-[0.75rem] font-semibold tracking-[0.06em] uppercase;
+    }
+
+    .pz-badge {
+        @apply bg-brand rounded-[0.625rem] px-2 py-0.5 text-white;
+        animation: pz-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    }
+
+    .pz-question-text {
+        @apply font-display text-[1.125rem] leading-snug;
+    }
+
+    .pz-later {
+        @apply bg-brand-linen text-brand-muted rounded-2xl px-4 py-3.5 text-[0.9rem] leading-snug;
+    }
+
+    .pz-later strong {
+        @apply text-brand-text font-semibold;
+    }
+
+    .pz-rise {
+        animation: pz-rise 0.6s var(--ease-soft) both;
+    }
+
+    .pz-seal {
+        @apply bg-brand mb-7 flex size-28 items-center justify-center rounded-full text-white;
+        animation: pz-pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    }
+
+    .pz-seal path {
+        stroke-dasharray: 60;
+        stroke-dashoffset: 60;
+        animation: pz-draw 0.55s 0.35s ease-out forwards;
+    }
+
+    /* L'accueil : un paquet de trois cartes qui se mélange. */
+    .pz-deck {
+        @apply relative -mx-6 h-[16.5rem] flex-none;
+    }
+
+    .pz-deck-card {
+        @apply absolute top-4 left-1/2 -ml-[6.5rem] flex h-56 w-[13rem] items-center justify-center rounded-[1.375rem] px-5 py-6 text-center;
+        box-shadow:
+            0 18px 34px -18px rgb(38 33 28 / 0.45),
+            0 1px 0 rgb(38 33 28 / 0.05);
+        animation: pz-deck 12s cubic-bezier(0.6, 0, 0.2, 1) infinite;
+    }
+
+    .pz-deck-0 {
+        z-index: 3;
+    }
+
+    .pz-deck-1 {
+        z-index: 2;
+        transform: translateX(-54px) rotate(-7deg) scale(0.9);
+        animation-delay: -8s;
+    }
+
+    .pz-deck-2 {
+        z-index: 1;
+        transform: translateX(54px) rotate(7deg) scale(0.9);
+        animation-delay: -4s;
+    }
+
+    .pz-deck-face {
+        @apply flex flex-col items-center gap-3;
+        animation: pz-face 12s ease infinite;
+    }
+
+    .pz-deck-1 .pz-deck-face {
+        opacity: 0;
+        animation-delay: -8s;
+    }
+
+    .pz-deck-2 .pz-deck-face {
+        opacity: 0;
+        animation-delay: -4s;
+    }
+
+    .pz-quote {
+        @apply font-display text-brand-accent-deep h-[1.4rem] text-[2.9rem] leading-[0.6] opacity-75;
+    }
+
+    .pz-deck-text {
+        @apply font-display text-[1.2rem] leading-snug;
+    }
+
+    .pz-deck-theme {
+        @apply text-[0.7rem] font-semibold tracking-[0.08em] uppercase;
+    }
+}
+
+@keyframes pz-enter {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+}
+
+@keyframes pz-rise {
+    from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.98);
+    }
+}
+
+@keyframes pz-pop {
+    from {
+        transform: scale(0);
+    }
+}
+
+@keyframes pz-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes pz-deck {
+    0%,
+    26%,
+    100% {
+        transform: none;
+        z-index: 3;
+    }
+
+    33%,
+    59% {
+        transform: translateX(54px) rotate(7deg) scale(0.9);
+        z-index: 1;
+    }
+
+    66%,
+    92% {
+        transform: translateX(-54px) rotate(-7deg) scale(0.9);
+        z-index: 2;
+    }
+}
+
+@keyframes pz-face {
+    0%,
+    27%,
+    100% {
+        opacity: 1;
+    }
+
+    31%,
+    95% {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pz-screen,
+    .pz-reveal,
+    .pz-rise,
+    .pz-tick,
+    .pz-badge,
+    .pz-seal,
+    .pz-deck-card,
+    .pz-deck-face {
+        animation: none;
+    }
+
+    .pz-seal path {
+        animation: none;
+        stroke-dashoffset: 0;
+    }
+}
