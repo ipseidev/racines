@@ -126,6 +126,7 @@ final class HandleInertiaRequests extends Middleware
              */
             'googleAnalytics' => self::googleAnalytics($request),
             'metaPixel' => self::metaPixel($request),
+            'clarity' => self::clarity($request),
         ];
     }
 
@@ -234,6 +235,31 @@ final class HandleInertiaRequests extends Middleware
         }
 
         return ['pixelId' => $id];
+    }
+
+    /**
+     * De quoi démarrer Microsoft Clarity, ou rien.
+     *
+     * La garde est plus étroite que pour les trois autres mesures : ni page à
+     * jeton, **ni espace de compte**, parce qu'une relecture de session
+     * emporte le texte de la page (`Measured::allowsReplay`). Et le même
+     * verrou (T-61) : `CLARITY_ENABLED` décide.
+     *
+     * @return array{projectId: string}|null
+     */
+    private static function clarity(Request $request): ?array
+    {
+        $id = (string) config('services.clarity.project_id');
+
+        if ($id === '' || config('services.clarity.enabled') !== true) {
+            return null;
+        }
+
+        if (! Measured::allowsReplay($request)) {
+            return null;
+        }
+
+        return ['projectId' => $id];
     }
 
     /**

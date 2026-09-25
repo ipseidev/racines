@@ -37,6 +37,32 @@ final class Measured
     }
 
     /**
+     * Vrai si cette requête peut, en plus, être **relue** (Microsoft Clarity).
+     *
+     * Une relecture de session enregistre la page telle qu'on la voit, texte
+     * compris. Sur le site marchand, c'est ce qu'on cherche ; dans l'espace
+     * de l'Initiateur·rice, ce serait envoyer à un tiers les récits d'une
+     * famille — ses prénoms, ses souvenirs, ce que la personne qui raconte a
+     * accepté de partager avec les siens et pas avec Microsoft. L'espace et
+     * les réglages du compte sont donc exclus, en plus des pages à jeton.
+     */
+    public static function allowsReplay(Request $request): bool
+    {
+        return self::allows($request)
+            && ! in_array($request->segment(1), self::privateSpaces(), true);
+    }
+
+    /**
+     * Les espaces d'un compte, que la relecture de sessions ne voit jamais.
+     *
+     * @return list<string>
+     */
+    public static function privateSpaces(): array
+    {
+        return ['espace', 'settings'];
+    }
+
+    /**
      * Les espaces ouverts par un lien porteur.
      *
      * `s` s'ajoute aux sept que `TokenType` construit : c'est l'espace réservé

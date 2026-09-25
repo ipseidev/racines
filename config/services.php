@@ -150,6 +150,26 @@ return [
         'test_code' => env('META_TEST_EVENT_CODE'),
     ],
 
+    /*
+     * Microsoft Clarity, la **relecture de sessions** du site marchand.
+     *
+     * Elle ne recoupe aucune des trois autres : PostHog compte l'entonnoir,
+     * Google l'audience, Meta la publicité ; Clarity montre **comment** une
+     * visite s'est passée — où l'on clique, où l'on hésite, où l'on repart.
+     * C'est aussi la plus intrusive des quatre, puisqu'elle enregistre la
+     * page telle qu'on la voit : d'où deux règles plus étroites que les
+     * autres (`App\Analytics\Measured::allowsReplay`). Elle ne démarre
+     * **qu'à l'accord** donné dans le bandeau, et **jamais** dans l'espace de
+     * l'Initiateur·rice, qui affiche les récits d'une famille.
+     *
+     * Le verrou de T-61 : `CLARITY_ENABLED` décide, jamais la présence de
+     * l'identifiant.
+     */
+    'clarity' => [
+        'enabled' => env('CLARITY_ENABLED', false),
+        'project_id' => env('CLARITY_PROJECT_ID'),
+    ],
+
     'browsershot' => [
         // `browsershot` ou `fake`, jamais déduit de l'environnement (T-61) :
         // un rendu déduit finit par être le faux en production, et une famille

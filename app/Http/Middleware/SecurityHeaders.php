@@ -73,6 +73,7 @@ final class SecurityHeaders
         // elle a le droit de tourner. Voir `googleAnalytics()`.
         $google = $this->googleAnalytics($request);
         $meta = $this->metaPixel($request);
+        $clarity = $this->clarity($request);
 
         if ($this->isBackOffice($request)) {
             return implode('; ', [
@@ -92,7 +93,7 @@ final class SecurityHeaders
 
         return implode('; ', [
             "default-src 'self'",
-            self::directive('script-src', ["'self'", "'nonce-{$nonce}'", $google['script'], $meta['script']]),
+            self::directive('script-src', ["'self'", "'nonce-{$nonce}'", $google['script'], $meta['script'], $clarity['script']]),
             "style-src 'self' 'nonce-{$nonce}'",
             // Les styles posés en attribut par React ne peuvent pas porter de
             // nonce. Les autoriser en attribut seulement laisse `style-src`
@@ -100,9 +101,9 @@ final class SecurityHeaders
             "style-src-attr 'unsafe-inline'",
             // Les polices sont auto-hébergées (T-40) : aucune origine tierce.
             "font-src 'self' data:",
-            self::directive('img-src', ["'self'", 'data:', 'blob:', $media, $google['img'], $meta['img']]),
+            self::directive('img-src', ["'self'", 'data:', 'blob:', $media, $google['img'], $meta['img'], $clarity['img']]),
             trim("media-src 'self' blob: {$media}"),
-            self::directive('connect-src', ["'self'", $connect, $google['connect'], $meta['connect']]),
+            self::directive('connect-src', ["'self'", $connect, $google['connect'], $meta['connect'], $clarity['connect']]),
             "object-src 'none'",
             "base-uri 'self'",
             self::directive('form-action', ["'self'", $meta['form']]),
@@ -244,6 +245,45 @@ final class SecurityHeaders
             // d'autre qu'un message de console ne le dise.
             'form' => 'https://www.facebook.com',
             'frame' => 'https://www.facebook.com',
+        ];
+    }
+
+    /**
+     * Les origines que Microsoft Clarity a besoin d'atteindre, ou trois
+     * chaînes vides.
+     *
+     * `www.clarity.ms` sert l'amorce, qui charge à son tour le vrai script
+     * depuis `scripts.clarity.ms` **sans le nonce du document** — d'où les
+     * deux origines dans `script-src`, sans quoi la relecture s'arrête en
+     * silence (T-75). Les enregistrements partent vers un sous-domaine de
+     * collecte (`*.clarity.ms`), et Clarity pose un pixel de rapprochement
+     * chez Bing (`c.bing.com`).
+     *
+     * Là où Clarity a le droit de tourner, et nulle part ailleurs : ni page à
+     * jeton, ni espace de compte (`Measured::allowsReplay`).
+     *
+     * @return array{script: string, img: string, connect: string}
+     */
+    private function clarity(Request $request): array
+    {
+        $vide = ['script' => '', 'img' => '', 'connect' => ''];
+
+        if (config('services.clarity.enabled') !== true) {
+            return $vide;
+        }
+
+        if ((string) config('services.clarity.project_id') === '') {
+            return $vide;
+        }
+
+        if (! Measured::allowsReplay($request)) {
+            return $vide;
+        }
+
+        return [
+            'script' => 'https://www.clarity.ms https://scripts.clarity.ms',
+            'img' => 'https://*.clarity.ms https://c.bing.com',
+            'connect' => 'https://*.clarity.ms https://c.bing.com',
         ];
     }
 

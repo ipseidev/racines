@@ -9,7 +9,7 @@ return [
      */
     'consent' => [
         'title' => 'Le tue scelte sui cookie',
-        'body' => 'Usiamo i cookie per misurare il pubblico del sito e l’efficacia delle nostre pubblicità. Vengono installati solo con il tuo consenso, e puoi cambiare idea in qualsiasi momento dal piè di pagina.',
+        'body' => 'Usiamo i cookie per misurare il pubblico del sito, capire come vengono consultate le sue pagine e misurare l’efficacia delle nostre pubblicità. Vengono installati solo con il tuo consenso, e puoi cambiare idea in qualsiasi momento dal piè di pagina.',
         'accept' => 'Accetto',
         'refuse' => 'Rifiuto',
         'more' => 'Scopri di più',

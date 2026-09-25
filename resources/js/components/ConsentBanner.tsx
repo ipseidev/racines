@@ -14,6 +14,7 @@ type Shared = {
     analytics: { key: string; host: string } | null;
     googleAnalytics: { measurementId: string } | null;
     metaPixel: { pixelId: string } | null;
+    clarity: { projectId: string } | null;
 };
 
 /**
@@ -39,12 +40,16 @@ type Shared = {
 export default function ConsentBanner() {
     const urls = useUrls();
     const t = useT();
-    const { analytics, googleAnalytics, metaPixel } = usePage<Shared>().props;
+    const { analytics, googleAnalytics, metaPixel, clarity } =
+        usePage<Shared>().props;
     const [open, setOpen] = useState(false);
     const heading = useRef<HTMLHeadingElement>(null);
 
     const measured =
-        analytics !== null || googleAnalytics !== null || metaPixel !== null;
+        analytics !== null ||
+        googleAnalytics !== null ||
+        metaPixel !== null ||
+        clarity !== null;
 
     useEffect(() => {
         if (!measured) {

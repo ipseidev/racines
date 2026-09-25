@@ -9,7 +9,7 @@ return [
      */
     'consent' => [
         'title' => 'Tus opciones sobre las cookies',
-        'body' => 'Usamos cookies para medir la audiencia del sitio y la eficacia de nuestra publicidad. Solo se instalan con tu acuerdo, y puedes cambiar de opinión en cualquier momento desde el pie de página.',
+        'body' => 'Usamos cookies para medir la audiencia del sitio, entender cómo se recorren sus páginas y medir la eficacia de nuestra publicidad. Solo se instalan con tu acuerdo, y puedes cambiar de opinión en cualquier momento desde el pie de página.',
         'accept' => 'Acepto',
         'refuse' => 'Rechazo',
         'more' => 'Más información',

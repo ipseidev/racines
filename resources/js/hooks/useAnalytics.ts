@@ -2,6 +2,11 @@ import { router, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 import { initAnalytics, pageview } from '@/lib/analytics';
+import {
+    applyConsent as clarityConsent,
+    initClarity,
+    pageview as clarityPageview,
+} from '@/lib/clarity';
 import { CONSENT_EVENT, readConsent, type Consent } from '@/lib/consent';
 import {
     applyConsent as gaConsent,
@@ -56,6 +61,7 @@ type Shared = {
     analytics: { key: string; host: string } | null;
     googleAnalytics: { measurementId: string } | null;
     metaPixel: { pixelId: string } | null;
+    clarity: { projectId: string } | null;
 };
 
 /**
@@ -85,16 +91,20 @@ type Shared = {
  *    mode complet à l'accord — c'est le mode consentement de Google, conçu
  *    pour ça ;
  *  - le pixel Meta ne démarre **qu'à l'accord**. Il n'a pas de mode dégradé
- *    honnête, donc il n'a pas de mode du tout avant la réponse.
+ *    honnête, donc il n'a pas de mode du tout avant la réponse ;
+ *  - Microsoft Clarity non plus, et pour la même raison : une relecture de
+ *    session sans accord reste une relecture de session.
  */
 export function useAnalytics(): void {
-    const { analytics, googleAnalytics, metaPixel } = usePage<Shared>().props;
+    const { analytics, googleAnalytics, metaPixel, clarity } =
+        usePage<Shared>().props;
 
     useEffect(() => {
         if (
             analytics === null &&
             googleAnalytics === null &&
-            metaPixel === null
+            metaPixel === null &&
+            clarity === null
         ) {
             return;
         }
@@ -111,6 +121,14 @@ export function useAnalytics(): void {
             if (metaPixel !== null) {
                 metaConsent(granted);
             }
+
+            if (clarity !== null && granted) {
+                initClarity(clarity.projectId);
+            }
+
+            // Sans condition sur la prop : dans l'espace, elle vaut `null`,
+            // et un refus doit quand même arrêter un script déjà chargé.
+            clarityConsent(granted);
         };
 
         const stopIdle = whenIdle(() => {
@@ -145,6 +163,7 @@ export function useAnalytics(): void {
             pageview(chemin);
             gaPageview(chemin);
             metaPageview(chemin);
+            clarityPageview(chemin);
         });
 
         return () => {
@@ -152,5 +171,5 @@ export function useAnalytics(): void {
             window.removeEventListener(CONSENT_EVENT, onChange);
             stop();
         };
-    }, [analytics, googleAnalytics, metaPixel]);
+    }, [analytics, googleAnalytics, metaPixel, clarity]);
 }

@@ -18,7 +18,7 @@ return [
      */
     'consent' => [
         'title' => 'Vos choix sur les cookies',
-        'body' => 'Nous utilisons des cookies pour mesurer l’audience du site et l’efficacité de nos publicités. Ils ne sont posés qu’avec votre accord, et vous pouvez changer d’avis à tout moment depuis le pied de page.',
+        'body' => 'Nous utilisons des cookies pour mesurer l’audience du site, comprendre comment ses pages sont parcourues et mesurer l’efficacité de nos publicités. Ils ne sont posés qu’avec votre accord, et vous pouvez changer d’avis à tout moment depuis le pied de page.',
         'accept' => 'J’accepte',
         'refuse' => 'Je refuse',
         'more' => 'En savoir plus',
